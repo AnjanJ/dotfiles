@@ -145,6 +145,9 @@ mkdir -p ~/.config/mise
 # Link mise configuration
 ln -sf "$DOTFILES_DIR/.config/mise/config.toml" ~/.config/mise/config.toml
 
+# Trust the mise config file (required for security)
+mise trust ~/.config/mise/config.toml
+
 # Initialize mise in shell (will be sourced from .zshrc)
 if ! grep -q "mise activate" ~/.zshrc 2>/dev/null; then
     print_warning "Note: mise activation already in .zshrc"
