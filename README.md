@@ -2,6 +2,35 @@
 
 > A complete macOS development environment for Ruby on Rails and Elixir/Phoenix development, themed with Tokyo Night everywhere.
 
+## 💭 Philosophy
+
+This setup is inspired by **DHH's Omakub** and his "**Everything in one place, everything just works**" philosophy. The goal is simple:
+
+### Core Principles
+
+1. **One Command Installation** - From zero to productive development environment in minutes
+2. **Unified Theme** - Tokyo Night everywhere for visual consistency and reduced cognitive load
+3. **Keyboard-First** - Vim motions, tiling windows, keyboard shortcuts for everything
+4. **Modular Configuration** - Clean, organized configs that are easy to understand and modify
+5. **Developer Ergonomics** - Tools chosen for speed, reliability, and joy of use
+
+### The DHH/Omakub Influence
+
+Like DHH's **[Omakub](https://omakub.org/)** for Ubuntu, this setup provides:
+- **Opinionated but customizable** - Great defaults, easy to change
+- **Battle-tested tools** - Used daily for professional Rails and Elixir development
+- **Productivity-focused** - Everything configured to minimize friction
+- **Beautiful aesthetics** - Because we stare at code all day
+
+### Why This Stack?
+
+**Window Management (Aerospace)**: i3-style tiling for macOS - keyboard-driven, distraction-free
+**Terminal (Ghostty)**: GPU-accelerated, native macOS, modern
+**Editor (Neovim + AstroNvim)**: ThePrimeagen-inspired workflow with Harpoon, Telescope, LSP
+**Shell (zsh + Starship)**: Fast, reliable, beautiful prompt
+**Multiplexers (tmux + Zellij)**: Session management with vim integration
+**Theme (Tokyo Night)**: Consistent, easy on eyes, used by thousands of developers
+
 ## ✨ Features
 
 ### 🎨 Unified Tokyo Night Theme
@@ -31,17 +60,20 @@
 ### Core Tools
 - **Window Manager**: Aerospace (i3-like tiling for macOS)
 - **Terminal**: Ghostty (GPU-accelerated)
-- **Shell**: zsh with custom configuration
+- **Shell**: zsh with modular configuration
 - **Prompt**: Starship
 - **Multiplexers**: tmux + Zellij
 - **Editor**: Neovim with AstroNvim
 - **Version Control**: Git, lazygit, GitHub CLI
 
 ### Development
-- Ruby (via rbenv)
-- Elixir + Erlang
-- Node.js
-- PostgreSQL
+- **mise** - Modern version manager (replaces rbenv, nvm, asdf)
+- Ruby 3.4.5
+- Elixir + Erlang (latest)
+- Node.js (latest)
+- Python 3
+- Go, Rust (latest)
+- PostgreSQL 14
 - Redis
 
 ### CLI Utilities
@@ -80,7 +112,7 @@ Installed Tools:
 ├── Terminals
 │   └── Ghostty (GPU-accelerated)
 ├── Shell
-│   ├── zsh
+│   ├── zsh (modular configuration)
 │   └── Starship prompt
 ├── Multiplexers
 │   ├── tmux (with 8 plugins)
@@ -101,6 +133,47 @@ Installed Tools:
     ├── ripgrep, fd, fzf
     └── bat, eza, tree
 ```
+
+## 📖 Configuration Structure
+
+### Modular Shell Setup
+
+The `.zshrc` is organized into focused, modular files:
+
+```
+~/.zshrc                         # Main config (loads everything)
+~/.zshrc-dhh-additions           # DHH-inspired workflows
+~/.zshrc-elixir-additions        # Elixir/Phoenix tools
+~/.zshrc-terminal-enhancements   # tmux, Zellij, Neovim aliases
+~/.zshrc-work                    # Work-specific settings (optional)
+```
+
+**Why modular?**
+- Easy to understand and modify
+- Enable/disable features by commenting one line
+- Share common configs, keep private ones separate
+- Inspired by DHH's clean, organized approach
+
+### Philosophy Behind File Organization
+
+```
+dotfiles/
+├── .zshrc                      # Core: prompt, PATH, tool initialization
+├── .zshrc-dhh-additions        # Rails workflows, aliases, functions
+├── .zshrc-elixir-additions     # Elixir/Phoenix development
+├── .zshrc-terminal-enhancements # Terminal multiplexers, editors
+├── .zshrc-work                 # Work-specific (not committed to public repo)
+├── .tmux.conf                  # tmux: sessions, vim integration, shortcuts
+├── .config/
+│   ├── aerospace/              # Window management: layouts, keybindings
+│   ├── ghostty/                # Terminal: theme, fonts
+│   ├── nvim/                   # Editor: LSP, plugins, keymaps
+│   ├── zellij/                 # Multiplexer: layouts, theme
+│   └── starship.toml           # Prompt: git, languages, colors
+└── Brewfile                    # Declarative package management
+```
+
+Each file has a single responsibility. Want to change your Rails workflow? Edit `.zshrc-dhh-additions`. Need different terminal aliases? Modify `.zshrc-terminal-enhancements`.
 
 ## 📖 Quick Start Guide
 
@@ -131,36 +204,77 @@ Installed Tools:
 ### Essential Keybindings
 
 #### Aerospace (Window Management)
-- `Cmd+H/J/K/L` - Move focus between windows
-- `Cmd+Shift+H/J/K/L` - Move windows
-- `Cmd+1-9` - Switch to workspace
-- `Cmd+Shift+1-9` - Move window to workspace
-- `Cmd+F` - Toggle fullscreen
-- `Cmd+S` - Toggle split orientation
+**Note**: Uses `Ctrl+Shift` for international keyboard compatibility (DHH-inspired)
 
-#### tmux
-- `Ctrl+A` - Prefix key
-- `Prefix + |` - Split vertically
-- `Prefix + -` - Split horizontally
-- `Prefix + h/j/k/l` - Navigate panes
-- `Prefix + c` - New window
-- `Prefix + r` - Rails server
-- `Prefix + C` - Rails console
+| Key | Action |
+|-----|--------|
+| `Ctrl+Shift+H/J/K/L` | Focus window (vim-style navigation) |
+| `Ctrl+Alt+H/J/K/L` | Move window |
+| `Ctrl+Shift+1-9` | Switch to workspace 1-9 |
+| `Ctrl+Alt+1-9` | Move window to workspace 1-9 |
+| `Ctrl+Shift+Tab` | Toggle between last two workspaces |
+| `Ctrl+Shift+/` | Toggle layout (tiles/accordion) |
+| `Ctrl+Shift+-` | Decrease window size |
+| `Ctrl+Shift+=` | Increase window size |
 
-#### Neovim (Normal Mode)
-- `<Leader>ff` - Find files
-- `<Leader>fw` - Find words (grep)
-- `<Leader>fb` - Find buffers
-- `Ctrl+H/J/K/L` - Navigate to Harpoon marks
-- `<Leader>ha` - Add file to Harpoon
-- `gd` - Go to definition
-- `gr` - Find references
-- `<Leader>la` - Code actions
+**App Launchers** (Workspace-aware):
+| Key | App | Workspace |
+|-----|-----|-----------|
+| `Ctrl+Shift+C` | Chrome (work) | 1 |
+| `Ctrl+Shift+Z` | Zed editor | 2 |
+| `Ctrl+Shift+W` | Warp terminal | 3 |
+| `Ctrl+Shift+F` | Firefox (personal) | 5 |
+| `Ctrl+Shift+G` | Ghostty terminal | 7 |
+| `Ctrl+Shift+O` | Obsidian (PKM) | 8 |
+| `Ctrl+Shift+P` | 1Password | 9 |
 
-#### Starship Prompt
-- Git status, language versions, directory info
-- Auto-displays when relevant
-- Tokyo Night color scheme
+**Browser Window Cycling** (across all workspaces):
+| Key | Action |
+|-----|--------|
+| `Ctrl+Shift+N` | Next Chrome window |
+| `Ctrl+Shift+B` | Previous Chrome window |
+| `Alt+Shift+N` | Next Firefox window |
+| `Alt+Shift+B` | Previous Firefox window |
+
+#### tmux (Prefix: `Ctrl+A`)
+| Key | Action |
+|-----|--------|
+| `Prefix \|` | Split vertical |
+| `Prefix -` | Split horizontal |
+| `Prefix h/j/k/l` | Navigate panes (vim-style) |
+| `Prefix H/J/K/L` | Resize panes |
+| `Prefix c` | New window |
+| `Prefix r` | Rails server |
+| `Prefix C` | Rails console |
+| `Prefix P` | Phoenix server |
+| `Prefix I` | IEx console |
+| `Prefix Shift+I` | Install plugins |
+| `Prefix Shift+U` | Update plugins |
+
+#### Neovim (Leader: `Space`)
+| Key | Action |
+|-----|--------|
+| `<Leader>ff` | Find files (Telescope) |
+| `<Leader>fw` | Find word (grep) |
+| `<Leader>fb` | Find buffers |
+| `<Leader>ha` | Harpoon: add file |
+| `Ctrl+H/J/K/L` | Harpoon: jump to marks 1-4 |
+| `gd` | Go to definition |
+| `gr` | Find references |
+| `<Leader>la` | Code actions |
+| `K` | Hover documentation |
+| `<Leader>rc` | Rails: controller |
+| `<Leader>rm` | Rails: model |
+| `<Leader>rv` | Rails: view |
+| `<Leader>rs` | Rails: spec |
+
+#### Zellij
+| Key | Action |
+|-----|--------|
+| `Ctrl+O` | Enter command mode (shows options) |
+| `Ctrl+G` | Lock mode (pass keys to terminal) |
+| `Alt+H/J/K/L` | Navigate panes |
+| `Ctrl+Q` | Quit Zellij |
 
 ## 🎨 Theming
 
@@ -182,15 +296,19 @@ All tools use the **Tokyo Night** color palette for a consistent, beautiful dark
 ```
 dotfiles/
 ├── install.sh                  # Main installation script
-├── Brewfile                    # Homebrew packages
+├── Brewfile                    # Homebrew packages (auto-generated)
 ├── README.md                   # This file
+├── QUICK_REFERENCE.md          # Cheat sheet
 ├── .zshrc                      # Main shell config
-├── .zshrc-aliases              # Shell aliases
-├── .zshrc-terminal-enhancements # Terminal tools config
+├── .zshrc-dhh-additions        # Rails workflows
+├── .zshrc-elixir-additions     # Elixir/Phoenix
+├── .zshrc-terminal-enhancements # Terminal tools
+├── .zshrc-work                 # Work-specific (optional)
 ├── .tmux.conf                  # tmux configuration
 ├── .config/
 │   ├── aerospace/              # Window manager config
 │   ├── ghostty/                # Terminal config
+│   ├── mise/                   # Version manager (Ruby, Node, Elixir, etc.)
 │   ├── nvim/                   # Neovim config (AstroNvim)
 │   ├── zellij/                 # Zellij config + Tokyo Night theme
 │   └── starship.toml           # Prompt configuration
@@ -266,6 +384,7 @@ open -a Aerospace
 Detailed guides for each tool:
 
 - [Neovim Guide](.config/nvim/README.md)
+- [Quick Reference](QUICK_REFERENCE.md) - Print this!
 - [tmux Guide](docs/tmux-guide.md)
 - [Zellij Guide](docs/zellij-guide.md)
 - [Aerospace Guide](.config/aerospace/README.md)
@@ -273,15 +392,17 @@ Detailed guides for each tool:
 ## 🙏 Credits
 
 ### Inspirations
-- [ThePrimeagen](https://github.com/ThePrimeagen/.dotfiles) - Harpoon workflow, tmux setup
-- [DHH](https://github.com/dhh/dotfiles) - Rails workflows
-- [José Valim](https://github.com/josevalim/dotfiles) - Elixir tooling
+- **[DHH](https://dhh.dk/)** - Omakub philosophy, Rails workflows, clean configurations
+- **[Omakub](https://omakub.org/)** - "Everything in one place" installation concept
+- **[ThePrimeagen](https://github.com/ThePrimeagen/.dotfiles)** - Harpoon workflow, tmux setup, vim-first development
+- **[José Valim](https://github.com/josevalim/dotfiles)** - Elixir tooling and workflows
 
-### Tools
-- [AstroNvim](https://github.com/AstroNvim/AstroNvim) - Neovim distribution
-- [Tokyo Night](https://github.com/folke/tokyonight.nvim) - Beautiful theme
-- [Starship](https://starship.rs/) - Fast prompt
-- [Aerospace](https://github.com/nikitabobko/AeroSpace) - Window manager
+### Tools & Themes
+- **[AstroNvim](https://github.com/AstroNvim/AstroNvim)** - Neovim distribution
+- **[Tokyo Night](https://github.com/folke/tokyonight.nvim)** - Beautiful theme
+- **[Starship](https://starship.rs/)** - Fast prompt
+- **[Aerospace](https://github.com/nikitabobko/AeroSpace)** - Window manager
+- **[Ghostty](https://ghostty.org/)** - Modern terminal
 
 ## 📝 License
 
@@ -294,5 +415,7 @@ Found a bug or have a suggestion? Open an issue or PR!
 ---
 
 **Made with ❤️ by AJ**
+
+*Inspired by DHH's Omakub and ThePrimeagen's workflows*
 
 *Last updated: 2025-11-24*

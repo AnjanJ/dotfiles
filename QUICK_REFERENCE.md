@@ -16,14 +16,23 @@ cp -r ~/.config ~/.config.backup.$(date +%Y%m%d)
 ## ⌨️ Essential Keybindings
 
 ### Aerospace (Window Manager)
+**Note**: Uses `Ctrl+Shift` for international keyboards (DHH-inspired)
+
 | Key | Action |
 |-----|--------|
-| `Cmd+H/J/K/L` | Navigate windows |
-| `Cmd+Shift+H/J/K/L` | Move windows |
-| `Cmd+1-9` | Switch workspace |
-| `Cmd+Shift+1-9` | Move to workspace |
-| `Cmd+F` | Fullscreen |
-| `Cmd+S` | Toggle layout |
+| `Ctrl+Shift+H/J/K/L` | Navigate windows (vim-style) |
+| `Ctrl+Alt+H/J/K/L` | Move windows |
+| `Ctrl+Shift+1-9` | Switch workspace |
+| `Ctrl+Alt+1-9` | Move to workspace |
+| `Ctrl+Shift+/` | Toggle layout |
+| `Ctrl+Shift+-/=` | Resize window |
+| `Ctrl+Shift+Tab` | Toggle last workspaces |
+
+**App Launchers**:
+| `Ctrl+Shift+C` | Chrome (workspace 1) |
+| `Ctrl+Shift+Z` | Zed (workspace 2) |
+| `Ctrl+Shift+G` | Ghostty (workspace 7) |
+| `Ctrl+Shift+O` | Obsidian (workspace 8) |
 
 ### tmux (Prefix: `Ctrl+A`)
 | Key | Action |

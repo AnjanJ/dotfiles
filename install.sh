@@ -134,10 +134,33 @@ mkdir -p "$BACKUP_DIR"
 print_success "Backup created at: $BACKUP_DIR"
 
 # ============================================
-# 5. CREATE SYMLINKS
+# 5. SET UP MISE (VERSION MANAGER)
 # ============================================
 echo ""
-print_step "Step 5: Creating symlinks..."
+print_step "Step 5: Setting up mise (version manager)..."
+
+# Create mise config directory
+mkdir -p ~/.config/mise
+
+# Link mise configuration
+ln -sf "$DOTFILES_DIR/.config/mise/config.toml" ~/.config/mise/config.toml
+
+# Initialize mise in shell (will be sourced from .zshrc)
+if ! grep -q "mise activate" ~/.zshrc 2>/dev/null; then
+    print_warning "Note: mise activation already in .zshrc"
+fi
+
+# Install all tools defined in mise config
+print_step "Installing language runtimes with mise (this may take a few minutes)..."
+mise install
+
+print_success "mise configured and tools installed"
+
+# ============================================
+# 6. CREATE SYMLINKS
+# ============================================
+echo ""
+print_step "Step 6: Creating symlinks..."
 
 # Shell configuration
 ln -sf "$DOTFILES_DIR/.zshrc" ~/.zshrc
@@ -157,10 +180,10 @@ ln -sf "$DOTFILES_DIR/.config/starship.toml" ~/.config/starship.toml
 print_success "Symlinks created"
 
 # ============================================
-# 6. INSTALL TPM (TMUX PLUGIN MANAGER)
+# 7. INSTALL TPM (TMUX PLUGIN MANAGER)
 # ============================================
 echo ""
-print_step "Step 6: Installing TPM (Tmux Plugin Manager)..."
+print_step "Step 7: Installing TPM (Tmux Plugin Manager)..."
 
 if [[ ! -d ~/.tmux/plugins/tpm ]]; then
     git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
@@ -170,19 +193,19 @@ else
 fi
 
 # ============================================
-# 7. SET UP NEOVIM
+# 8. SET UP NEOVIM
 # ============================================
 echo ""
-print_step "Step 7: Setting up Neovim..."
+print_step "Step 8: Setting up Neovim..."
 
 # AstroNvim will auto-install on first launch
 print_success "Neovim configuration linked (plugins will install on first launch)"
 
 # ============================================
-# 8. SET UP SHELL
+# 9. SET UP SHELL
 # ============================================
 echo ""
-print_step "Step 8: Setting up shell..."
+print_step "Step 9: Setting up shell..."
 
 # Make zsh default shell if not already
 if [[ "$SHELL" != "$(which zsh)" ]]; then
@@ -194,13 +217,13 @@ else
 fi
 
 # ============================================
-# 9. MACOS DEFAULTS (OPTIONAL)
+# 10. MACOS DEFAULTS (OPTIONAL)
 # ============================================
 echo ""
 read -p "Apply recommended macOS defaults? (y/n) " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    print_step "Step 9: Applying macOS defaults..."
+    print_step "Step 10: Applying macOS defaults..."
 
     # Keyboard settings
     defaults write NSGlobalDomain KeyRepeat -int 2
@@ -248,10 +271,11 @@ echo "5. Configure Git:"
 echo "   git config --global user.name \"Your Name\""
 echo "   git config --global user.email \"your.email@example.com\""
 echo ""
-echo "6. Install Ruby (if using rbenv):"
-echo "   rbenv install 3.3.0"
-echo "   rbenv global 3.3.0"
-echo "   gem install rails"
+echo "6. Verify mise installations:"
+echo "   mise list       # See all installed versions"
+echo "   ruby --version  # Should show Ruby 3.4.5"
+echo "   node --version  # Should show latest"
+echo "   elixir --version # Should show latest"
 echo ""
 echo "📚 Documentation:"
 echo "   • Neovim guide: ~/.config/nvim/README.md"

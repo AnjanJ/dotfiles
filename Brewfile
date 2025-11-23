@@ -1,122 +1,269 @@
-# ============================================
-# DOTFILES BREWFILE
-# ============================================
-# Install all packages with: brew bundle install
-# ============================================
-
-# Taps
-tap "homebrew/bundle"
-tap "nikitabobko/tap"  # Aerospace window manager
-tap "FelixKratz/formulae"  # JankyBorders (optional)
-
-# ============================================
-# ESSENTIAL TOOLS
-# ============================================
-
-# Shell & Terminal
-brew "zsh"
-brew "starship"      # Fast, customizable prompt
-brew "tmux"          # Terminal multiplexer
-brew "zellij"        # Modern terminal multiplexer
-cask "ghostty"       # GPU-accelerated terminal
-
-# Window Management
-cask "aerospace"     # i3-like tiling window manager for macOS
-
-# Version Control
+tap "felixkratz/formulae"
+tap "heroku/brew"
+tap "jorgerojas26/lazysql"
+tap "nikitabobko/tap"
+tap "supabase/tap"
+brew "glib"
+brew "bat"
+brew "docker"
+brew "eza"
+brew "fd"
+brew "pango"
+brew "ffmpeg"
+brew "fzf"
+brew "gh"
 brew "git"
-brew "gh"            # GitHub CLI
-brew "lazygit"       # Terminal UI for git
-
-# ============================================
-# DEVELOPMENT TOOLS
-# ============================================
-
-# Code Editors
-cask "zed"           # Modern code editor
-brew "neovim"        # Hyperextensible Vim-based text editor
-
-# Programming Languages
-brew "ruby"          # Ruby (via rbenv recommended)
-brew "elixir"        # Elixir
-brew "erlang"        # Erlang (Elixir dependency)
-brew "node"          # Node.js
-brew "python"        # Python
-
-# Language Version Managers (optional but recommended)
-brew "rbenv"         # Ruby version manager
-brew "ruby-build"    # rbenv plugin to compile Ruby
-brew "nvm"           # Node version manager (requires shell setup)
-
-# Databases
-brew "postgresql@16" # PostgreSQL
-brew "redis"         # Redis
-
-# ============================================
-# NEOVIM DEPENDENCIES
-# ============================================
-
-brew "ripgrep"       # Fast grep (required for Telescope)
-brew "fd"            # Fast find (required for Telescope)
-brew "fzf"           # Fuzzy finder
-brew "tree-sitter"   # Parser generator
-brew "lazygit"       # Terminal UI for git (Neovim integration)
-
-# LSP Servers (Language Server Protocol)
-brew "lua-language-server"  # Lua LSP
-
-# Ruby LSP will be installed via Mason in Neovim
-# Elixir LSP will be installed via Mason in Neovim
-
-# ============================================
-# OPTIONAL TOOLS
-# ============================================
-
-# System Utilities
-brew "htop"          # Process viewer
-brew "btop"          # Resource monitor
-brew "wget"          # Download utility
-brew "curl"          # Transfer tool
-brew "jq"            # JSON processor
-brew "yq"            # YAML processor
-
-# File Management
-brew "tree"          # Directory tree viewer
-brew "bat"           # Cat with syntax highlighting
-brew "eza"           # Modern ls replacement
-
-# Additional Tools
-brew "tldr"          # Simplified man pages
-brew "mas"           # Mac App Store CLI
-
-# Fonts (Nerd Fonts for terminal icons)
-cask "font-fira-code-nerd-font"
-cask "font-jetbrains-mono-nerd-font"
-cask "font-meslo-lg-nerd-font"
-
-# ============================================
-# OPTIONAL APPLICATIONS
-# ============================================
-
-# Browsers
-cask "google-chrome"
+brew "git-delta"
+brew "gitui"
+brew "heroku"
+brew "lazydocker"
+brew "lazygit"
+brew "lazysql"
+brew "libidn"
+brew "libxmlsec1"
+brew "libyaml"
+brew "litecli"
+brew "lnav"
+brew "lsd"
+brew "mise"
+brew "mycli"
+brew "mysql", restart_service: :changed
+brew "neovim"
+brew "pandoc"
+brew "pgcli"
+brew "postgresql@14", restart_service: :changed
+brew "putty"
+brew "redis", restart_service: :changed
+brew "ripgrep"
+brew "shared-mime-info"
+brew "starship"
+brew "tailspin"
+brew "tldr", link: false
+brew "tlrc"
+brew "tmux"
+brew "tree"
+brew "unar"
+brew "uv"
+brew "wget"
+brew "yazi"
+brew "yt-dlp"
+brew "zellij"
+brew "zoxide"
+brew "felixkratz/formulae/borders"
+brew "felixkratz/formulae/sketchybar"
+brew "supabase/tap/supabase"
+cask "1password"
+cask "1password-cli"
+cask "aerospace"
+cask "beekeeper-studio"
+cask "bruno"
+cask "docker-desktop"
 cask "firefox"
-
-# Communication
+cask "font-0xproto-nerd-font"
+cask "font-3270-nerd-font"
+cask "font-adwaita-mono-nerd-font"
+cask "font-agave-nerd-font"
+cask "font-anonymice-nerd-font"
+cask "font-arimo-nerd-font"
+cask "font-atkynson-mono-nerd-font"
+cask "font-aurulent-sans-mono-nerd-font"
+cask "font-bigblue-terminal-nerd-font"
+cask "font-bitstream-vera-sans-mono-nerd-font"
+cask "font-blex-mono-nerd-font"
+cask "font-cascadia-code"
+cask "font-caskaydia-cove-nerd-font"
+cask "font-caskaydia-mono-nerd-font"
+cask "font-code-new-roman-nerd-font"
+cask "font-comic-shanns-mono-nerd-font"
+cask "font-commit-mono-nerd-font"
+cask "font-cousine-nerd-font"
+cask "font-d2coding-nerd-font"
+cask "font-daddy-time-mono-nerd-font"
+cask "font-dejavu-sans-mono-nerd-font"
+cask "font-departure-mono-nerd-font"
+cask "font-droid-sans-mono-nerd-font"
+cask "font-envy-code-r-nerd-font"
+cask "font-fantasque-sans-mono-nerd-font"
+cask "font-fira-code"
+cask "font-fira-code-nerd-font"
+cask "font-fira-mono-nerd-font"
+cask "font-geist-mono-nerd-font"
+cask "font-go-mono-nerd-font"
+cask "font-gohufont-nerd-font"
+cask "font-hack"
+cask "font-hack-nerd-font"
+cask "font-hasklug-nerd-font"
+cask "font-heavy-data-nerd-font"
+cask "font-hurmit-nerd-font"
+cask "font-ibm-plex-mono"
+cask "font-im-writing-nerd-font"
+cask "font-inconsolata"
+cask "font-inconsolata-go-nerd-font"
+cask "font-inconsolata-lgc-nerd-font"
+cask "font-inconsolata-nerd-font"
+cask "font-intone-mono-nerd-font"
+cask "font-iosevka-nerd-font"
+cask "font-iosevka-term-nerd-font"
+cask "font-iosevka-term-slab-nerd-font"
+cask "font-jetbrains-mono"
+cask "font-jetbrains-mono-nerd-font"
+cask "font-lekton-nerd-font"
+cask "font-liberation-nerd-font"
+cask "font-lilex-nerd-font"
+cask "font-m+-nerd-font"
+cask "font-martian-mono-nerd-font"
+cask "font-meslo-lg-nerd-font"
+cask "font-monaspice-nerd-font"
+cask "font-monocraft-nerd-font"
+cask "font-monofur-nerd-font"
+cask "font-monoid-nerd-font"
+cask "font-mononoki-nerd-font"
+cask "font-noto-nerd-font"
+cask "font-open-dyslexic-nerd-font"
+cask "font-overpass-nerd-font"
+cask "font-profont-nerd-font"
+cask "font-proggy-clean-tt-nerd-font"
+cask "font-recursive-mono-nerd-font"
+cask "font-roboto-mono-nerd-font"
+cask "font-sauce-code-pro-nerd-font"
+cask "font-shure-tech-mono-nerd-font"
+cask "font-space-mono-nerd-font"
+cask "font-symbols-only-nerd-font"
+cask "font-terminess-ttf-nerd-font"
+cask "font-tinos-nerd-font"
+cask "font-ubuntu-mono-nerd-font"
+cask "font-ubuntu-nerd-font"
+cask "font-ubuntu-sans-nerd-font"
+cask "font-victor-mono-nerd-font"
+cask "font-zed-mono-nerd-font"
+cask "ghostty"
+cask "notion"
+cask "obsidian"
+cask "postico"
+cask "proton-mail"
+cask "proton-pass"
+cask "protonvpn"
+cask "raycast"
+cask "redis-insight"
+cask "requestly"
+cask "signal"
 cask "slack"
+cask "telegram"
+cask "visual-studio-code"
+cask "vlc"
+cask "wezterm"
+cask "zed"
+cask "zen"
 cask "zoom"
-
-# Productivity
-cask "rectangle"     # Window management (alternative to Aerospace)
-cask "raycast"       # Spotlight replacement (optional)
-
-# ============================================
-# NOTES
-# ============================================
-# After installation:
-# 1. Run: $(brew --prefix)/opt/fzf/install  # Set up fzf key bindings
-# 2. Set up rbenv: echo 'eval "$(rbenv init - zsh)"' >> ~/.zshrc
-# 3. Install Ruby: rbenv install 3.3.0 && rbenv global 3.3.0
-# 4. Install Rails: gem install rails
-# 5. Install Postgres: brew services start postgresql@16
-# ============================================
+vscode "aaron-bond.better-comments"
+vscode "adpyke.codesnap"
+vscode "alefragnani.bookmarks"
+vscode "alefragnani.project-manager"
+vscode "aliariff.vscode-erb-beautify"
+vscode "andrewbutson.vscode-openai"
+vscode "anthropic.claude-code"
+vscode "batatop.terminal-auto-rename"
+vscode "biomejs.biome"
+vscode "bradlc.vscode-tailwindcss"
+vscode "bung87.rails"
+vscode "bung87.vscode-gemfile"
+vscode "castwide.solargraph"
+vscode "christian-kohler.npm-intellisense"
+vscode "christian-kohler.path-intellisense"
+vscode "chrmarti.regex"
+vscode "daltonmenezes.aura-theme"
+vscode "dart-code.dart-code"
+vscode "dart-code.flutter"
+vscode "davidpallinder.rails-test-runner"
+vscode "dbaeumer.vscode-eslint"
+vscode "donjayamanne.githistory"
+vscode "dotjoshjohnson.xml"
+vscode "drewxs.tokyo-night-dark"
+vscode "dsznajder.es7-react-js-snippets"
+vscode "eamodio.gitlens"
+vscode "editorconfig.editorconfig"
+vscode "elia.erb-formatter"
+vscode "enkia.tokyo-night"
+vscode "esbenp.prettier-vscode"
+vscode "fill-labs.dependi"
+vscode "firsttris.vscode-jest-runner"
+vscode "formulahendry.auto-close-tag"
+vscode "formulahendry.auto-rename-tag"
+vscode "formulahendry.code-runner"
+vscode "github.copilot"
+vscode "github.copilot-chat"
+vscode "github.github-vscode-theme"
+vscode "github.vscode-github-actions"
+vscode "github.vscode-pull-request-github"
+vscode "gruntfuggly.todo-tree"
+vscode "heybourn.headwind"
+vscode "infeng.vscode-react-typescript"
+vscode "irongeek.vscode-env"
+vscode "jakebecker.elixir-ls"
+vscode "kaiwood.endwise"
+vscode "kisstkondoros.vscode-codemetrics"
+vscode "kisstkondoros.vscode-gutter-preview"
+vscode "kohkimakimoto.vscode-mac-dictionary"
+vscode "koichisasada.vscode-rdbg"
+vscode "lamarcke.kanagawa-black"
+vscode "lokalise.i18n-ally"
+vscode "mechatroner.rainbow-csv"
+vscode "mgmcdermott.vscode-language-babel"
+vscode "mhutchie.git-graph"
+vscode "mikestead.dotenv"
+vscode "mintlify.document"
+vscode "misogi.ruby-rubocop"
+vscode "mongodb.mongodb-vscode"
+vscode "ms-azuretools.vscode-containers"
+vscode "ms-azuretools.vscode-docker"
+vscode "ms-python.debugpy"
+vscode "ms-python.python"
+vscode "ms-python.vscode-pylance"
+vscode "ms-python.vscode-python-envs"
+vscode "ms-vscode.live-server"
+vscode "ms-vscode.vscode-typescript-next"
+vscode "mtxr.sqltools"
+vscode "mtxr.sqltools-driver-mysql"
+vscode "mtxr.sqltools-driver-pg"
+vscode "mtxr.sqltools-driver-sqlite"
+vscode "naumovs.color-highlight"
+vscode "noku.rails-run-spec-vscode"
+vscode "oderwat.indent-rainbow"
+vscode "openai.chatgpt"
+vscode "pantajoe.vscode-elixir-credo"
+vscode "patbenatar.advanced-new-file"
+vscode "phoenixframework.phoenix"
+vscode "pkief.material-icon-theme"
+vscode "planbcoding.vscode-react-refactor"
+vscode "pranaygp.vscode-css-peek"
+vscode "redhat.vscode-yaml"
+vscode "riey.erb"
+vscode "ritwickdey.liveserver"
+vscode "rust-lang.rust-analyzer"
+vscode "shd101wyy.markdown-preview-enhanced"
+vscode "shopify.ruby-extensions-pack"
+vscode "shopify.ruby-lsp"
+vscode "sianglim.slim"
+vscode "sorbet.sorbet-vscode-extension"
+vscode "sporto.rails-go-to-spec"
+vscode "steoates.autoimport"
+vscode "streetsidesoftware.code-spell-checker"
+vscode "swellaby.rust-pack"
+vscode "switchcase.code-challenging-timer"
+vscode "tamasfe.even-better-toml"
+vscode "tomoki1207.pdf"
+vscode "ue.alphabetical-sorter"
+vscode "usernamehw.errorlens"
+vscode "vortizhe.simple-ruby-erb"
+vscode "vscjava.vscode-java-dependency"
+vscode "vscjava.vscode-java-pack"
+vscode "wayou.vscode-todo-highlight"
+vscode "wix.vscode-import-cost"
+vscode "wmaurer.change-case"
+vscode "xabikos.javascriptsnippets"
+vscode "xabikos.reactsnippets"
+vscode "yzhang.markdown-all-in-one"
+vscode "zh9528.file-size"
+vscode "zhuangtongfa.material-theme"
+go "cmd/go"
+go "cmd/gofmt"
