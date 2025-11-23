@@ -41,6 +41,7 @@
 # Private/local configurations
 *.local
 *.private
+.zshrc-work  # Work-specific configuration (keep private)
 
 # Editor-specific
 .vscode/

@@ -4,7 +4,7 @@
 
 ```bash
 # Install everything
-git clone https://github.com/YOUR_USERNAME/dotfiles.git ~/dotfiles && cd ~/dotfiles && bash install.sh
+git clone https://github.com/AnjanJ/dotfiles.git ~/dotfiles && cd ~/dotfiles && bash install.sh
 
 # Update dotfiles
 cd ~/dotfiles && git pull && bash install.sh

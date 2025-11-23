@@ -88,7 +88,7 @@ Like DHH's **[Omakub](https://omakub.org/)** for Ubuntu, this setup provides:
 ### Quick Install
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/dotfiles.git ~/dotfiles
+git clone https://github.com/AnjanJ/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 bash install.sh
 ```
