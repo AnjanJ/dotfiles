@@ -1,0 +1,201 @@
+# ============================================
+# TERMINAL ENHANCEMENTS
+# ============================================
+# Last Updated: 2025-11-23
+# Description: Modern CLI tools for improved
+#              productivity and developer UX
+# ============================================
+#
+# TABLE OF CONTENTS:
+# ──────────────────────────────────────────
+#  1. FZF (fuzzy finder)
+#  2. Zoxide (smart cd)
+#  3. Bat (better cat with syntax highlighting)
+#  4. Eza (better ls with icons/git)
+#  5. Ripgrep (better grep)
+#  6. Fd (better find)
+#  7. TLDR (simple man pages)
+#  8. Tmux (terminal multiplexer)
+#  9. Zellij (modern terminal multiplexer)
+# 10. Neovim (modal text editor)
+# 11. Helpful Aliases (vif, cdf, lg, lzd, etc.)
+#
+# ============================================
+
+# ============================================
+# 1. FZF (FUZZY FINDER)
+# ============================================
+# Enhanced command-line fuzzy finder
+if command -v fzf > /dev/null; then
+    # Set up fzf key bindings and fuzzy completion
+    eval "$(fzf --zsh)"
+
+    # Use fd instead of find for fzf (faster and respects .gitignore)
+    export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
+    export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+
+    # Customize fzf appearance
+    export FZF_DEFAULT_OPTS='
+        --height 40%
+        --layout=reverse
+        --border
+        --inline-info
+        --color=fg:#d0d0d0,bg:#121212,hl:#5f87af
+        --color=fg+:#d0d0d0,bg+:#262626,hl+:#5fd7ff
+        --color=info:#afaf87,prompt:#d7005f,pointer:#af5fff
+        --color=marker:#87ff00,spinner:#af5fff,header:#87afaf
+    '
+fi
+
+# ============================================
+# 2. ZOXIDE (SMART CD)
+# ============================================
+if command -v zoxide > /dev/null; then
+    eval "$(zoxide init zsh)"
+    # Now use 'z' instead of 'cd'
+    # Examples:
+    #   z projects    # Jump to most frecent directory matching 'projects'
+    #   zi projects   # Interactive selection with fzf
+fi
+
+# ============================================
+# 3. BAT (BETTER CAT)
+# ============================================
+if command -v bat > /dev/null; then
+    alias cat='bat --style=auto'
+    alias catt='/bin/cat'  # Original cat if needed
+    export BAT_THEME="ansi"
+fi
+
+# ============================================
+# 4. EZA (BETTER LS)
+# ============================================
+if command -v eza > /dev/null; then
+    alias ls='eza --icons --group-directories-first'
+    alias ll='eza --icons --long --group-directories-first --git'
+    alias la='eza --icons --long --all --group-directories-first --git'
+    alias tree='eza --icons --tree'
+    alias lss='/bin/ls'  # Original ls if needed
+fi
+
+# ============================================
+# 5. RIPGREP (BETTER GREP)
+# ============================================
+if command -v rg > /dev/null; then
+    alias grep='rg'
+    alias grepp='/usr/bin/grep'  # Original grep if needed
+fi
+
+# ============================================
+# 6. FD (BETTER FIND)
+# ============================================
+if command -v fd > /dev/null; then
+    alias find='fd'
+    alias findd='/usr/bin/find'  # Original find if needed
+fi
+
+# ============================================
+# 7. TLDR (SIMPLE MAN PAGES)
+# ============================================
+if command -v tldr > /dev/null; then
+    alias help='tldr'
+fi
+
+# ============================================
+# 8. TMUX (TERMINAL MULTIPLEXER)
+# ============================================
+# Session management and persistent terminal sessions
+
+if command -v tmux > /dev/null; then
+    # Tmux session management
+    alias ta='tmux attach -t'         # Attach to session
+    alias tad='tmux attach -d -t'     # Detach others and attach
+    alias ts='tmux new-session -s'    # Create new session
+    alias tl='tmux list-sessions'     # List all sessions
+    alias tks='tmux kill-session -t'  # Kill specific session
+    alias tkss='tmux kill-server'     # Kill tmux server (all sessions)
+
+    # Quick session shortcuts
+    alias tw='tmux new -s work'       # Create work session
+    alias tp='tmux new -s personal'   # Create personal session
+
+    # Tmux-inator (quick project switch - to be created)
+    # alias tf='tmux-sessionizer'     # Fuzzy find and open project in tmux
+fi
+
+# ============================================
+# 9. ZELLIJ (MODERN TERMINAL MULTIPLEXER)
+# ============================================
+# Modern Rust-based alternative to tmux with on-screen hints
+
+if command -v zellij > /dev/null; then
+    # Session management
+    alias za='zellij attach'                    # Attach to session
+    alias zk='zellij kill-session'              # Kill session
+    alias zl='zellij list-sessions'             # List sessions
+    alias zn='zellij -s'                        # New named session
+
+    # Layout shortcuts
+    alias zr='zellij --layout rails'            # Rails layout (to be created)
+    alias zp='zellij --layout phoenix'          # Phoenix layout (to be created)
+    alias zw='zellij --layout work'             # Work layout (to be created)
+
+    # Quick actions
+    alias zt='zellij action new-tab'            # New tab
+    alias zc='zellij action close-tab'          # Close tab
+fi
+
+# ============================================
+# 10. NEOVIM
+# ============================================
+# Modern modal text editor with LSP support
+
+if command -v nvim > /dev/null; then
+    # Replace vim with neovim
+    alias vim='nvim'
+    alias vi='nvim'
+    alias v='nvim'
+
+    # Quick edits
+    alias vimrc='nvim ~/.config/nvim/init.lua'
+    alias vz='nvim ~/.zshrc'
+    alias vt='nvim ~/.tmux.conf'
+    alias vze='nvim ~/.zshrc-terminal-enhancements'
+
+    # Project root editing
+    alias vv='nvim .'
+fi
+
+# ============================================
+# 11. HELPFUL ALIASES
+# ============================================
+
+# Quick directory navigation
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+
+# Git with fzf integration
+alias glog='git log --oneline --graph --decorate | fzf --preview "git show --color=always {1}"'
+
+# Find and edit files quickly
+alias vif='$EDITOR $(fzf)'  # Open file with your default EDITOR using fzf
+alias cdf='cd $(fd --type d | fzf)'  # cd into directory using fzf
+
+# Process management
+alias psg='ps aux | rg'  # Find processes with ripgrep
+
+# Disk usage
+alias du='du -h'
+alias df='df -h'
+
+# Lazygit & Lazydocker
+alias lg='lazygit'
+alias lzg='lazygit'
+alias lzd='lazydocker'
+
+# ============================================
+# END OF TERMINAL ENHANCEMENTS
+# ============================================
+
+echo "✅ Terminal enhancements loaded! Try: z, ls, cat, grep, find, help, lg, vim"

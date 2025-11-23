@@ -1,0 +1,169 @@
+// ============================================
+// ZELLIJ CONFIGURATION
+// ============================================
+// Author: AJ
+// Created: 2025-11-23
+// Description: Modern terminal multiplexer config
+//              Rust-based alternative to tmux
+// ============================================
+
+// Keybindings
+// ===========
+// Zellij uses modes (like vim) with on-screen hints
+// Default modes: Normal, Locked, Pane, Tab, Resize, Move, Search, Session
+//
+// Quick Start:
+// - Ctrl+O : Enter mode (shows options at bottom)
+// - Ctrl+G : Lock mode (pass through to terminal)
+// - Ctrl+Q : Quit Zellij
+//
+// In any mode, press the shown letter to execute action
+// ============================================
+
+// ============================================
+// GENERAL SETTINGS
+// ============================================
+
+// Theme (Tokyo Night - matching Neovim and tmux)
+// Custom theme located at: ~/.config/zellij/themes/tokyo-night.kdl
+// Based on folke/tokyonight.nvim color palette
+theme "tokyo-night"
+
+// Default shell
+default_shell "zsh"
+
+// Pane frames (borders around panes)
+pane_frames true
+
+// Simplified UI (hides some information)
+simplified_ui false
+
+// Default mode (normal or locked)
+default_mode "normal"
+
+// Mouse support
+mouse_mode true
+
+// Copy on select (automatically copy text when you select it)
+copy_on_select true
+
+// Clipboard (use system clipboard)
+copy_command "pbcopy"  // macOS clipboard
+
+// Scrollback lines
+scroll_buffer_size 10000
+
+// ============================================
+// SESSION SETTINGS
+// ============================================
+
+// Auto-layout on new panes
+auto_layout true
+
+// Session serialization (save session state)
+session_serialization true
+
+// ============================================
+// UI SETTINGS
+// ============================================
+
+// Status bar
+// Default: show status bar
+// Set to false to hide
+default_layout "compact"
+
+// Tab bar position (top or bottom)
+// Commented out to use theme default
+
+// Pane borders
+styled_underlines true
+
+// ============================================
+// KEYBINDINGS
+// ============================================
+// Note: Zellij has great defaults with on-screen hints
+// Minimal customization needed compared to tmux
+//
+// Core shortcuts (always available):
+// - Ctrl+O : Enter command mode (shows all options)
+// - Ctrl+G : Lock interface (pass keys to terminal)
+// - Ctrl+Q : Quit zellij
+// - Ctrl+S : Search mode
+//
+// Common actions (press Ctrl+O then the letter):
+// - n : New pane
+// - x : Close pane
+// - r : Resize mode
+// - p : Pane mode (advanced pane operations)
+// - t : New tab
+// - Tab : Next tab
+// - h/j/k/l : Navigate panes (vim-style)
+//
+// These are the defaults and work great!
+// No need to customize unless you have specific preferences
+// ============================================
+
+keybinds {
+    // Keep all default keybindings
+    normal {
+        // Add vim-style navigation for tabs (optional enhancement)
+        bind "Alt h" { MoveFocusOrTab "Left"; }
+        bind "Alt l" { MoveFocusOrTab "Right"; }
+        bind "Alt j" { MoveFocus "Down"; }
+        bind "Alt k" { MoveFocus "Up"; }
+
+        // Quick session management
+        bind "Ctrl o" { SwitchToMode "Session"; }
+    }
+}
+
+// ============================================
+// PLUGINS
+// ============================================
+// Zellij has a plugin system (WebAssembly-based)
+// Plugins are downloaded automatically when referenced
+// Popular plugins:
+// - zellij-forgot: Shows recently used commands
+// - room: Multiplayer collaboration
+// - strider: File tree navigator
+// - status-bar: Enhanced status display
+//
+// Plugins are specified in layouts (see layouts/ directory)
+// ============================================
+
+// ============================================
+// DEVELOPMENT WORKFLOWS
+// ============================================
+// Zellij uses "layouts" instead of manual setup
+// Create layout files in ~/.config/zellij/layouts/
+//
+// Example layouts to create:
+// - rails.kdl : Rails development (server, console, editor, tests)
+// - phoenix.kdl : Phoenix development (server, iex, editor, tests)
+// - work.kdl : General work layout
+//
+// Usage:
+//   zellij --layout rails
+//   zellij --layout phoenix
+// ============================================
+
+// ============================================
+// NOTES
+// ============================================
+// Key differences from tmux:
+// 1. On-screen keybinding hints (no memorization needed!)
+// 2. Automatic session restoration (no plugin needed)
+// 3. Better defaults out of the box
+// 4. Modern Rust-based (fast and efficient)
+// 5. WebAssembly plugin system
+//
+// Learning curve: ~30 minutes vs tmux's 2-3 days
+//
+// To get started:
+// 1. Run: zellij
+// 2. Press Ctrl+O to see options
+// 3. Explore the hints at the bottom
+// 4. That's it! You're productive immediately.
+//
+// Official docs: https://zellij.dev/documentation/
+// ============================================

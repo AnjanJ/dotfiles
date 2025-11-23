@@ -1,0 +1,47 @@
+# ============================================
+# DOTFILES GITIGNORE
+# ============================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Neovim
+.config/nvim/lazy-lock.json
+.config/nvim/.luarc.json
+.config/nvim/plugin/
+*.bak
+*.swp
+*.swo
+*~
+
+# Backup files
+*.old
+*.orig
+
+# Logs
+*.log
+
+# Sensitive data
+.env
+.env.local
+*_history
+.zsh_history
+
+# Plugin directories (will be installed by package managers)
+.tmux/plugins/*
+!.tmux/plugins/tpm
+
+# Cache directories
+.cache/
+.local/state/
+
+# Private/local configurations
+*.local
+*.private
+
+# Editor-specific
+.vscode/
+.idea/

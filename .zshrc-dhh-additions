@@ -1,0 +1,644 @@
+# ============================================
+# DHH-INSPIRED RAILS DEVELOPER CONFIGURATION
+# ============================================
+# Last Updated: 2025-11-23
+# Description: DHH-style Rails/Git workflow
+#              with productivity shortcuts
+# ============================================
+#
+# TABLE OF CONTENTS:
+# ──────────────────────────────────────────
+#  1. Rails Aliases (r, rs, rc, rt*, etc.)
+#  2. Bundle Shortcuts (b, be, bi, bu)
+#  3. Git Workflow (ga, gc, gp, etc.)
+#  4. Rails Functions (railsnew, cdroot, serve, dbreset)
+#  5. Development Services (devstart, devstop)
+#  6. Logging (logtail, logclear)
+#  7. Code Quality (cop, brake, bestpractices)
+#  8. Docker Compose (dc, dcu, dcr, etc.)
+#  9. Heroku (h, hl, hc, hm)
+# 10. Environment Setup (RUBY_CONFIGURE_OPTS, DISABLE_SPRING)
+# 11. Shell Settings (history, AUTO_CD)
+# 12. Rails Environment (dev, railstest, prod)
+# 13. Database Helpers (psql-dev, pg-*, dbconsole)
+# 14. Rails Credentials (creds, creds-prod)
+# 15. Tmux (tm, tma, tml, tmn)
+# 16. Alias Discovery (alias-search, alias-rails, alias-git, etc.)
+#
+# ============================================
+
+# ============================================
+# 1. RAILS ALIASES
+# ============================================
+
+# Core Rails commands
+alias r='bin/rails'
+alias rs='bin/rails server'
+alias rc='bin/rails console'
+alias rgen='bin/rails generate'
+
+# Database
+alias rdb='bin/rails db'
+alias rdm='bin/rails db:migrate'
+alias rdr='bin/rails db:rollback'
+alias rds='bin/rails db:seed'
+alias rdt='bin/rails db:test:prepare'
+
+# Testing (all prefixed with 'rt' for consistency)
+# Smart functions that work with both Minitest and RSpec
+
+# Helper function to detect test framework
+_is_rspec_project() {
+  [ -f "spec/spec_helper.rb" ] || grep -q "rspec-rails" Gemfile 2>/dev/null
+}
+
+# Run tests (detects framework automatically)
+rt() {
+  if _is_rspec_project; then
+    bundle exec rspec "$@"
+  else
+    bin/rails test "$@"
+  fi
+}
+
+# Run all tests
+rta() {
+  if _is_rspec_project; then
+    bundle exec rspec
+  else
+    bin/rails test:all
+  fi
+}
+
+# Run functional/controller tests
+rtf() {
+  if _is_rspec_project; then
+    bundle exec rspec spec/controllers "$@"
+  else
+    bin/rails test:functionals "$@"
+  fi
+}
+
+# Run unit/model tests
+rtu() {
+  if _is_rspec_project; then
+    bundle exec rspec spec/models "$@"
+  else
+    bin/rails test:units "$@"
+  fi
+}
+
+# ============================================
+# 2. BUNDLE SHORTCUTS
+# ============================================
+
+alias b='bundle'
+alias be='bundle exec'
+alias bi='bundle install'
+alias bu='bundle update'
+
+# ============================================
+# 3. GIT WORKFLOW
+# ============================================
+
+# Core Git commands (DHH-style)
+alias ga='git add'
+alias gc='git commit -v'
+alias gca='git commit -v -a'
+alias gco='git checkout'
+alias gb='git branch'
+alias gp='git push'
+alias gl='git pull'
+alias gd='git diff'
+alias gdc='git diff --cached'
+alias gclean='git branch --merged | grep -v "\\*" | xargs -n 1 git branch -d'
+
+# ============================================
+# 4. RAILS FUNCTIONS
+# ============================================
+
+# Create new Rails app (DHH-style minimal setup)
+# Uses $DEFAULT_DB from main config
+railsnew() {
+  local app_name="$1"
+
+  if [[ -z "$app_name" ]]; then
+    echo "Usage: railsnew <app_name> [--pro]"
+    echo ""
+    echo "Options:"
+    echo "  --pro    Set up professional development environment (RuboCop, Lefthook, etc.)"
+    return 1
+  fi
+
+  # Check for --pro flag
+  local setup_pro=false
+  if [[ "$2" == "--pro" ]]; then
+    setup_pro=true
+  fi
+
+  # Create Rails app
+  echo "🚀 Creating Rails app: $app_name"
+  rails new "$app_name" \
+    --database=${DEFAULT_DB:-postgresql} \
+    --css=tailwind \
+    --javascript=esbuild \
+    --skip-test \
+    --skip-jbuilder
+
+  # Check if creation was successful
+  if [[ ! -d "$app_name" ]]; then
+    echo "❌ Failed to create Rails app"
+    return 1
+  fi
+
+  # Change into new app directory
+  cd "$app_name"
+
+  # Setup professional environment if requested
+  if [[ "$setup_pro" == true ]]; then
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "🔧 Setting up professional development environment..."
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    rails-setup-all
+  else
+    echo ""
+    echo "✅ Rails app created successfully!"
+    echo ""
+    echo "💡 Tip: Run 'rails-setup-all' to add professional development tools:"
+    echo "   - RuboCop (Airbnb style guide)"
+    echo "   - Lefthook (Git hooks)"
+    echo "   - SimpleCov (90% coverage requirement)"
+    echo "   - GitHub Actions CI"
+    echo "   - Brakeman, RSpec, and more"
+  fi
+}
+
+# Jump to Rails project root
+cdroot() {
+  while [[ ! -f "Gemfile" && "$PWD" != "/" ]]; do
+    cd ..
+  done
+}
+
+# Quick server start with environment
+serve() {
+  local env="${1:-development}"
+  RAILS_ENV=$env bin/rails server
+}
+
+# Database reset and seed (with safety prompt)
+dbreset() {
+  echo "⚠️  This will destroy and recreate the database. Continue? (y/N)"
+  read confirm
+  if [[ $confirm == "y" ]]; then
+    bin/rails db:drop db:create db:migrate db:seed
+    echo "✅ Database reset complete!"
+  fi
+}
+
+# ============================================
+# 5. DEVELOPMENT SERVICES
+# ============================================
+# Note: PG_VERSION is set in main ~/.zshrc
+
+# Start common development services
+devstart() {
+  echo "🚀 Starting development services..."
+
+  # Redis (if using Sidekiq)
+  if command -v redis-server &> /dev/null; then
+    redis-server --daemonize yes
+    echo "✅ Redis started"
+  fi
+
+  # PostgreSQL (uses $PG_VERSION from main config)
+  if command -v postgres &> /dev/null; then
+    brew services start postgresql@${PG_VERSION}
+    echo "✅ PostgreSQL started"
+  fi
+
+  # Mailcatcher (for email testing)
+  if command -v mailcatcher &> /dev/null; then
+    mailcatcher
+    echo "✅ Mailcatcher started at http://localhost:1080"
+  fi
+}
+
+# Stop development services
+devstop() {
+  echo "🛑 Stopping development services..."
+  brew services stop postgresql@${PG_VERSION}
+  redis-cli shutdown 2>/dev/null
+  pkill -f mailcatcher
+  echo "✅ Services stopped"
+}
+
+# ============================================
+# 7. LOGGING
+# ============================================
+
+alias logtail='tail -f log/development.log'
+alias logclear='truncate -s 0 log/*.log'
+
+# ============================================
+# 8. CODE QUALITY
+# ============================================
+
+# Rubocop with auto-correct
+alias cop='bundle exec rubocop -a'
+alias copall='bundle exec rubocop -A'
+
+# Brakeman security scan
+alias brake='bundle exec brakeman'
+
+# Rails best practices
+alias bestpractices='bundle exec rails_best_practices .'
+
+# ============================================
+# 9. PROFESSIONAL RAILS SETUP TOOLS
+# ============================================
+
+# Template directory location
+RAILS_TEMPLATES_DIR="${HOME}/code/Tutorials/workflow/rails-templates/templates"
+
+# Check if we're in a Rails project
+_check_rails_project() {
+  if [[ ! -f "Gemfile" ]]; then
+    echo "❌ Not in a Rails project (no Gemfile found)"
+    return 1
+  fi
+  return 0
+}
+
+# Setup Lefthook (Git hooks manager)
+rails-setup-lefthook() {
+  _check_rails_project || return 1
+
+  echo "📋 Installing Lefthook..."
+
+  # Copy template
+  if [[ -f "${RAILS_TEMPLATES_DIR}/lefthook.yml" ]]; then
+    cp "${RAILS_TEMPLATES_DIR}/lefthook.yml" ./lefthook.yml
+    echo "✅ Copied lefthook.yml"
+  else
+    echo "❌ Template not found: ${RAILS_TEMPLATES_DIR}/lefthook.yml"
+    return 1
+  fi
+
+  # Install lefthook
+  if bundle exec lefthook install 2>/dev/null; then
+    echo "✅ Lefthook installed successfully"
+  else
+    echo "⚠️  Run 'bundle install' first, then 'bundle exec lefthook install'"
+  fi
+
+  echo ""
+  echo "📚 Lefthook configured with:"
+  echo "   - Pre-commit: RuboCop (auto-fix), RSpec (fail-fast), Brakeman"
+  echo "   - Pre-push: Full RSpec suite with coverage check"
+  echo "   - Commit-msg: Conventional commit format enforcement"
+}
+
+# Setup RuboCop with Airbnb style guide
+rails-setup-rubocop() {
+  _check_rails_project || return 1
+
+  echo "📋 Installing RuboCop configuration..."
+
+  # Copy template
+  if [[ -f "${RAILS_TEMPLATES_DIR}/.rubocop.yml" ]]; then
+    cp "${RAILS_TEMPLATES_DIR}/.rubocop.yml" ./.rubocop.yml
+    echo "✅ Copied .rubocop.yml (Airbnb style guide)"
+  else
+    echo "❌ Template not found: ${RAILS_TEMPLATES_DIR}/.rubocop.yml"
+    return 1
+  fi
+
+  echo ""
+  echo "📚 RuboCop configured with:"
+  echo "   - Airbnb Ruby Style Guide"
+  echo "   - Plugins: rails, rspec, performance, capybara, factory_bot"
+  echo "   - 120 char line length"
+  echo "   - Smart exclusions for spec/, config/, bin/"
+}
+
+# Setup SimpleCov (test coverage)
+rails-setup-simplecov() {
+  _check_rails_project || return 1
+
+  echo "📋 Installing SimpleCov configuration..."
+
+  # Check if spec_helper.rb exists
+  if [[ ! -f "spec/spec_helper.rb" ]]; then
+    echo "❌ spec/spec_helper.rb not found. Install RSpec first."
+    return 1
+  fi
+
+  # Copy template content to top of spec_helper.rb
+  if [[ -f "${RAILS_TEMPLATES_DIR}/spec_helper_simplecov.rb" ]]; then
+    # Create backup
+    cp spec/spec_helper.rb spec/spec_helper.rb.backup
+
+    # Prepend SimpleCov config
+    cat "${RAILS_TEMPLATES_DIR}/spec_helper_simplecov.rb" spec/spec_helper.rb.backup > spec/spec_helper.rb
+
+    echo "✅ Added SimpleCov to spec/spec_helper.rb"
+    echo "   (Backup saved as spec/spec_helper.rb.backup)"
+  else
+    echo "❌ Template not found: ${RAILS_TEMPLATES_DIR}/spec_helper_simplecov.rb"
+    return 1
+  fi
+
+  echo ""
+  echo "📚 SimpleCov configured with:"
+  echo "   - 90% minimum coverage requirement"
+  echo "   - Groups: Models, Controllers, Services"
+  echo "   - Filters: spec/, config/, vendor/, channels/, jobs/, mailers/"
+}
+
+# Setup GitHub Actions CI
+rails-setup-ci() {
+  _check_rails_project || return 1
+
+  echo "📋 Installing GitHub Actions CI..."
+
+  # Create .github/workflows directory
+  mkdir -p .github/workflows
+
+  # Copy template
+  if [[ -f "${RAILS_TEMPLATES_DIR}/ci.yml" ]]; then
+    cp "${RAILS_TEMPLATES_DIR}/ci.yml" .github/workflows/ci.yml
+    echo "✅ Copied .github/workflows/ci.yml"
+  else
+    echo "❌ Template not found: ${RAILS_TEMPLATES_DIR}/ci.yml"
+    return 1
+  fi
+
+  echo ""
+  echo "📚 GitHub Actions CI configured with:"
+  echo "   - Security scan (Brakeman)"
+  echo "   - Linting (RuboCop)"
+  echo "   - Tests (RSpec with coverage upload)"
+  echo "   - Runs on: pull_request, push to main"
+}
+
+# Show recommended gems to add
+rails-setup-gems() {
+  echo "📦 Recommended Professional Rails Gems:"
+  echo ""
+
+  if [[ -f "${RAILS_TEMPLATES_DIR}/Gemfile.additions" ]]; then
+    cat "${RAILS_TEMPLATES_DIR}/Gemfile.additions"
+  else
+    echo "❌ Template not found: ${RAILS_TEMPLATES_DIR}/Gemfile.additions"
+    return 1
+  fi
+
+  echo ""
+  echo "💡 Add these to your Gemfile, then run: bundle install"
+}
+
+# Setup everything at once
+rails-setup-all() {
+  _check_rails_project || return 1
+
+  echo "🚀 Setting up professional Rails development environment..."
+  echo ""
+
+  # Show gems first
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "STEP 1: Recommended Gems"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  rails-setup-gems
+
+  echo ""
+  echo "⏸️  Press Enter after adding gems and running 'bundle install'..."
+  read
+
+  # Setup each tool
+  echo ""
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "STEP 2: RuboCop Configuration"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  rails-setup-rubocop
+
+  echo ""
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "STEP 3: Lefthook (Git Hooks)"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  rails-setup-lefthook
+
+  echo ""
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "STEP 4: SimpleCov (Test Coverage)"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  if [[ -f "spec/spec_helper.rb" ]]; then
+    rails-setup-simplecov
+  else
+    echo "⏭️  Skipping SimpleCov (RSpec not detected)"
+  fi
+
+  echo ""
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "STEP 5: GitHub Actions CI"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  rails-setup-ci
+
+  echo ""
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "✅ Professional Rails setup complete!"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo ""
+  echo "Next steps:"
+  echo "  1. Review configuration files"
+  echo "  2. Run: bundle exec rubocop -a  (auto-fix style issues)"
+  echo "  3. Run: bundle exec rspec       (verify tests pass)"
+  echo "  4. Make a commit to test Lefthook hooks"
+}
+
+# ============================================
+# 10. DOCKER COMPOSE
+# ============================================
+
+alias dc='docker-compose'
+alias dcu='docker-compose up'
+alias dcd='docker-compose down'
+alias dcr='docker-compose run --rm'
+alias dcl='docker-compose logs -f'
+
+# ============================================
+# 10. HEROKU
+# ============================================
+
+alias h='heroku'
+alias hl='heroku logs --tail'
+alias hc='heroku run rails console'
+alias hm='heroku run rails db:migrate'
+
+# ============================================
+# 11. ENVIRONMENT SETUP
+# ============================================
+
+# Ruby optimization
+export RUBY_CONFIGURE_OPTS="--with-openssl-dir=$(brew --prefix openssl@1.1)"
+
+# Disable Spring (DHH recommends for simplicity)
+export DISABLE_SPRING=1
+
+# ============================================
+# 12. SHELL SETTINGS
+# ============================================
+
+# Better history
+export HISTSIZE=10000
+export SAVEHIST=10000
+export HISTFILE=~/.zsh_history
+setopt HIST_IGNORE_ALL_DUPS
+setopt HIST_FIND_NO_DUPS
+setopt SHARE_HISTORY
+
+# Auto cd without typing cd
+setopt AUTO_CD
+
+# ============================================
+# 13. RAILS ENVIRONMENT
+# ============================================
+
+alias dev='export RAILS_ENV=development'
+alias railstest='export RAILS_ENV=test'  # Renamed from 'test' to avoid conflict
+alias prod='export RAILS_ENV=production'
+
+# Show current Rails environment
+railsenv() {
+  echo "Current RAILS_ENV: ${RAILS_ENV:-development}"
+}
+
+# ============================================
+# 14. DATABASE HELPERS
+# ============================================
+
+# PostgreSQL quick access (uses $DB_USER and $PG_VERSION from main config)
+alias psql-dev="psql -U ${DB_USER:-postgres}"
+alias pg-start="brew services start postgresql@${PG_VERSION}"
+alias pg-stop="brew services stop postgresql@${PG_VERSION}"
+alias pg-restart="brew services restart postgresql@${PG_VERSION}"
+
+# Database console for current Rails app
+dbconsole() {
+  bin/rails dbconsole
+}
+
+# ============================================
+# 15. RAILS CREDENTIALS
+# ============================================
+
+# Edit credentials (uses $EDITOR from main config)
+alias creds='bin/rails credentials:edit'
+alias creds-prod='bin/rails credentials:edit --environment production'
+
+# ============================================
+# 16. TMUX
+# ============================================
+
+# All prefixed with 'tm' for consistency
+alias tm='tmux'
+alias tma='tmux attach'
+alias tml='tmux ls'
+alias tmn='tmux new -s'
+
+# ============================================
+# 17. ALIAS DISCOVERY FUNCTIONS
+# ============================================
+
+# Search aliases by keyword
+# Usage: alias-search <keyword>
+# Example: alias-search git
+alias-search() {
+  if [ -z "$1" ]; then
+    echo "Usage: alias-search <keyword>"
+    echo "Example: alias-search git"
+    return 1
+  fi
+  echo "🔍 Searching for aliases matching: $1"
+  alias | grep -i "$1" | sort
+}
+
+# Show all Rails-related aliases
+# Usage: alias-rails
+alias-rails() {
+  echo "🚂 Rails Aliases:"
+  echo "──────────────────────────────────────────"
+  ( alias 2>&1 | grep -E "^(r|b|cop|brake)" | sort | sed 's/=/ → /' ) 2>/dev/null
+  echo ""
+  echo "💡 For Rails setup commands, run: alias-rails-setup"
+}
+
+# Show all Rails setup commands
+# Usage: alias-rails-setup
+alias-rails-setup() {
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "🔧 PROFESSIONAL RAILS SETUP COMMANDS"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo ""
+  echo "📦 All-in-One:"
+  echo "  rails-setup-all          Install everything (RuboCop, Lefthook, SimpleCov, CI)"
+  echo ""
+  echo "🔨 Individual Tools:"
+  echo "  rails-setup-gems         Show recommended gems to add"
+  echo "  rails-setup-rubocop      Install RuboCop (Airbnb style guide)"
+  echo "  rails-setup-lefthook     Install Lefthook (git hooks)"
+  echo "  rails-setup-simplecov    Install SimpleCov (90% coverage)"
+  echo "  rails-setup-ci           Install GitHub Actions CI"
+  echo ""
+  echo "🚀 New Projects:"
+  echo "  railsnew my_app          Create basic Rails app"
+  echo "  railsnew my_app --pro    Create Rails app with professional setup"
+  echo ""
+  echo "📚 Documentation:"
+  echo "  ~/code/Tutorials/workflow/RAILS_SETUP_USAGE.md"
+  echo ""
+}
+
+# Show all tmux-related aliases
+# Usage: alias-tmux
+alias-tmux() {
+  echo "🖥  Tmux Aliases:"
+  echo "──────────────────────────────────────────"
+  alias | grep -E "^tm[a-z]*=" | sort
+}
+
+# Show all Git-related aliases
+# Usage: alias-git
+alias-git() {
+  echo "📦 Git Aliases:"
+  echo "──────────────────────────────────────────"
+  alias | grep -E "^g[a-z]*=" | sort
+}
+
+# Show all custom aliases (overview)
+# Usage: alias-list
+alias-list() {
+  echo "📋 All Custom Aliases:"
+  echo "──────────────────────────────────────────"
+  echo ""
+  echo "Rails (r*):"
+  alias | grep -E "^r[a-z]*=" | wc -l | xargs echo "  Count:"
+  echo ""
+  echo "Git (g*):"
+  alias | grep -E "^g[a-z]*=" | wc -l | xargs echo "  Count:"
+  echo ""
+  echo "Tmux (tm*):"
+  alias | grep -E "^tm[a-z]*=" | wc -l | xargs echo "  Count:"
+  echo ""
+  echo "Bundle (b*):"
+  alias | grep -E "^b[a-z]*=" | wc -l | xargs echo "  Count:"
+  echo ""
+  echo "Use: alias-rails, alias-git, alias-tmux for details"
+  echo "Use: alias-search <keyword> to search"
+}
+
+# ============================================
+# END OF DHH ADDITIONS
+# ============================================
+# Note: compinit is handled by Spaceship prompt in main ~/.zshrc

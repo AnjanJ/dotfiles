@@ -1,0 +1,340 @@
+# ============================================
+# ELIXIR & PHOENIX DEVELOPER CONFIGURATION
+# ============================================
+# Last Updated: 2025-11-23
+# Description: José Valim-inspired Elixir/Phoenix workflow
+#              matching DHH-style Rails patterns
+# ============================================
+#
+# TABLE OF CONTENTS:
+# ──────────────────────────────────────────
+#  1. Phoenix Aliases (ph, phs, phe, etc.)
+#  2. Mix & Dependencies (phi, phu)
+#  3. Ecto Database (phdm, phdr, phds, etc.)
+#  4. Testing (pht, phta)
+#  5. Code Quality (phf, phcredo, phdialyzer)
+#  6. Phoenix Generators (phg.*)
+#  7. Development Services (elixir-devstart, elixir-devstop)
+#  8. Functions (pxroot, elixir-doctor)
+#  9. Alias Discovery (alias-phoenix, alias-elixir)
+# 10. Environment Variables
+#
+# ============================================
+
+# ============================================
+# 1. PHOENIX ALIASES
+# ============================================
+
+# Core Phoenix commands (matching Rails pattern)
+# Using 'ph' prefix to avoid conflicts with system commands (ps, etc.)
+alias ph='mix phx'
+alias phs='mix phx.server'
+alias phe='iex -S mix'                    # Phoenix console (like 'rc')
+alias phep='iex -S mix phx.server'        # Phoenix console + server
+
+# Phoenix routes
+alias phr='mix phx.routes'
+
+# ============================================
+# 2. MIX & DEPENDENCIES
+# ============================================
+
+# Mix shortcuts (matching Bundle pattern)
+alias m='mix'
+alias mc='mix compile'
+alias mcc='mix compile --force'
+alias phi='mix deps.get'                  # Like 'bi'
+alias phu='mix deps.update --all'         # Like 'bu'
+alias phclean='mix deps.clean --all'
+
+# ============================================
+# 3. ECTO DATABASE
+# ============================================
+
+# Database commands (matching Rails db pattern)
+alias phdb='mix ecto'
+alias phdm='mix ecto.migrate'             # Like 'rdm'
+alias phdr='mix ecto.rollback'            # Like 'rdr'
+alias phds='mix ecto.setup'               # Setup database
+alias phdrop='mix ecto.drop'
+alias phdreset='mix ecto.reset'           # Like dbreset for Rails
+
+# Database helpers
+alias phdcreate='mix ecto.create'
+alias phdseed='mix run priv/repo/seeds.exs'
+
+# ============================================
+# 4. TESTING
+# ============================================
+
+# Smart test functions (matching Rails test pattern)
+
+# Run tests
+pht() {
+  mix test "$@"
+}
+
+# Run all tests
+phta() {
+  mix test
+}
+
+# Run failed tests
+phtf() {
+  mix test --failed
+}
+
+# Run stale tests
+phts() {
+  mix test --stale
+}
+
+# Run tests with coverage
+phtc() {
+  mix test --cover
+}
+
+# Watch mode (if mix-test.watch installed)
+phtw() {
+  if mix help test.watch &> /dev/null; then
+    mix test.watch "$@"
+  else
+    echo "❌ mix-test.watch not installed"
+    echo "   Add to mix.exs: {:mix_test_watch, \"~> 1.0\", only: :dev, runtime: false}"
+  fi
+}
+
+# ============================================
+# 5. CODE QUALITY
+# ============================================
+
+# Format code (like Rubocop auto-correct)
+alias phf='mix format'
+alias phfc='mix format --check-formatted'
+
+# Credo (like Rubocop)
+alias phcredo='mix credo'
+alias phcredos='mix credo --strict'
+
+# Dialyzer (static analysis)
+alias phdialyzer='mix dialyzer'
+
+# Run all quality checks
+phcheck() {
+  echo "🔍 Running code quality checks..."
+  echo ""
+
+  echo "1️⃣ Formatting..."
+  mix format --check-formatted || return 1
+
+  echo ""
+  echo "2️⃣ Credo (strict)..."
+  mix credo --strict || return 1
+
+  echo ""
+  echo "3️⃣ Dialyzer..."
+  mix dialyzer || return 1
+
+  echo ""
+  echo "4️⃣ Tests..."
+  mix test || return 1
+
+  echo ""
+  echo "✅ All checks passed!"
+}
+
+# ============================================
+# 6. PHOENIX GENERATORS
+# ============================================
+
+# Phoenix generators (matching Rails generators)
+alias phg='mix phx.gen'
+alias phg.live='mix phx.gen.live'
+alias phg.auth='mix phx.gen.auth'
+alias phg.context='mix phx.gen.context'
+alias phg.schema='mix phx.gen.schema'
+alias phg.html='mix phx.gen.html'
+alias phg.json='mix phx.gen.json'
+alias phg.channel='mix phx.gen.channel'
+
+# ============================================
+# 7. DEVELOPMENT SERVICES
+# ============================================
+# Note: PG_VERSION is set in main ~/.zshrc
+
+# Start Elixir development services
+elixir-devstart() {
+  echo "🚀 Starting Elixir development services..."
+
+  # PostgreSQL (uses $PG_VERSION from main config)
+  if command -v postgres &> /dev/null; then
+    brew services start postgresql@${PG_VERSION}
+    echo "✅ PostgreSQL@${PG_VERSION} started"
+  fi
+
+  # Redis (if using Oban or similar)
+  if command -v redis-server &> /dev/null; then
+    redis-server --daemonize yes
+    echo "✅ Redis started"
+  fi
+
+  echo "🎉 Services ready!"
+}
+
+# Stop Elixir development services
+elixir-devstop() {
+  echo "🛑 Stopping Elixir development services..."
+  brew services stop postgresql@${PG_VERSION}
+  redis-cli shutdown 2>/dev/null
+  echo "✅ Services stopped"
+}
+
+# ============================================
+# 8. FUNCTIONS
+# ============================================
+
+# Jump to Phoenix project root (matching cdroot for Rails)
+pxroot() {
+  while [[ ! -f "mix.exs" && "$PWD" != "/" ]]; do
+    cd ..
+  done
+
+  if [[ -f "mix.exs" ]]; then
+    echo "📂 Phoenix root: $PWD"
+  else
+    echo "❌ Not in a Phoenix/Elixir project"
+  fi
+}
+
+# Phoenix project health check
+elixir-doctor() {
+  echo "🏥 Phoenix Project Health Check"
+  echo "──────────────────────────────────────────"
+  echo ""
+
+  # Check if in Phoenix project
+  if [[ ! -f "mix.exs" ]]; then
+    echo "❌ Not in a Phoenix/Elixir project"
+    return 1
+  fi
+
+  # Check Elixir/Erlang versions
+  echo "📦 Versions:"
+  elixir --version | head -3
+  echo ""
+
+  # Check PostgreSQL
+  if pgrep -f bin/postgres > /dev/null; then
+    echo "✅ PostgreSQL running"
+  else
+    echo "❌ PostgreSQL not running"
+    echo "   Run: elixir-devstart"
+  fi
+
+  # Check dependencies
+  echo ""
+  if mix deps.get --check-locked > /dev/null 2>&1; then
+    echo "✅ Dependencies up to date"
+  else
+    echo "⚠️  Dependencies need updating"
+    echo "   Run: mix deps.get"
+  fi
+
+  # Check if database exists
+  echo ""
+  if mix ecto.setup --check > /dev/null 2>&1; then
+    echo "✅ Database configured"
+  else
+    echo "❌ Database not setup"
+    echo "   Run: mix ecto.setup"
+  fi
+
+  echo ""
+  echo "🎉 Health check complete!"
+}
+
+# Create new Phoenix app (matching railsnew)
+phoenixnew() {
+  if [ -z "$1" ]; then
+    echo "Usage: phoenixnew <app_name>"
+    echo "Example: phoenixnew my_app"
+    return 1
+  fi
+
+  mix phx.new "$1" \
+    --database postgresql \
+    --install
+}
+
+# Create new Phoenix LiveView app
+phoenixnew-live() {
+  if [ -z "$1" ]; then
+    echo "Usage: phoenixnew-live <app_name>"
+    echo "Example: phoenixnew-live my_app"
+    return 1
+  fi
+
+  mix phx.new "$1" \
+    --database postgresql \
+    --live \
+    --install
+}
+
+# ============================================
+# 9. ALIAS DISCOVERY FUNCTIONS
+# ============================================
+
+# Show all Phoenix-related aliases
+alias-phoenix() {
+  echo "🔥 Phoenix Aliases:"
+  echo "──────────────────────────────────────────"
+  ( alias 2>&1 | grep -E "^ph[a-z]*=" | sort ) 2>/dev/null
+  echo ""
+  echo "Functions: pht, phta, phtf, phts, phtc, phtw, phcheck"
+}
+
+# Show all Elixir-related aliases
+alias-elixir() {
+  echo "💧 Elixir & Phoenix Aliases:"
+  echo "──────────────────────────────────────────"
+  echo ""
+  echo "Phoenix (ph*):"
+  ( alias 2>&1 | grep -E "^ph[a-z]*=" | wc -l | xargs echo "  Count:" ) 2>/dev/null
+  echo ""
+  echo "Mix (m*):"
+  ( alias 2>&1 | grep -E "^m[a-z]*=" | wc -l | xargs echo "  Count:" ) 2>/dev/null
+  echo ""
+  echo "Use: alias-phoenix for full list"
+  echo "Use: alias-search <keyword> to search"
+}
+
+# Search Elixir/Phoenix aliases
+alias-search-elixir() {
+  if [ -z "$1" ]; then
+    echo "Usage: alias-search-elixir <keyword>"
+    echo "Example: alias-search-elixir test"
+    return 1
+  fi
+  echo "🔍 Searching Elixir aliases for: $1"
+  ( alias 2>&1 | grep -E "^(p|m|e)[a-z]*=" | grep -i "$1" | sort ) 2>/dev/null
+}
+
+# ============================================
+# 10. ENVIRONMENT VARIABLES
+# ============================================
+
+# Mix environment (default to dev)
+export MIX_ENV="${MIX_ENV:-dev}"
+
+# Hex (Elixir package manager) settings
+export HEX_HTTP_CONCURRENCY=8
+export HEX_HTTP_TIMEOUT=120
+
+# Phoenix LiveView (disable code reloading in prod)
+# export PHX_CODE_RELOADER=false  # Uncomment for production
+
+# ============================================
+# END OF ELIXIR/PHOENIX ADDITIONS
+# ============================================
+# Note: Erlang history already enabled in main ~/.zshrc:
+#       export ERL_AFLAGS="-kernel shell_history enabled"

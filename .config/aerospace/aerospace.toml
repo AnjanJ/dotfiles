@@ -1,0 +1,332 @@
+# Place a copy of this config to ~/.aerospace.toml
+# After that, you can edit ~/.aerospace.toml to your liking
+
+# You can use it to add commands that run after AeroSpace startup.
+# Available commands : https://nikitabobko.github.io/AeroSpace/commands
+after-startup-command = [
+    'exec-and-forget borders',  # Start JankyBorders for visual window focus
+]
+
+# Start AeroSpace at login
+start-at-login = true
+
+# Normalizations. See: https://nikitabobko.github.io/AeroSpace/guide#normalization
+enable-normalization-flatten-containers = true
+enable-normalization-opposite-orientation-for-nested-containers = true
+
+# See: https://nikitabobko.github.io/AeroSpace/guide#layouts
+# The 'accordion-padding' specifies the size of accordion padding
+# You can set 0 to disable the padding feature
+accordion-padding = 30
+
+# Possible values: tiles|accordion
+default-root-container-layout = 'tiles'
+
+# Possible values: horizontal|vertical|auto
+# 'auto' means: wide monitor (anything wider than high) gets horizontal orientation,
+#               tall monitor (anything higher than wide) gets vertical orientation
+default-root-container-orientation = 'auto'
+
+# Mouse follows focus when focused monitor changes
+# Drop it from your config, if you don't like this behavior
+# See https://nikitabobko.github.io/AeroSpace/guide#on-focus-changed-callbacks
+# See https://nikitabobko.github.io/AeroSpace/commands#move-mouse
+# Fallback value (if you omit the key): on-focused-monitor-changed = []
+on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
+
+# Mouse follows window focus (NEW: 2025-11-23)
+# Automatically moves mouse to center of focused window
+# Improves keyboard-first workflow by keeping mouse in context
+on-focus-changed = ['move-mouse window-lazy-center']
+
+# You can effectively turn off macOS "Hide application" (cmd-h) feature by toggling this flag
+# Useful if you don't use this macOS feature, but accidentally hit cmd-h or cmd-alt-h key
+# Also see: https://nikitabobko.github.io/AeroSpace/goodies#disable-hide-app
+automatically-unhide-macos-hidden-apps = false
+
+# Possible values: (qwerty|dvorak|colemak)
+# See https://nikitabobko.github.io/AeroSpace/guide#key-mapping
+[key-mapping]
+    preset = 'qwerty'
+
+# Gaps between windows (inner-*) and between monitor edges (outer-*).
+# Possible values:
+# - Constant:     gaps.outer.top = 8
+# - Per monitor:  gaps.outer.top = [{ monitor.main = 16 }, { monitor."some-pattern" = 32 }, 24]
+#                 In this example, 24 is a default value when there is no match.
+#                 Monitor pattern is the same as for 'workspace-to-monitor-force-assignment'.
+#                 See:
+#                 https://nikitabobko.github.io/AeroSpace/guide#assign-workspaces-to-monitors
+[gaps]
+    inner.horizontal = 0
+    inner.vertical =   0
+    outer.left =       0
+    outer.bottom =     0
+    outer.top =        0
+    outer.right =      0
+
+# 'main' binding mode declaration
+# See: https://nikitabobko.github.io/AeroSpace/guide#binding-modes
+# 'main' binding mode must be always presented
+# Fallback value (if you omit the key): mode.main.binding = {}
+[mode.main.binding]
+
+    # All possible keys:
+    # - Letters.        a, b, c, ..., z
+    # - Numbers.        0, 1, 2, ..., 9
+    # - Keypad numbers. keypad0, keypad1, keypad2, ..., keypad9
+    # - F-keys.         f1, f2, ..., f20
+    # - Special keys.   minus, equal, period, comma, slash, backslash, quote, semicolon,
+    #                   backtick, leftSquareBracket, rightSquareBracket, space, enter, esc,
+    #                   backspace, tab, pageUp, pageDown, home, end, forwardDelete,
+    #                   sectionSign (ISO keyboards only, european keyboards only)
+    # - Keypad special. keypadClear, keypadDecimalMark, keypadDivide, keypadEnter, keypadEqual,
+    #                   keypadMinus, keypadMultiply, keypadPlus
+    # - Arrows.         left, down, up, right
+
+    # All possible modifiers: cmd, alt, ctrl, shift
+
+    # All possible commands: https://nikitabobko.github.io/AeroSpace/commands
+
+    # See: https://nikitabobko.github.io/AeroSpace/commands#exec-and-forget
+    # You can uncomment the following lines to open up terminal with alt + enter shortcut
+    # (like in i3)
+    # alt-enter = '''exec-and-forget osascript -e '
+    # tell application "Terminal"
+    #     do script
+    #     activate
+    # end tell'
+    # '''
+
+    # ============================================
+    # YOUR CUSTOM APP LAUNCHERS
+    # Work/Personal Split Organization
+    # ============================================
+
+    # WORK APPS (Workspaces 1-4)
+    # Workspace 1: Work Browser (forces NEW window)
+    ctrl-shift-c = '''exec-and-forget open -na "Google Chrome" --args --new-window'''
+
+    # Workspace 2: Code Editors (both)
+    ctrl-shift-v = '''exec-and-forget open -a "Visual Studio Code"'''
+    ctrl-shift-z = '''exec-and-forget open -a "Zed"'''
+
+    # Workspace 3: Work Terminal
+    ctrl-shift-w = '''exec-and-forget open -a "Warp"'''
+
+    # PERSONAL APPS (Workspaces 5-8)
+    # Workspace 5: Personal Browser & Email (forces NEW window)
+    ctrl-shift-f = '''exec-and-forget open -na "Firefox" --args --new-window'''
+    ctrl-shift-m = '''exec-and-forget open -a "Proton Mail"'''
+
+    # Workspace 7: Personal Terminal
+    ctrl-shift-g = '''exec-and-forget open -a "Ghostty"'''
+
+    # Workspace 8: PKM
+    ctrl-shift-o = '''exec-and-forget open -a "Obsidian"'''
+
+    # UTILITIES
+    # Workspace 9: Password Manager
+    ctrl-shift-p = '''exec-and-forget open -a "1Password"'''
+
+    # OTHER USEFUL APPS
+    ctrl-shift-space = '''exec-and-forget open -a "Raycast"'''
+    ctrl-shift-enter = '''exec-and-forget open -a "Finder"'''
+
+    # See: https://nikitabobko.github.io/AeroSpace/commands#layout
+    ctrl-shift-slash = 'layout tiles horizontal vertical'
+    ctrl-shift-comma = 'layout accordion horizontal vertical'
+
+    # See: https://nikitabobko.github.io/AeroSpace/commands#focus
+    # DHH-inspired vim navigation (ctrl-shift for international keyboards)
+    ctrl-shift-h = 'focus left'
+    ctrl-shift-j = 'focus down'
+    ctrl-shift-k = 'focus up'
+    ctrl-shift-l = 'focus right'
+
+    # Cycle through browser windows across ALL workspaces
+    # Chrome windows (cycle through all Chrome windows across workspaces)
+    ctrl-shift-n = 'exec-and-forget ~/.config/aerospace/scripts/cycle-app-windows.sh chrome next'
+    ctrl-shift-b = 'exec-and-forget ~/.config/aerospace/scripts/cycle-app-windows.sh chrome prev'
+
+    # Firefox windows (cycle through all Firefox windows across workspaces)
+    alt-shift-n = 'exec-and-forget ~/.config/aerospace/scripts/cycle-app-windows.sh firefox next'
+    alt-shift-b = 'exec-and-forget ~/.config/aerospace/scripts/cycle-app-windows.sh firefox prev'
+
+    # See: https://nikitabobko.github.io/AeroSpace/commands#move
+    # Using ctrl-alt for moving windows to avoid 3-key combo
+    ctrl-alt-h = 'move left'
+    ctrl-alt-j = 'move down'
+    ctrl-alt-k = 'move up'
+    ctrl-alt-l = 'move right'
+
+    # See: https://nikitabobko.github.io/AeroSpace/commands#resize
+    ctrl-shift-minus = 'resize smart -50'
+    ctrl-shift-equal = 'resize smart +50'
+
+    # See: https://nikitabobko.github.io/AeroSpace/commands#workspace
+    # DHH-style workspace switching with ctrl-shift (for international keyboards)
+    ctrl-shift-1 = 'workspace 1'
+    ctrl-shift-2 = 'workspace 2'
+    ctrl-shift-3 = 'workspace 3'
+    ctrl-shift-4 = 'workspace 4'
+    ctrl-shift-5 = 'workspace 5'
+    ctrl-shift-6 = 'workspace 6'
+    ctrl-shift-7 = 'workspace 7'
+    ctrl-shift-8 = 'workspace 8'
+    ctrl-shift-9 = 'workspace 9'
+
+    # See: https://nikitabobko.github.io/AeroSpace/commands#move-node-to-workspace
+    # Move windows to workspaces (using ctrl-alt to differentiate from ctrl-shift)
+    ctrl-alt-1 = 'move-node-to-workspace 1'
+    ctrl-alt-2 = 'move-node-to-workspace 2'
+    ctrl-alt-3 = 'move-node-to-workspace 3'
+    ctrl-alt-4 = 'move-node-to-workspace 4'
+    ctrl-alt-5 = 'move-node-to-workspace 5'
+    ctrl-alt-6 = 'move-node-to-workspace 6'
+    ctrl-alt-7 = 'move-node-to-workspace 7'
+    ctrl-alt-8 = 'move-node-to-workspace 8'
+    ctrl-alt-9 = 'move-node-to-workspace 9'
+
+    # See: https://nikitabobko.github.io/AeroSpace/commands#workspace-back-and-forth
+    ctrl-shift-tab = 'workspace-back-and-forth'
+    # See: https://nikitabobko.github.io/AeroSpace/commands#move-workspace-to-monitor
+    ctrl-alt-tab = 'move-workspace-to-monitor --wrap-around next'
+
+    # Multi-Monitor: Window Movement (Added: 2025-11-23)
+    # Move focused window to next monitor (cycles through all displays)
+    ctrl-shift-cmd-m = 'move-node-to-monitor --wrap-around next'
+
+    # Move window to specific monitor (left/right)
+    ctrl-shift-cmd-h = 'move-node-to-monitor left'
+    ctrl-shift-cmd-l = 'move-node-to-monitor right'
+
+    # Multi-Monitor: Focus Shortcuts (Added: 2025-11-23)
+    # Focus next monitor without moving windows
+    alt-shift-m = 'focus-monitor --wrap-around next'
+
+    # Focus specific monitor (left/right)
+    alt-shift-h = 'focus-monitor left'
+    alt-shift-l = 'focus-monitor right'
+
+    # See: https://nikitabobko.github.io/AeroSpace/commands#mode
+    ctrl-shift-semicolon = 'mode service'
+
+# 'service' binding mode declaration.
+# See: https://nikitabobko.github.io/AeroSpace/guide#binding-modes
+[mode.service.binding]
+    esc = ['reload-config', 'mode main']
+    r = ['flatten-workspace-tree', 'mode main'] # reset layout
+    f = ['layout floating tiling', 'mode main'] # Toggle between floating and tiling layout
+    backspace = ['close-all-windows-but-current', 'mode main']
+
+    # sticky is not yet supported https://github.com/nikitabobko/AeroSpace/issues/2
+    #s = ['layout sticky tiling', 'mode main']
+
+    ctrl-alt-h = ['join-with left', 'mode main']
+    ctrl-alt-j = ['join-with down', 'mode main']
+    ctrl-alt-k = ['join-with up', 'mode main']
+    ctrl-alt-l = ['join-with right', 'mode main']
+
+    down = 'volume down'
+    up = 'volume up'
+    shift-down = ['volume set 0', 'mode main']
+
+# ============================================
+# APP-TO-WORKSPACE ASSIGNMENTS
+# ============================================
+# Automatically assign apps to specific workspaces
+# To find app-id: aerospace list-windows --all
+
+[[on-window-detected]]
+if.app-id = 'ch.protonmail.desktop'
+run = 'move-node-to-workspace 5'
+
+# ============================================
+# AUTO-FLOAT RULES
+# ============================================
+# These apps should float instead of tile
+
+# System utilities
+[[on-window-detected]]
+if.app-id = 'com.apple.systempreferences'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.systemsettings'  # macOS Ventura+
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.calculator'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.ActivityMonitor'
+run = 'layout floating'
+
+# App Store
+[[on-window-detected]]
+if.app-id = 'com.apple.appstore'
+run = 'layout floating'
+
+# Finder (optional - uncomment if you want Finder to float)
+# [[on-window-detected]]
+# if.app-id = 'com.apple.finder'
+# run = 'layout floating'
+
+# 1Password mini window
+[[on-window-detected]]
+if.app-id = 'com.1password.1password'
+if.window-title-regex-substring = 'Quick Access'
+run = 'layout floating'
+
+# Raycast
+[[on-window-detected]]
+if.app-id = 'com.raycast.macos'
+run = 'layout floating'
+
+# Additional auto-float rules (Added: 2025-11-23)
+# Software Update
+[[on-window-detected]]
+if.app-id = 'com.apple.SoftwareUpdate'
+run = 'layout floating'
+
+# FaceTime
+[[on-window-detected]]
+if.app-id = 'com.apple.FaceTime'
+run = 'layout floating'
+
+# Photo Booth
+[[on-window-detected]]
+if.app-id = 'com.apple.Photo-Booth'
+run = 'layout floating'
+
+# Archive Utility
+[[on-window-detected]]
+if.app-id = 'com.apple.archiveutility'
+run = 'layout floating'
+
+# Disk Utility
+[[on-window-detected]]
+if.app-id = 'com.apple.DiskUtility'
+run = 'layout floating'
+
+# ColorSync Utility
+[[on-window-detected]]
+if.app-id = 'com.apple.ColorSyncUtility'
+run = 'layout floating'
+
+# Font Book
+[[on-window-detected]]
+if.app-id = 'com.apple.FontBook'
+run = 'layout floating'
+
+# Zoom
+[[on-window-detected]]
+if.app-id = 'us.zoom.xos'
+run = 'layout floating'
+
+# Slack
+[[on-window-detected]]
+if.app-id = 'com.tinyspeck.slackmacgap'
+run = 'layout floating'

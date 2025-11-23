@@ -1,0 +1,351 @@
+# ============================================
+# STARSHIP CONFIGURATION
+# ============================================
+# Author: AJ
+# Created: 2025-11-23
+# Updated: 2025-11-24 (Switched to Tokyo Night color palette)
+# Description: Fast, minimal prompt for Rails/Elixir development
+#              Replaces Spaceship with 16x faster Rust-based prompt
+#              Theme: Tokyo Night (matching Neovim, tmux, and Zellij)
+# ============================================
+
+# Use Tokyo Night color palette
+palette = "tokyonight"
+
+# Prompt format
+format = """
+[╭─](bold purple)$username$hostname$directory$git_branch$git_status$ruby$elixir$nodejs$python$golang$rust
+[╰─](bold purple)$character"""
+
+# Right-side prompt (optional - shows command duration and time)
+right_format = "$cmd_duration$time"
+
+# Character indicator (prompt symbol)
+[character]
+success_symbol = "[➜](bold green)"
+error_symbol = "[✗](bold red)"
+vimcmd_symbol = "[](bold green)"
+
+# Directory
+[directory]
+truncation_length = 3
+truncate_to_repo = true
+format = "[$path]($style)[$read_only]($read_only_style) "
+style = "bold cyan"
+read_only = " 🔒"
+home_symbol = "~"
+
+# Git branch
+[git_branch]
+symbol = "🌱 "
+format = "[$symbol$branch(:$remote_branch)]($style) "
+style = "bold purple"
+truncation_length = 20
+truncation_symbol = "…"
+
+# Git status
+[git_status]
+format = '([\[$all_status$ahead_behind\]]($style) )'
+style = "bold yellow"
+conflicted = "🏳"
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+up_to_date = "✓"
+untracked = "?${count}"
+stashed = "\\$${count}"
+modified = "!${count}"
+staged = "+${count}"
+renamed = "»${count}"
+deleted = "✘${count}"
+
+# ============================================
+# LANGUAGE/TOOL INDICATORS
+# ============================================
+
+# Ruby (for Rails development)
+[ruby]
+disabled = false
+format = "[$symbol($version )]($style)"
+symbol = "💎 "
+style = "bold red"
+detect_extensions = ["rb"]
+detect_files = ["Gemfile", ".ruby-version"]
+detect_folders = []
+
+# Elixir (for Phoenix development)
+[elixir]
+disabled = false
+format = "[$symbol($version \\(OTP $otp_version\\) )]($style)"
+symbol = "💧 "
+style = "bold purple"
+detect_extensions = ["ex", "exs"]
+detect_files = ["mix.exs"]
+detect_folders = []
+
+# Node.js
+[nodejs]
+disabled = false
+format = "[$symbol($version )]($style)"
+symbol = "⬢ "
+style = "bold green"
+detect_extensions = ["js", "mjs", "cjs", "ts", "mts", "cts"]
+detect_files = ["package.json", ".node-version", ".nvmrc"]
+detect_folders = ["node_modules"]
+
+# Python
+[python]
+disabled = false
+format = '[${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
+symbol = "🐍 "
+style = "bold yellow"
+pyenv_version_name = false
+pyenv_prefix = "pyenv "
+
+# Go
+[golang]
+disabled = false
+format = "[$symbol($version )]($style)"
+symbol = "🐹 "
+style = "bold cyan"
+detect_extensions = ["go"]
+detect_files = ["go.mod", "go.sum", "go.work", "glide.yaml", "Gopkg.yml", "Gopkg.lock", ".go-version"]
+detect_folders = ["Godeps"]
+
+# Rust
+[rust]
+disabled = false
+format = "[$symbol($version )]($style)"
+symbol = "🦀 "
+style = "bold red"
+detect_extensions = ["rs"]
+detect_files = ["Cargo.toml"]
+detect_folders = []
+
+# ============================================
+# DATABASE INDICATORS
+# ============================================
+
+# PostgreSQL (commented out - enable if needed)
+# [pgsql]
+# disabled = false
+# format = "[$symbol$version]($style) "
+# symbol = "🐘 "
+# style = "bold blue"
+
+# ============================================
+# CONTAINER/CLOUD INDICATORS
+# ============================================
+
+# Docker
+[docker_context]
+disabled = false
+symbol = "🐳 "
+format = "[$symbol$context]($style) "
+style = "bold blue"
+only_with_files = true
+detect_files = ["docker-compose.yml", "docker-compose.yaml", "Dockerfile"]
+detect_folders = []
+
+# AWS
+[aws]
+disabled = true  # Enable if using AWS
+format = '[$symbol($profile )(\($region\) )(\[$duration\] )]($style)'
+symbol = "☁️  "
+style = "bold yellow"
+
+# ============================================
+# PERFORMANCE/UTILITY
+# ============================================
+
+# Command duration (shows if command takes >2 seconds)
+[cmd_duration]
+min_time = 2_000
+format = "[$duration](bold yellow) "
+show_milliseconds = false
+show_notifications = false
+
+# Time (optional - shows current time on right side)
+[time]
+disabled = false
+format = '[$time]($style) '
+style = "bold white"
+time_format = "%T"
+utc_time_offset = "local"
+
+# Battery (useful for laptop)
+[battery]
+disabled = false
+full_symbol = "🔋"
+charging_symbol = "⚡"
+discharging_symbol = "💀"
+unknown_symbol = "❓"
+empty_symbol = "🪫"
+
+[[battery.display]]
+threshold = 10
+style = "bold red"
+
+[[battery.display]]
+threshold = 30
+style = "bold yellow"
+
+# Memory usage
+[memory_usage]
+disabled = true  # Enable if you want to see memory usage
+threshold = 75
+format = "[$symbol${ram}( \\| ${swap})]($style) "
+symbol = "🧠 "
+style = "bold dimmed white"
+
+# Jobs (background jobs indicator)
+[jobs]
+symbol = "✦"
+number_threshold = 1
+format = "[$symbol$number]($style) "
+style = "bold blue"
+
+# ============================================
+# PACKAGE MANAGERS
+# ============================================
+
+# Package version (shows version from package.json, Gemfile, etc.)
+[package]
+disabled = false
+format = "[$symbol$version]($style) "
+symbol = "📦 "
+style = "bold 208"
+display_private = false
+
+# ============================================
+# VERSION CONTROL (Additional Git Features)
+# ============================================
+
+# Git commit
+[git_commit]
+disabled = false
+commit_hash_length = 7
+tag_symbol = "🏷 "
+tag_disabled = false
+only_detached = true
+format = '[\($hash$tag\)]($style) '
+style = "bold green"
+
+# Git state (during rebase, merge, etc.)
+[git_state]
+disabled = false
+rebase = "REBASING"
+merge = "MERGING"
+revert = "REVERTING"
+cherry_pick = "CHERRY-PICKING"
+bisect = "BISECTING"
+am = "AM"
+am_or_rebase = "AM/REBASE"
+format = '\([$state( $progress_current/$progress_total)]($style)\) '
+style = "bold yellow"
+
+# Git metrics (additions/deletions - can be slow in large repos)
+[git_metrics]
+disabled = true  # Enable if you want to see +/- stats
+added_style = "bold green"
+deleted_style = "bold red"
+format = '([+$added]($added_style) )([-$deleted]($deleted_style) )'
+
+# ============================================
+# SHELL/SESSION INFO
+# ============================================
+
+# Username (hidden by default, shows for SSH or root)
+[username]
+disabled = false
+show_always = false
+format = "[$user]($style) in "
+style_root = "bold red"
+style_user = "bold yellow"
+
+# Hostname (shows for SSH sessions)
+[hostname]
+disabled = false
+ssh_only = true
+format = "[$hostname]($style) in "
+style = "bold green"
+trim_at = "."
+
+# Shell indicator
+[shell]
+disabled = true  # Enable if you want to see which shell you're using
+format = "[$indicator]($style) "
+bash_indicator = "bsh"
+fish_indicator = "fsh"
+zsh_indicator = "zsh"
+powershell_indicator = "psh"
+ion_indicator = "ion"
+elvish_indicator = "esh"
+tcsh_indicator = "tsh"
+nu_indicator = "nu"
+xonsh_indicator = "xsh"
+cmd_indicator = "cmd"
+unknown_indicator = "mystery shell"
+style = "cyan bold"
+
+# ============================================
+# LINE BREAK
+# ============================================
+
+[line_break]
+disabled = false
+
+# ============================================
+# TOKYO NIGHT COLOR PALETTE
+# ============================================
+# Official Tokyo Night colors matching Neovim, tmux, and Zellij
+# Repository: https://github.com/folke/tokyonight.nvim
+# ============================================
+
+[palettes.tokyonight]
+# Background and Foreground
+background = "#1a1b26"
+foreground = "#c0caf5"
+
+# Standard Colors
+black = "#15161e"
+red = "#f7768e"
+green = "#9ece6a"
+yellow = "#e0af68"
+blue = "#7aa2f7"
+magenta = "#bb9af7"
+cyan = "#7dcfff"
+white = "#c0caf5"
+
+# Bright Colors
+bright_black = "#414868"
+bright_red = "#f7768e"
+bright_green = "#9ece6a"
+bright_yellow = "#e0af68"
+bright_blue = "#7aa2f7"
+bright_magenta = "#bb9af7"
+bright_cyan = "#7dcfff"
+bright_white = "#c0caf5"
+
+# Additional Tokyo Night Colors
+purple = "#bb9af7"      # Primary accent
+orange = "#ff9e64"      # Secondary accent
+pink = "#f7768e"        # Errors/warnings
+
+# ============================================
+# FINAL NOTES
+# ============================================
+# To reload configuration:
+#   exec zsh
+#
+# To test configuration:
+#   starship config
+#
+# To use presets:
+#   starship preset <preset-name> -o ~/.config/starship.toml
+#   Available: nerd-font-symbols, bracketed-segments, plain-text-symbols,
+#              no-runtime-versions, pure-preset, pastel-powerline
+#
+# Documentation: https://starship.rs/config/
+# Aura Theme: https://github.com/daltonmenezes/aura-theme
+# ============================================
