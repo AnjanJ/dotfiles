@@ -41,8 +41,9 @@ Like DHH's **[Omakub](https://omakub.org/)** for Ubuntu, this setup provides:
 - **Ghostty** - Terminal theme
 
 ### 🛠️ Development Tools
-- **Ruby** - rbenv, ruby-lsp, RuboCop
-- **Elixir** - elixir-ls, mix integration
+- **Ruby** - mise, ruby-lsp, RuboCop
+- **Elixir** - mise, elixir-ls, mix integration
+- **Node.js** - mise, npm/yarn
 - **Rails** - vim-rails, test runners, MVC navigation
 - **Phoenix** - Phoenix-specific tooling
 - **Git** - lazygit, fugitive, gitsigns
