@@ -9,6 +9,25 @@
 
 set -e  # Exit on error
 
+# Parse command line arguments
+FORCE_INSTALL=false
+for arg in "$@"; do
+    case $arg in
+        --force)
+            FORCE_INSTALL=true
+            shift
+            ;;
+        --help)
+            echo "Usage: bash install.sh [OPTIONS]"
+            echo ""
+            echo "Options:"
+            echo "  --force    Force reinstallation even if already installed"
+            echo "  --help     Show this help message"
+            exit 0
+            ;;
+    esac
+done
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -54,6 +73,9 @@ echo "║   • Zellij                                                ║"
 echo "║   • Starship prompt                                       ║"
 echo "║   • Shell configuration                                   ║"
 echo "║   • Tokyo Night theme everywhere                          ║"
+echo "║                                                           ║"
+echo "║   💡 Tip: Script is idempotent - safe to re-run          ║"
+echo "║   Use --force to override existing configs               ║"
 echo "║                                                           ║"
 echo "╚═══════════════════════════════════════════════════════════╝"
 echo ""
@@ -143,10 +165,15 @@ print_step "Step 5: Setting up mise (version manager)..."
 mkdir -p ~/.config/mise
 
 # Link mise configuration
-ln -sf "$DOTFILES_DIR/.config/mise/config.toml" ~/.config/mise/config.toml
+if [ -L ~/.config/mise/config.toml ] && [ "$FORCE_INSTALL" = false ]; then
+    print_success "mise config already linked"
+else
+    ln -sf "$DOTFILES_DIR/.config/mise/config.toml" ~/.config/mise/config.toml
+    print_success "mise config linked"
+fi
 
 # Trust the mise config file (required for security)
-mise trust ~/.config/mise/config.toml
+mise trust ~/.config/mise/config.toml 2>/dev/null || true
 
 # Initialize mise in shell (will be sourced from .zshrc)
 if ! grep -q "mise activate" ~/.zshrc 2>/dev/null; then
@@ -165,22 +192,42 @@ print_success "mise configured and tools installed"
 echo ""
 print_step "Step 6: Creating symlinks..."
 
+# Helper function to create symlink with check
+create_symlink() {
+    local source="$1"
+    local target="$2"
+    local name="$3"
+
+    if [ -L "$target" ] && [ "$(readlink "$target")" = "$source" ] && [ "$FORCE_INSTALL" = false ]; then
+        print_success "$name already linked"
+    else
+        ln -sf "$source" "$target"
+        print_success "$name linked"
+    fi
+}
+
 # Shell configuration
-ln -sf "$DOTFILES_DIR/.zshrc" ~/.zshrc
-[[ -f "$DOTFILES_DIR/.zshrc-aliases" ]] && ln -sf "$DOTFILES_DIR/.zshrc-aliases" ~/.zshrc-aliases
-[[ -f "$DOTFILES_DIR/.zshrc-terminal-enhancements" ]] && ln -sf "$DOTFILES_DIR/.zshrc-terminal-enhancements" ~/.zshrc-terminal-enhancements
+create_symlink "$DOTFILES_DIR/.zshrc" ~/.zshrc ".zshrc"
+[[ -f "$DOTFILES_DIR/.zshrc-aliases" ]] && create_symlink "$DOTFILES_DIR/.zshrc-aliases" ~/.zshrc-aliases ".zshrc-aliases"
+[[ -f "$DOTFILES_DIR/.zshrc-terminal-enhancements" ]] && create_symlink "$DOTFILES_DIR/.zshrc-terminal-enhancements" ~/.zshrc-terminal-enhancements ".zshrc-terminal-enhancements"
+
+# DHH additions (main Rails workflow file)
+[[ -f "$DOTFILES_DIR/.zshrc-dhh-additions" ]] && create_symlink "$DOTFILES_DIR/.zshrc-dhh-additions" ~/.zshrc-dhh-additions ".zshrc-dhh-additions"
+
+# Elixir additions
+[[ -f "$DOTFILES_DIR/.zshrc-elixir-additions" ]] && create_symlink "$DOTFILES_DIR/.zshrc-elixir-additions" ~/.zshrc-elixir-additions ".zshrc-elixir-additions"
 
 # tmux
-ln -sf "$DOTFILES_DIR/.tmux.conf" ~/.tmux.conf
+create_symlink "$DOTFILES_DIR/.tmux.conf" ~/.tmux.conf ".tmux.conf"
 
 # Config directories
-ln -sf "$DOTFILES_DIR/.config/aerospace" ~/.config/aerospace
-ln -sf "$DOTFILES_DIR/.config/ghostty" ~/.config/ghostty
-ln -sf "$DOTFILES_DIR/.config/nvim" ~/.config/nvim
-ln -sf "$DOTFILES_DIR/.config/zellij" ~/.config/zellij
-ln -sf "$DOTFILES_DIR/.config/starship.toml" ~/.config/starship.toml
+create_symlink "$DOTFILES_DIR/.config/aerospace" ~/.config/aerospace "aerospace config"
+create_symlink "$DOTFILES_DIR/.config/ghostty" ~/.config/ghostty "ghostty config"
+create_symlink "$DOTFILES_DIR/.config/nvim" ~/.config/nvim "nvim config"
+create_symlink "$DOTFILES_DIR/.config/zellij" ~/.config/zellij "zellij config"
+create_symlink "$DOTFILES_DIR/.config/starship.toml" ~/.config/starship.toml "starship config"
 
-print_success "Symlinks created"
+print_success "All symlinks processed"
 
 # ============================================
 # 7. INSTALL TPM (TMUX PLUGIN MANAGER)
@@ -246,6 +293,17 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
 fi
 
 # ============================================
+# 11. RUN HEALTH CHECK
+# ============================================
+echo ""
+read -p "Run health check to verify installation? (y/n) " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    print_step "Step 11: Running health check..."
+    bash "$DOTFILES_DIR/scripts/health-check.sh"
+fi
+
+# ============================================
 # INSTALLATION COMPLETE
 # ============================================
 echo ""
@@ -279,6 +337,12 @@ echo "   mise list       # See all installed versions"
 echo "   ruby --version  # Should show Ruby 3.4.5"
 echo "   node --version  # Should show latest"
 echo "   elixir --version # Should show latest"
+echo ""
+echo "7. Run health check anytime:"
+echo "   bash $DOTFILES_DIR/scripts/health-check.sh"
+echo ""
+echo "8. Update dotfiles in the future:"
+echo "   bash $DOTFILES_DIR/update.sh"
 echo ""
 echo "📚 Documentation:"
 echo "   • Neovim guide: ~/.config/nvim/README.md"

@@ -103,6 +103,14 @@ That's it! The script will:
 6. ✅ Configure Neovim
 7. ✅ Set up shell environment
 8. ✅ Apply macOS defaults (optional)
+9. ✅ Run health check (optional)
+
+**💡 The install script is idempotent** - safe to run multiple times. Use `--force` to override existing configs.
+
+```bash
+bash install.sh --force  # Force reinstall everything
+bash install.sh --help   # Show all options
+```
 
 ### What Gets Installed
 
@@ -296,7 +304,8 @@ All tools use the **Tokyo Night** color palette for a consistent, beautiful dark
 
 ```
 dotfiles/
-├── install.sh                  # Main installation script
+├── install.sh                  # Main installation script (idempotent)
+├── update.sh                   # Update script for syncing changes
 ├── Brewfile                    # Homebrew packages (auto-generated)
 ├── README.md                   # This file
 ├── QUICK_REFERENCE.md          # Cheat sheet
@@ -313,8 +322,54 @@ dotfiles/
 │   ├── nvim/                   # Neovim config (AstroNvim)
 │   ├── zellij/                 # Zellij config + Tokyo Night theme
 │   └── starship.toml           # Prompt configuration
-├── scripts/                    # Helper scripts
+├── scripts/
+│   └── health-check.sh         # Verify installation
 └── docs/                       # Additional documentation
+```
+
+## 🔄 Maintenance
+
+### Update Dotfiles
+
+Keep your dotfiles in sync with the latest changes:
+
+```bash
+cd ~/dotfiles
+bash update.sh
+```
+
+The update script will:
+- 🔄 Pull latest changes from git
+- 📦 Update Homebrew packages
+- 🔗 Refresh symlinks
+- 🛠️ Update mise tools
+- 🔌 Update tmux plugins
+- ♻️ Reload configurations
+
+### Health Check
+
+Verify your installation is working correctly:
+
+```bash
+cd ~/dotfiles
+bash scripts/health-check.sh
+```
+
+The health check will verify:
+- ✅ All core tools are installed
+- ✅ Configuration files are properly linked
+- ✅ Language runtimes are available
+- ✅ Services are running (PostgreSQL, Redis)
+- ✅ Shell integrations are configured
+
+### Re-run Installation
+
+The install script is **idempotent** - you can safely run it multiple times:
+
+```bash
+cd ~/dotfiles
+bash install.sh        # Skip already-installed components
+bash install.sh --force # Force reinstall everything
 ```
 
 ## 🔧 Customization
