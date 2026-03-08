@@ -284,6 +284,40 @@ cask "wezterm"
 cask "zed"
 # Gecko based web browser
 cask "zen"
+# Mesh VPN built on WireGuard
+cask "tailscale"
+# Web browser
+cask "google-chrome"
+# Desktop messaging for WhatsApp
+cask "whatsapp"
+# Rust-based terminal with AI integration
+cask "warp"
+# Anthropic AI assistant
+cask "claude"
+# Utility to hide menu bar icons
+cask "hiddenbar"
+# Cross-platform file sharing (AirDrop alternative)
+cask "localsend"
+# Mac system monitoring in menu bar
+cask "istat-menus"
+# Extract text from images (OCR)
+cask "textsniper"
+# Free and open-source office suite
+cask "libreoffice"
+# Voice dictation powered by AI
+cask "wispr-flow"
+# Privacy-focused web browser
+cask "duckduckgo"
+# Flash OS images to SD cards and USB drives
+cask "balenaetcher"
+# Raspberry Pi SD card imaging utility
+cask "raspberry-pi-imager"
+# Grammar and style checker
+cask "languagetool"
+# Encrypted email client
+cask "tuta-mail"
+# Multi-factor authentication for Okta
+cask "okta-verify"
 # Video communication and virtual meeting platform
 cask "zoom"
 vscode "aaron-bond.better-comments"

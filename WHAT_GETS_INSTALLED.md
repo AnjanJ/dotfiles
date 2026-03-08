@@ -10,7 +10,7 @@ Installs [Homebrew](https://brew.sh/) (macOS package manager) if not already pre
 
 ---
 
-## Step 2: Brewfile (288 packages)
+## Step 2: Brewfile (305 packages)
 
 Runs `brew bundle install` which installs everything declared in the `Brewfile`:
 
@@ -117,22 +117,22 @@ Aerospace, Cloudflare, Sketchybar/Borders, Heroku, LazySql, Render, steipete's C
 **Libraries** (dependencies for other tools)
 - `glib`, `pango`, `librsvg`, `libyaml`, `libxmlsec1`, `libidn`, `libre`, `openssl@1.1`, `shared-mime-info`, `criterion`, `poppler`
 
-### Cask Apps (33 GUI apps + 73 fonts)
+### Cask Apps (50 GUI apps + 73 fonts)
 
 **Browsers**
-- Firefox, Zen
+- Google Chrome, Firefox, Zen, DuckDuckGo
 
 **Terminals**
-- Ghostty (GPU-accelerated), WezTerm
+- Ghostty (GPU-accelerated), WezTerm, Warp
 
 **Code Editors**
 - Zed, Visual Studio Code
 
 **Communication**
-- Discord, Slack, Signal, Telegram, Zoom
+- Discord, Slack, Signal, Telegram, WhatsApp, Zoom
 
 **Productivity**
-- Notion, Obsidian, Raycast
+- Notion, Obsidian, Raycast, Hidden Bar (menu bar manager), LibreOffice
 
 **Dev Tools**
 - Docker Desktop, Bruno (API client), Requestly (HTTP interceptor)
@@ -141,13 +141,19 @@ Aerospace, Cloudflare, Sketchybar/Borders, Heroku, LazySql, Render, steipete's C
 - Beekeeper Studio (SQL), Postico (Postgres), Redis Insight
 
 **Security & Privacy**
-- 1Password, 1Password CLI, ProtonVPN, Proton Mail, Proton Pass
+- 1Password, 1Password CLI, ProtonVPN, Proton Mail, Proton Pass, Okta Verify, Tailscale (mesh VPN)
 
 **Window Management**
 - Aerospace (i3-like tiling)
 
 **AI**
-- Claude Code (terminal-based AI assistant)
+- Claude (desktop app), Claude Code (terminal-based), Wispr Flow (voice dictation)
+
+**Utilities**
+- TextSniper (OCR), iStat Menus (system monitoring), LanguageTool (grammar checker), LocalSend (AirDrop alternative), balenaEtcher (USB flasher), Raspberry Pi Imager
+
+**Email**
+- Tuta Mail (encrypted)
 
 **Media**
 - VLC
