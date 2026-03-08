@@ -3,9 +3,8 @@
 # ============================================
 # DOTFILES INSTALLATION SCRIPT
 # ============================================
-# One-command setup for macOS/Linux development environment
+# One-command setup for macOS development environment
 # Usage: bash install.sh
-# Supported: macOS, Arch Linux, Ubuntu/Debian
 # ============================================
 
 set -e  # Exit on error
@@ -53,46 +52,11 @@ print_success() {
     echo -e "${GREEN}✓${NC} $1"
 }
 
-# ============================================
-# OS DETECTION
-# ============================================
-OS="unknown"
-DISTRO="unknown"
-
-case "$(uname -s)" in
-    Darwin)
-        OS="macos"
-        ;;
-    Linux)
-        OS="linux"
-        if [ -f /etc/os-release ]; then
-            . /etc/os-release
-            case "$ID" in
-                arch|manjaro|endeavouros)
-                    DISTRO="arch"
-                    ;;
-                ubuntu|debian|pop|linuxmint|elementary)
-                    DISTRO="debian"
-                    ;;
-                fedora|rhel|centos)
-                    DISTRO="fedora"
-                    ;;
-                *)
-                    DISTRO="$ID"
-                    ;;
-            esac
-        fi
-        ;;
-    *)
-        print_error "Unsupported operating system: $(uname -s)"
-        exit 1
-        ;;
-esac
-
-is_macos() { [[ "$OS" == "macos" ]]; }
-is_linux() { [[ "$OS" == "linux" ]]; }
-is_arch()  { [[ "$DISTRO" == "arch" ]]; }
-is_debian(){ [[ "$DISTRO" == "debian" ]]; }
+# Check if running on macOS
+if [[ "$(uname)" != "Darwin" ]]; then
+    print_error "This script is only for macOS"
+    exit 1
+fi
 
 echo ""
 echo "╔═══════════════════════════════════════════════════════════╗"
@@ -100,7 +64,9 @@ echo "║                                                           ║"
 echo "║   🚀  AJ's Dotfiles Installation                          ║"
 echo "║                                                           ║"
 echo "║   This will install:                                      ║"
-echo "║   • Packages (Homebrew/pacman/apt)                        ║"
+echo "║   • Homebrew packages                                     ║"
+echo "║   • Aerospace (window manager)                            ║"
+echo "║   • Ghostty terminal                                      ║"
 echo "║   • Neovim + AstroNvim                                    ║"
 echo "║   • tmux + plugins                                        ║"
 echo "║   • Zellij                                                ║"
@@ -114,12 +80,6 @@ echo "║   💡 Tip: Script is idempotent - safe to re-run          ║"
 echo "║   Use --force to override existing configs               ║"
 echo "║                                                           ║"
 echo "╚═══════════════════════════════════════════════════════════╝"
-echo ""
-if is_macos; then
-    print_step "Detected: macOS ($(uname -m))"
-else
-    print_step "Detected: Linux ($DISTRO)"
-fi
 echo ""
 
 # Ask for confirmation
@@ -136,41 +96,35 @@ echo ""
 print_step "Dotfiles directory: $DOTFILES_DIR"
 
 # ============================================
-# 1. INSTALL PACKAGE MANAGER & PACKAGES
+# 1. INSTALL HOMEBREW
 # ============================================
 echo ""
-print_step "Step 1: Installing packages..."
+print_step "Step 1: Installing Homebrew..."
 
-if is_macos; then
-    # Install Homebrew if needed
-    if ! command -v brew &> /dev/null; then
-        print_warning "Homebrew not found. Installing..."
-        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+if ! command -v brew &> /dev/null; then
+    print_warning "Homebrew not found. Installing..."
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-        # Add Homebrew to PATH for Apple Silicon
-        if [[ $(uname -m) == 'arm64' ]]; then
-            echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
-            eval "$(/opt/homebrew/bin/brew shellenv)"
-        fi
-        print_success "Homebrew installed"
-    else
-        print_success "Homebrew already installed"
+    # Add Homebrew to PATH for Apple Silicon
+    if [[ $(uname -m) == 'arm64' ]]; then
+        echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+        eval "$(/opt/homebrew/bin/brew shellenv)"
     fi
-
-    # Install packages from Brewfile
-    print_step "Installing packages from Brewfile..."
-    cd "$DOTFILES_DIR"
-    brew bundle install
-    print_success "All packages installed"
-
-elif is_linux; then
-    # TODO: Add Linux package installation
-    # Arch: pacman -S --needed <packages>
-    # Debian/Ubuntu: sudo apt install <packages>
-    print_warning "Linux package installation not yet implemented"
-    print_warning "Please install packages manually for now"
-    print_warning "See WHAT_GETS_INSTALLED.md for the full list"
+    print_success "Homebrew installed"
+else
+    print_success "Homebrew already installed"
 fi
+
+# ============================================
+# 2. INSTALL PACKAGES FROM BREWFILE
+# ============================================
+echo ""
+print_step "Step 2: Installing packages from Brewfile..."
+
+cd "$DOTFILES_DIR"
+brew bundle install
+
+print_success "All packages installed"
 
 # ============================================
 # 3. CREATE NECESSARY DIRECTORIES
@@ -178,10 +132,7 @@ fi
 echo ""
 print_step "Step 3: Creating configuration directories..."
 
-mkdir -p ~/.config/{ghostty,nvim,zellij,zed/snippets}
-if is_macos; then
-    mkdir -p ~/.config/aerospace
-fi
+mkdir -p ~/.config/{aerospace,ghostty,nvim,zellij,zed/snippets}
 mkdir -p ~/.tmux/plugins
 mkdir -p ~/bin
 
@@ -200,9 +151,7 @@ mkdir -p "$BACKUP_DIR"
 [[ -f ~/.zshrc ]] && cp ~/.zshrc "$BACKUP_DIR/"
 [[ -f ~/.tmux.conf ]] && cp ~/.tmux.conf "$BACKUP_DIR/"
 [[ -d ~/.config/nvim ]] && cp -r ~/.config/nvim "$BACKUP_DIR/"
-if is_macos; then
-    [[ -d ~/.config/aerospace ]] && cp -r ~/.config/aerospace "$BACKUP_DIR/"
-fi
+[[ -d ~/.config/aerospace ]] && cp -r ~/.config/aerospace "$BACKUP_DIR/"
 [[ -d ~/.config/ghostty ]] && cp -r ~/.config/ghostty "$BACKUP_DIR/"
 [[ -d ~/.config/zellij ]] && cp -r ~/.config/zellij "$BACKUP_DIR/"
 [[ -d ~/.config/zed ]] && cp -r ~/.config/zed "$BACKUP_DIR/"
@@ -276,9 +225,7 @@ create_symlink "$DOTFILES_DIR/.zshrc" ~/.zshrc ".zshrc"
 create_symlink "$DOTFILES_DIR/.tmux.conf" ~/.tmux.conf ".tmux.conf"
 
 # Config directories
-if is_macos; then
-    create_symlink "$DOTFILES_DIR/.config/aerospace" ~/.config/aerospace "aerospace config"
-fi
+create_symlink "$DOTFILES_DIR/.config/aerospace" ~/.config/aerospace "aerospace config"
 create_symlink "$DOTFILES_DIR/.config/ghostty" ~/.config/ghostty "ghostty config"
 create_symlink "$DOTFILES_DIR/.config/nvim" ~/.config/nvim "nvim config"
 create_symlink "$DOTFILES_DIR/.config/zellij" ~/.config/zellij "zellij config"
@@ -338,31 +285,29 @@ else
 fi
 
 # ============================================
-# 10. OS-SPECIFIC DEFAULTS (OPTIONAL)
+# 10. MACOS DEFAULTS (OPTIONAL)
 # ============================================
-if is_macos; then
-    echo ""
-    read -p "Apply recommended macOS defaults? (y/n) " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        print_step "Step 10: Applying macOS defaults..."
+echo ""
+read -p "Apply recommended macOS defaults? (y/n) " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    print_step "Step 10: Applying macOS defaults..."
 
-        # Keyboard settings
-        defaults write NSGlobalDomain KeyRepeat -int 2
-        defaults write NSGlobalDomain InitialKeyRepeat -int 15
+    # Keyboard settings
+    defaults write NSGlobalDomain KeyRepeat -int 2
+    defaults write NSGlobalDomain InitialKeyRepeat -int 15
 
-        # Finder settings
-        defaults write com.apple.finder ShowPathbar -bool true
-        defaults write com.apple.finder ShowStatusBar -bool true
-        defaults write com.apple.finder _FXShowPosixPathInTitle -bool true
+    # Finder settings
+    defaults write com.apple.finder ShowPathbar -bool true
+    defaults write com.apple.finder ShowStatusBar -bool true
+    defaults write com.apple.finder _FXShowPosixPathInTitle -bool true
 
-        # Dock settings
-        defaults write com.apple.dock autohide -bool true
-        defaults write com.apple.dock show-recents -bool false
+    # Dock settings
+    defaults write com.apple.dock autohide -bool true
+    defaults write com.apple.dock show-recents -bool false
 
-        print_success "macOS defaults applied"
-        print_warning "Some settings require logout/restart to take effect"
-    fi
+    print_success "macOS defaults applied"
+    print_warning "Some settings require logout/restart to take effect"
 fi
 
 # ============================================
@@ -398,11 +343,9 @@ echo "3. Open Neovim to install plugins:"
 echo "   nvim"
 echo "   (AstroNvim will auto-install)"
 echo ""
-if is_macos; then
 echo "4. Start Aerospace (will start on next login):"
 echo "   aerospace reload"
 echo ""
-fi
 echo "5. Configure Git:"
 echo "   git config --global user.name \"Your Name\""
 echo "   git config --global user.email \"your.email@example.com\""

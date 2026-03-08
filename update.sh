@@ -5,7 +5,6 @@
 # ============================================
 # Quick update for syncing dotfiles changes
 # Usage: bash update.sh
-# Supported: macOS, Arch Linux, Ubuntu/Debian
 # ============================================
 
 set -e  # Exit on error
@@ -34,44 +33,11 @@ print_success() {
     echo -e "${GREEN}✓${NC} $1"
 }
 
-# ============================================
-# OS DETECTION
-# ============================================
-OS="unknown"
-DISTRO="unknown"
-
-case "$(uname -s)" in
-    Darwin)
-        OS="macos"
-        ;;
-    Linux)
-        OS="linux"
-        if [ -f /etc/os-release ]; then
-            . /etc/os-release
-            case "$ID" in
-                arch|manjaro|endeavouros)
-                    DISTRO="arch"
-                    ;;
-                ubuntu|debian|pop|linuxmint|elementary)
-                    DISTRO="debian"
-                    ;;
-                fedora|rhel|centos)
-                    DISTRO="fedora"
-                    ;;
-                *)
-                    DISTRO="$ID"
-                    ;;
-            esac
-        fi
-        ;;
-    *)
-        print_error "Unsupported operating system: $(uname -s)"
-        exit 1
-        ;;
-esac
-
-is_macos() { [[ "$OS" == "macos" ]]; }
-is_linux() { [[ "$OS" == "linux" ]]; }
+# Check if running on macOS
+if [[ "$(uname)" != "Darwin" ]]; then
+    print_error "This script is only for macOS"
+    exit 1
+fi
 
 # Get dotfiles directory
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -128,37 +94,29 @@ git pull origin main
 print_success "Repository updated"
 
 # ============================================
-# 2. UPDATE PACKAGES
+# 2. UPDATE HOMEBREW PACKAGES
 # ============================================
 echo ""
-print_step "Step 2: Updating packages..."
+print_step "Step 2: Updating Homebrew packages..."
 
-if is_macos; then
-    # Update Homebrew itself
-    brew update
+# Update Homebrew itself
+brew update
 
-    # Install any new packages from Brewfile
-    brew bundle install
+# Install any new packages from Brewfile
+brew bundle install
 
-    # Upgrade existing packages
-    read -p "Upgrade existing packages? This may take a while. (y/n) " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        brew upgrade
-        brew cleanup
-        print_success "Packages upgraded"
-    else
-        print_success "Skipped package upgrade"
-    fi
-
-    print_success "Homebrew updated"
-
-elif is_linux; then
-    # TODO: Add Linux package updates
-    # Arch: sudo pacman -Syu
-    # Debian/Ubuntu: sudo apt update && sudo apt upgrade
-    print_warning "Linux package update not yet implemented"
+# Upgrade existing packages
+read -p "Upgrade existing packages? This may take a while. (y/n) " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    brew upgrade
+    brew cleanup
+    print_success "Packages upgraded"
+else
+    print_success "Skipped package upgrade"
 fi
+
+print_success "Homebrew updated"
 
 # ============================================
 # 3. REFRESH SYMLINKS
@@ -191,9 +149,7 @@ create_symlink "$DOTFILES_DIR/.zshrc" ~/.zshrc ".zshrc"
 create_symlink "$DOTFILES_DIR/.tmux.conf" ~/.tmux.conf ".tmux.conf"
 
 # Config directories
-if is_macos; then
-    create_symlink "$DOTFILES_DIR/.config/aerospace" ~/.config/aerospace "aerospace config"
-fi
+create_symlink "$DOTFILES_DIR/.config/aerospace" ~/.config/aerospace "aerospace config"
 create_symlink "$DOTFILES_DIR/.config/ghostty" ~/.config/ghostty "ghostty config"
 create_symlink "$DOTFILES_DIR/.config/nvim" ~/.config/nvim "nvim config"
 create_symlink "$DOTFILES_DIR/.config/zellij" ~/.config/zellij "zellij config"
@@ -265,14 +221,12 @@ if command -v tmux &> /dev/null && tmux info &> /dev/null 2>&1; then
     print_success "tmux config reloaded"
 fi
 
-# Reload aerospace if running (macOS only)
-if is_macos; then
-    if pgrep -x "Aerospace" > /dev/null; then
-        aerospace reload-config
-        print_success "Aerospace config reloaded"
-    else
-        print_warning "Aerospace not running"
-    fi
+# Reload aerospace if running
+if pgrep -x "Aerospace" > /dev/null; then
+    aerospace reload-config
+    print_success "Aerospace config reloaded"
+else
+    print_warning "Aerospace not running"
 fi
 
 # ============================================
