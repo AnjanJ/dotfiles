@@ -66,6 +66,8 @@ brew "litecli"
 brew "lnav"
 # Clone of ls with colorful output, file type icons, and more
 brew "lsd"
+# Mac App Store command-line interface
+brew "mas"
 # Polyglot runtime manager (asdf rust clone)
 brew "mise"
 # CLI for MySQL with auto-completion and syntax highlighting
@@ -284,40 +286,22 @@ cask "wezterm"
 cask "zed"
 # Gecko based web browser
 cask "zen"
-# Mesh VPN built on WireGuard
-cask "tailscale"
 # Web browser
 cask "google-chrome"
-# Desktop messaging for WhatsApp
-cask "whatsapp"
 # Rust-based terminal with AI integration
 cask "warp"
 # Anthropic AI assistant
 cask "claude"
-# Utility to hide menu bar icons
-cask "hiddenbar"
-# Cross-platform file sharing (AirDrop alternative)
-cask "localsend"
-# Mac system monitoring in menu bar
-cask "istat-menus"
-# Extract text from images (OCR)
-cask "textsniper"
 # Free and open-source office suite
 cask "libreoffice"
 # Voice dictation powered by AI
 cask "wispr-flow"
-# Privacy-focused web browser
-cask "duckduckgo"
 # Flash OS images to SD cards and USB drives
 cask "balenaetcher"
 # Raspberry Pi SD card imaging utility
 cask "raspberry-pi-imager"
-# Grammar and style checker
-cask "languagetool"
 # Encrypted email client
 cask "tuta-mail"
-# Multi-factor authentication for Okta
-cask "okta-verify"
 # Video communication and virtual meeting platform
 cask "zoom"
 vscode "aaron-bond.better-comments"
@@ -437,3 +421,22 @@ go "cmd/gofmt"
 go "github.com/ossianhempel/things3-cli/cmd/things"
 uv "nano-pdf"
 uv "specify-cli"
+# Mac App Store apps (requires: brew install mas && mas signin)
+mas "2FAS - Two Factor Authentication", id: 6443941139
+mas "Bandwidth+", id: 490461369
+mas "DuckDuckGo", id: 663592361
+mas "GIPHY CAPTURE", id: 668208984
+mas "Gifski", id: 1351639930
+mas "Hidden Bar", id: 1452453066
+mas "iStat Menus", id: 1319778037
+mas "Kindle", id: 302584613
+mas "LanguageTool", id: 1534275760
+mas "LocalSend", id: 1661733229
+mas "Menu Bar Calendar", id: 1558360383
+mas "Noir - Dark Mode for Safari", id: 1592917505
+mas "Numbers", id: 409203825
+mas "Perplexity", id: 6714467650
+mas "Save to Raindrop.io", id: 1549370672
+mas "Tailscale", id: 1475387142
+mas "TextSniper", id: 1528890965
+mas "WhatsApp", id: 310633997

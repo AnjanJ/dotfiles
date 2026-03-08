@@ -10,9 +10,9 @@ Installs [Homebrew](https://brew.sh/) (macOS package manager) if not already pre
 
 ---
 
-## Step 2: Brewfile (305 packages)
+## Step 2: Brewfile (322 packages)
 
-Runs `brew bundle install` which installs everything declared in the `Brewfile`:
+Runs `brew bundle install` which installs everything declared in the `Brewfile`. This includes Homebrew packages, cask apps, VS Code extensions, and Mac App Store apps (via `mas`):
 
 ### Taps (10 third-party repos)
 
@@ -117,10 +117,10 @@ Aerospace, Cloudflare, Sketchybar/Borders, Heroku, LazySql, Render, steipete's C
 **Libraries** (dependencies for other tools)
 - `glib`, `pango`, `librsvg`, `libyaml`, `libxmlsec1`, `libidn`, `libre`, `openssl@1.1`, `shared-mime-info`, `criterion`, `poppler`
 
-### Cask Apps (50 GUI apps + 73 fonts)
+### Cask Apps (41 GUI apps + 73 fonts)
 
 **Browsers**
-- Google Chrome, Firefox, Zen, DuckDuckGo
+- Google Chrome, Firefox, Zen
 
 **Terminals**
 - Ghostty (GPU-accelerated), WezTerm, Warp
@@ -129,10 +129,10 @@ Aerospace, Cloudflare, Sketchybar/Borders, Heroku, LazySql, Render, steipete's C
 - Zed, Visual Studio Code
 
 **Communication**
-- Discord, Slack, Signal, Telegram, WhatsApp, Zoom
+- Discord, Slack, Signal, Telegram, Zoom
 
 **Productivity**
-- Notion, Obsidian, Raycast, Hidden Bar (menu bar manager), LibreOffice
+- Notion, Obsidian, Raycast, LibreOffice
 
 **Dev Tools**
 - Docker Desktop, Bruno (API client), Requestly (HTTP interceptor)
@@ -141,7 +141,7 @@ Aerospace, Cloudflare, Sketchybar/Borders, Heroku, LazySql, Render, steipete's C
 - Beekeeper Studio (SQL), Postico (Postgres), Redis Insight
 
 **Security & Privacy**
-- 1Password, 1Password CLI, ProtonVPN, Proton Mail, Proton Pass, Okta Verify, Tailscale (mesh VPN)
+- 1Password, 1Password CLI, ProtonVPN, Proton Mail, Proton Pass
 
 **Window Management**
 - Aerospace (i3-like tiling)
@@ -150,7 +150,7 @@ Aerospace, Cloudflare, Sketchybar/Borders, Heroku, LazySql, Render, steipete's C
 - Claude (desktop app), Claude Code (terminal-based), Wispr Flow (voice dictation)
 
 **Utilities**
-- TextSniper (OCR), iStat Menus (system monitoring), LanguageTool (grammar checker), LocalSend (AirDrop alternative), balenaEtcher (USB flasher), Raspberry Pi Imager
+- balenaEtcher (USB flasher), Raspberry Pi Imager
 
 **Email**
 - Tuta Mail (encrypted)
@@ -160,6 +160,44 @@ Aerospace, Cloudflare, Sketchybar/Borders, Heroku, LazySql, Render, steipete's C
 
 **Other**
 - Android Platform Tools
+
+### Mac App Store Apps (18 via `mas`)
+
+Installed automatically via `brew bundle` using the [mas](https://github.com/mas-cli/mas) CLI. Requires being signed into the App Store.
+
+**Productivity & Utilities**
+- Hidden Bar (menu bar icon management)
+- iStat Menus (system monitoring)
+- TextSniper (OCR screen capture)
+- Menu Bar Calendar
+- Numbers
+- Bandwidth+
+
+**Browsers & Privacy**
+- DuckDuckGo
+- Noir (Dark Mode for Safari)
+- Perplexity
+
+**Communication**
+- WhatsApp
+
+**Security & Networking**
+- 2FAS (two-factor authentication)
+- Tailscale (mesh VPN)
+
+**Media & Creative**
+- Gifski (GIF converter)
+- GIPHY CAPTURE (screen-to-GIF)
+
+**Reading & Bookmarks**
+- Kindle
+- Save to Raindrop.io
+
+**Writing**
+- LanguageTool (grammar checker)
+
+**File Sharing**
+- LocalSend (AirDrop alternative, cross-platform)
 
 **Fonts (73 Nerd Fonts)**
 
