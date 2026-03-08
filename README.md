@@ -26,7 +26,7 @@ Like DHH's **[Omakub](https://omakub.org/)** for Ubuntu, this setup provides:
 
 **Window Management (Aerospace)**: i3-style tiling for macOS - keyboard-driven, distraction-free
 **Terminal (Ghostty)**: GPU-accelerated, native macOS, modern
-**Editor (Neovim + AstroNvim)**: ThePrimeagen-inspired workflow with Harpoon, Telescope, LSP
+**Editors (Neovim + Zed)**: Neovim with AstroNvim for terminal, Zed for GUI — both with full LSP
 **Shell (zsh + Starship)**: Fast, reliable, beautiful prompt
 **Multiplexers (tmux + Zellij)**: Session management with vim integration
 **Theme (Tokyo Night)**: Consistent, easy on eyes, used by thousands of developers
@@ -41,11 +41,11 @@ Like DHH's **[Omakub](https://omakub.org/)** for Ubuntu, this setup provides:
 - **Ghostty** - Terminal theme
 
 ### 🛠️ Development Tools
-- **Ruby** - mise, ruby-lsp, RuboCop
-- **Elixir** - mise, elixir-ls, mix integration
+- **Ruby/Rails** - mise, ruby-lsp, RuboCop, RSpec tasks, ERB formatting
+- **Elixir/Phoenix** - mise, elixir-ls, mix integration, tailwindcss-language-server
+- **TypeScript/React** - prettier, eslint, auto-imports, inlay hints
+- **Zig** - zls (auto-installed), build/test/run tasks, 26 snippets
 - **Node.js** - mise, npm/yarn
-- **Rails** - vim-rails, test runners, MVC navigation
-- **Phoenix** - Phoenix-specific tooling
 - **Git** - lazygit, fugitive, gitsigns
 
 ### ⌨️ Productivity
@@ -99,12 +99,13 @@ That's it! The script will:
 1. ✅ Install Homebrew (if not installed)
 2. ✅ Install all packages from Brewfile
 3. ✅ Backup your existing configurations
-4. ✅ Create symlinks to dotfiles
+4. ✅ Create symlinks to dotfiles (shell, tmux, Neovim, Zed, ~/bin)
 5. ✅ Set up tmux plugins
 6. ✅ Configure Neovim
-7. ✅ Set up shell environment
-8. ✅ Apply macOS defaults (optional)
-9. ✅ Run health check (optional)
+7. ✅ Configure Zed (settings, snippets, tasks)
+8. ✅ Set up shell environment
+9. ✅ Apply macOS defaults (optional)
+10. ✅ Run health check (optional)
 
 **💡 The install script is idempotent** - safe to run multiple times. Use `--force` to override existing configs.
 
@@ -131,13 +132,17 @@ Installed Tools:
 │   ├── Neovim + AstroNvim
 │   └── Zed
 ├── Languages
-│   ├── Ruby + rbenv
+│   ├── Ruby + mise
 │   ├── Elixir + Erlang
 │   ├── Node.js
-│   └── Python
+│   ├── Python
+│   ├── Zig
+│   └── Go
 ├── Databases
-│   ├── PostgreSQL 16
+│   ├── PostgreSQL 14
 │   └── Redis
+├── Custom Scripts
+│   └── ~/bin (erb-lint-formatter, etc.)
 └── Tools
     ├── Git + lazygit
     ├── ripgrep, fd, fzf
@@ -178,8 +183,10 @@ dotfiles/
 │   ├── aerospace/              # Window management: layouts, keybindings
 │   ├── ghostty/                # Terminal: theme, fonts
 │   ├── nvim/                   # Editor: LSP, plugins, keymaps
+│   ├── zed/                    # Zed: settings, snippets, tasks
 │   ├── zellij/                 # Multiplexer: layouts, theme
 │   └── starship.toml           # Prompt: git, languages, colors
+├── bin/                        # Custom scripts (erb-lint-formatter, etc.)
 └── Brewfile                    # Declarative package management
 ```
 
@@ -321,8 +328,14 @@ dotfiles/
 │   ├── ghostty/                # Terminal config
 │   ├── mise/                   # Version manager (Ruby, Node, Elixir, etc.)
 │   ├── nvim/                   # Neovim config (AstroNvim)
+│   ├── zed/                    # Zed editor config
+│   │   ├── settings.json       # Language, LSP, formatter, extension settings
+│   │   ├── tasks.json          # RSpec, Rails, Elixir, Zig, npm tasks
+│   │   └── snippets/           # ruby.json, erb.json, zig.json
 │   ├── zellij/                 # Zellij config + Tokyo Night theme
 │   └── starship.toml           # Prompt configuration
+├── bin/                        # Custom scripts
+│   └── erb-lint-formatter      # ERB lint wrapper for Zed
 ├── scripts/
 │   └── health-check.sh         # Verify installation
 └── docs/                       # Additional documentation
@@ -391,6 +404,12 @@ Edit `Brewfile` and run:
 ```bash
 brew bundle install
 ```
+
+### Customize Zed
+
+- **Settings**: `.config/zed/settings.json` (languages, LSP, formatters)
+- **Tasks**: `.config/zed/tasks.json` (RSpec, Rails, Zig, etc.)
+- **Snippets**: `.config/zed/snippets/` (ruby.json, erb.json, zig.json)
 
 ### Modify Keybindings
 
@@ -475,4 +494,4 @@ Found a bug or have a suggestion? Open an issue or PR!
 
 *Inspired by DHH's Omakub and ThePrimeagen's workflows*
 
-*Last updated: 2025-11-24*
+*Last updated: 2026-03-08*
