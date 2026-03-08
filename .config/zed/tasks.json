@@ -1,0 +1,170 @@
+[
+  {
+    "label": "RSpec: Run current file",
+    "command": "bundle exec rspec $ZED_FILE",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "tags": ["ruby-test"]
+  },
+  {
+    "label": "RSpec: Run current line",
+    "command": "bundle exec rspec $ZED_FILE:$ZED_ROW",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "tags": ["ruby-test"]
+  },
+  {
+    "label": "RSpec: Run all specs",
+    "command": "bundle exec rspec",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "tags": ["ruby-test"]
+  },
+  {
+    "label": "RSpec: Run failed specs",
+    "command": "bundle exec rspec --only-failures",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "tags": ["ruby-test"]
+  },
+  {
+    "label": "Rails: Server",
+    "command": "bin/rails server",
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false,
+    "tags": ["rails"]
+  },
+  {
+    "label": "Rails: Console",
+    "command": "bin/rails console",
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false,
+    "tags": ["rails"]
+  },
+  {
+    "label": "Rails: Routes (grep)",
+    "command": "bin/rails routes | grep -i $ZED_SELECTED_TEXT",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": true,
+    "tags": ["rails"]
+  },
+  {
+    "label": "Rails: Migrate",
+    "command": "bin/rails db:migrate",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "tags": ["rails"]
+  },
+  {
+    "label": "Rails: Migrate + Test Prepare",
+    "command": "bin/rails db:migrate && RAILS_ENV=test bin/rails db:test:prepare",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "tags": ["rails"]
+  },
+  {
+    "label": "RuboCop: Current file",
+    "command": "bundle exec rubocop $ZED_FILE",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "tags": ["ruby-lint"]
+  },
+  {
+    "label": "RuboCop: Autocorrect current file",
+    "command": "bundle exec rubocop -A $ZED_FILE",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "tags": ["ruby-lint"]
+  },
+  {
+    "label": "Elixir: Mix test current file",
+    "command": "mix test $ZED_FILE",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "tags": ["elixir-test"]
+  },
+  {
+    "label": "Elixir: Mix test current line",
+    "command": "mix test $ZED_FILE:$ZED_ROW",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "tags": ["elixir-test"]
+  },
+  {
+    "label": "Elixir: Mix test all",
+    "command": "mix test",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "tags": ["elixir-test"]
+  },
+  {
+    "label": "Elixir: Phoenix server",
+    "command": "mix phx.server",
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false,
+    "tags": ["elixir"]
+  },
+  {
+    "label": "Elixir: IEx with Phoenix",
+    "command": "iex -S mix phx.server",
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false,
+    "tags": ["elixir"]
+  },
+  {
+    "label": "npm: Run dev",
+    "command": "npm run dev",
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false,
+    "tags": ["js"]
+  },
+  {
+    "label": "npm: Run tests",
+    "command": "npm test",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "tags": ["js"]
+  },
+  {
+    "label": "Zig: Build",
+    "command": "zig build",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "tags": ["zig-build"]
+  },
+  {
+    "label": "Zig: Build (ReleaseSafe)",
+    "command": "zig build -Doptimize=ReleaseSafe",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "tags": ["zig-build"]
+  },
+  {
+    "label": "Zig: Test current file",
+    "command": "zig test $ZED_FILE",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "tags": ["zig-test"]
+  },
+  {
+    "label": "Zig: Run current file",
+    "command": "zig run $ZED_FILE",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "tags": ["zig-run"]
+  },
+  {
+    "label": "Zig: Build & Run",
+    "command": "zig build run",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "tags": ["zig-build"]
+  },
+  {
+    "label": "Zig: Build Test",
+    "command": "zig build test",
+    "use_new_terminal": false,
+    "allow_concurrent_runs": false,
+    "tags": ["zig-test"]
+  }
+]

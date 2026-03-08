@@ -1,0 +1,220 @@
+{
+  "main": {
+    "prefix": "main",
+    "body": [
+      "const std = @import(\"std\");",
+      "",
+      "pub fn main() !void {",
+      "    ${0}",
+      "}"
+    ],
+    "description": "Main function with std import"
+  },
+  "main with allocator": {
+    "prefix": "maina",
+    "body": [
+      "const std = @import(\"std\");",
+      "",
+      "pub fn main() !void {",
+      "    var gpa = std.heap.GeneralPurposeAllocator(.{}){};",
+      "    defer _ = gpa.deinit();",
+      "    const allocator = gpa.allocator();",
+      "    _ = allocator;",
+      "",
+      "    ${0}",
+      "}"
+    ],
+    "description": "Main function with GPA allocator"
+  },
+  "test block": {
+    "prefix": "test",
+    "body": [
+      "test \"${1:description}\" {",
+      "    ${0}",
+      "}"
+    ],
+    "description": "Test block"
+  },
+  "test with allocator": {
+    "prefix": "testa",
+    "body": [
+      "test \"${1:description}\" {",
+      "    const allocator = std.testing.allocator;",
+      "    _ = allocator;",
+      "",
+      "    ${0}",
+      "}"
+    ],
+    "description": "Test block with testing allocator"
+  },
+  "struct": {
+    "prefix": "struct",
+    "body": [
+      "const ${1:Name} = struct {",
+      "    ${2:field}: ${3:type},",
+      "",
+      "    pub fn init(${4:args}) ${1:Name} {",
+      "        return .{",
+      "            .${2:field} = ${5:value},",
+      "        };",
+      "    }",
+      "",
+      "    ${0}",
+      "};"
+    ],
+    "description": "Struct with init function"
+  },
+  "enum": {
+    "prefix": "enum",
+    "body": [
+      "const ${1:Name} = enum {",
+      "    ${2:variant},",
+      "    ${0}",
+      "};"
+    ],
+    "description": "Enum definition"
+  },
+  "error set": {
+    "prefix": "errset",
+    "body": [
+      "const ${1:Name}Error = error{",
+      "    ${2:ErrorVariant},",
+      "    ${0}",
+      "};"
+    ],
+    "description": "Error set definition"
+  },
+  "for loop": {
+    "prefix": "for",
+    "body": [
+      "for (${1:items}) |${2:item}| {",
+      "    ${0}",
+      "}"
+    ],
+    "description": "For loop"
+  },
+  "for with index": {
+    "prefix": "fori",
+    "body": [
+      "for (${1:items}, 0..) |${2:item}, ${3:i}| {",
+      "    ${0}",
+      "}"
+    ],
+    "description": "For loop with index"
+  },
+  "while loop": {
+    "prefix": "while",
+    "body": [
+      "while (${1:condition}) {",
+      "    ${0}",
+      "}"
+    ],
+    "description": "While loop"
+  },
+  "switch": {
+    "prefix": "switch",
+    "body": [
+      "switch (${1:value}) {",
+      "    ${2:pattern} => ${3:result},",
+      "    else => ${0},",
+      "}"
+    ],
+    "description": "Switch expression"
+  },
+  "if else": {
+    "prefix": "ife",
+    "body": [
+      "if (${1:condition}) {",
+      "    ${2}",
+      "} else {",
+      "    ${0}",
+      "}"
+    ],
+    "description": "If-else block"
+  },
+  "optional unwrap": {
+    "prefix": "orelse",
+    "body": "const ${1:value} = ${2:optional} orelse ${0:return};",
+    "description": "Unwrap optional with orelse"
+  },
+  "try catch": {
+    "prefix": "trycatch",
+    "body": [
+      "const ${1:value} = ${2:expression} catch |err| {",
+      "    ${0}",
+      "};"
+    ],
+    "description": "Try-catch error handling"
+  },
+  "defer": {
+    "prefix": "defer",
+    "body": "defer ${0};",
+    "description": "Defer statement"
+  },
+  "errdefer": {
+    "prefix": "errdefer",
+    "body": "errdefer ${0};",
+    "description": "Errdefer statement"
+  },
+  "print": {
+    "prefix": "print",
+    "body": "std.debug.print(\"${1:}\\n\", .{${0}});",
+    "description": "Debug print"
+  },
+  "log": {
+    "prefix": "log",
+    "body": "std.log.info(\"${1:}\\n\", .{${0}});",
+    "description": "Standard log info"
+  },
+  "ArrayList": {
+    "prefix": "arraylist",
+    "body": [
+      "var ${1:list} = std.ArrayList(${2:type}).init(allocator);",
+      "defer ${1:list}.deinit();",
+      "${0}"
+    ],
+    "description": "ArrayList with defer deinit"
+  },
+  "HashMap": {
+    "prefix": "hashmap",
+    "body": [
+      "var ${1:map} = std.AutoHashMap(${2:KeyType}, ${3:ValueType}).init(allocator);",
+      "defer ${1:map}.deinit();",
+      "${0}"
+    ],
+    "description": "AutoHashMap with defer deinit"
+  },
+  "import": {
+    "prefix": "import",
+    "body": "const ${1:name} = @import(\"${2:module}\");",
+    "description": "@import statement"
+  },
+  "pub fn": {
+    "prefix": "pubfn",
+    "body": [
+      "pub fn ${1:name}(${2:params}) ${3:!void} {",
+      "    ${0}",
+      "}"
+    ],
+    "description": "Public function"
+  },
+  "fn": {
+    "prefix": "fn",
+    "body": [
+      "fn ${1:name}(${2:params}) ${3:!void} {",
+      "    ${0}",
+      "}"
+    ],
+    "description": "Private function"
+  },
+  "Thread pool": {
+    "prefix": "threadpool",
+    "body": [
+      "var pool: std.Thread.Pool = undefined;",
+      "try pool.init(.{ .allocator = allocator });",
+      "defer pool.deinit();",
+      "${0}"
+    ],
+    "description": "Thread pool initialization"
+  }
+}

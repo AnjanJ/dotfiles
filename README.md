@@ -64,8 +64,9 @@ Like DHH's **[Omakub](https://omakub.org/)** for Ubuntu, this setup provides:
 - **Shell**: zsh with modular configuration
 - **Prompt**: Starship
 - **Multiplexers**: tmux + Zellij
-- **Editor**: Neovim with AstroNvim
+- **Editors**: Neovim with AstroNvim, Zed (settings, snippets, tasks)
 - **Version Control**: Git, lazygit, GitHub CLI
+- **Custom Scripts**: `~/bin` (erb-lint-formatter, etc.)
 
 ### Development
 - **mise** - Modern version manager (replaces rbenv, nvm, asdf)

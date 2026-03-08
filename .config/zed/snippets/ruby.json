@@ -1,0 +1,207 @@
+{
+  "RSpec describe block": {
+    "prefix": "desc",
+    "body": [
+      "RSpec.describe ${1:ClassName} do",
+      "  $0",
+      "end"
+    ],
+    "description": "RSpec describe block"
+  },
+  "RSpec context block": {
+    "prefix": "ctx",
+    "body": [
+      "context '${1:when condition}' do",
+      "  $0",
+      "end"
+    ],
+    "description": "RSpec context block"
+  },
+  "RSpec it block": {
+    "prefix": "it",
+    "body": [
+      "it '${1:does something}' do",
+      "  $0",
+      "end"
+    ],
+    "description": "RSpec it block"
+  },
+  "RSpec expect": {
+    "prefix": "exp",
+    "body": "expect(${1:subject}).to ${2:eq(${3:value})}",
+    "description": "RSpec expect assertion"
+  },
+  "RSpec let": {
+    "prefix": "let",
+    "body": "let(:${1:name}) { ${2:value} }",
+    "description": "RSpec let declaration"
+  },
+  "RSpec let!": {
+    "prefix": "letb",
+    "body": "let!(:${1:name}) { ${2:value} }",
+    "description": "RSpec let! (bang) declaration"
+  },
+  "RSpec before": {
+    "prefix": "bef",
+    "body": [
+      "before do",
+      "  $0",
+      "end"
+    ],
+    "description": "RSpec before block"
+  },
+  "RSpec subject": {
+    "prefix": "subj",
+    "body": "subject(:${1:name}) { ${2:value} }",
+    "description": "RSpec named subject"
+  },
+  "RSpec shared_examples": {
+    "prefix": "shared",
+    "body": [
+      "shared_examples '${1:name}' do",
+      "  $0",
+      "end"
+    ],
+    "description": "RSpec shared examples"
+  },
+  "RSpec it_behaves_like": {
+    "prefix": "itbl",
+    "body": "it_behaves_like '${1:shared example name}'",
+    "description": "RSpec it_behaves_like"
+  },
+  "Frozen string literal": {
+    "prefix": "frozen",
+    "body": "# frozen_string_literal: true",
+    "description": "Frozen string literal comment"
+  },
+  "Rails service object": {
+    "prefix": "service",
+    "body": [
+      "class ${1:Name}Service",
+      "  def initialize(${2:params})",
+      "    @${2:params} = ${2:params}",
+      "  end",
+      "",
+      "  def call",
+      "    $0",
+      "  end",
+      "",
+      "  private",
+      "",
+      "  attr_reader :${2:params}",
+      "end"
+    ],
+    "description": "Rails service object pattern"
+  },
+  "Rails scope": {
+    "prefix": "scope",
+    "body": "scope :${1:name}, -> { ${2:where(active: true)} }",
+    "description": "ActiveRecord scope"
+  },
+  "Rails scope with arg": {
+    "prefix": "scopea",
+    "body": "scope :${1:name}, ->(${2:arg}) { ${3:where(status: ${2:arg})} }",
+    "description": "ActiveRecord scope with argument"
+  },
+  "Rails validation": {
+    "prefix": "val",
+    "body": "validates :${1:field}, ${2:presence: true}",
+    "description": "ActiveRecord validation"
+  },
+  "Rails has_many": {
+    "prefix": "hm",
+    "body": "has_many :${1:associations}, dependent: :${2:destroy}",
+    "description": "has_many association"
+  },
+  "Rails belongs_to": {
+    "prefix": "bt",
+    "body": "belongs_to :${1:association}",
+    "description": "belongs_to association"
+  },
+  "Rails before_action": {
+    "prefix": "ba",
+    "body": "before_action :${1:method_name}${2:, only: [:${3:show}]}",
+    "description": "before_action callback"
+  },
+  "Private keyword": {
+    "prefix": "priv",
+    "body": [
+      "private",
+      "",
+      "$0"
+    ],
+    "description": "private keyword with spacing"
+  },
+  "Ruby each block": {
+    "prefix": "each",
+    "body": [
+      "${1:collection}.each do |${2:item}|",
+      "  $0",
+      "end"
+    ],
+    "description": "each iterator block"
+  },
+  "Ruby map block": {
+    "prefix": "map",
+    "body": "${1:collection}.map { |${2:item}| ${3:item} }",
+    "description": "map with block"
+  },
+  "Ruby select block": {
+    "prefix": "sel",
+    "body": "${1:collection}.select { |${2:item}| ${3:condition} }",
+    "description": "select with block"
+  },
+  "Debug binding.pry": {
+    "prefix": "pry",
+    "body": "binding.pry",
+    "description": "Pry debugger breakpoint"
+  },
+  "Debug binding.irb": {
+    "prefix": "irb",
+    "body": "binding.irb",
+    "description": "IRB debugger breakpoint"
+  },
+  "Rails logger": {
+    "prefix": "rlog",
+    "body": "Rails.logger.${1:info}(\"${2:message}\")",
+    "description": "Rails logger"
+  },
+  "Memoization": {
+    "prefix": "memo",
+    "body": "@${1:name} ||= ${2:value}",
+    "description": "Memoization pattern"
+  },
+  "Memoization boolean-safe": {
+    "prefix": "memob",
+    "body": [
+      "return @${1:name} if defined?(@${1:name})",
+      "",
+      "@${1:name} = ${2:value}"
+    ],
+    "description": "Boolean-safe memoization with defined?"
+  },
+  "ActiveRecord transaction": {
+    "prefix": "tx",
+    "body": [
+      "ActiveRecord::Base.transaction do",
+      "  $0",
+      "end"
+    ],
+    "description": "ActiveRecord transaction block"
+  },
+  "Rails migration add_column": {
+    "prefix": "addc",
+    "body": "add_column :${1:table}, :${2:column}, :${3:string}${4:, null: false}",
+    "description": "Add column in migration"
+  },
+  "Rails migration add_index": {
+    "prefix": "addi",
+    "body": "add_index :${1:table}, :${2:column}${3:, unique: true}",
+    "description": "Add index in migration"
+  },
+  "Raise custom error": {
+    "prefix": "raise",
+    "body": "raise ${1:StandardError}, '${2:message}'",
+    "description": "Raise an error"
+  }
+}

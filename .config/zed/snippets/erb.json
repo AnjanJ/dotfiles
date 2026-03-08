@@ -1,0 +1,93 @@
+{
+  "ERB output tag": {
+    "prefix": "er",
+    "body": "<%= ${1:expression} %>",
+    "description": "ERB output tag"
+  },
+  "ERB silent tag": {
+    "prefix": "ee",
+    "body": "<% ${1:code} %>",
+    "description": "ERB silent tag"
+  },
+  "ERB comment": {
+    "prefix": "ec",
+    "body": "<%# ${1:comment} %>",
+    "description": "ERB comment"
+  },
+  "ERB if block": {
+    "prefix": "eif",
+    "body": [
+      "<% if ${1:condition} %>",
+      "  $0",
+      "<% end %>"
+    ],
+    "description": "ERB if block"
+  },
+  "ERB if/else block": {
+    "prefix": "eife",
+    "body": [
+      "<% if ${1:condition} %>",
+      "  $2",
+      "<% else %>",
+      "  $0",
+      "<% end %>"
+    ],
+    "description": "ERB if/else block"
+  },
+  "ERB each block": {
+    "prefix": "eeach",
+    "body": [
+      "<% ${1:collection}.each do |${2:item}| %>",
+      "  $0",
+      "<% end %>"
+    ],
+    "description": "ERB each iterator"
+  },
+  "ERB render partial": {
+    "prefix": "erp",
+    "body": "<%= render '${1:partial_name}'${2:, locals: { ${3:key}: ${4:value} }} %>",
+    "description": "ERB render partial"
+  },
+  "ERB link_to": {
+    "prefix": "elt",
+    "body": "<%= link_to '${1:text}', ${2:path}${3:, class: '${4:classes}'} %>",
+    "description": "ERB link_to helper"
+  },
+  "ERB form_with model": {
+    "prefix": "efw",
+    "body": [
+      "<%= form_with(model: ${1:@model}${2:, local: true}) do |f| %>",
+      "  $0",
+      "<% end %>"
+    ],
+    "description": "ERB form_with model"
+  },
+  "ERB turbo_frame_tag": {
+    "prefix": "etf",
+    "body": [
+      "<%= turbo_frame_tag '${1:frame_id}' do %>",
+      "  $0",
+      "<% end %>"
+    ],
+    "description": "ERB turbo_frame_tag"
+  },
+  "ERB content_for": {
+    "prefix": "ecf",
+    "body": [
+      "<% content_for :${1:name} do %>",
+      "  $0",
+      "<% end %>"
+    ],
+    "description": "ERB content_for block"
+  },
+  "ERB yield content_for": {
+    "prefix": "eyc",
+    "body": "<%= yield :${1:name} %>",
+    "description": "ERB yield content_for"
+  },
+  "ERB image_tag": {
+    "prefix": "eit",
+    "body": "<%= image_tag '${1:path}', alt: '${2:description}'${3:, class: '${4:classes}'} %>",
+    "description": "ERB image_tag"
+  }
+}

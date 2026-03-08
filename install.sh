@@ -70,8 +70,10 @@ echo "║   • Ghostty terminal                                      ║"
 echo "║   • Neovim + AstroNvim                                    ║"
 echo "║   • tmux + plugins                                        ║"
 echo "║   • Zellij                                                ║"
+echo "║   • Zed editor (settings, snippets, tasks)                ║"
 echo "║   • Starship prompt                                       ║"
 echo "║   • Shell configuration                                   ║"
+echo "║   • Custom scripts (~/bin)                                ║"
 echo "║   • Tokyo Night theme everywhere                          ║"
 echo "║                                                           ║"
 echo "║   💡 Tip: Script is idempotent - safe to re-run          ║"
@@ -130,8 +132,9 @@ print_success "All packages installed"
 echo ""
 print_step "Step 3: Creating configuration directories..."
 
-mkdir -p ~/.config/{aerospace,ghostty,nvim,zellij}
+mkdir -p ~/.config/{aerospace,ghostty,nvim,zellij,zed/snippets}
 mkdir -p ~/.tmux/plugins
+mkdir -p ~/bin
 
 print_success "Directories created"
 
@@ -151,6 +154,7 @@ mkdir -p "$BACKUP_DIR"
 [[ -d ~/.config/aerospace ]] && cp -r ~/.config/aerospace "$BACKUP_DIR/"
 [[ -d ~/.config/ghostty ]] && cp -r ~/.config/ghostty "$BACKUP_DIR/"
 [[ -d ~/.config/zellij ]] && cp -r ~/.config/zellij "$BACKUP_DIR/"
+[[ -d ~/.config/zed ]] && cp -r ~/.config/zed "$BACKUP_DIR/"
 [[ -f ~/.config/starship.toml ]] && cp ~/.config/starship.toml "$BACKUP_DIR/"
 
 print_success "Backup created at: $BACKUP_DIR"
@@ -226,6 +230,20 @@ create_symlink "$DOTFILES_DIR/.config/ghostty" ~/.config/ghostty "ghostty config
 create_symlink "$DOTFILES_DIR/.config/nvim" ~/.config/nvim "nvim config"
 create_symlink "$DOTFILES_DIR/.config/zellij" ~/.config/zellij "zellij config"
 create_symlink "$DOTFILES_DIR/.config/starship.toml" ~/.config/starship.toml "starship config"
+
+# Zed editor
+create_symlink "$DOTFILES_DIR/.config/zed/settings.json" ~/.config/zed/settings.json "zed settings"
+create_symlink "$DOTFILES_DIR/.config/zed/tasks.json" ~/.config/zed/tasks.json "zed tasks"
+for snippet in "$DOTFILES_DIR/.config/zed/snippets/"*.json; do
+    name=$(basename "$snippet")
+    create_symlink "$snippet" ~/.config/zed/snippets/"$name" "zed snippet: $name"
+done
+
+# Custom scripts (~/bin)
+for script in "$DOTFILES_DIR/bin/"*; do
+    name=$(basename "$script")
+    create_symlink "$script" ~/bin/"$name" "bin/$name"
+done
 
 print_success "All symlinks processed"
 
