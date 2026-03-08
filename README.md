@@ -24,12 +24,14 @@ Like DHH's **[Omakub](https://omakub.org/)** for Ubuntu, this setup provides:
 
 ### Why This Stack?
 
-**Window Management (Aerospace)**: i3-style tiling for macOS - keyboard-driven, distraction-free
-**Terminal (Ghostty)**: GPU-accelerated, native macOS, modern
-**Editors (Neovim + Zed)**: Neovim with AstroNvim for terminal, Zed for GUI — both with full LSP
-**Shell (zsh + Starship)**: Fast, reliable, beautiful prompt
-**Multiplexers (tmux + Zellij)**: Session management with vim integration
-**Theme (Tokyo Night)**: Consistent, easy on eyes, used by thousands of developers
+| Tool | Why |
+|------|-----|
+| **Aerospace** | i3-style tiling for macOS — keyboard-driven, distraction-free |
+| **Ghostty** | GPU-accelerated terminal, native macOS, modern |
+| **Neovim + Zed** | Neovim with AstroNvim for terminal, Zed for GUI — both with full LSP |
+| **zsh + Starship** | Fast, reliable shell with a beautiful prompt |
+| **tmux + Zellij** | Session management with vim integration |
+| **Tokyo Night** | Consistent theme everywhere — easy on eyes, used by thousands |
 
 ## ✨ Features
 
