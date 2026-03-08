@@ -74,6 +74,7 @@ Like DHH's **[Omakub](https://omakub.org/)** for Ubuntu, this setup provides:
 - Elixir + Erlang (latest)
 - Node.js (latest)
 - Python 3
+- Zig
 - Go, Rust (latest)
 - PostgreSQL 14
 - Redis
