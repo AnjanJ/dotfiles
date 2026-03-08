@@ -113,6 +113,8 @@ That's it! The script will:
 
 **💡 The install script is idempotent** - safe to run multiple times. Use `--force` to override existing configs.
 
+**📋 Want the full breakdown?** See [WHAT_GETS_INSTALLED.md](WHAT_GETS_INSTALLED.md) — every tool, language, config, and system change explained step by step.
+
 ```bash
 bash install.sh --force  # Force reinstall everything
 bash install.sh --help   # Show all options
@@ -464,6 +466,7 @@ open -a Aerospace
 
 Detailed guides for each tool:
 
+- [What Gets Installed](WHAT_GETS_INSTALLED.md) - Full breakdown of every tool and config change
 - [Neovim Guide](.config/nvim/README.md)
 - [Quick Reference](QUICK_REFERENCE.md) - Print this!
 - [tmux Guide](docs/tmux-guide.md)
