@@ -70,7 +70,7 @@ Like DHH's **[Omakub](https://omakub.org/)** for Ubuntu, this setup provides:
 
 ### Development
 - **mise** - Modern version manager (replaces rbenv, nvm, asdf)
-- Ruby 3.4.5
+- Ruby (latest via mise)
 - Elixir + Erlang (latest)
 - Node.js (latest)
 - Python 3
@@ -84,7 +84,8 @@ Like DHH's **[Omakub](https://omakub.org/)** for Ubuntu, this setup provides:
 - bat (cat with syntax highlighting)
 - eza (modern ls)
 - tree (directory visualization)
-- htop, btop (system monitoring)
+- yazi (terminal file manager)
+- lnav, tailspin (log viewers)
 
 ## 🎯 One-Command Installation
 
@@ -183,6 +184,7 @@ dotfiles/
 ├── .config/
 │   ├── aerospace/              # Window management: layouts, keybindings
 │   ├── ghostty/                # Terminal: theme, fonts
+│   ├── mise/                   # Version manager (Ruby, Node, Elixir, etc.)
 │   ├── nvim/                   # Editor: LSP, plugins, keymaps
 │   ├── zed/                    # Zed: settings, snippets, tasks
 │   ├── zellij/                 # Multiplexer: layouts, theme

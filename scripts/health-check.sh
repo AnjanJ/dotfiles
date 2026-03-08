@@ -190,6 +190,13 @@ else
     ((WARNINGS++))
 fi
 
+# Check Zed config
+check_file ~/.config/zed/settings.json "Zed settings" link
+check_file ~/.config/zed/tasks.json "Zed tasks" link
+check_file ~/.config/zed/snippets/ruby.json "Zed Ruby snippets" link
+check_file ~/.config/zed/snippets/erb.json "Zed ERB snippets" link
+check_file ~/.config/zed/snippets/zig.json "Zed Zig snippets" link
+
 # ============================================
 # 5. SHELL CONFIGURATION
 # ============================================
@@ -219,6 +226,9 @@ else
     echo -e "${RED}✗${NC} mise not found, skipping language runtime checks"
     ((FAILED+=6))
 fi
+
+# Zig (installed via Homebrew, not mise)
+check_command zig "Zig" false
 
 # ============================================
 # 7. CLI UTILITIES
@@ -304,9 +314,25 @@ if command -v mise &> /dev/null && mise current elixir &> /dev/null; then
 fi
 
 # ============================================
-# 10. SHELL INTEGRATION
+# 10. CUSTOM SCRIPTS (~/bin)
 # ============================================
-print_header "10. Shell Integration"
+print_header "10. Custom Scripts (~/bin)"
+
+check_file ~/bin/erb-lint-formatter "erb-lint-formatter" link
+
+# Check ~/bin is in PATH
+if echo "$PATH" | tr ':' '\n' | grep -q "$HOME/bin"; then
+    echo -e "${GREEN}✓${NC} ~/bin in PATH: ${GREEN}yes${NC}"
+    ((PASSED++))
+else
+    echo -e "${YELLOW}⚠${NC} ~/bin in PATH: ${YELLOW}not found (add to .zshrc)${NC}"
+    ((WARNINGS++))
+fi
+
+# ============================================
+# 11. SHELL INTEGRATION
+# ============================================
+print_header "11. Shell Integration"
 
 # Check if mise is activated in shell
 if grep -q "mise activate" ~/.zshrc; then

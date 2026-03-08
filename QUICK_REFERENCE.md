@@ -66,6 +66,38 @@ cp -r ~/.config ~/.config.backup.$(date +%Y%m%d)
 | `Alt+H/J/K/L` | Navigate panes |
 | `Ctrl+Q` | Quit |
 
+### Zed Tasks (`Cmd+Shift+P` > "task: spawn")
+| Task | Command |
+|------|---------|
+| `RSpec: Run current file` | `bundle exec rspec $ZED_FILE` |
+| `RSpec: Run current line` | `bundle exec rspec $ZED_FILE:$ZED_ROW` |
+| `Rails: Server` | `bin/rails server` |
+| `Rails: Console` | `bin/rails console` |
+| `Rails: Migrate` | `bin/rails db:migrate` |
+| `Zig: Build` | `zig build` |
+| `Zig: Test current file` | `zig test $ZED_FILE` |
+| `Zig: Run current file` | `zig run $ZED_FILE` |
+
+### Zed Snippets (type prefix + Tab)
+| Prefix | Expands to | Language |
+|--------|-----------|----------|
+| `desc` | RSpec describe block | Ruby |
+| `ctx` | RSpec context block | Ruby |
+| `it` | RSpec it block | Ruby |
+| `exp` | RSpec expect | Ruby |
+| `let` | RSpec let | Ruby |
+| `service` | Service object class | Ruby |
+| `pry` | binding.pry | Ruby |
+| `memo` | @var \|\|= value | Ruby |
+| `er` | `<%= %>` | ERB |
+| `eif` | ERB if block | ERB |
+| `erp` | ERB render partial | ERB |
+| `etf` | turbo_frame_tag | ERB |
+| `main` | main() with std import | Zig |
+| `test` | test block | Zig |
+| `struct` | struct with init | Zig |
+| `print` | std.debug.print | Zig |
+
 ## 🛠️ Common Tasks
 
 ### Git Workflow

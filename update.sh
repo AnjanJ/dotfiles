@@ -156,6 +156,22 @@ create_symlink "$DOTFILES_DIR/.config/zellij" ~/.config/zellij "zellij config"
 create_symlink "$DOTFILES_DIR/.config/starship.toml" ~/.config/starship.toml "starship config"
 create_symlink "$DOTFILES_DIR/.config/mise/config.toml" ~/.config/mise/config.toml "mise config"
 
+# Zed editor
+mkdir -p ~/.config/zed/snippets
+create_symlink "$DOTFILES_DIR/.config/zed/settings.json" ~/.config/zed/settings.json "zed settings"
+create_symlink "$DOTFILES_DIR/.config/zed/tasks.json" ~/.config/zed/tasks.json "zed tasks"
+for snippet in "$DOTFILES_DIR/.config/zed/snippets/"*.json; do
+    name=$(basename "$snippet")
+    create_symlink "$snippet" ~/.config/zed/snippets/"$name" "zed snippet: $name"
+done
+
+# Custom scripts (~/bin)
+mkdir -p ~/bin
+for script in "$DOTFILES_DIR/bin/"*; do
+    name=$(basename "$script")
+    create_symlink "$script" ~/bin/"$name" "bin/$name"
+done
+
 print_success "Symlinks refreshed"
 
 # ============================================
