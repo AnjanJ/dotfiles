@@ -498,7 +498,7 @@ Found a bug or have a suggestion? Open an issue or PR!
 
 ---
 
-**Made with ❤️ by AJ**
+**Made with ❤️ by [AJ](https://anjan.dev)**
 
 *Inspired by DHH's Omakub and ThePrimeagen's workflows*
 

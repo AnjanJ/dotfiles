@@ -56,10 +56,8 @@
     "scroll_debounce_ms": 50
   },
   "git": {
-    "git_gutter": "tracked_files",
     "inline_blame": {
-      "enabled": true,
-      "delay_ms": 600
+      "show_commit_summary": true
     }
   },
   "terminal": {
@@ -470,7 +468,7 @@
     }
   },
   "confirm_quit": false,
-  "restore_on_startup": "last_workspace",
+  "restore_on_startup": "launchpad",
   "extend_comment_on_newline": true,
   "use_autoclose": true,
   "show_completion_documentation": true,
