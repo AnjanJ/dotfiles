@@ -175,6 +175,19 @@ done
 print_success "Symlinks refreshed"
 
 # ============================================
+# 3b. REAPPLY CURRENT THEME
+# ============================================
+echo ""
+print_step "Step 3b: Reapplying current theme..."
+
+source "$DOTFILES_DIR/scripts/theme-utils.sh"
+CURRENT_THEME=$(get_current_theme)
+source "$DOTFILES_DIR/scripts/apply-theme.sh"
+apply_theme "$CURRENT_THEME"
+
+print_success "Theme reapplied: $CURRENT_THEME"
+
+# ============================================
 # 4. UPDATE MISE TOOLS
 # ============================================
 echo ""

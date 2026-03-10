@@ -74,7 +74,7 @@ echo "║   • Zed editor (settings, snippets, tasks)                ║"
 echo "║   • Starship prompt                                       ║"
 echo "║   • Shell configuration                                   ║"
 echo "║   • Custom scripts (~/bin)                                ║"
-echo "║   • Tokyo Night theme everywhere                          ║"
+echo "║   • Theme: Tokyo Night or Aura (your choice!)              ║"
 echo "║                                                           ║"
 echo "║   💡 Tip: Script is idempotent - safe to re-run          ║"
 echo "║   Use --force to override existing configs               ║"
@@ -94,6 +94,15 @@ fi
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 echo ""
 print_step "Dotfiles directory: $DOTFILES_DIR"
+
+# ============================================
+# THEME SELECTION
+# ============================================
+source "$DOTFILES_DIR/scripts/theme-utils.sh"
+
+SELECTED_THEME=$(prompt_theme_choice)
+echo ""
+print_success "Theme selected: $SELECTED_THEME"
 
 # ============================================
 # 1. INSTALL HOMEBREW
@@ -248,6 +257,15 @@ done
 print_success "All symlinks processed"
 
 # ============================================
+# 6b. APPLY SELECTED THEME
+# ============================================
+echo ""
+print_step "Step 6b: Applying $SELECTED_THEME theme everywhere..."
+
+source "$DOTFILES_DIR/scripts/apply-theme.sh"
+apply_theme "$SELECTED_THEME"
+
+# ============================================
 # 7. INSTALL TPM (TMUX PLUGIN MANAGER)
 # ============================================
 echo ""
@@ -367,7 +385,8 @@ echo "   • Neovim guide: ~/.config/nvim/README.md"
 echo "   • tmux guide: $DOTFILES_DIR/docs/tmux-guide.md"
 echo "   • Zellij guide: $DOTFILES_DIR/docs/zellij-guide.md"
 echo ""
-echo "🎨 Theme: Tokyo Night (everywhere)"
+echo "🎨 Theme: $SELECTED_THEME (applied everywhere)"
+echo "   Switch anytime: bash $DOTFILES_DIR/switch-theme.sh"
 echo ""
 echo "🔧 Backup location: $BACKUP_DIR"
 echo ""

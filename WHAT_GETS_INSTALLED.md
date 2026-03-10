@@ -324,11 +324,32 @@ Creates symbolic links from the repo to your home directory. This is the core de
 
 ---
 
+## Step 6b: Apply Theme
+
+You chose either **Tokyo Night** or **Aura Dark** at the start of install. This step applies your choice across 8 apps automatically:
+
+| App | What changes |
+|-----|-------------|
+| Ghostty | `theme = ` line in config (+ custom theme file for Aura) |
+| Neovim | Plugin file + colorscheme in `astroui.lua` |
+| Zellij | Theme KDL file + `theme` line in `config.kdl` |
+| Starship | `palette` reference + palette section in `starship.toml` |
+| tmux | Theme block in `.tmux.conf` (TPM plugin for Tokyo Night, hand-ported for Aura) |
+| VS Code | `workbench.colorTheme` in settings.json |
+| Warp | Copies theme YAML to `~/.warp/themes/` (Aura only; Tokyo Night is built-in) |
+| Zed | `theme.dark` in `settings.json` |
+
+Manual instructions are printed for: Slack, Chrome, Firefox, Telegram, Raycast.
+
+Switch anytime later with: `bash switch-theme.sh`
+
+---
+
 ## Step 7: TPM (Tmux Plugin Manager)
 
 Clones [TPM](https://github.com/tmux-plugins/tpm) to `~/.tmux/plugins/tpm`.
 
-Plugins are **not** installed yet — you do that manually after install by opening tmux and pressing `Ctrl+A, Shift+I`. This installs 8 plugins including Tokyo Night theme, vim navigation, session persistence, etc.
+Plugins are **not** installed yet — you do that manually after install by opening tmux and pressing `Ctrl+A, Shift+I`. This installs 8 plugins including theme, vim navigation, session persistence, etc.
 
 ---
 

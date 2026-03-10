@@ -1,6 +1,6 @@
 # 🚀 AJ's Dotfiles
 
-> A complete macOS development environment for Ruby on Rails and Elixir/Phoenix development, themed with Tokyo Night everywhere.
+> A complete macOS development environment for Ruby on Rails and Elixir/Phoenix development, with your choice of Tokyo Night or Aura Dark theme applied everywhere.
 
 ## 💭 Philosophy
 
@@ -9,7 +9,7 @@ This setup is inspired by **DHH's Omakub** and his "**Everything in one place, e
 ### Core Principles
 
 1. **One Command Installation** - From zero to productive development environment in minutes
-2. **Unified Theme** - Tokyo Night everywhere for visual consistency and reduced cognitive load
+2. **Unified Theme** - Choose Tokyo Night or Aura Dark, applied everywhere for visual consistency
 3. **Keyboard-First** - Vim motions, tiling windows, keyboard shortcuts for everything
 4. **Modular Configuration** - Clean, organized configs that are easy to understand and modify
 5. **Developer Ergonomics** - Tools chosen for speed, reliability, and joy of use
@@ -31,16 +31,19 @@ Like DHH's **[Omakub](https://omakub.org/)** for Ubuntu, this setup provides:
 | **Neovim + Zed** | Neovim with AstroNvim for terminal, Zed for GUI — both with full LSP |
 | **zsh + Starship** | Fast, reliable shell with a beautiful prompt |
 | **tmux + Zellij** | Session management with vim integration |
-| **Tokyo Night** | Consistent theme everywhere — easy on eyes, used by thousands |
+| **Tokyo Night / Aura** | Choose your theme — applied consistently across all tools |
 
 ## ✨ Features
 
-### 🎨 Unified Tokyo Night Theme
-- **Neovim** - Beautiful syntax highlighting and statusline
-- **tmux** - Themed status bar and pane borders
-- **Zellij** - Custom Tokyo Night color scheme
-- **Starship** - Matching prompt colors
-- **Ghostty** - Terminal theme
+### 🎨 Theme System (Tokyo Night or Aura Dark)
+
+Choose your theme during install — it's applied across **13 apps**:
+
+| Auto-configured | Manual (links provided) |
+|----------------|------------------------|
+| Neovim, Ghostty, tmux, Zellij, Starship, Zed, VS Code, Warp | Slack, Chrome, Firefox, Telegram, Raycast |
+
+Switch anytime: `bash switch-theme.sh`
 
 ### 🛠️ Development Tools
 - **Ruby/Rails** - mise, ruby-lsp, RuboCop, RSpec tasks, ERB formatting
@@ -302,18 +305,19 @@ Each file has a single responsibility. Want to change your Rails workflow? Edit 
 
 ## 🎨 Theming
 
-All tools use the **Tokyo Night** color palette for a consistent, beautiful dark theme:
+Choose between **Tokyo Night** (dark blue) or **Aura Dark** (deep purple) during install. The theme is applied across 13 apps automatically.
 
-| Color | Hex | Usage |
-|-------|-----|-------|
-| Background | `#1a1b26` | Main background |
-| Foreground | `#c0caf5` | Text |
-| Blue | `#7aa2f7` | Primary accent |
-| Cyan | `#7dcfff` | Info, hints |
-| Purple | `#bb9af7` | Keywords |
-| Green | `#9ece6a` | Strings, success |
-| Red | `#f7768e` | Errors |
-| Yellow | `#e0af68` | Warnings |
+| | Tokyo Night | Aura Dark |
+|---|-----------|-----------|
+| **Background** | `#1a1b26` | `#15141b` |
+| **Foreground** | `#c0caf5` | `#edecee` |
+| **Primary accent** | `#7aa2f7` blue | `#a277ff` purple |
+| **Secondary** | `#bb9af7` purple | `#61ffca` green |
+| **Success** | `#9ece6a` green | `#61ffca` green |
+| **Error** | `#f7768e` red | `#ff6767` red |
+| **Warning** | `#e0af68` yellow | `#ffca85` orange |
+
+Switch anytime: `bash switch-theme.sh`
 
 ## 📁 Repository Structure
 
@@ -339,12 +343,18 @@ dotfiles/
 │   │   ├── settings.json       # Language, LSP, formatter, extension settings
 │   │   ├── tasks.json          # RSpec, Rails, Elixir, Zig, npm tasks
 │   │   └── snippets/           # ruby.json, erb.json, zig.json
-│   ├── zellij/                 # Zellij config + Tokyo Night theme
+│   ├── zellij/                 # Zellij config + theme
 │   └── starship.toml           # Prompt configuration
+├── themes/                     # Theme assets
+│   ├── tokyo-night/            # Tokyo Night configs per app
+│   └── aura/                   # Aura Dark configs per app
 ├── bin/                        # Custom scripts
 │   └── erb-lint-formatter      # ERB lint wrapper for Zed
+├── switch-theme.sh             # Switch theme anytime
 ├── scripts/
-│   └── health-check.sh         # Verify installation
+│   ├── health-check.sh         # Verify installation
+│   ├── theme-utils.sh          # Theme utility functions
+│   └── apply-theme.sh          # Apply theme across all apps
 └── docs/                       # Additional documentation
 ```
 
@@ -395,15 +405,17 @@ bash install.sh --force # Force reinstall everything
 
 ## 🔧 Customization
 
-### Change Theme
+### Switch Theme
 
-To switch from Tokyo Night to another theme:
+Switch between Tokyo Night and Aura Dark with one command:
 
-1. **Neovim**: Edit `.config/nvim/lua/plugins/tokyo-night-theme.lua`
-2. **Starship**: Edit `.config/starship.toml` palette section
-3. **tmux**: Change `@plugin 'janoamaral/tokyo-night-tmux'` in `.tmux.conf`
-4. **Zellij**: Edit `.config/zellij/themes/tokyo-night.kdl`
-5. **Ghostty**: Change `theme = tokyonight_night` in `.config/ghostty/config`
+```bash
+bash switch-theme.sh            # Interactive picker
+bash switch-theme.sh aura       # Switch to Aura Dark
+bash switch-theme.sh tokyo-night # Switch to Tokyo Night
+```
+
+This updates Neovim, Ghostty, tmux, Zellij, Starship, Zed, VS Code, and Warp automatically, then prints instructions for Slack, browsers, Telegram, and Raycast.
 
 ### Add More Packages
 
@@ -483,7 +495,8 @@ Detailed guides for each tool:
 
 ### Tools & Themes
 - **[AstroNvim](https://github.com/AstroNvim/AstroNvim)** - Neovim distribution
-- **[Tokyo Night](https://github.com/folke/tokyonight.nvim)** - Beautiful theme
+- **[Tokyo Night](https://github.com/folke/tokyonight.nvim)** - Dark blue theme by folke
+- **[Aura Theme](https://github.com/daltonmenezes/aura-theme)** - Deep purple theme by daltonmenezes
 - **[Starship](https://starship.rs/)** - Fast prompt
 - **[Aerospace](https://github.com/nikitabobko/AeroSpace)** - Window manager
 - **[Ghostty](https://ghostty.org/)** - Modern terminal

@@ -1,0 +1,50 @@
+
+══════════════════════════════════════════════════════
+  Manual Theme Steps: Aura Dark
+══════════════════════════════════════════════════════
+
+The following apps need manual theme selection.
+Most are one-click installs — just follow the links!
+
+──────────────────────────────────────────────────────
+SLACK
+──────────────────────────────────────────────────────
+  1. Open Slack → Preferences → Themes
+  2. Scroll to "Colors" section and click "Custom Theme"
+  3. Paste this color string:
+     #15141b,#121016,#3b334b,#61ffca,#3b334b,#adacae,#a277ff,#a277ff,#15141b,#edecee
+
+──────────────────────────────────────────────────────
+GOOGLE CHROME
+──────────────────────────────────────────────────────
+  Install from Chrome Web Store:
+  https://chromewebstore.google.com/detail/aura-theme/ddipnaombfnagpagnpdkdinoekfhfjoh
+
+──────────────────────────────────────────────────────
+FIREFOX
+──────────────────────────────────────────────────────
+  Install from Firefox Add-ons:
+  https://addons.mozilla.org/en-US/firefox/addon/aura-theme-v2/
+
+──────────────────────────────────────────────────────
+WARP TERMINAL
+──────────────────────────────────────────────────────
+  Aura theme YAML has been auto-installed to ~/.warp/themes/
+  Select it: Settings → Appearance → Themes → "Aura"
+
+──────────────────────────────────────────────────────
+TELEGRAM
+──────────────────────────────────────────────────────
+  1. Download the theme file from:
+     https://github.com/daltonmenezes/aura-theme/tree/main/packages/telegram
+  2. Open Telegram → Settings → Chat Settings
+  3. Under "Chat background", click "Choose from file"
+  4. Select the downloaded .tdesktop-theme file
+
+──────────────────────────────────────────────────────
+RAYCAST
+──────────────────────────────────────────────────────
+  Search "Aura" at https://ray.so/themes/ and click "Add to Raycast"
+  Note: Custom themes require Raycast Pro subscription.
+
+══════════════════════════════════════════════════════

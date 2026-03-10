@@ -1,0 +1,38 @@
+// ============================================
+// AURA THEME FOR ZELLIJ
+// ============================================
+// Based on daltonmenezes/aura-theme
+// Repository: https://github.com/daltonmenezes/aura-theme
+// Color palette: Aura Dark variant
+// ============================================
+
+themes {
+    aura {
+        // Foreground and Background
+        fg 237 236 238     // #edecee - Default foreground
+        bg 21 20 27        // #15141b - Default background
+
+        // Normal colors
+        black 17 15 24     // #110f18 - Darker background
+        red 255 103 103    // #ff6767 - Errors, deletions
+        green 97 255 202   // #61ffca - Success, additions
+        yellow 255 202 133 // #ffca85 - Warnings
+        blue 130 226 255   // #82e2ff - Info, blue accent
+        magenta 162 119 255 // #a277ff - Special, purple accent
+        cyan 130 226 255   // #82e2ff - Hints, cyan accent
+        white 237 236 238  // #edecee - Default text
+
+        // Bright colors
+        bright-black 109 109 109  // #6d6d6d - Comments
+        bright-red 255 103 103    // #ff6767
+        bright-green 97 255 202   // #61ffca
+        bright-yellow 255 202 133 // #ffca85
+        bright-blue 130 226 255   // #82e2ff
+        bright-magenta 246 148 255 // #f694ff
+        bright-cyan 130 226 255   // #82e2ff
+        bright-white 237 236 238  // #edecee - Bright text
+
+        // UI colors
+        orange 255 202 133        // #ffca85 - Special keywords
+    }
+}

@@ -1,0 +1,38 @@
+// ============================================
+// TOKYO NIGHT THEME FOR ZELLIJ
+// ============================================
+// Based on folke/tokyonight.nvim
+// Repository: https://github.com/folke/tokyonight.nvim
+// Color palette: Tokyo Night Storm variant
+// ============================================
+
+themes {
+    tokyo-night {
+        // Foreground and Background
+        fg 169 177 214      // #a9b1d6 - Default foreground
+        bg 36 40 59         // #24283b - Default background
+
+        // Normal colors
+        black 21 24 36      // #151824 - Darker background
+        red 247 118 142     // #f7768e - Errors, deletions
+        green 158 206 106   // #9ece6a - Success, additions
+        yellow 224 175 104  // #e0af68 - Warnings
+        blue 122 162 247    // #7aa2f7 - Info, primary accent
+        magenta 187 154 247 // #bb9af7 - Special, purple accent
+        cyan 125 207 255    // #7dcfff - Hints, cyan accent
+        white 169 177 214   // #a9b1d6 - Default text
+
+        // Bright colors
+        bright-black 68 71 90     // #444558 - Comments
+        bright-red 247 118 142    // #f7768e
+        bright-green 158 206 106  // #9ece6a
+        bright-yellow 224 175 104 // #e0af68
+        bright-blue 122 162 247   // #7aa2f7
+        bright-magenta 187 154 247 // #bb9af7
+        bright-cyan 125 207 255   // #7dcfff
+        bright-white 200 211 245  // #c8d3f5 - Bright text
+
+        // UI colors
+        orange 255 158 100        // #ff9e64 - Special keywords
+    }
+}

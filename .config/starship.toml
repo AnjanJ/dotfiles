@@ -295,13 +295,7 @@ style = "cyan bold"
 [line_break]
 disabled = false
 
-# ============================================
-# TOKYO NIGHT COLOR PALETTE
-# ============================================
-# Official Tokyo Night colors matching Neovim, tmux, and Zellij
-# Repository: https://github.com/folke/tokyonight.nvim
-# ============================================
-
+# THEME_PALETTE_START
 [palettes.tokyonight]
 # Background and Foreground
 background = "#1a1b26"
@@ -331,6 +325,7 @@ bright_white = "#c0caf5"
 purple = "#bb9af7"      # Primary accent
 orange = "#ff9e64"      # Secondary accent
 pink = "#f7768e"        # Errors/warnings
+# THEME_PALETTE_END
 
 # ============================================
 # FINAL NOTES

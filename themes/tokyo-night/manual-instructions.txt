@@ -1,0 +1,47 @@
+
+══════════════════════════════════════════════════════
+  Manual Theme Steps: Tokyo Night
+══════════════════════════════════════════════════════
+
+The following apps need manual theme selection.
+Most are one-click installs — just follow the links!
+
+──────────────────────────────────────────────────────
+SLACK
+──────────────────────────────────────────────────────
+  1. Open Slack → Preferences → Themes
+  2. Scroll to "Colors" section and click "Custom Theme"
+  3. Paste this color string:
+     #1a1b26,#24283b,#7aa2f7,#c0caf5,#24283b,#c0caf5,#9ece6a,#f7768e,#1a1b26,#c0caf5
+
+──────────────────────────────────────────────────────
+GOOGLE CHROME
+──────────────────────────────────────────────────────
+  Install from Chrome Web Store:
+  https://chromewebstore.google.com/detail/tokyo-night-storm-theme/pgbjifpikialeahbdendkjioeafbmfkn
+
+──────────────────────────────────────────────────────
+FIREFOX
+──────────────────────────────────────────────────────
+  Install from Firefox Add-ons:
+  https://addons.mozilla.org/en-US/firefox/addon/tokyo-night-v3/
+
+──────────────────────────────────────────────────────
+WARP TERMINAL
+──────────────────────────────────────────────────────
+  Tokyo Night is built-in:
+  Settings → Appearance → Themes → Select "Tokyo Night"
+
+──────────────────────────────────────────────────────
+TELEGRAM
+──────────────────────────────────────────────────────
+  No official Tokyo Night port available.
+  Use Telegram's built-in "Night" theme as a close alternative.
+
+──────────────────────────────────────────────────────
+RAYCAST
+──────────────────────────────────────────────────────
+  No official Tokyo Night port available.
+  Use Raycast's default dark theme.
+
+══════════════════════════════════════════════════════

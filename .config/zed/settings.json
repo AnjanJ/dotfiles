@@ -2,7 +2,7 @@
   "theme": {
     "mode": "system",
     "light": "One Light",
-    "dark": "Aura Dark"
+    "dark": "Tokyo Night"
   },
   "ui_font_size": 16,
   "buffer_font_size": 16,
@@ -78,7 +78,12 @@
     "default_height": 320,
     "detect_venv": {
       "on": {
-        "directories": [".env", "env", ".venv", "venv"],
+        "directories": [
+          ".env",
+          "env",
+          ".venv",
+          "venv"
+        ],
         "activate_script": "default"
       }
     }
@@ -143,10 +148,23 @@
       "formatter": {
         "external": {
           "command": "bundle",
-          "arguments": ["exec", "rubocop", "--server", "--autocorrect", "--stdin", "{buffer_path}", "--stderr"]
+          "arguments": [
+            "exec",
+            "rubocop",
+            "--server",
+            "--autocorrect",
+            "--stdin",
+            "{buffer_path}",
+            "--stderr"
+          ]
         }
       },
-      "language_servers": ["ruby-lsp", "!solargraph", "!rubocop", "..."],
+      "language_servers": [
+        "ruby-lsp",
+        "!solargraph",
+        "!rubocop",
+        "..."
+      ],
       "inlay_hints": {
         "enabled": false
       }
@@ -158,13 +176,20 @@
         {
           "external": {
             "command": "erb-lint-formatter",
-            "arguments": ["{buffer_path}"]
+            "arguments": [
+              "{buffer_path}"
+            ]
           }
         },
         {
           "external": {
             "command": "bundle",
-            "arguments": ["exec", "htmlbeautifier", "--keep-blank-lines", "1"]
+            "arguments": [
+              "exec",
+              "htmlbeautifier",
+              "--keep-blank-lines",
+              "1"
+            ]
           }
         }
       ]
@@ -177,7 +202,10 @@
       "formatter": {
         "external": {
           "command": "prettier",
-          "arguments": ["--stdin-filepath", "{buffer_path}"]
+          "arguments": [
+            "--stdin-filepath",
+            "{buffer_path}"
+          ]
         }
       },
       "code_actions_on_format": {
@@ -193,7 +221,10 @@
       "formatter": {
         "external": {
           "command": "prettier",
-          "arguments": ["--stdin-filepath", "{buffer_path}"]
+          "arguments": [
+            "--stdin-filepath",
+            "{buffer_path}"
+          ]
         }
       },
       "code_actions_on_format": {
@@ -215,7 +246,10 @@
       "formatter": {
         "external": {
           "command": "prettier",
-          "arguments": ["--stdin-filepath", "{buffer_path}"]
+          "arguments": [
+            "--stdin-filepath",
+            "{buffer_path}"
+          ]
         }
       },
       "code_actions_on_format": {
@@ -232,7 +266,10 @@
       "formatter": {
         "external": {
           "command": "prettier",
-          "arguments": ["--stdin-filepath", "{buffer_path}"]
+          "arguments": [
+            "--stdin-filepath",
+            "{buffer_path}"
+          ]
         }
       },
       "code_actions_on_format": {
@@ -248,10 +285,19 @@
       "formatter": {
         "external": {
           "command": "mix",
-          "arguments": ["format", "--stdin-filename", "{buffer_path}", "-"]
+          "arguments": [
+            "format",
+            "--stdin-filename",
+            "{buffer_path}",
+            "-"
+          ]
         }
       },
-      "language_servers": ["elixir-ls", "tailwindcss-language-server", "..."]
+      "language_servers": [
+        "elixir-ls",
+        "tailwindcss-language-server",
+        "..."
+      ]
     },
     "HEEx": {
       "tab_size": 2,
@@ -259,10 +305,19 @@
       "formatter": {
         "external": {
           "command": "mix",
-          "arguments": ["format", "--stdin-filename", "{buffer_path}", "-"]
+          "arguments": [
+            "format",
+            "--stdin-filename",
+            "{buffer_path}",
+            "-"
+          ]
         }
       },
-      "language_servers": ["elixir-ls", "tailwindcss-language-server", "..."]
+      "language_servers": [
+        "elixir-ls",
+        "tailwindcss-language-server",
+        "..."
+      ]
     },
     "JSON": {
       "tab_size": 2,
@@ -270,7 +325,10 @@
       "formatter": {
         "external": {
           "command": "prettier",
-          "arguments": ["--stdin-filepath", "{buffer_path}"]
+          "arguments": [
+            "--stdin-filepath",
+            "{buffer_path}"
+          ]
         }
       }
     },
@@ -289,7 +347,10 @@
       "formatter": {
         "external": {
           "command": "prettier",
-          "arguments": ["--stdin-filepath", "{buffer_path}"]
+          "arguments": [
+            "--stdin-filepath",
+            "{buffer_path}"
+          ]
         }
       }
     },
@@ -299,7 +360,10 @@
       "formatter": {
         "external": {
           "command": "prettier",
-          "arguments": ["--stdin-filepath", "{buffer_path}"]
+          "arguments": [
+            "--stdin-filepath",
+            "{buffer_path}"
+          ]
         }
       }
     },
@@ -309,7 +373,10 @@
       "formatter": {
         "external": {
           "command": "prettier",
-          "arguments": ["--stdin-filepath", "{buffer_path}"]
+          "arguments": [
+            "--stdin-filepath",
+            "{buffer_path}"
+          ]
         }
       }
     },
@@ -331,7 +398,9 @@
     "ruby-lsp": {
       "initialization_options": {
         "formatter": "rubocop",
-        "linters": ["rubocop"],
+        "linters": [
+          "rubocop"
+        ],
         "enabledFeatures": {
           "codeActions": true,
           "diagnostics": true,
@@ -377,7 +446,11 @@
       "settings": {
         "codeActionOnSave": {
           "mode": "fixAll",
-          "rules": ["import/order", "import/first", "import/no-duplicates"]
+          "rules": [
+            "import/order",
+            "import/first",
+            "import/no-duplicates"
+          ]
         },
         "experimental": {
           "useFlatConfig": false
@@ -407,11 +480,21 @@
           "heex": "html",
           "phoenix-heex": "html"
         },
-        "classFunctions": ["cva", "cx", "clsx", "cn"],
+        "classFunctions": [
+          "cva",
+          "cx",
+          "clsx",
+          "cn"
+        ],
         "experimental": {
           "classRegex": [
-            ["class[:]\\s*\"([^\"]*)\"", "([a-zA-Z0-9\\s\\-:]+)"],
-            ["\\bclass:\\s*['\"]([^'\"]*)['\"]"]
+            [
+              "class[:]\\s*\"([^\"]*)\"",
+              "([a-zA-Z0-9\\s\\-:]+)"
+            ],
+            [
+              "\\bclass:\\s*['\"]([^'\"]*)['\"]"
+            ]
           ]
         }
       }
@@ -440,24 +523,60 @@
   },
   "auto_update": true,
   "file_types": {
-    "Gemfile": ["Ruby"],
-    "Guardfile": ["Ruby"],
-    "Rakefile": ["Ruby"],
-    "*.rake": ["Ruby"],
-    "*.gemspec": ["Ruby"],
-    "*.ru": ["Ruby"],
-    "*.arb": ["Ruby"],
-    "*.jbuilder": ["Ruby"],
-    "*.thor": ["Ruby"],
-    "Thorfile": ["Ruby"],
-    "Fastfile": ["Ruby"],
-    "Podfile": ["Ruby"],
-    "Vagrantfile": ["Ruby"],
-    "Brewfile": ["Ruby"],
-    "*.erb": ["ERB"],
-    "*.html.erb": ["ERB"],
-    "*.heex": ["HEEx"],
-    "*.leex": ["HEEx"]
+    "Gemfile": [
+      "Ruby"
+    ],
+    "Guardfile": [
+      "Ruby"
+    ],
+    "Rakefile": [
+      "Ruby"
+    ],
+    "*.rake": [
+      "Ruby"
+    ],
+    "*.gemspec": [
+      "Ruby"
+    ],
+    "*.ru": [
+      "Ruby"
+    ],
+    "*.arb": [
+      "Ruby"
+    ],
+    "*.jbuilder": [
+      "Ruby"
+    ],
+    "*.thor": [
+      "Ruby"
+    ],
+    "Thorfile": [
+      "Ruby"
+    ],
+    "Fastfile": [
+      "Ruby"
+    ],
+    "Podfile": [
+      "Ruby"
+    ],
+    "Vagrantfile": [
+      "Ruby"
+    ],
+    "Brewfile": [
+      "Ruby"
+    ],
+    "*.erb": [
+      "ERB"
+    ],
+    "*.html.erb": [
+      "ERB"
+    ],
+    "*.heex": [
+      "HEEx"
+    ],
+    "*.leex": [
+      "HEEx"
+    ]
   },
   "base_keymap": "VSCode",
   "enable_language_server": true,
