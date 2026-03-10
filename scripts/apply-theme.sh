@@ -46,6 +46,79 @@ apply_theme() {
         return 1
     fi
 
+    # ── Pre-flight validation ──────────────────────────
+    # Check ALL required files exist before modifying anything.
+    # This prevents a half-applied theme if a file is missing.
+    _theme_step "Pre-flight validation..."
+    local preflight_ok=true
+    local missing_files=()
+
+    # Theme source files (per-theme)
+    local required_theme_files
+    if [[ "$THEME" == "aura" ]]; then
+        required_theme_files=(
+            "nvim/aura-theme.lua"
+            "tmux/theme-block.conf"
+            "starship/palette.toml"
+            "zellij/themes/aura.kdl"
+            "ghostty/themes/Aura"
+            "warp/aura-theme.yaml"
+        )
+    else
+        required_theme_files=(
+            "nvim/tokyo-night-theme.lua"
+            "tmux/theme-block.conf"
+            "starship/palette.toml"
+            "zellij/themes/tokyo-night.kdl"
+        )
+    fi
+
+    for f in "${required_theme_files[@]}"; do
+        if [[ ! -f "$THEMES_DIR/$f" ]]; then
+            missing_files+=("themes/$THEME/$f")
+            preflight_ok=false
+        fi
+    done
+
+    # Target config files that we'll modify
+    local required_configs=(
+        "$DOTFILES_DIR/.config/ghostty/config"
+        "$DOTFILES_DIR/.config/nvim/lua/plugins/astroui.lua"
+        "$DOTFILES_DIR/.config/zellij/config.kdl"
+        "$DOTFILES_DIR/.config/starship.toml"
+        "$DOTFILES_DIR/.tmux.conf"
+    )
+
+    for f in "${required_configs[@]}"; do
+        if [[ ! -f "$f" ]]; then
+            missing_files+=("$f")
+            preflight_ok=false
+        fi
+    done
+
+    # Check sentinel markers exist in target configs
+    if [[ -f "$DOTFILES_DIR/.config/starship.toml" ]] && ! grep -q "THEME_PALETTE_START" "$DOTFILES_DIR/.config/starship.toml"; then
+        missing_files+=("starship.toml: missing THEME_PALETTE_START/END markers")
+        preflight_ok=false
+    fi
+    if [[ -f "$DOTFILES_DIR/.tmux.conf" ]] && ! grep -q "THEME_BLOCK_START" "$DOTFILES_DIR/.tmux.conf"; then
+        missing_files+=(".tmux.conf: missing THEME_BLOCK_START/END markers")
+        preflight_ok=false
+    fi
+
+    if [[ "$preflight_ok" == false ]]; then
+        echo ""
+        echo "Error: Pre-flight validation failed. Missing:"
+        for f in "${missing_files[@]}"; do
+            echo "  - $f"
+        done
+        echo ""
+        echo "No configs were modified. Fix the above issues and try again."
+        return 1
+    fi
+
+    _theme_success "All theme files and configs verified"
+
     echo ""
     _theme_step "Applying theme: $THEME"
     echo ""

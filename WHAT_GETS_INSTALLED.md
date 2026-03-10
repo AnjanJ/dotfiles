@@ -367,6 +367,44 @@ Sets zsh as your default shell via `chsh -s $(which zsh)`. Skipped if zsh is alr
 
 ---
 
+## Step 9b: Git Configuration
+
+Configures sensible Git defaults globally:
+
+| Setting | Value | What it does |
+|---------|-------|-------------|
+| `core.editor` | `zed --wait` | Use Zed as the default editor for commits, rebases, etc. |
+| `pull.rebase` | `false` | Merge on pull (no auto-rebase) |
+| `core.excludesfile` | `~/.gitignore_global` | Global gitignore (.DS_Store, .env, etc.) |
+| `diff.algorithm` | `histogram` | Better diffs, especially for moved code blocks |
+| `rerere.enabled` | `true` | "Reuse Recorded Resolution" — auto-resolves repeated merge conflicts |
+| `push.autoSetupRemote` | `true` | No more `git push -u origin branch-name` on first push |
+| `branch.sort` | `-committerdate` | `git branch` shows most recent branches first |
+| `commit.verbose` | `true` | Shows the full diff in your commit message editor |
+
+Also symlinks `.gitignore_global` to `~/.gitignore_global`.
+
+### Git Identity Setup
+
+The script asks for your personal name and email, then optionally sets up a separate work identity:
+
+- **Personal identity** → set as the global default (used everywhere)
+- **Work identity** → applied only inside your work directory (default: `~/work/`)
+
+This uses Git's `includeIf` with `gitdir:` — any repo cloned or initialized under your work directory automatically uses your work email. Everything else uses your personal email. Zero friction, works from the very first commit.
+
+**Files created:**
+- `~/.gitconfig` — global config with personal identity + smart defaults
+- `~/.gitconfig-work` — work email override (only if work identity was configured)
+
+**Verify it works:**
+```bash
+cd ~/code/my-personal-project && git config user.email  # → personal email
+cd ~/work/company-project && git config user.email       # → work email
+```
+
+---
+
 ## Step 10: macOS Defaults (Optional)
 
 **Asks for confirmation before applying.** These are system preference changes:

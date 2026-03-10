@@ -60,6 +60,7 @@ Switch anytime: `bash switch-theme.sh`
 - **Zellij** - Modern alternative to tmux with on-screen hints
 - **Starship** - Fast, customizable prompt (16x faster than Spaceship)
 - **Harpoon** - Quick file navigation (ThePrimeagen workflow)
+- **Smart CLI** - `cd` uses zoxide (frecency), `ls`→eza, `cat`→bat, `grep`→ripgrep, `find`→fd
 
 ## 📦 What's Included
 
@@ -70,7 +71,7 @@ Switch anytime: `bash switch-theme.sh`
 - **Prompt**: Starship
 - **Multiplexers**: tmux + Zellij
 - **Editors**: Neovim with AstroNvim, Zed (settings, snippets, tasks)
-- **Version Control**: Git, lazygit, GitHub CLI
+- **Version Control**: Git (smart defaults + per-directory identity), lazygit, GitHub CLI
 - **Custom Scripts**: `~/bin` (erb-lint-formatter, etc.)
 
 ### Development
@@ -107,12 +108,13 @@ That's it! The script will:
 2. ✅ Install all packages from Brewfile
 3. ✅ Backup your existing configurations
 4. ✅ Create symlinks to dotfiles (shell, tmux, Neovim, Zed, ~/bin)
-5. ✅ Set up tmux plugins
-6. ✅ Configure Neovim
-7. ✅ Configure Zed (settings, snippets, tasks)
-8. ✅ Set up shell environment
-9. ✅ Apply macOS defaults (optional)
-10. ✅ Run health check (optional)
+5. ✅ Apply your chosen theme (Tokyo Night or Aura Dark)
+6. ✅ Set up tmux plugins
+7. ✅ Configure Neovim
+8. ✅ Configure Zed (settings, snippets, tasks)
+9. ✅ Set up shell environment and Git defaults
+10. ✅ Apply macOS defaults (optional)
+11. ✅ Run health check (optional)
 
 **💡 The install script is idempotent** - safe to run multiple times. Use `--force` to override existing configs.
 

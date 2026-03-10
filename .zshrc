@@ -74,12 +74,7 @@ eval "$(mise activate zsh)"
 # 4. PROJECT-SPECIFIC ALIASES
 # ============================================
 
-# Canvas LMS Development
-alias rslti='rails server -p 4000'           # LTI server on port 4000
-alias devmig='bin/rails db:migrate RAILS_ENV=development'
-alias testmig='bin/rails db:migrate RAILS_ENV=test'
-alias deljob='bundle exec script/delayed_job run'
-alias skiq='bundle exec sidekiq'
+# General Rails development
 alias rails_tree='lsd --tree --ignore-glob "tmp" --ignore-glob "vendors" --ignore-glob "node_modules"'
 
 # ============================================
@@ -155,7 +150,7 @@ if [ -f ~/.zshrc-terminal-enhancements ]; then
 fi
 
 # Work-specific configuration
-# (Instructure, AWS, Canvas shortcuts)
+# (work-specific shortcuts)
 if [ -f ~/.zshrc-work ]; then
   source ~/.zshrc-work
 fi

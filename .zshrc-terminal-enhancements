@@ -52,10 +52,15 @@ fi
 # ============================================
 if command -v zoxide > /dev/null; then
     eval "$(zoxide init zsh)"
-    # Now use 'z' instead of 'cd'
+    # Wrap cd with zoxide so 'cd projects' uses frecency-based jumping
+    # (Omarchy-inspired: muscle memory works, but smarter)
+    alias cd='z'
+    alias cdi='zi'         # Interactive directory picker with fzf
+    alias cdd='builtin cd' # Original cd if needed
     # Examples:
-    #   z projects    # Jump to most frecent directory matching 'projects'
-    #   zi projects   # Interactive selection with fzf
+    #   cd projects    # Jump to most frecent directory matching 'projects'
+    #   cdi projects   # Interactive selection with fzf
+    #   cd ~/exact/path # Still works for exact paths
 fi
 
 # ============================================
@@ -198,4 +203,4 @@ alias lzd='lazydocker'
 # END OF TERMINAL ENHANCEMENTS
 # ============================================
 
-echo "✅ Terminal enhancements loaded! Try: z, ls, cat, grep, find, help, lg, vim"
+echo "✅ Terminal enhancements loaded! Try: cd (smart zoxide), cdi (interactive), ls, cat, grep, find, help, lg, vim"

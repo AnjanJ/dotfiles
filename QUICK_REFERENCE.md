@@ -98,6 +98,39 @@ cp -r ~/.config ~/.config.backup.$(date +%Y%m%d)
 | `struct` | struct with init | Zig |
 | `print` | std.debug.print | Zig |
 
+## 🚀 CLI Aliases (Smart Defaults)
+
+Your shell replaces standard commands with modern alternatives:
+
+| You type | Actually runs | Why |
+|----------|--------------|-----|
+| `cd projects` | `z projects` (zoxide) | Frecency-based — jumps to most visited match |
+| `cdi` | `zi` (zoxide interactive) | Pick directory with fzf |
+| `cdd` | `builtin cd` | Original cd when you need exact paths |
+| `ls` | `eza --icons` | Icons + git status + grouped dirs |
+| `ll` | `eza --long --git` | Long listing with git info |
+| `la` | `eza --long --all --git` | Long listing including hidden files |
+| `cat` | `bat --style=auto` | Syntax highlighting + line numbers |
+| `grep` | `rg` (ripgrep) | Much faster, respects .gitignore |
+| `find` | `fd` | Faster, simpler syntax |
+| `vim` / `vi` / `v` | `nvim` | Neovim with AstroNvim |
+| `lg` | `lazygit` | Full Git TUI |
+| `tree` | `eza --tree` | Tree view with icons |
+
+**Original commands**: `cdd`, `lss`, `catt`, `grepp`, `findd`
+
+### Git Smart Defaults
+
+These are configured automatically by `install.sh`:
+
+| Feature | What it does |
+|---------|-------------|
+| `push.autoSetupRemote` | No more `git push -u origin branch` — just `git push` |
+| `rerere.enabled` | Auto-resolves repeated merge conflicts |
+| `diff.algorithm histogram` | Better diffs for moved code blocks |
+| `branch.sort -committerdate` | `git branch` shows most recent first |
+| `commit.verbose` | See the full diff while writing commit messages |
+
 ## 🛠️ Common Tasks
 
 ### Git Workflow
