@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+
+# ============================================
+# SHARED WORK MANAGEMENT HELPERS
+# ============================================
+# Sourced by: work-status, work-setup, work-nuke, work-switch, repos-clone
+# Not meant to be run directly.
+# ============================================
+
+# Shared colors & print functions
+# Resolve symlinks (~/bin/_work-helpers → ~/dotfiles/bin/_work-helpers)
+_SELF="${BASH_SOURCE[0]}"
+while [[ -L "$_SELF" ]]; do _SELF="$(readlink "$_SELF")"; done
+DOTFILES_DIR="$(cd "$(dirname "$_SELF")/.." && pwd)"
+unset _SELF
+source "$DOTFILES_DIR/scripts/_helpers.sh"
+
+# ── Config Readers ─────────────────────────────
+
+get_work_email() {
+    git config --file ~/.gitconfig-work user.email 2>/dev/null || echo ""
+}
+
+get_personal_email() {
+    git config --global user.email 2>/dev/null || echo ""
+}
+
+get_personal_name() {
+    git config --global user.name 2>/dev/null || echo ""
+}
+
+# Extract work directory from the includeIf entry that points to ~/.gitconfig-work
+get_work_dir() {
+    local raw
+    raw=$(git config --global --get-regexp 'includeIf\.gitdir:.*\.path' 2>/dev/null | grep 'gitconfig-work' | head -1 | awk '{print $1}' | sed 's/^includeif\.gitdir://;s/\/\.path$//')
+    # Expand ~ to $HOME
+    raw="${raw/#\~/$HOME}"
+    echo "$raw"
+}
+
+is_work_configured() {
+    [[ -f ~/.gitconfig-work ]] && [[ -n "$(get_work_email)" ]]
+}
+
+# Count git repos in a directory (max depth 3)
+count_repos() {
+    local dir="$1"
+    if [[ -d "$dir" ]]; then
+        find "$dir" -maxdepth 3 -name .git -type d 2>/dev/null | wc -l | tr -d ' '
+    else
+        echo "0"
+    fi
+}
+
+# List repos with dirty working trees in a directory
+list_dirty_repos() {
+    local dir="$1"
+    [[ -d "$dir" ]] || return
+    while IFS= read -r gitdir; do
+        local repo_dir=$(dirname "$gitdir")
+        if [[ -n $(git -C "$repo_dir" status -s 2>/dev/null) ]]; then
+            echo "  $(basename "$repo_dir")"
+        fi
+    done < <(find "$dir" -maxdepth 3 -name .git -type d 2>/dev/null)
+}
+
+# Find work-related SSH host aliases from ~/.ssh/config
+# Looks for Host blocks between # === WORK: and # === END WORK === markers
+get_work_ssh_hosts() {
+    [[ -f ~/.ssh/config ]] || return
+    local in_block=false
+    while IFS= read -r line; do
+        if [[ "$line" =~ ^#\ ===\ WORK: ]]; then
+            in_block=true
+        elif [[ "$line" == "# === END WORK ===" ]]; then
+            in_block=false
+        elif [[ "$in_block" == true && "$line" =~ ^Host\  ]]; then
+            echo "${line#Host }"
+        fi
+    done < ~/.ssh/config
+}
+
+# Confirmation that requires typing a specific word
+confirm_destructive() {
+    local prompt="$1"
+    local required_word="$2"
+    echo ""
+    echo -e "${RED}$prompt${NC}"
+    read -p "  Type '$required_word' to confirm: " CONFIRM_INPUT
+    [[ "$CONFIRM_INPUT" == "$required_word" ]]
+}

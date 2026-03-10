@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+
+# ============================================
+# WORK STATUS — Show current work setup
+# ============================================
+# Usage: work-status
+# ============================================
+
+set -euo pipefail
+
+source "$(dirname "$0")/_work-helpers"
+
+echo ""
+echo "╔═══════════════════════════════════════════════════════════╗"
+echo "║   Work Identity Status                                    ║"
+echo "╚═══════════════════════════════════════════════════════════╝"
+echo ""
+
+if ! is_work_configured; then
+    print_warning "No work identity configured"
+    echo ""
+    echo "  Run 'work-setup' to get started."
+    echo ""
+    exit 0
+fi
+
+WORK_EMAIL=$(get_work_email)
+PERSONAL_EMAIL=$(get_personal_email)
+WORK_DIR=$(get_work_dir)
+
+# ── Git Identity ───────────────────────────────
+print_step "Git Identity"
+print_success "Personal: $(get_personal_name) <$PERSONAL_EMAIL>"
+print_success "Work:     <$WORK_EMAIL>"
+
+if [[ -n "$WORK_DIR" ]]; then
+    print_success "Work directory: $WORK_DIR"
+    # Verify the includeIf is working
+    if [[ -d "$WORK_DIR" ]]; then
+        REPO_COUNT=$(count_repos "$WORK_DIR")
+        print_success "Repos in work directory: $REPO_COUNT"
+    else
+        print_fail "Work directory does not exist on disk"
+    fi
+else
+    print_warning "No includeIf directory found in ~/.gitconfig"
+fi
+
+# ── SSH Configuration ──────────────────────────
+echo ""
+print_step "SSH Configuration"
+
+WORK_HOSTS=$(get_work_ssh_hosts)
+if [[ -n "$WORK_HOSTS" ]]; then
+    while IFS= read -r host; do
+        # Find the IdentityFile for this host
+        keyfile=$(ssh -G "$host" 2>/dev/null | grep "^identityfile " | head -1 | awk '{print $2}')
+        keyfile="${keyfile/#\~/$HOME}"
+        if [[ -n "$keyfile" && -f "$keyfile" ]]; then
+            print_success "Host: $host → $keyfile"
+        elif [[ -n "$keyfile" ]]; then
+            print_fail "Host: $host → $keyfile (key file missing!)"
+        else
+            print_success "Host: $host (1Password or agent-managed)"
+        fi
+    done <<< "$WORK_HOSTS"
+else
+    # Check for any host blocks that might be work-related (not using markers)
+    if grep -q "github.com-work\|gitlab.com-work" ~/.ssh/config 2>/dev/null; then
+        print_warning "Found work host aliases in ~/.ssh/config (not using markers)"
+    else
+        print_warning "No work SSH hosts configured"
+    fi
+fi
+
+# ── Shell Configuration ────────────────────────
+echo ""
+print_step "Shell Configuration"
+
+if [[ -f ~/.zshrc-work ]]; then
+    print_success "~/.zshrc-work exists and will be loaded by your shell"
+else
+    print_warning "~/.zshrc-work not found (optional)"
+fi
+
+# ── GitHub CLI ─────────────────────────────────
+echo ""
+print_step "GitHub CLI"
+
+if command -v gh &>/dev/null; then
+    if gh auth status &>/dev/null 2>&1; then
+        GH_USER=$(gh api user --jq '.login' 2>/dev/null || echo "unknown")
+        print_success "Authenticated as: $GH_USER"
+    else
+        print_warning "gh installed but not authenticated (run: gh auth login)"
+    fi
+else
+    print_warning "gh CLI not installed"
+fi
+
+# ── Dirty Repos Warning ───────────────────────
+if [[ -n "$WORK_DIR" && -d "$WORK_DIR" ]]; then
+    DIRTY=$(list_dirty_repos "$WORK_DIR")
+    if [[ -n "$DIRTY" ]]; then
+        echo ""
+        print_step "Repos with uncommitted changes"
+        print_warning "These repos have unsaved work:"
+        echo "$DIRTY"
+    fi
+fi
+
+echo ""

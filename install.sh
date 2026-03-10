@@ -28,29 +28,11 @@ for arg in "$@"; do
     esac
 done
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+# Get dotfiles directory (needed early for sourcing helpers)
+DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Helper functions
-print_step() {
-    echo -e "${BLUE}==>${NC} ${GREEN}$1${NC}"
-}
-
-print_warning() {
-    echo -e "${YELLOW}Warning:${NC} $1"
-}
-
-print_error() {
-    echo -e "${RED}Error:${NC} $1"
-}
-
-print_success() {
-    echo -e "${GREEN}✓${NC} $1"
-}
+# Shared colors & print functions
+source "$DOTFILES_DIR/scripts/_helpers.sh"
 
 # Check if running on macOS
 if [[ "$(uname)" != "Darwin" ]]; then
@@ -73,7 +55,8 @@ echo "║   • Zellij                                                ║"
 echo "║   • Zed editor (settings, snippets, tasks)                ║"
 echo "║   • Starship prompt                                       ║"
 echo "║   • Shell configuration                                   ║"
-echo "║   • Git smart defaults (rerere, histogram, etc.)         ║"
+echo "║   • Git smart defaults + identity setup                    ║"
+echo "║   • SSH keys (1Password, import, generate, or existing)  ║"
 echo "║   • Custom scripts (~/bin)                                ║"
 echo "║   • Theme: Tokyo Night or Aura (your choice!)              ║"
 echo "║                                                           ║"
@@ -91,8 +74,6 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     exit 1
 fi
 
-# Get dotfiles directory
-DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 echo ""
 print_step "Dotfiles directory: $DOTFILES_DIR"
 
@@ -117,7 +98,9 @@ if ! command -v brew &> /dev/null; then
 
     # Add Homebrew to PATH for Apple Silicon
     if [[ $(uname -m) == 'arm64' ]]; then
-        echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+        if ! grep -q '/opt/homebrew/bin/brew shellenv' ~/.zprofile 2>/dev/null; then
+            echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+        fi
         eval "$(/opt/homebrew/bin/brew shellenv)"
     fi
     print_success "Homebrew installed"
@@ -306,119 +289,14 @@ fi
 # ============================================
 # 9b. GIT CONFIGURATION
 # ============================================
-echo ""
-print_step "Step 9b: Configuring Git defaults..."
+source "$DOTFILES_DIR/scripts/setup-git.sh"
+setup_git
 
-# Set default editor to Zed
-git config --global core.editor "zed --wait"
-
-# Merge on pull (no auto-rebase)
-git config --global pull.rebase false
-
-# Global gitignore
-ln -sf "$DOTFILES_DIR/.gitignore_global" ~/.gitignore_global
-git config --global core.excludesfile ~/.gitignore_global
-
-# Better diff algorithm (handles moved code blocks better)
-git config --global diff.algorithm histogram
-
-# Reuse Recorded Resolution — auto-resolve repeated merge conflicts
-git config --global rerere.enabled true
-
-# Auto set upstream on first push (no more `git push -u origin branch`)
-git config --global push.autoSetupRemote true
-
-# Show most recent branches first
-git config --global branch.sort -committerdate
-
-# Show full diff in commit message editor
-git config --global commit.verbose true
-
-print_success "Git defaults configured (editor, pull, diff, rerere, push, branch sort)"
-
-# ── Git Identity Setup ─────────────────────────────
-echo ""
-print_step "Setting up Git identity..."
-
-# Back up existing git configs before modifying
-if [[ -f ~/.gitconfig ]]; then
-    cp ~/.gitconfig "$BACKUP_DIR/.gitconfig"
-    print_success "Backed up ~/.gitconfig → $BACKUP_DIR/.gitconfig"
-fi
-if [[ -f ~/.gitconfig-work ]]; then
-    cp ~/.gitconfig-work "$BACKUP_DIR/.gitconfig-work"
-    print_success "Backed up ~/.gitconfig-work → $BACKUP_DIR/.gitconfig-work"
-fi
-
-echo ""
-echo "Your personal Git identity will be used everywhere by default."
-echo ""
-
-# Show existing identity if any
-EXISTING_NAME=$(git config --global user.name 2>/dev/null || true)
-EXISTING_EMAIL=$(git config --global user.email 2>/dev/null || true)
-if [[ -n "$EXISTING_NAME" || -n "$EXISTING_EMAIL" ]]; then
-    echo "  Current identity: ${EXISTING_NAME:-<not set>} <${EXISTING_EMAIL:-<not set>}>"
-    echo "  (backed up to $BACKUP_DIR — restore anytime with: cp $BACKUP_DIR/.gitconfig ~/.gitconfig)"
-    echo ""
-fi
-
-# Personal identity
-read -p "Your full name (for Git commits): " GIT_NAME
-read -p "Your personal email: " GIT_PERSONAL_EMAIL
-
-if [[ -n "$GIT_NAME" && -n "$GIT_PERSONAL_EMAIL" ]]; then
-    git config --global user.name "$GIT_NAME"
-    git config --global user.email "$GIT_PERSONAL_EMAIL"
-    print_success "Personal Git identity: $GIT_NAME <$GIT_PERSONAL_EMAIL>"
-else
-    print_warning "Skipped — set manually: git config --global user.name / user.email"
-fi
-
-# Work identity (optional)
-echo ""
-read -p "Do you have a separate work Git identity? (y/n) " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    read -p "Work email: " GIT_WORK_EMAIL
-    read -p "Work directory [~/work]: " WORK_DIR_INPUT
-    WORK_DIR="${WORK_DIR_INPUT:-$HOME/work}"
-
-    # Expand ~ to $HOME if user typed it
-    WORK_DIR="${WORK_DIR/#\~/$HOME}"
-
-    if [[ -n "$GIT_WORK_EMAIL" ]]; then
-        # Create work directory
-        mkdir -p "$WORK_DIR"
-        print_success "Work directory created: $WORK_DIR"
-
-        # Create ~/.gitconfig-work with work email
-        cat > ~/.gitconfig-work <<EOF
-[user]
-    email = $GIT_WORK_EMAIL
-EOF
-        print_success "Created ~/.gitconfig-work"
-
-        # Add includeIf to global config (must be at the end to override defaults)
-        # Remove any existing includeIf for work dir first (idempotent)
-        git config --global --unset-all "includeIf.gitdir:${WORK_DIR}/.path" 2>/dev/null || true
-        git config --global "includeIf.gitdir:${WORK_DIR}/.path" "~/.gitconfig-work"
-
-        print_success "Work identity configured: $GIT_NAME <$GIT_WORK_EMAIL>"
-        echo ""
-        echo "  How it works:"
-        echo "  • Repos in $WORK_DIR/ → $GIT_WORK_EMAIL"
-        echo "  • Repos everywhere else → $GIT_PERSONAL_EMAIL"
-        echo "  • Verify: cd into a repo and run 'git config user.email'"
-    else
-        print_warning "No work email provided, skipping work identity"
-    fi
-else
-    print_success "Single identity configured — work setup skipped"
-fi
-
-# Create personal projects directory too
-mkdir -p "${PROJECTS_DIR:-$HOME/code}"
+# ============================================
+# 9c. SSH CONFIGURATION
+# ============================================
+source "$DOTFILES_DIR/scripts/setup-ssh.sh"
+setup_ssh
 
 # ============================================
 # 10. MACOS DEFAULTS (OPTIONAL)
@@ -518,9 +396,9 @@ echo ""
 echo "4. Start Aerospace (will start on next login):"
 echo "   aerospace reload"
 echo ""
-echo "5. Git identity (configured during install):"
-echo "   Verify: cd into any repo and run 'git config user.email'"
-echo "   Smart defaults: histogram diffs, rerere, autoSetupRemote, branch sort, verbose commits"
+echo "5. Git & SSH (configured during install):"
+echo "   Verify git:  cd into any repo and run 'git config user.email'"
+echo "   Verify SSH:  ssh -T git@github.com"
 echo ""
 echo "6. Verify mise installations:"
 echo "   mise list       # See all installed versions"

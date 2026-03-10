@@ -405,6 +405,80 @@ cd ~/work/company-project && git config user.email       # → work email
 
 ---
 
+## Step 9c: SSH Configuration
+
+Backs up your existing `~/.ssh/` directory, then offers five options:
+
+| Option | Use when... |
+|--------|-------------|
+| **1Password SSH Agent** | You use 1Password — keys stay in the vault, synced across machines, Touch ID for every operation. Works offline. |
+| **Import keys** | You have old keys saved elsewhere (USB drive, iCloud, backup folder). Copies them into `~/.ssh/`, fixes permissions, and configures SSH. |
+| **Use existing keys** | You already have keys in `~/.ssh/` — just generates a clean `~/.ssh/config` and fixes permissions. |
+| **Generate new keys** | Fresh machine, no old keys. Creates Ed25519 keys for personal (+ work if configured), adds to macOS Keychain. |
+| **Skip** | You manage SSH yourself. |
+
+**After choosing an option, you select which Git services you use:**
+- GitHub, GitLab, Bitbucket, Codeberg, Gerrit, or self-hosted Git
+- Select multiple (e.g., `1 2 5` for GitHub + GitLab + Gerrit)
+- Each service gets its own `Host` block in `~/.ssh/config`
+- You can create aliases for the same service (e.g., `github.com-work` for a work account)
+
+**What gets configured (all options except skip):**
+- `~/.ssh/config` with proper `Host` blocks for each selected service
+- `IdentitiesOnly yes` to prevent key leaking to unknown servers
+- Correct file permissions (`700` dir, `600` private keys, `644` public keys)
+- macOS Keychain integration (`AddKeysToAgent`, `UseKeychain`) or 1Password `IdentityAgent`
+
+**Using aliases for multiple accounts on the same service:**
+```bash
+# If you set up github.com-work as an alias:
+git clone git@github.com-work:company/repo.git
+
+# Change an existing repo to use the work alias:
+git remote set-url origin git@github.com-work:company/repo.git
+```
+
+**Troubleshooting:** The script prints a full troubleshooting guide after setup, covering how to test connections, debug issues, check permissions, and restore your old config.
+
+**Backup & restore:**
+```bash
+# Your old ~/.ssh/ is saved to:
+~/.dotfiles_backup_YYYYMMDD_HHMMSS/ssh/
+
+# Restore if needed:
+cp -r ~/.dotfiles_backup_YYYYMMDD_HHMMSS/ssh/ ~/.ssh/
+```
+
+---
+
+## Work Management Commands
+
+Five commands in `~/bin/` for managing work identities. These are standalone scripts — they're not part of `install.sh` and can be run anytime.
+
+| Command | What it does |
+|---------|-------------|
+| `work-setup` | Interactive setup: work email, directory, git identity (`includeIf`), SSH key + host blocks, shell config (`~/.zshrc-work`), clone repos |
+| `work-status` | Read-only diagnostic: shows git identity, work directory, SSH hosts, shell config, gh auth, dirty repos |
+| `work-nuke` | Remove all work config. Shows what will be removed, warns about dirty repos, double-confirms, backs up to `~/.work-nuke-backup-*` before deleting. Flags: `--dry-run`, `--yes` |
+| `work-switch` | Change employer — runs `work-nuke --yes` then `work-setup` |
+| `repos-clone` | Interactive repo cloner for GitHub (`gh`) and GitLab (`glab` or API). Lists repos, supports range selection (`1-5 7 9-11`), detects SSH aliases, skips existing repos. Flags: `--dir`, `--org`, `--all` |
+
+**Files involved:**
+- `bin/_work-helpers` — Shared utilities (colors, print helpers, config readers, `confirm_destructive`)
+- `bin/work-setup`, `bin/work-nuke`, `bin/work-switch`, `bin/work-status`, `bin/repos-clone`
+
+**What `work-setup` creates:**
+- `~/.gitconfig-work` — work email override
+- `includeIf.gitdir:` entry in `~/.gitconfig` — scopes work email to your work directory
+- SSH `Host` blocks between `# === WORK:` / `# === END WORK ===` markers in `~/.ssh/config`
+- `~/.zshrc-work` — optional shell config for work aliases and env vars
+
+**What `work-nuke` removes:**
+- All of the above, with timestamped backup first
+- Optionally deletes the work directory (with second confirmation if it contains repos)
+
+---
+
 ## Step 10: macOS Defaults (Optional)
 
 **Asks for confirmation before applying.** These are system preference changes:
@@ -461,9 +535,7 @@ The script prints these manual steps:
 
 ## What Does NOT Get Installed
 
-- No changes to your `~/.gitconfig` (you set that up yourself)
-- No SSH keys generated
-- No cloud service credentials
+- No cloud service credentials or tokens
 - No private/work configs (`.zshrc-work` is optional and not in the repo)
 - No browser extensions
 - No App Store apps

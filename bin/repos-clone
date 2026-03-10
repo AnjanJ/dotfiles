@@ -1,0 +1,351 @@
+#!/usr/bin/env bash
+
+# ============================================
+# REPOS CLONE — Interactive repo cloner
+# ============================================
+# Usage: repos-clone [--dir <path>] [--org <name>] [--all]
+#
+# Supports: GitHub (via gh CLI), GitLab (via glab or API)
+# ============================================
+
+set -euo pipefail
+
+source "$(dirname "$0")/_work-helpers"
+
+# Parse arguments
+TARGET_DIR=""
+ORG_NAME=""
+CLONE_ALL=false
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --dir) TARGET_DIR="$2"; shift 2 ;;
+        --org) ORG_NAME="$2"; shift 2 ;;
+        --all) CLONE_ALL=true; shift ;;
+        *) shift ;;
+    esac
+done
+
+echo ""
+echo "╔═══════════════════════════════════════════════════════════╗"
+echo "║   Repo Cloner                                             ║"
+echo "╚═══════════════════════════════════════════════════════════╝"
+echo ""
+
+# ── Pick Service ───────────────────────────────
+echo "  Which service?"
+echo "    1) GitHub"
+echo "    2) GitLab"
+echo ""
+read -p "  Choose (1-2): " SVC_CHOICE
+echo
+
+case "$SVC_CHOICE" in
+    1) SERVICE="github" ;;
+    2) SERVICE="gitlab" ;;
+    *)
+        print_error "Invalid choice"
+        exit 1
+        ;;
+esac
+
+# ── Target Directory ──────────────────────────
+if [[ -z "$TARGET_DIR" ]]; then
+    read -p "  Clone into directory [$(pwd)]: " TARGET_DIR
+    TARGET_DIR="${TARGET_DIR:-$(pwd)}"
+fi
+TARGET_DIR="${TARGET_DIR/#\~/$HOME}"
+mkdir -p "$TARGET_DIR"
+print_success "Target: $TARGET_DIR/"
+
+# ── Detect SSH alias ──────────────────────────
+SSH_ALIAS=""
+if [[ "$SERVICE" == "github" ]]; then
+    SVC_HOST="github.com"
+elif [[ "$SERVICE" == "gitlab" ]]; then
+    SVC_HOST="gitlab.com"
+fi
+
+# Check if there's an alias in SSH config for this host
+if [[ -f ~/.ssh/config ]]; then
+    aliases=()
+    current_host=""
+    current_hostname=""
+    while IFS= read -r line; do
+        if [[ "$line" =~ ^Host\  ]]; then
+            # Save previous entry if it matched
+            if [[ -n "$current_host" && "$current_hostname" == "$SVC_HOST" && "$current_host" != "$SVC_HOST" ]]; then
+                aliases+=("$current_host")
+            fi
+            current_host="${line#Host }"
+            current_hostname=""
+        elif [[ "$line" =~ ^[[:space:]]*HostName\  ]]; then
+            current_hostname=$(echo "$line" | awk '{print $2}')
+        fi
+    done < ~/.ssh/config
+    # Check last entry
+    if [[ -n "$current_host" && "$current_hostname" == "$SVC_HOST" && "$current_host" != "$SVC_HOST" ]]; then
+        aliases+=("$current_host")
+    fi
+
+    if [[ ${#aliases[@]} -gt 0 ]]; then
+        echo ""
+        echo "  SSH aliases found for $SVC_HOST:"
+        echo "    0) $SVC_HOST (default)"
+        local_i=1
+        for a in "${aliases[@]}"; do
+            echo "    $local_i) $a"
+            ((local_i++))
+        done
+        read -p "  Which to use for clone URLs? (0-$((local_i-1))): " ALIAS_CHOICE
+        if [[ "$ALIAS_CHOICE" -ge 1 && "$ALIAS_CHOICE" -le ${#aliases[@]} ]] 2>/dev/null; then
+            SSH_ALIAS="${aliases[$((ALIAS_CHOICE-1))]}"
+            print_success "Using SSH alias: $SSH_ALIAS"
+        fi
+    fi
+fi
+
+CLONE_HOST="${SSH_ALIAS:-$SVC_HOST}"
+
+# ── GitHub ─────────────────────────────────────
+if [[ "$SERVICE" == "github" ]]; then
+    # Check gh CLI
+    if ! command -v gh &>/dev/null; then
+        print_error "gh CLI not installed. Run: brew install gh"
+        exit 1
+    fi
+
+    # Check auth
+    if ! gh auth status &>/dev/null 2>&1; then
+        print_warning "Not authenticated with GitHub"
+        echo ""
+        gh auth login
+    fi
+
+    # Get org/user
+    if [[ -z "$ORG_NAME" ]]; then
+        GH_USER=$(gh api user --jq '.login' 2>/dev/null || echo "")
+        echo ""
+        echo "  Whose repos to list?"
+        echo "    1) Your repos ($GH_USER)"
+        echo "    2) An organization"
+        echo ""
+        read -p "  Choose (1-2): " OWNER_CHOICE
+        echo
+
+        if [[ "$OWNER_CHOICE" == "2" ]]; then
+            read -p "  Organization name: " ORG_NAME
+        else
+            ORG_NAME="$GH_USER"
+        fi
+    fi
+
+    if [[ -z "$ORG_NAME" ]]; then
+        print_error "No org/user specified"
+        exit 1
+    fi
+
+    # List repos
+    print_step "Fetching repos from $ORG_NAME..."
+    echo ""
+
+    REPOS_JSON=$(gh repo list "$ORG_NAME" --limit 500 --json name,description,isPrivate,sshUrl,updatedAt --jq '.[] | "\(.name)\t\(.description // "")\t\(.isPrivate)\t\(.sshUrl)"' 2>/dev/null || true)
+
+    if [[ -z "$REPOS_JSON" ]]; then
+        print_error "No repos found or access denied for: $ORG_NAME"
+        exit 1
+    fi
+
+    # Parse into arrays
+    REPO_NAMES=()
+    REPO_DESCS=()
+    REPO_URLS=()
+
+    while IFS=$'\t' read -r name desc private url; do
+        REPO_NAMES+=("$name")
+        # Truncate description
+        if [[ ${#desc} -gt 50 ]]; then
+            desc="${desc:0:47}..."
+        fi
+        visibility="public"
+        [[ "$private" == "true" ]] && visibility="private"
+        REPO_DESCS+=("${desc:-(no description)} [$visibility]")
+        REPO_URLS+=("$url")
+    done <<< "$REPOS_JSON"
+
+# ── GitLab ─────────────────────────────────────
+elif [[ "$SERVICE" == "gitlab" ]]; then
+    # Try glab first, fall back to API
+    if command -v glab &>/dev/null; then
+        if ! glab auth status &>/dev/null 2>&1; then
+            print_warning "Not authenticated with GitLab"
+            echo ""
+            glab auth login
+        fi
+
+        if [[ -z "$ORG_NAME" ]]; then
+            read -p "  Group/user name: " ORG_NAME
+        fi
+
+        print_step "Fetching repos from $ORG_NAME..."
+        echo ""
+
+        REPOS_JSON=$(glab repo list --group "$ORG_NAME" --per-page 200 2>/dev/null || glab repo list --per-page 200 2>/dev/null || true)
+
+        # Parse glab output (format: org/repo description)
+        REPO_NAMES=()
+        REPO_DESCS=()
+        REPO_URLS=()
+
+        while IFS= read -r line; do
+            [[ -z "$line" ]] && continue
+            name=$(echo "$line" | awk '{print $1}')
+            REPO_NAMES+=("$(basename "$name")")
+            REPO_DESCS+=("$(echo "$line" | cut -d' ' -f2-)")
+            REPO_URLS+=("git@${CLONE_HOST}:${name}.git")
+        done <<< "$REPOS_JSON"
+    else
+        print_warning "glab CLI not found. Install: brew install glab"
+        echo ""
+        echo "  Alternative: Use a GitLab personal access token"
+        read -p "  GitLab URL [https://gitlab.com]: " GITLAB_URL
+        GITLAB_URL="${GITLAB_URL:-https://gitlab.com}"
+        read -p "  Personal access token: " GITLAB_TOKEN
+
+        if [[ -z "$ORG_NAME" ]]; then
+            read -p "  Group/user name: " ORG_NAME
+        fi
+
+        print_step "Fetching repos from $ORG_NAME..."
+        echo ""
+
+        API_RESPONSE=$(curl -s --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
+            "${GITLAB_URL}/api/v4/groups/${ORG_NAME}/projects?per_page=100&include_subgroups=true" 2>/dev/null || true)
+
+        REPO_NAMES=()
+        REPO_DESCS=()
+        REPO_URLS=()
+
+        while IFS= read -r name; do
+            REPO_NAMES+=("$name")
+        done < <(echo "$API_RESPONSE" | python3 -c "import json,sys; [print(p['name']) for p in json.load(sys.stdin)]" 2>/dev/null || true)
+
+        while IFS= read -r desc; do
+            REPO_DESCS+=("${desc:-(no description)}")
+        done < <(echo "$API_RESPONSE" | python3 -c "import json,sys; [print(p.get('description','') or '') for p in json.load(sys.stdin)]" 2>/dev/null || true)
+
+        while IFS= read -r path; do
+            REPO_URLS+=("git@${CLONE_HOST}:${path}.git")
+        done < <(echo "$API_RESPONSE" | python3 -c "import json,sys; [print(p['path_with_namespace']) for p in json.load(sys.stdin)]" 2>/dev/null || true)
+    fi
+fi
+
+# ── Display Repos ──────────────────────────────
+TOTAL=${#REPO_NAMES[@]}
+
+if [[ "$TOTAL" -eq 0 ]]; then
+    print_error "No repos found"
+    exit 1
+fi
+
+echo "  Found $TOTAL repos:"
+echo ""
+
+i=1
+for idx in "${!REPO_NAMES[@]}"; do
+    printf "    %3d) %-30s %s\n" "$i" "${REPO_NAMES[$idx]}" "${REPO_DESCS[$idx]}"
+    ((i++))
+done
+
+# ── Select Repos ───────────────────────────────
+if [[ "$CLONE_ALL" == true ]]; then
+    SELECTED=$(seq 1 $TOTAL)
+else
+    echo ""
+    echo "  Enter selections:"
+    echo "    • Numbers: 1 3 5"
+    echo "    • Ranges:  1-5"
+    echo "    • All:     a"
+    echo "    • Quit:    q"
+    echo ""
+    read -p "  > " SELECTION
+
+    if [[ "$SELECTION" == "q" ]]; then
+        print_success "Cancelled"
+        exit 0
+    fi
+
+    if [[ "$SELECTION" == "a" ]]; then
+        SELECTED=$(seq 1 $TOTAL)
+    else
+        # Expand ranges (e.g., "1-5 7 9-11" → "1 2 3 4 5 7 9 10 11")
+        SELECTED=""
+        for part in $SELECTION; do
+            if [[ "$part" =~ ^([0-9]+)-([0-9]+)$ ]]; then
+                SELECTED+=" $(seq "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}")"
+            else
+                SELECTED+=" $part"
+            fi
+        done
+    fi
+fi
+
+# ── Clone Selected Repos ──────────────────────
+echo ""
+print_step "Cloning..."
+echo ""
+
+CLONED=0
+SKIPPED=0
+FAILED=0
+FAILURES=()
+
+for num in $SELECTED; do
+    if ! [[ "$num" =~ ^[0-9]+$ ]] || [[ "$num" -lt 1 || "$num" -gt "$TOTAL" ]]; then
+        continue
+    fi
+
+    idx=$((num - 1))
+    name="${REPO_NAMES[$idx]}"
+    url="${REPO_URLS[$idx]}"
+    dest="$TARGET_DIR/$name"
+
+    # Rewrite URL if using SSH alias
+    if [[ -n "$SSH_ALIAS" ]]; then
+        url=$(echo "$url" | sed "s|git@${SVC_HOST}:|git@${SSH_ALIAS}:|")
+    fi
+
+    if [[ -d "$dest" ]]; then
+        print_warning "Skipped: $name (already exists)"
+        ((SKIPPED++))
+        continue
+    fi
+
+    if git clone "$url" "$dest" 2>/dev/null; then
+        print_success "Cloned: $name"
+        ((CLONED++))
+    else
+        print_fail "Failed: $name"
+        FAILURES+=("$name")
+        ((FAILED++))
+    fi
+done
+
+# ── Summary ────────────────────────────────────
+echo ""
+echo "────────────────────────────────────────────────────"
+echo "  Cloned: $CLONED  |  Skipped: $SKIPPED  |  Failed: $FAILED"
+echo "  Location: $TARGET_DIR/"
+echo "────────────────────────────────────────────────────"
+
+if [[ ${#FAILURES[@]} -gt 0 ]]; then
+    echo ""
+    print_warning "Failed repos (check SSH auth and permissions):"
+    for f in "${FAILURES[@]}"; do
+        echo "    • $f"
+    done
+    echo ""
+    echo "  Debug: ssh -vT git@${CLONE_HOST}"
+fi
+
+echo ""

@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+
+# ============================================
+# WORK SWITCH — Change employer
+# ============================================
+# Usage: work-switch
+# Removes current work setup, then sets up a new one.
+# ============================================
+
+source "$(dirname "$0")/_work-helpers"
+
+SCRIPT_DIR="$(dirname "$0")"
+
+echo ""
+echo "╔═══════════════════════════════════════════════════════════╗"
+echo "║   Work Switch — Change Employer                           ║"
+echo "╚═══════════════════════════════════════════════════════════╝"
+echo ""
+
+if is_work_configured; then
+    print_step "Current work setup:"
+    echo "  Email: $(get_work_email)"
+    WORK_DIR=$(get_work_dir)
+    [[ -n "$WORK_DIR" ]] && echo "  Directory: $WORK_DIR/"
+    echo ""
+
+    read -p "Remove current work setup and configure a new one? (y/n) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        print_warning "Cancelled"
+        exit 1
+    fi
+
+    echo ""
+    print_step "Removing current work setup..."
+    echo ""
+
+    # Run work-nuke (user still confirms directory deletion separately)
+    "$SCRIPT_DIR/work-nuke"
+else
+    echo "  No existing work identity found — starting fresh setup."
+fi
+
+echo ""
+print_step "Setting up new work identity..."
+echo ""
+
+# Run work-setup
+exec "$SCRIPT_DIR/work-setup"

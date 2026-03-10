@@ -1,0 +1,319 @@
+#!/usr/bin/env bash
+
+# ============================================
+# WORK SETUP — Configure work identity
+# ============================================
+# Usage: work-setup
+# Sets up: git identity, SSH key, shell config, repo cloning
+# ============================================
+
+set -euo pipefail
+
+source "$(dirname "$0")/_work-helpers"
+
+echo ""
+echo "╔═══════════════════════════════════════════════════════════╗"
+echo "║   Work Identity Setup                                     ║"
+echo "╚═══════════════════════════════════════════════════════════╝"
+echo ""
+
+# Check prerequisites
+if [[ -z "$(get_personal_email)" ]]; then
+    print_error "No personal Git identity found. Run install.sh first."
+    exit 1
+fi
+
+print_success "Personal identity: $(get_personal_name) <$(get_personal_email)>"
+
+# ── 1. Work Email ──────────────────────────────
+echo ""
+print_step "Step 1: Work email"
+
+EXISTING_EMAIL=$(get_work_email)
+if [[ -n "$EXISTING_EMAIL" ]]; then
+    echo "  Current work email: $EXISTING_EMAIL"
+    read -p "  Change it? (y/n) " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        read -p "  New work email: " WORK_EMAIL
+    else
+        WORK_EMAIL="$EXISTING_EMAIL"
+    fi
+else
+    read -p "  Work email: " WORK_EMAIL
+fi
+
+if [[ -z "$WORK_EMAIL" ]]; then
+    print_error "Work email is required"
+    exit 1
+fi
+
+# ── 2. Work Directory ─────────────────────────
+echo ""
+print_step "Step 2: Work directory"
+
+EXISTING_DIR=$(get_work_dir)
+DEFAULT_DIR="${EXISTING_DIR:-$HOME/work}"
+
+read -p "  Work directory [$DEFAULT_DIR]: " WORK_DIR_INPUT
+WORK_DIR="${WORK_DIR_INPUT:-$DEFAULT_DIR}"
+WORK_DIR="${WORK_DIR/#\~/$HOME}"
+
+mkdir -p "$WORK_DIR"
+print_success "Work directory: $WORK_DIR"
+
+# ── 3. Git Config ─────────────────────────────
+echo ""
+print_step "Step 3: Git identity"
+
+# Backup existing
+[[ -f ~/.gitconfig-work ]] && cp ~/.gitconfig-work ~/.gitconfig-work.bak
+
+cat > ~/.gitconfig-work <<EOF
+[user]
+    email = $WORK_EMAIL
+EOF
+
+# Configure includeIf
+git config --global --unset-all "includeIf.gitdir:${WORK_DIR}/.path" 2>/dev/null || true
+git config --global "includeIf.gitdir:${WORK_DIR}/.path" "~/.gitconfig-work"
+
+print_success "Work email: $WORK_EMAIL"
+print_success "Applied to repos in: $WORK_DIR/"
+
+# ── 4. SSH Key (Optional) ─────────────────────
+echo ""
+print_step "Step 4: SSH key for work"
+read -p "  Set up an SSH key for work? (y/n) " -n 1 -r
+echo
+
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo ""
+    echo "  Options:"
+    echo "    1) Pick an existing key from ~/.ssh/"
+    echo "    2) Generate a new Ed25519 key"
+    echo "    3) Skip"
+    echo ""
+    read -p "  Choose (1-3): " SSH_KEY_CHOICE
+    echo
+
+    WORK_KEYFILE=""
+
+    case "$SSH_KEY_CHOICE" in
+        1)
+            # List available keys
+            echo "  Available keys:"
+            keys=()
+            i=1
+            for pub in ~/.ssh/*.pub; do
+                [[ -f "$pub" ]] || continue
+                name=$(basename "$pub" .pub)
+                comment=$(awk '{print $3}' "$pub" 2>/dev/null)
+                echo "    $i) $name ${comment:+— $comment}"
+                keys+=("$name")
+                ((i++))
+            done
+
+            if [[ ${#keys[@]} -eq 0 ]]; then
+                print_warning "No keys found in ~/.ssh/"
+            else
+                read -p "  Which key? (1-$((i-1))): " KEY_NUM
+                if [[ "$KEY_NUM" -ge 1 && "$KEY_NUM" -le ${#keys[@]} ]] 2>/dev/null; then
+                    WORK_KEYFILE="${keys[$((KEY_NUM-1))]}"
+                    print_success "Selected: $WORK_KEYFILE"
+                fi
+            fi
+            ;;
+        2)
+            WORK_KEYFILE="id_ed25519_work"
+            keypath=~/.ssh/$WORK_KEYFILE
+            if [[ -f "$keypath" ]]; then
+                print_warning "Key already exists: $keypath (using existing)"
+            else
+                ssh-keygen -t ed25519 -C "$WORK_EMAIL" -f "$keypath" -N ""
+                ssh-add --apple-use-keychain "$keypath" 2>/dev/null || true
+                print_success "Generated: $keypath"
+                echo ""
+                echo "  Add to your service:  cat ${keypath}.pub | pbcopy"
+            fi
+            ;;
+        *)
+            print_success "SSH key setup skipped"
+            ;;
+    esac
+
+    # Configure SSH host blocks if a key was selected
+    if [[ -n "$WORK_KEYFILE" ]]; then
+        echo ""
+        echo "  Which services do you use for work?"
+        echo ""
+        echo "    1) GitHub"
+        echo "    2) GitLab"
+        echo "    3) Bitbucket"
+        echo "    4) Codeberg"
+        echo "    5) Gerrit (custom host)"
+        echo "    6) Self-hosted Git (custom host)"
+        echo ""
+        echo "  Enter numbers separated by spaces (e.g., 1 2), or 'none':"
+        read -p "  > " SELECTED_SERVICES
+
+        if [[ "$SELECTED_SERVICES" != "none" && -n "$SELECTED_SERVICES" ]]; then
+            # Known services
+            declare -A SVC_HOSTS=(
+                [1]="github.com"
+                [2]="gitlab.com"
+                [3]="bitbucket.org"
+                [4]="codeberg.org"
+            )
+            declare -A SVC_NAMES=(
+                [1]="GitHub"
+                [2]="GitLab"
+                [3]="Bitbucket"
+                [4]="Codeberg"
+            )
+
+            # Remove existing work section from SSH config
+            if [[ -f ~/.ssh/config ]] && grep -q "# === WORK:" ~/.ssh/config; then
+                tmpfile=$(mktemp)
+                in_block=false
+                while IFS= read -r line; do
+                    if [[ "$line" =~ ^#\ ===\ WORK: ]]; then
+                        in_block=true
+                    elif [[ "$line" == "# === END WORK ===" ]]; then
+                        in_block=false
+                    elif [[ "$in_block" == false ]]; then
+                        echo "$line" >> "$tmpfile"
+                    fi
+                done < ~/.ssh/config
+                # Strip trailing blank lines to prevent accumulation
+                sed -e :a -e '/^\n*$/{$d;N;ba' -e '}' "$tmpfile" > "$tmpfile.clean"
+                mv "$tmpfile.clean" ~/.ssh/config
+                rm -f "$tmpfile"
+            fi
+
+            # Append work section
+            echo "" >> ~/.ssh/config
+            echo "# === WORK: $(echo "$WORK_EMAIL" | cut -d@ -f2) ===" >> ~/.ssh/config
+
+            for num in $SELECTED_SERVICES; do
+                hostname=""
+                user="git"
+                port="22"
+
+                if [[ -n "${SVC_HOSTS[$num]:-}" ]]; then
+                    hostname="${SVC_HOSTS[$num]}"
+                    svc_name="${SVC_NAMES[$num]}"
+                elif [[ "$num" == "5" || "$num" == "6" ]]; then
+                    svc_name="Custom"
+                    read -p "  Hostname (e.g., gerrit.example.com): " hostname
+                    [[ -z "$hostname" ]] && continue
+                    read -p "  SSH user [git]: " user
+                    user="${user:-git}"
+                    read -p "  SSH port [22]: " port
+                    port="${port:-22}"
+                else
+                    continue
+                fi
+
+                read -p "  Alias suffix for $hostname? (e.g., 'work' → ${hostname}-work, or Enter for none): " alias_suffix
+                if [[ -n "$alias_suffix" ]]; then
+                    alias_name="${hostname}-${alias_suffix}"
+                else
+                    alias_name="$hostname"
+                fi
+
+                echo "Host $alias_name" >> ~/.ssh/config
+                echo "    HostName $hostname" >> ~/.ssh/config
+                echo "    User $user" >> ~/.ssh/config
+                [[ "$port" != "22" ]] && echo "    Port $port" >> ~/.ssh/config
+                echo "    IdentityFile ~/.ssh/$WORK_KEYFILE" >> ~/.ssh/config
+                echo "    IdentitiesOnly yes" >> ~/.ssh/config
+                echo "" >> ~/.ssh/config
+
+                if [[ "$alias_name" != "$hostname" ]]; then
+                    print_success "SSH: $alias_name → $hostname (clone: git@${alias_name}:org/repo.git)"
+                else
+                    print_success "SSH: $hostname → $WORK_KEYFILE"
+                fi
+            done
+
+            echo "# === END WORK ===" >> ~/.ssh/config
+            chmod 644 ~/.ssh/config
+        fi
+    fi
+else
+    print_success "SSH key setup skipped"
+fi
+
+# ── 5. Shell Config (Optional) ────────────────
+echo ""
+print_step "Step 5: Shell config"
+
+if [[ -f ~/.zshrc-work ]]; then
+    print_success "~/.zshrc-work already exists (keeping your customizations)"
+else
+    read -p "  Create a work shell config (~/.zshrc-work)? (y/n) " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        cat > ~/.zshrc-work <<'ZSHEOF'
+# ============================================
+# WORK-SPECIFIC CONFIGURATION
+# ============================================
+# This file is loaded by ~/.zshrc automatically.
+# Add your work aliases, env vars, and shortcuts here.
+# This file is NOT committed to the public dotfiles repo.
+# ============================================
+
+# ── Directory Shortcuts ────────────────────────
+# alias work="cd ~/work"
+
+# ── Environment Variables ──────────────────────
+# export AWS_PROFILE=your-profile
+
+# ── Work Aliases ───────────────────────────────
+# alias deploy='...'
+
+# ============================================
+# END OF WORK CONFIGURATION
+# ============================================
+ZSHEOF
+        print_success "Created ~/.zshrc-work (edit it to add your work shortcuts)"
+    else
+        print_success "Skipped shell config"
+    fi
+fi
+
+# ── 6. Clone Repos (Optional) ─────────────────
+echo ""
+print_step "Step 6: Clone repos"
+read -p "  Clone work repos now? (y/n) " -n 1 -r
+echo
+
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    SCRIPT_DIR="$(dirname "$0")"
+    if [[ -x "$SCRIPT_DIR/repos-clone" ]]; then
+        "$SCRIPT_DIR/repos-clone" --dir "$WORK_DIR"
+    else
+        print_warning "repos-clone not found. Clone repos manually into $WORK_DIR/"
+    fi
+else
+    print_success "Repo cloning skipped"
+fi
+
+# ── Done ───────────────────────────────────────
+echo ""
+echo "╔═══════════════════════════════════════════════════════════╗"
+echo "║   Work Setup Complete!                                     ║"
+echo "╚═══════════════════════════════════════════════════════════╝"
+echo ""
+echo "  Work email:     $WORK_EMAIL"
+echo "  Work directory: $WORK_DIR/"
+echo "  Git identity:   Repos in $WORK_DIR/ → $WORK_EMAIL"
+echo "                  Repos everywhere else → $(get_personal_email)"
+echo ""
+echo "  Useful commands:"
+echo "    work-status   — Check your current work setup"
+echo "    work-nuke     — Remove all work-related config"
+echo "    work-switch   — Switch to a new employer"
+echo "    repos-clone   — Clone repos from GitHub/GitLab"
+echo ""

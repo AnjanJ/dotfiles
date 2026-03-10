@@ -72,6 +72,7 @@ Switch anytime: `bash switch-theme.sh`
 - **Multiplexers**: tmux + Zellij
 - **Editors**: Neovim with AstroNvim, Zed (settings, snippets, tasks)
 - **Version Control**: Git (smart defaults + per-directory identity), lazygit, GitHub CLI
+- **Work Management**: work-setup, work-nuke, work-switch, work-status, repos-clone
 - **Custom Scripts**: `~/bin` (erb-lint-formatter, etc.)
 
 ### Development
@@ -112,7 +113,7 @@ That's it! The script will:
 6. ✅ Set up tmux plugins
 7. ✅ Configure Neovim
 8. ✅ Configure Zed (settings, snippets, tasks)
-9. ✅ Set up shell environment and Git defaults
+9. ✅ Set up shell environment, Git defaults, and SSH keys
 10. ✅ Apply macOS defaults (optional)
 11. ✅ Run health check (optional)
 
@@ -152,6 +153,12 @@ Installed Tools:
 ├── Databases
 │   ├── PostgreSQL 14
 │   └── Redis
+├── Work Management
+│   ├── work-setup (configure work identity)
+│   ├── work-nuke (remove work config)
+│   ├── work-switch (change employer)
+│   ├── work-status (show current setup)
+│   └── repos-clone (clone from GitHub/GitLab)
 ├── Custom Scripts
 │   └── ~/bin (erb-lint-formatter, etc.)
 └── Tools
@@ -350,13 +357,24 @@ dotfiles/
 ├── themes/                     # Theme assets
 │   ├── tokyo-night/            # Tokyo Night configs per app
 │   └── aura/                   # Aura Dark configs per app
-├── bin/                        # Custom scripts
-│   └── erb-lint-formatter      # ERB lint wrapper for Zed
+├── bin/                        # Custom scripts & work management
+│   ├── erb-lint-formatter      # ERB lint wrapper for Zed
+│   ├── work-setup              # Configure work identity
+│   ├── work-nuke               # Remove all work config
+│   ├── work-switch             # Change employer
+│   ├── work-status             # Show current work setup
+│   ├── repos-clone             # Clone repos from GitHub/GitLab
+│   └── _work-helpers           # Shared utilities for work scripts
 ├── switch-theme.sh             # Switch theme anytime
 ├── scripts/
+│   ├── _helpers.sh             # Shared colors & print functions
+│   ├── setup-git.sh            # Git identity & defaults setup
+│   ├── setup-ssh.sh            # SSH key & config setup
 │   ├── health-check.sh         # Verify installation
 │   ├── theme-utils.sh          # Theme utility functions
 │   └── apply-theme.sh          # Apply theme across all apps
+├── tests/
+│   └── test-idempotency.sh     # 18 idempotency tests (sandboxed)
 └── docs/                       # Additional documentation
 ```
 

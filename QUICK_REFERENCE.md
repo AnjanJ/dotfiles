@@ -131,6 +131,41 @@ These are configured automatically by `install.sh`:
 | `branch.sort -committerdate` | `git branch` shows most recent first |
 | `commit.verbose` | See the full diff while writing commit messages |
 
+### SSH Setup
+
+Configured during install — supports GitHub, GitLab, Bitbucket, Codeberg, Gerrit, and self-hosted Git:
+
+| Command | What it does |
+|---------|-------------|
+| `ssh -T git@github.com` | Test personal GitHub connection |
+| `ssh -T git@github.com-work` | Test work GitHub (if aliased) |
+| `ssh -T git@gitlab.com` | Test GitLab connection |
+| `ssh -vT git@github.com` | Debug connection (verbose) |
+| `ssh -G github.com \| grep identityfile` | Check which key SSH will use |
+| `ssh-add -l` | List keys loaded in agent |
+| `ssh-add --apple-use-keychain ~/.ssh/key` | Add key to macOS Keychain |
+
+**Using aliases** (e.g., `github.com-work`):
+```bash
+git clone git@github.com-work:company/repo.git
+git remote set-url origin git@github.com-work:company/repo.git
+```
+
+**Restore old SSH keys:** `cp -r ~/.dotfiles_backup_*/ssh/ ~/.ssh/`
+
+## 💼 Work Identity Management
+
+| Command | What it does |
+|---------|-------------|
+| `work-setup` | Configure work email, directory, SSH, shell config, clone repos |
+| `work-status` | Show current work identity, SSH hosts, dirty repos |
+| `work-nuke` | Remove all work config (with backup + confirmation) |
+| `work-nuke --dry-run` | Preview what would be removed |
+| `work-switch` | Change employer (nuke old + setup new) |
+| `repos-clone` | Interactive repo cloner (GitHub/GitLab) |
+| `repos-clone --dir ~/work --org mycompany` | Clone with presets |
+| `repos-clone --all` | Clone all repos without selection prompt |
+
 ## 🛠️ Common Tasks
 
 ### Git Workflow

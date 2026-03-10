@@ -1,0 +1,182 @@
+#!/usr/bin/env bash
+
+# ============================================
+# WORK NUKE — Remove all work-related config
+# ============================================
+# Usage: work-nuke [--dry-run] [--yes]
+# ============================================
+
+source "$(dirname "$0")/_work-helpers"
+
+DRY_RUN=false
+SKIP_CONFIRM=false
+
+for arg in "$@"; do
+    case $arg in
+        --dry-run) DRY_RUN=true ;;
+        --yes) SKIP_CONFIRM=true ;;
+    esac
+done
+
+echo ""
+echo "╔═══════════════════════════════════════════════════════════╗"
+echo "║   Work Nuke — Remove Work Identity                        ║"
+echo "╚═══════════════════════════════════════════════════════════╝"
+echo ""
+
+if ! is_work_configured; then
+    print_success "No work identity configured. Nothing to nuke."
+    exit 0
+fi
+
+WORK_EMAIL=$(get_work_email)
+WORK_DIR=$(get_work_dir)
+REPO_COUNT=0
+[[ -n "$WORK_DIR" && -d "$WORK_DIR" ]] && REPO_COUNT=$(count_repos "$WORK_DIR")
+
+# ── Show what will be removed ──────────────────
+print_step "The following will be removed:"
+echo ""
+
+echo "  Git:"
+[[ -f ~/.gitconfig-work ]] && echo "    • ~/.gitconfig-work ($WORK_EMAIL)"
+[[ -n "$WORK_DIR" ]] && echo "    • includeIf entry for $WORK_DIR/ in ~/.gitconfig"
+
+echo ""
+echo "  SSH:"
+WORK_HOSTS=$(get_work_ssh_hosts)
+if [[ -n "$WORK_HOSTS" ]]; then
+    while IFS= read -r host; do
+        echo "    • SSH host: $host"
+    done <<< "$WORK_HOSTS"
+    echo "    • Work section markers in ~/.ssh/config"
+else
+    echo "    • (no work SSH hosts found)"
+fi
+
+echo ""
+echo "  Shell:"
+if [[ -f ~/.zshrc-work ]]; then
+    echo "    • ~/.zshrc-work"
+else
+    echo "    • (no work shell config found)"
+fi
+
+echo ""
+echo "  Directory:"
+if [[ -n "$WORK_DIR" && -d "$WORK_DIR" ]]; then
+    echo "    • $WORK_DIR/ ($REPO_COUNT repos)"
+    # Warn about dirty repos
+    DIRTY=$(list_dirty_repos "$WORK_DIR")
+    if [[ -n "$DIRTY" ]]; then
+        echo ""
+        print_warning "These repos have UNCOMMITTED changes:"
+        echo "$DIRTY"
+    fi
+else
+    echo "    • (work directory not found)"
+fi
+
+if [[ "$DRY_RUN" == true ]]; then
+    echo ""
+    print_warning "Dry run — nothing was removed"
+    exit 0
+fi
+
+# ── Confirmation ───────────────────────────────
+if [[ "$SKIP_CONFIRM" == false ]]; then
+    echo ""
+    if ! confirm_destructive "This will permanently remove your work identity and configuration." "nuke"; then
+        print_warning "Cancelled"
+        exit 1
+    fi
+
+    # Second confirmation for the work directory (if it has repos)
+    if [[ -n "$WORK_DIR" && -d "$WORK_DIR" && "$REPO_COUNT" -gt 0 ]]; then
+        DIRNAME=$(basename "$WORK_DIR")
+        echo ""
+        if ! confirm_destructive "This will DELETE $REPO_COUNT repos in $WORK_DIR/." "$DIRNAME"; then
+            print_warning "Cancelled. Config will still be removed but repos are kept."
+            SKIP_DIR_DELETE=true
+        fi
+    fi
+fi
+
+# ── Backup ─────────────────────────────────────
+BACKUP_DIR="$HOME/.work-nuke-backup-$(date +%Y%m%d_%H%M%S)"
+mkdir -p "$BACKUP_DIR"
+
+[[ -f ~/.gitconfig-work ]] && cp ~/.gitconfig-work "$BACKUP_DIR/"
+[[ -f ~/.ssh/config ]] && cp ~/.ssh/config "$BACKUP_DIR/ssh-config"
+[[ -f ~/.zshrc-work ]] && cp ~/.zshrc-work "$BACKUP_DIR/"
+
+print_success "Backup created: $BACKUP_DIR/"
+echo "  (restore with: cp $BACKUP_DIR/.gitconfig-work ~/  etc.)"
+
+# ── Remove Git Config ─────────────────────────
+echo ""
+print_step "Removing git work identity..."
+
+if [[ -f ~/.gitconfig-work ]]; then
+    rm ~/.gitconfig-work
+    print_success "Removed ~/.gitconfig-work"
+fi
+
+if [[ -n "$WORK_DIR" ]]; then
+    git config --global --unset-all "includeIf.gitdir:${WORK_DIR}/.path" 2>/dev/null || true
+    print_success "Removed includeIf entry from ~/.gitconfig"
+fi
+
+# ── Remove SSH Work Section ───────────────────
+print_step "Removing work SSH hosts..."
+
+if [[ -f ~/.ssh/config ]] && grep -q "# === WORK:" ~/.ssh/config; then
+    tmpfile=$(mktemp)
+    in_block=false
+    while IFS= read -r line; do
+        if [[ "$line" =~ ^#\ ===\ WORK: ]]; then
+            in_block=true
+        elif [[ "$line" == "# === END WORK ===" ]]; then
+            in_block=false
+        elif [[ "$in_block" == false ]]; then
+            echo "$line" >> "$tmpfile"
+        fi
+    done < ~/.ssh/config
+    # Strip trailing blank lines to prevent accumulation
+    sed -e :a -e '/^\n*$/{$d;N;ba' -e '}' "$tmpfile" > "$tmpfile.clean"
+    mv "$tmpfile.clean" ~/.ssh/config
+    rm -f "$tmpfile"
+    chmod 644 ~/.ssh/config
+    print_success "Removed work section from ~/.ssh/config"
+else
+    print_success "No work SSH section found (nothing to remove)"
+fi
+
+# ── Remove Shell Config ───────────────────────
+print_step "Removing work shell config..."
+
+if [[ -f ~/.zshrc-work ]]; then
+    rm ~/.zshrc-work
+    print_success "Removed ~/.zshrc-work"
+else
+    print_success "No work shell config found"
+fi
+
+# ── Remove Work Directory ─────────────────────
+if [[ -n "$WORK_DIR" && -d "$WORK_DIR" && "${SKIP_DIR_DELETE:-}" != true ]]; then
+    print_step "Removing work directory..."
+    rm -rf "$WORK_DIR"
+    print_success "Removed $WORK_DIR/"
+elif [[ "${SKIP_DIR_DELETE:-}" == true ]]; then
+    print_warning "Work directory kept: $WORK_DIR/"
+fi
+
+# ── Done ──────────────────────────────────────
+echo ""
+echo "╔═══════════════════════════════════════════════════════════╗"
+echo "║   Work Identity Removed                                    ║"
+echo "╚═══════════════════════════════════════════════════════════╝"
+echo ""
+echo "  Backup: $BACKUP_DIR/"
+echo "  Restart your terminal or run: source ~/.zshrc"
+echo ""
