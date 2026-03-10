@@ -1,0 +1,22 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Editors
+*.swp
+*.swo
+*~
+.vscode/settings.json
+.idea/
+
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+
+# Project-specific
+CODING_GUIDELINES.md

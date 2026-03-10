@@ -303,6 +303,25 @@ else
 fi
 
 # ============================================
+# 9b. GIT CONFIGURATION
+# ============================================
+echo ""
+print_step "Step 9b: Configuring Git defaults..."
+
+# Set default editor to Zed
+git config --global core.editor "zed --wait"
+
+# Merge on pull (no auto-rebase)
+git config --global pull.rebase false
+
+# Global gitignore
+ln -sf "$DOTFILES_DIR/.gitignore_global" ~/.gitignore_global
+git config --global core.excludesfile ~/.gitignore_global
+
+print_success "Git defaults configured"
+print_warning "Set your identity: git config --global user.name / user.email"
+
+# ============================================
 # 10. MACOS DEFAULTS (OPTIONAL)
 # ============================================
 echo ""
@@ -315,16 +334,52 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     defaults write NSGlobalDomain KeyRepeat -int 2
     defaults write NSGlobalDomain InitialKeyRepeat -int 15
 
+    # Appearance
+    defaults write NSGlobalDomain AppleInterfaceStyle -string "Dark"
+
     # Finder settings
     defaults write com.apple.finder ShowPathbar -bool true
     defaults write com.apple.finder ShowStatusBar -bool true
+    defaults write com.apple.finder ShowSidebar -bool true
     defaults write com.apple.finder _FXShowPosixPathInTitle -bool true
+    defaults write com.apple.finder FXPreferredViewStyle -string "Nlsv"
+    defaults write com.apple.finder AppleShowAllFiles -bool true
+    defaults write com.apple.finder NewWindowTarget -string "PfHm"
+    defaults write com.apple.finder ShowExternalHardDrivesOnDesktop -bool true
+    defaults write com.apple.finder ShowHardDrivesOnDesktop -bool true
+    defaults write com.apple.finder ShowMountedServersOnDesktop -bool true
+    defaults write com.apple.finder ShowRemovableMediaOnDesktop -bool true
 
     # Dock settings
     defaults write com.apple.dock autohide -bool true
     defaults write com.apple.dock show-recents -bool false
+    defaults write com.apple.dock minimize-to-application -bool true
+    defaults write com.apple.dock expose-group-apps -bool true
 
-    print_success "macOS defaults applied"
+    # Window behavior
+    defaults write NSGlobalDomain AppleMiniaturizeOnDoubleClick -bool false
+    defaults write NSGlobalDomain com.apple.springing.enabled -bool true
+    defaults write NSGlobalDomain com.apple.springing.delay -float 0.5
+
+    # Trackpad settings
+    defaults write com.apple.AppleMultitouchTrackpad Clicking -bool true
+    defaults write com.apple.AppleMultitouchTrackpad TrackpadThreeFingerDrag -bool true
+    defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad Clicking -bool true
+    defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadThreeFingerDrag -bool true
+
+    # Menu bar clock
+    defaults write com.apple.menuextra.clock ShowDate -int 0
+    defaults write com.apple.menuextra.clock ShowDayOfWeek -bool true
+
+    # Hot corners (bottom-right → Quick Note)
+    defaults write com.apple.dock wvous-br-corner -int 14
+    defaults write com.apple.dock wvous-br-modifier -int 0
+
+    # Restart affected services
+    killall Finder 2>/dev/null || true
+    killall Dock 2>/dev/null || true
+
+    print_success "macOS defaults applied (24 settings)"
     print_warning "Some settings require logout/restart to take effect"
 fi
 

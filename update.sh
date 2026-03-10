@@ -148,6 +148,9 @@ create_symlink "$DOTFILES_DIR/.zshrc" ~/.zshrc ".zshrc"
 # tmux
 create_symlink "$DOTFILES_DIR/.tmux.conf" ~/.tmux.conf ".tmux.conf"
 
+# Git global ignores
+[[ -f "$DOTFILES_DIR/.gitignore_global" ]] && create_symlink "$DOTFILES_DIR/.gitignore_global" ~/.gitignore_global ".gitignore_global"
+
 # Config directories
 create_symlink "$DOTFILES_DIR/.config/aerospace" ~/.config/aerospace "aerospace config"
 create_symlink "$DOTFILES_DIR/.config/ghostty" ~/.config/ghostty "ghostty config"
