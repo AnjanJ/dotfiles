@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Dotfiles management — can be run from anywhere
+# Usage: dotfiles <command> [options]
+
+DOTFILES_DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+
+case "${1:-}" in
+    update)   shift; exec bash "$DOTFILES_DIR/update.sh" "$@" ;;
+    health)   shift; exec bash "$DOTFILES_DIR/scripts/health-check.sh" "$@" ;;
+    theme)    shift; exec bash "$DOTFILES_DIR/scripts/apply-theme.sh" "$@" ;;
+    install)  shift; exec bash "$DOTFILES_DIR/install.sh" "$@" ;;
+    edit)     cd "$DOTFILES_DIR" && exec "${EDITOR:-vim}" . ;;
+    dir)      echo "$DOTFILES_DIR" ;;
+    *)
+        echo "AJ's Dotfiles — manage your dev environment"
+        echo ""
+        echo "Usage: dotfiles <command> [options]"
+        echo ""
+        echo "Commands:"
+        echo "  update    Update system & sync dotfiles repo"
+        echo "  health    Run health check on all tools"
+        echo "  theme     Switch theme (tokyo-night|aura)"
+        echo "  install   Run full installer"
+        echo "  edit      Open dotfiles in your editor"
+        echo "  dir       Print dotfiles directory path"
+        echo ""
+        echo "Shorthand commands also available:"
+        echo "  dotfiles-update, dotfiles-health, dotfiles-theme, dotfiles-install"
+        ;;
+esac

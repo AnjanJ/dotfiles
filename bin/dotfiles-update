@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Update dotfiles — can be run from anywhere
+# Usage: dotfiles-update [--interactive]
+
+DOTFILES_DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+exec bash "$DOTFILES_DIR/update.sh" "$@"

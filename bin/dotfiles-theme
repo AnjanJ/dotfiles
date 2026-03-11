@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Switch dotfiles theme — can be run from anywhere
+# Usage: dotfiles-theme <tokyo-night|aura>
+
+DOTFILES_DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+exec bash "$DOTFILES_DIR/scripts/apply-theme.sh" "$@"

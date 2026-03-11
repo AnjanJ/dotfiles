@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Run dotfiles installer — can be run from anywhere
+# Usage: dotfiles-install [--interactive] [--name "Name"] [--email "email"]
+
+DOTFILES_DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+exec bash "$DOTFILES_DIR/install.sh" "$@"
