@@ -63,7 +63,6 @@ apply_theme() {
             "starship/palette.toml"
             "zellij/themes/aura.kdl"
             "ghostty/themes/Aura"
-            "warp/aura-theme.yaml"
         )
     else
         required_theme_files=(
@@ -268,17 +267,7 @@ with open('$vscode_settings', 'w') as f:
         _theme_warning "VS Code: settings.json not found (VS Code may not be installed yet)"
     fi
 
-    # ── 7. Warp ─────────────────────────────────────────
-    _theme_step "Warp..."
-    if [[ "$THEME" == "aura" ]]; then
-        mkdir -p "$HOME/.warp/themes"
-        cp "$THEMES_DIR/warp/aura-theme.yaml" "$HOME/.warp/themes/aura-theme.yaml"
-        _theme_success "Warp → Aura theme installed to ~/.warp/themes/"
-    else
-        _theme_success "Warp → Tokyo Night (built-in, select in Warp settings)"
-    fi
-
-    # ── 8. Zed ──────────────────────────────────────────
+    # ── 7. Zed ──────────────────────────────────────────
     _theme_step "Zed..."
     local zed_settings="$DOTFILES_DIR/.config/zed/settings.json"
     if [[ -f "$zed_settings" ]]; then

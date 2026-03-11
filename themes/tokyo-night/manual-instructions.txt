@@ -27,12 +27,6 @@ FIREFOX
   https://addons.mozilla.org/en-US/firefox/addon/tokyo-night-v3/
 
 ──────────────────────────────────────────────────────
-WARP TERMINAL
-──────────────────────────────────────────────────────
-  Tokyo Night is built-in:
-  Settings → Appearance → Themes → Select "Tokyo Night"
-
-──────────────────────────────────────────────────────
 TELEGRAM
 ──────────────────────────────────────────────────────
   No official Tokyo Night port available.

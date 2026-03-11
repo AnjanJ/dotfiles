@@ -240,15 +240,15 @@ elif [[ "$SERVICE" == "gitlab" ]]; then
 
         while IFS= read -r name; do
             REPO_NAMES+=("$name")
-        done < <(echo "$API_RESPONSE" | python3 -c "import json,sys; [print(p['name']) for p in json.load(sys.stdin)]" 2>/dev/null || true)
+        done < <(echo "$API_RESPONSE" | jq -r '.[].name' 2>/dev/null || true)
 
         while IFS= read -r desc; do
             REPO_DESCS+=("${desc:-(no description)}")
-        done < <(echo "$API_RESPONSE" | python3 -c "import json,sys; [print(p.get('description','') or '') for p in json.load(sys.stdin)]" 2>/dev/null || true)
+        done < <(echo "$API_RESPONSE" | jq -r '.[] | (.description // "")' 2>/dev/null || true)
 
         while IFS= read -r path; do
             REPO_URLS+=("git@${CLONE_HOST}:${path}.git")
-        done < <(echo "$API_RESPONSE" | python3 -c "import json,sys; [print(p['path_with_namespace']) for p in json.load(sys.stdin)]" 2>/dev/null || true)
+        done < <(echo "$API_RESPONSE" | jq -r '.[].path_with_namespace' 2>/dev/null || true)
     fi
 fi
 
@@ -324,7 +324,7 @@ for num in $SELECTED; do
 
     # Rewrite URL if using SSH alias
     if [[ -n "$SSH_ALIAS" ]]; then
-        url=$(echo "$url" | sed "s|git@${SVC_HOST}:|git@${SSH_ALIAS}:|")
+        url="${url/git@${SVC_HOST}:/git@${SSH_ALIAS}:}"
     fi
 
     if [[ -d "$dest" ]]; then

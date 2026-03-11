@@ -223,13 +223,15 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
                     alias_name="$hostname"
                 fi
 
-                echo "Host $alias_name" >> ~/.ssh/config
-                echo "    HostName $hostname" >> ~/.ssh/config
-                echo "    User $user" >> ~/.ssh/config
-                [[ "$port" != "22" ]] && echo "    Port $port" >> ~/.ssh/config
-                echo "    IdentityFile ~/.ssh/$WORK_KEYFILE" >> ~/.ssh/config
-                echo "    IdentitiesOnly yes" >> ~/.ssh/config
-                echo "" >> ~/.ssh/config
+                {
+                    echo "Host $alias_name"
+                    echo "    HostName $hostname"
+                    echo "    User $user"
+                    [[ "$port" != "22" ]] && echo "    Port $port"
+                    echo "    IdentityFile ~/.ssh/$WORK_KEYFILE"
+                    echo "    IdentitiesOnly yes"
+                    echo ""
+                } >> ~/.ssh/config
 
                 if [[ "$alias_name" != "$hostname" ]]; then
                     print_success "SSH: $alias_name → $hostname (clone: git@${alias_name}:org/repo.git)"

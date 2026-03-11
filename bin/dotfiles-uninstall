@@ -1,0 +1,151 @@
+#!/usr/bin/env bash
+# Remove all dotfiles symlinks — can be run from anywhere
+# Usage: dotfiles-uninstall [--yes]
+#
+# This removes symlinks only. It does NOT:
+#   - Delete the dotfiles repo
+#   - Uninstall Homebrew packages
+#   - Remove language runtimes
+
+DOTFILES_DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+source "$DOTFILES_DIR/scripts/_helpers.sh"
+
+FORCE=false
+[[ "${1:-}" == "--yes" ]] && FORCE=true
+
+echo ""
+echo "╔═══════════════════════════════════════════════════════════╗"
+echo "║                                                           ║"
+echo "║   🗑️   AJ's Dotfiles Uninstall                            ║"
+echo "║                                                           ║"
+echo "║   This will remove all symlinks created by dotfiles.      ║"
+echo "║   Your Homebrew packages and runtimes stay untouched.     ║"
+echo "║                                                           ║"
+echo "╚═══════════════════════════════════════════════════════════╝"
+echo ""
+
+# Collect all symlinks that point into our dotfiles dir
+REMOVED=0
+SKIPPED=0
+
+remove_symlink() {
+    local target="$1"
+    local name="$2"
+
+    if [ -L "$target" ]; then
+        local link_target
+        link_target=$(readlink "$target")
+        # Only remove if it points to our dotfiles dir
+        if [[ "$link_target" == "$DOTFILES_DIR"* ]]; then
+            rm "$target"
+            echo -e "${GREEN}✓${NC} Removed $name → $link_target"
+            ((REMOVED++))
+        else
+            echo -e "${YELLOW}⚠${NC} Skipped $name (points to $link_target, not our dotfiles)"
+            ((SKIPPED++))
+        fi
+    fi
+}
+
+if [[ "$FORCE" != true ]]; then
+    echo "The following symlinks will be removed:"
+    echo ""
+
+    # Preview what would be removed
+    PREVIEW_COUNT=0
+    for target in \
+        ~/.zshrc ~/.zshrc-aliases ~/.zshrc-terminal-enhancements \
+        ~/.zshrc-dhh-additions ~/.zshrc-elixir-additions ~/.zshrc-work-completions \
+        ~/.tmux.conf ~/.gitignore_global \
+        ~/.config/aerospace ~/.config/ghostty ~/.config/nvim ~/.config/zellij \
+        ~/.config/starship.toml ~/.config/mise/config.toml \
+        ~/.config/zed/settings.json ~/.config/zed/tasks.json; do
+        if [ -L "$target" ]; then
+            link_target=$(readlink "$target")
+            if [[ "$link_target" == "$DOTFILES_DIR"* ]]; then
+                echo "  $target → $link_target"
+                ((PREVIEW_COUNT++))
+            fi
+        fi
+    done
+
+    # Check zed snippets
+    for snippet in ~/.config/zed/snippets/*.json; do
+        if [ -L "$snippet" ]; then
+            link_target=$(readlink "$snippet")
+            if [[ "$link_target" == "$DOTFILES_DIR"* ]]; then
+                echo "  $snippet → $link_target"
+                ((PREVIEW_COUNT++))
+            fi
+        fi
+    done
+
+    # Check ~/bin scripts
+    for script in ~/bin/*; do
+        if [ -L "$script" ]; then
+            link_target=$(readlink "$script")
+            if [[ "$link_target" == "$DOTFILES_DIR"* ]]; then
+                echo "  $script → $link_target"
+                ((PREVIEW_COUNT++))
+            fi
+        fi
+    done
+
+    echo ""
+    echo "$PREVIEW_COUNT symlinks will be removed."
+    echo ""
+    read -r -p "Continue? (y/n) " -n 1
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        print_warning "Uninstall cancelled"
+        exit 1
+    fi
+fi
+
+echo ""
+print_step "Removing symlinks..."
+
+# Shell configuration
+remove_symlink ~/.zshrc ".zshrc"
+remove_symlink ~/.zshrc-aliases ".zshrc-aliases"
+remove_symlink ~/.zshrc-terminal-enhancements ".zshrc-terminal-enhancements"
+remove_symlink ~/.zshrc-dhh-additions ".zshrc-dhh-additions"
+remove_symlink ~/.zshrc-elixir-additions ".zshrc-elixir-additions"
+remove_symlink ~/.zshrc-work-completions ".zshrc-work-completions"
+
+# tmux & git
+remove_symlink ~/.tmux.conf ".tmux.conf"
+remove_symlink ~/.gitignore_global ".gitignore_global"
+
+# Config directories
+remove_symlink ~/.config/aerospace "aerospace config"
+remove_symlink ~/.config/ghostty "ghostty config"
+remove_symlink ~/.config/nvim "nvim config"
+remove_symlink ~/.config/zellij "zellij config"
+remove_symlink ~/.config/starship.toml "starship config"
+remove_symlink ~/.config/mise/config.toml "mise config"
+
+# Zed editor
+remove_symlink ~/.config/zed/settings.json "zed settings"
+remove_symlink ~/.config/zed/tasks.json "zed tasks"
+for snippet in ~/.config/zed/snippets/*.json; do
+    [ -L "$snippet" ] && remove_symlink "$snippet" "zed snippet: $(basename "$snippet")"
+done
+
+# ~/bin scripts
+for script in ~/bin/*; do
+    [ -L "$script" ] && remove_symlink "$script" "bin/$(basename "$script")"
+done
+
+# Summary
+echo ""
+echo "╔═══════════════════════════════════════════════════════════╗"
+echo "║   Uninstall Complete                                      ║"
+echo "╚═══════════════════════════════════════════════════════════╝"
+echo ""
+echo -e "${GREEN}Removed:${NC} $REMOVED symlinks"
+[[ $SKIPPED -gt 0 ]] && echo -e "${YELLOW}Skipped:${NC} $SKIPPED (not ours)"
+echo ""
+echo "Your dotfiles repo is still at: $DOTFILES_DIR"
+echo "To reinstall: dotfiles install (or bash $DOTFILES_DIR/install.sh)"
+echo ""

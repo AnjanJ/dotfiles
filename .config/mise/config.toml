@@ -1,11 +1,11 @@
 [tools]
-elixir = "latest"
-erlang = "latest"
-go = "latest"
-node = "latest"
+elixir = "1"
+erlang = "28"
+go = "1"
+node = "24"
 python = "3"
-ruby = "3.4.5"
-rust = "latest"
+ruby = "3.4"
+rust = "latest"  # Rust has strong backwards compatibility, safe to track latest
 
 [settings]
 idiomatic_version_file_enable_tools = ["node"]

@@ -131,8 +131,8 @@ print_success "Brewfile snapshot taken"
 
 # Show what changed
 if [[ -f "$DOTFILES_DIR/Brewfile.backup" ]]; then
-    BREW_ADDED=$(diff "$DOTFILES_DIR/Brewfile.backup" "$DOTFILES_DIR/Brewfile" 2>/dev/null | grep "^>" | wc -l | tr -d ' ')
-    BREW_REMOVED=$(diff "$DOTFILES_DIR/Brewfile.backup" "$DOTFILES_DIR/Brewfile" 2>/dev/null | grep "^<" | wc -l | tr -d ' ')
+    BREW_ADDED=$(diff "$DOTFILES_DIR/Brewfile.backup" "$DOTFILES_DIR/Brewfile" 2>/dev/null | grep -c "^>" || true)
+    BREW_REMOVED=$(diff "$DOTFILES_DIR/Brewfile.backup" "$DOTFILES_DIR/Brewfile" 2>/dev/null | grep -c "^<" || true)
     if [[ "$BREW_ADDED" -gt 0 || "$BREW_REMOVED" -gt 0 ]]; then
         echo -e "  ${YELLOW}+${BREW_ADDED} added, -${BREW_REMOVED} removed since last snapshot${NC}"
     else

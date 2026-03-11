@@ -178,6 +178,7 @@ if ! command -v brew &> /dev/null; then
     # Add Homebrew to PATH for Apple Silicon
     if [[ $(uname -m) == 'arm64' ]]; then
         if ! grep -q '/opt/homebrew/bin/brew shellenv' ~/.zprofile 2>/dev/null; then
+            # shellcheck disable=SC2016
             echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
         fi
         eval "$(/opt/homebrew/bin/brew shellenv)"

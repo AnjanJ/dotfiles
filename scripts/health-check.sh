@@ -49,11 +49,17 @@ check_file() {
     local file="$1"
     local name="$2"
     local type="${3:-file}"  # file, link, or dir
+    local expected_target="${4:-}"  # optional: expected symlink target
 
     if [[ "$type" == "link" ]]; then
         if [ -L "$file" ]; then
             local target
             target=$(readlink "$file")
+            if [[ -n "$expected_target" && "$target" != "$expected_target" ]]; then
+                echo -e "${RED}✗${NC} $name: ${RED}wrong target${NC} → $target (expected $expected_target)"
+                ((FAILED++))
+                return 1
+            fi
             echo -e "${GREEN}✓${NC} $name: ${GREEN}linked${NC} → $target"
             ((PASSED++))
             return 0
@@ -191,24 +197,24 @@ else
 fi
 
 # Check Zed config
-check_file ~/.config/zed/settings.json "Zed settings" link
-check_file ~/.config/zed/tasks.json "Zed tasks" link
-check_file ~/.config/zed/snippets/ruby.json "Zed Ruby snippets" link
-check_file ~/.config/zed/snippets/erb.json "Zed ERB snippets" link
-check_file ~/.config/zed/snippets/zig.json "Zed Zig snippets" link
+check_file ~/.config/zed/settings.json "Zed settings" link "$DOTFILES_DIR/.config/zed/settings.json"
+check_file ~/.config/zed/tasks.json "Zed tasks" link "$DOTFILES_DIR/.config/zed/tasks.json"
+check_file ~/.config/zed/snippets/ruby.json "Zed Ruby snippets" link "$DOTFILES_DIR/.config/zed/snippets/ruby.json"
+check_file ~/.config/zed/snippets/erb.json "Zed ERB snippets" link "$DOTFILES_DIR/.config/zed/snippets/erb.json"
+check_file ~/.config/zed/snippets/zig.json "Zed Zig snippets" link "$DOTFILES_DIR/.config/zed/snippets/zig.json"
 
 # ============================================
 # 5. SHELL CONFIGURATION
 # ============================================
 print_header "5. Shell Configuration"
 
-check_file ~/.zshrc ".zshrc" link
-check_file ~/.zshrc-dhh-additions ".zshrc-dhh-additions" link
-check_file ~/.zshrc-elixir-additions ".zshrc-elixir-additions" link
-check_file ~/.zshrc-terminal-enhancements ".zshrc-terminal-enhancements" link
-check_file ~/.tmux.conf ".tmux.conf" link
-check_file ~/.config/starship.toml "starship.toml" link
-check_file ~/.config/mise/config.toml "mise config" link
+check_file ~/.zshrc ".zshrc" link "$DOTFILES_DIR/.zshrc"
+check_file ~/.zshrc-dhh-additions ".zshrc-dhh-additions" link "$DOTFILES_DIR/.zshrc-dhh-additions"
+check_file ~/.zshrc-elixir-additions ".zshrc-elixir-additions" link "$DOTFILES_DIR/.zshrc-elixir-additions"
+check_file ~/.zshrc-terminal-enhancements ".zshrc-terminal-enhancements" link "$DOTFILES_DIR/.zshrc-terminal-enhancements"
+check_file ~/.tmux.conf ".tmux.conf" link "$DOTFILES_DIR/.tmux.conf"
+check_file ~/.config/starship.toml "starship.toml" link "$DOTFILES_DIR/.config/starship.toml"
+check_file ~/.config/mise/config.toml "mise config" link "$DOTFILES_DIR/.config/mise/config.toml"
 
 # ============================================
 # 6. LANGUAGE RUNTIMES (mise)

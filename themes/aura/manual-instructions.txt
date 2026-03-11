@@ -27,12 +27,6 @@ FIREFOX
   https://addons.mozilla.org/en-US/firefox/addon/aura-theme-v2/
 
 ──────────────────────────────────────────────────────
-WARP TERMINAL
-──────────────────────────────────────────────────────
-  Aura theme YAML has been auto-installed to ~/.warp/themes/
-  Select it: Settings → Appearance → Themes → "Aura"
-
-──────────────────────────────────────────────────────
 TELEGRAM
 ──────────────────────────────────────────────────────
   1. Download the theme file from:

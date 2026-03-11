@@ -7,6 +7,38 @@ on:
     branches: [main]
 
 jobs:
+  shellcheck:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install shellcheck
+        run: brew install shellcheck
+      - name: Lint shell scripts
+        run: |
+          shellcheck -x \
+            -e SC2162 \
+            -e SC1091 \
+            -e SC2088 \
+            scripts/_helpers.sh \
+            scripts/health-check.sh \
+            scripts/setup-git.sh \
+            scripts/setup-ssh.sh \
+            scripts/apply-theme.sh \
+            scripts/theme-utils.sh \
+            update.sh \
+            install.sh \
+            bin/dotfiles \
+            bin/dotfiles-update \
+            bin/dotfiles-health \
+            bin/dotfiles-theme \
+            bin/dotfiles-install \
+            bin/dotfiles-uninstall \
+            bin/work-setup \
+            bin/work-nuke \
+            bin/work-switch \
+            bin/work-status \
+            bin/repos-clone
+
   idempotency:
     runs-on: macos-latest
     steps:
