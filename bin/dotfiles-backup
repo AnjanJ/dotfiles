@@ -1,0 +1,153 @@
+#!/usr/bin/env bash
+# Snapshot current dotfiles state into a timestamped backup
+# Usage: dotfiles-backup [--list] [--restore <name>]
+
+if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
+    echo "Usage: dotfiles-backup [--list] [--restore <name>]"
+    echo ""
+    echo "Snapshot and restore dotfiles state."
+    echo ""
+    echo "Commands:"
+    echo "  (no args)          Create a new backup snapshot"
+    echo "  --list             List available backups"
+    echo "  --restore <name>   Restore a specific backup"
+    exit 0
+fi
+
+set -euo pipefail
+
+DOTFILES_DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+source "$DOTFILES_DIR/scripts/_helpers.sh"
+
+BACKUP_ROOT="$HOME/.dotfiles-backups"
+mkdir -p "$BACKUP_ROOT"
+
+# ── List backups ──────────────────────────────
+if [[ "${1:-}" == "--list" ]]; then
+    echo ""
+    echo "Available backups:"
+    echo ""
+    if [[ -d "$BACKUP_ROOT" ]] && ls "$BACKUP_ROOT" &>/dev/null; then
+        local_count=0
+        for backup in "$BACKUP_ROOT"/*/; do
+            [[ -d "$backup" ]] || continue
+            name=$(basename "$backup")
+            file_count=$(find "$backup" -type f | wc -l | tr -d ' ')
+            echo "  $name  ($file_count files)"
+            ((local_count++))
+        done
+        if [[ $local_count -eq 0 ]]; then
+            echo "  (none)"
+        fi
+    else
+        echo "  (none)"
+    fi
+    echo ""
+    echo "Backups stored in: $BACKUP_ROOT"
+    echo ""
+    exit 0
+fi
+
+# ── Restore backup ────────────────────────────
+if [[ "${1:-}" == "--restore" ]]; then
+    if [[ -z "${2:-}" ]]; then
+        print_error "Usage: dotfiles-backup --restore <name>"
+        echo "Run 'dotfiles-backup --list' to see available backups."
+        exit 1
+    fi
+
+    RESTORE_DIR="$BACKUP_ROOT/$2"
+    if [[ ! -d "$RESTORE_DIR" ]]; then
+        print_error "Backup not found: $2"
+        echo "Run 'dotfiles-backup --list' to see available backups."
+        exit 1
+    fi
+
+    echo ""
+    print_step "Restoring backup: $2"
+    echo ""
+
+    # Restore files from backup into dotfiles repo
+    RESTORED=0
+    while IFS= read -r file; do
+        relative="${file#"$RESTORE_DIR"/}"
+        target="$DOTFILES_DIR/$relative"
+        target_dir=$(dirname "$target")
+        mkdir -p "$target_dir"
+        cp "$file" "$target"
+        print_success "Restored: $relative"
+        ((RESTORED++))
+    done < <(find "$RESTORE_DIR" -type f)
+
+    echo ""
+    print_success "Restored $RESTORED files from backup '$2'"
+    echo ""
+    echo "  Run 'dotfiles update' to apply the restored config."
+    echo ""
+    exit 0
+fi
+
+# ── Create backup ─────────────────────────────
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+BACKUP_DIR="$BACKUP_ROOT/$TIMESTAMP"
+mkdir -p "$BACKUP_DIR"
+
+echo ""
+print_step "Creating dotfiles backup: $TIMESTAMP"
+echo ""
+
+BACKED_UP=0
+
+# Shell configs
+for f in .zshrc .zshrc-dhh-additions .zshrc-elixir-additions .zshrc-terminal-enhancements .zshrc-work-completions .tmux.conf .gitignore_global; do
+    if [[ -f "$DOTFILES_DIR/$f" ]]; then
+        cp "$DOTFILES_DIR/$f" "$BACKUP_DIR/$f"
+        ((BACKED_UP++))
+    fi
+done
+
+# Config directories (copy actual files, not symlinks)
+for dir in aerospace ghostty mise nvim zed zellij; do
+    if [[ -d "$DOTFILES_DIR/.config/$dir" ]]; then
+        mkdir -p "$BACKUP_DIR/.config/$dir"
+        cp -R "$DOTFILES_DIR/.config/$dir/." "$BACKUP_DIR/.config/$dir/"
+        ((BACKED_UP++))
+    fi
+done
+
+# Starship (single file)
+if [[ -f "$DOTFILES_DIR/.config/starship.toml" ]]; then
+    mkdir -p "$BACKUP_DIR/.config"
+    cp "$DOTFILES_DIR/.config/starship.toml" "$BACKUP_DIR/.config/starship.toml"
+    ((BACKED_UP++))
+fi
+
+# Brewfile
+if [[ -f "$DOTFILES_DIR/Brewfile" ]]; then
+    cp "$DOTFILES_DIR/Brewfile" "$BACKUP_DIR/Brewfile"
+    ((BACKED_UP++))
+fi
+
+# Theme state
+if [[ -f "$HOME/.dotfiles-theme" ]]; then
+    cp "$HOME/.dotfiles-theme" "$BACKUP_DIR/.dotfiles-theme"
+    ((BACKED_UP++))
+fi
+
+# Keep only the 5 most recent backups
+BACKUP_COUNT=$(find "$BACKUP_ROOT" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')
+if [[ "$BACKUP_COUNT" -gt 5 ]]; then
+    EXCESS=$((BACKUP_COUNT - 5))
+    find "$BACKUP_ROOT" -mindepth 1 -maxdepth 1 -type d | sort | head -n "$EXCESS" | while read -r old; do
+        rm -rf "$old"
+    done
+    print_warning "Pruned old backups (keeping 5 most recent)"
+fi
+
+echo ""
+print_success "Backup complete: $BACKED_UP items saved"
+echo ""
+echo "  Location: $BACKUP_DIR"
+echo "  Restore:  dotfiles backup --restore $TIMESTAMP"
+echo "  List:     dotfiles backup --list"
+echo ""

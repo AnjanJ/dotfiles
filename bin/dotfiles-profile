@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+# Profile zsh startup time and identify slow sections
+# Usage: dotfiles-profile [--detailed]
+
+if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
+    echo "Usage: dotfiles-profile [--detailed]"
+    echo ""
+    echo "Measure zsh startup time and identify bottlenecks."
+    echo ""
+    echo "Options:"
+    echo "  --detailed   Show per-line timing via zprof"
+    exit 0
+fi
+
+set -euo pipefail
+
+DOTFILES_DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+source "$DOTFILES_DIR/scripts/_helpers.sh"
+
+echo ""
+echo "╔═══════════════════════════════════════════════════════════╗"
+echo "║                                                           ║"
+echo "║   ⏱️   Shell Startup Profiler                              ║"
+echo "║                                                           ║"
+echo "╚═══════════════════════════════════════════════════════════╝"
+echo ""
+
+# ── Quick benchmark: 10 shell launches ────────
+print_step "Benchmarking shell startup (10 launches)..."
+echo ""
+
+TIMES=()
+for i in $(seq 1 10); do
+    # Time a fresh zsh launch that immediately exits
+    T=$( { TIMEFORMAT='%R'; time zsh -i -c exit; } 2>&1 )
+    TIMES+=("$T")
+    printf "  Run %2d: %ss\n" "$i" "$T"
+done
+
+# Calculate average
+TOTAL=0
+for t in "${TIMES[@]}"; do
+    TOTAL=$(echo "$TOTAL + $t" | bc)
+done
+AVG=$(echo "scale=3; $TOTAL / 10" | bc)
+
+echo ""
+echo "────────────────────────────────────────────────────"
+echo -e "  Average startup: ${GREEN}${AVG}s${NC}"
+echo "────────────────────────────────────────────────────"
+
+if (( $(echo "$AVG < 0.200" | bc -l) )); then
+    echo -e "  ${GREEN}Excellent${NC} — under 200ms"
+elif (( $(echo "$AVG < 0.500" | bc -l) )); then
+    echo -e "  ${YELLOW}Good${NC} — under 500ms"
+elif (( $(echo "$AVG < 1.000" | bc -l) )); then
+    echo -e "  ${YELLOW}Slow${NC} — consider profiling with --detailed"
+else
+    echo -e "  ${RED}Very slow${NC} — run with --detailed to find bottlenecks"
+fi
+echo ""
+
+# ── Detailed profiling via zprof ──────────────
+if [[ "${1:-}" == "--detailed" ]]; then
+    print_step "Running detailed profiler (zprof)..."
+    echo ""
+
+    # Create a temporary zshrc that enables zprof
+    PROF_RC=$(mktemp)
+    cat > "$PROF_RC" << 'ZPROF'
+zmodload zsh/zprof
+ZPROF
+    cat ~/.zshrc >> "$PROF_RC"
+    echo "zprof" >> "$PROF_RC"
+
+    echo "  Top 20 slowest functions:"
+    echo "  ─────────────────────────────────────────"
+    ZDOTDIR=$(mktemp -d)
+    cp "$PROF_RC" "$ZDOTDIR/.zshrc"
+    HOME_BACKUP="$HOME"
+    # Run zsh with profiling, capture output
+    zsh -c "ZDOTDIR='$ZDOTDIR' HOME='$HOME_BACKUP' source '$ZDOTDIR/.zshrc'" 2>/dev/null | head -25
+    rm -rf "$ZDOTDIR" "$PROF_RC"
+
+    echo ""
+    echo "  Tip: Look for functions taking >10ms — those are optimization targets."
+    echo ""
+fi
+
+# ── Per-section timing ────────────────────────
+print_step "Timing individual components..."
+echo ""
+
+time_command() {
+    local name="$1"
+    shift
+    local T
+    T=$( { TIMEFORMAT='%R'; time "$@" 2>/dev/null; } 2>&1 )
+    printf "  %-30s %ss\n" "$name" "$T"
+}
+
+time_command "starship init" zsh -c 'command -v starship &>/dev/null && starship init zsh >/dev/null'
+time_command "mise activate" zsh -c 'command -v mise &>/dev/null && mise activate zsh >/dev/null'
+time_command "compinit" zsh -c 'autoload -Uz compinit && compinit -C'
+time_command "source dhh-additions" zsh -c '[[ -f ~/.zshrc-dhh-additions ]] && source ~/.zshrc-dhh-additions'
+time_command "source terminal-enhancements" zsh -c '[[ -f ~/.zshrc-terminal-enhancements ]] && source ~/.zshrc-terminal-enhancements'
+time_command "source elixir-additions" zsh -c '[[ -f ~/.zshrc-elixir-additions ]] && source ~/.zshrc-elixir-additions'
+
+echo ""
+echo "  Tip: Components over 100ms are worth optimizing."
+echo "  Common fixes: lazy-load tools, use cached init, reduce plugin count."
+echo ""

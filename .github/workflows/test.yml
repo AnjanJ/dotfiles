@@ -33,6 +33,9 @@ jobs:
             bin/dotfiles-theme \
             bin/dotfiles-install \
             bin/dotfiles-uninstall \
+            bin/dotfiles-backup \
+            bin/dotfiles-doctor \
+            bin/dotfiles-profile \
             bin/work-setup \
             bin/work-nuke \
             bin/work-switch \

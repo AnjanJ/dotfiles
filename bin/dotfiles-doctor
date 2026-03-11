@@ -1,0 +1,273 @@
+#!/usr/bin/env bash
+# Auto-fix common dotfiles issues
+# Usage: dotfiles doctor [--dry-run]
+
+if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
+    echo "Usage: dotfiles doctor [--dry-run]"
+    echo ""
+    echo "Detect and auto-fix common dotfiles issues."
+    echo ""
+    echo "Options:"
+    echo "  --dry-run   Show what would be fixed without making changes"
+    exit 0
+fi
+
+set -euo pipefail
+
+DOTFILES_DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+source "$DOTFILES_DIR/scripts/_helpers.sh"
+
+DRY_RUN=false
+[[ "${1:-}" == "--dry-run" ]] && DRY_RUN=true
+
+FIXED=0
+SKIPPED=0
+ALREADY_OK=0
+
+echo ""
+echo "╔═══════════════════════════════════════════════════════════╗"
+echo "║                                                           ║"
+echo "║   🩺  AJ's Dotfiles Doctor                                ║"
+echo "║                                                           ║"
+echo "╚═══════════════════════════════════════════════════════════╝"
+echo ""
+
+_ok() {
+    echo -e "${GREEN}✓${NC} $1"
+    ALREADY_OK=$((ALREADY_OK + 1))
+}
+
+_fix() {
+    if [[ "$DRY_RUN" == true ]]; then
+        echo -e "${YELLOW}▸${NC} Would fix: $1"
+        SKIPPED=$((SKIPPED + 1))
+    else
+        echo -e "${GREEN}✓${NC} Fixed: $1"
+        FIXED=$((FIXED + 1))
+    fi
+}
+
+_skip() {
+    echo -e "${YELLOW}⚠${NC} $1"
+    SKIPPED=$((SKIPPED + 1))
+}
+
+# Helper: create or fix a symlink
+fix_symlink() {
+    local source="$1"
+    local target="$2"
+    local name="$3"
+
+    if [[ ! -f "$source" && ! -d "$source" ]]; then
+        return  # source doesn't exist in repo, skip
+    fi
+
+    if [[ -L "$target" ]] && [[ "$(readlink "$target")" == "$source" ]]; then
+        _ok "$name symlink correct"
+    elif [[ -L "$target" ]]; then
+        # Wrong target
+        if [[ "$DRY_RUN" == false ]]; then
+            ln -sf "$source" "$target"
+        fi
+        _fix "$name symlink (was pointing to $(readlink "$target"))"
+    elif [[ -e "$target" ]]; then
+        # Regular file exists — back up and replace
+        if [[ "$DRY_RUN" == false ]]; then
+            mv "$target" "${target}.doctor-backup"
+            ln -sf "$source" "$target"
+        fi
+        _fix "$name (backed up existing file, created symlink)"
+    else
+        # Missing
+        local target_dir
+        target_dir=$(dirname "$target")
+        if [[ "$DRY_RUN" == false ]]; then
+            mkdir -p "$target_dir"
+            ln -sf "$source" "$target"
+        fi
+        _fix "$name symlink (was missing)"
+    fi
+}
+
+# ── 1. Check symlinks ────────────────────────
+print_step "Checking symlinks..."
+echo ""
+
+fix_symlink "$DOTFILES_DIR/.zshrc" ~/.zshrc ".zshrc"
+fix_symlink "$DOTFILES_DIR/.zshrc-dhh-additions" ~/.zshrc-dhh-additions ".zshrc-dhh-additions"
+fix_symlink "$DOTFILES_DIR/.zshrc-elixir-additions" ~/.zshrc-elixir-additions ".zshrc-elixir-additions"
+fix_symlink "$DOTFILES_DIR/.zshrc-terminal-enhancements" ~/.zshrc-terminal-enhancements ".zshrc-terminal-enhancements"
+fix_symlink "$DOTFILES_DIR/.zshrc-work-completions" ~/.zshrc-work-completions ".zshrc-work-completions"
+fix_symlink "$DOTFILES_DIR/.tmux.conf" ~/.tmux.conf ".tmux.conf"
+fix_symlink "$DOTFILES_DIR/.gitignore_global" ~/.gitignore_global ".gitignore_global"
+fix_symlink "$DOTFILES_DIR/.config/aerospace" ~/.config/aerospace "aerospace config"
+fix_symlink "$DOTFILES_DIR/.config/ghostty" ~/.config/ghostty "ghostty config"
+fix_symlink "$DOTFILES_DIR/.config/nvim" ~/.config/nvim "nvim config"
+fix_symlink "$DOTFILES_DIR/.config/zellij" ~/.config/zellij "zellij config"
+fix_symlink "$DOTFILES_DIR/.config/starship.toml" ~/.config/starship.toml "starship config"
+fix_symlink "$DOTFILES_DIR/.config/mise/config.toml" ~/.config/mise/config.toml "mise config"
+fix_symlink "$DOTFILES_DIR/.config/zed/settings.json" ~/.config/zed/settings.json "zed settings"
+fix_symlink "$DOTFILES_DIR/.config/zed/tasks.json" ~/.config/zed/tasks.json "zed tasks"
+
+# Zed snippets
+for snippet in "$DOTFILES_DIR/.config/zed/snippets/"*.json; do
+    [[ -f "$snippet" ]] || continue
+    name=$(basename "$snippet")
+    fix_symlink "$snippet" ~/.config/zed/snippets/"$name" "zed snippet: $name"
+done
+
+# bin/ scripts
+mkdir -p ~/bin
+for script in "$DOTFILES_DIR/bin/"*; do
+    name=$(basename "$script")
+    fix_symlink "$script" ~/bin/"$name" "bin/$name"
+done
+
+# ── 2. Check directories ─────────────────────
+echo ""
+print_step "Checking directories..."
+echo ""
+
+for dir in ~/.config/zed/snippets ~/.config/mise ~/.tmux/plugins; do
+    if [[ -d "$dir" ]]; then
+        _ok "$dir exists"
+    else
+        if [[ "$DRY_RUN" == false ]]; then
+            mkdir -p "$dir"
+        fi
+        _fix "Created $dir"
+    fi
+done
+
+# ── 3. Check TPM ─────────────────────────────
+echo ""
+print_step "Checking tmux plugins..."
+echo ""
+
+if [[ -d ~/.tmux/plugins/tpm ]]; then
+    _ok "TPM installed"
+else
+    if [[ "$DRY_RUN" == false ]]; then
+        git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm 2>/dev/null
+    fi
+    _fix "Installed TPM"
+fi
+
+# ── 4. Check mise trust ──────────────────────
+echo ""
+print_step "Checking mise..."
+echo ""
+
+if command -v mise &>/dev/null; then
+    if mise trust ~/.config/mise/config.toml 2>/dev/null; then
+        _ok "mise config trusted"
+    else
+        _skip "Could not trust mise config"
+    fi
+
+    # Check if all tools are installed
+    MISSING_TOOLS=$(mise ls --missing 2>/dev/null || true)
+    if [[ -z "$MISSING_TOOLS" ]]; then
+        _ok "All mise tools installed"
+    else
+        if [[ "$DRY_RUN" == false ]]; then
+            mise install --yes 2>/dev/null || true
+        fi
+        _fix "Installed missing mise tools"
+    fi
+else
+    _skip "mise not installed (run: brew install mise)"
+fi
+
+# ── 5. Check SSH permissions ─────────────────
+echo ""
+print_step "Checking SSH permissions..."
+echo ""
+
+if [[ -d ~/.ssh ]]; then
+    CURRENT_PERMS=$(stat -f '%A' ~/.ssh)
+    if [[ "$CURRENT_PERMS" == "700" ]]; then
+        _ok "~/.ssh permissions correct (700)"
+    else
+        if [[ "$DRY_RUN" == false ]]; then
+            chmod 700 ~/.ssh
+        fi
+        _fix "~/.ssh permissions (was $CURRENT_PERMS, set to 700)"
+    fi
+
+    # Fix key permissions
+    for key in ~/.ssh/id_*; do
+        [[ -f "$key" ]] || continue
+        PERMS=$(stat -f '%A' "$key")
+        if [[ "$key" == *.pub ]]; then
+            [[ "$PERMS" == "644" ]] && continue
+            if [[ "$DRY_RUN" == false ]]; then chmod 644 "$key"; fi
+            _fix "$(basename "$key") permissions (was $PERMS, set to 644)"
+        else
+            [[ "$PERMS" == "600" ]] && continue
+            if [[ "$DRY_RUN" == false ]]; then chmod 600 "$key"; fi
+            _fix "$(basename "$key") permissions (was $PERMS, set to 600)"
+        fi
+    done
+
+    _ok "SSH key permissions correct"
+else
+    _skip "~/.ssh directory not found"
+fi
+
+# ── 6. Check git config ──────────────────────
+echo ""
+print_step "Checking git config..."
+echo ""
+
+if git config --global core.excludesfile &>/dev/null; then
+    _ok "Git global excludesfile configured"
+else
+    if [[ "$DRY_RUN" == false ]]; then
+        git config --global core.excludesfile ~/.gitignore_global
+    fi
+    _fix "Set git global excludesfile"
+fi
+
+if git config --global user.name &>/dev/null; then
+    _ok "Git user.name set ($(git config --global user.name))"
+else
+    _skip "Git user.name not set (run: dotfiles install)"
+fi
+
+if git config --global user.email &>/dev/null; then
+    _ok "Git user.email set ($(git config --global user.email))"
+else
+    _skip "Git user.email not set (run: dotfiles install)"
+fi
+
+# ── 7. Check ~/bin in PATH ───────────────────
+echo ""
+print_step "Checking PATH..."
+echo ""
+
+if echo "$PATH" | tr ':' '\n' | grep -q "$HOME/bin"; then
+    _ok "~/bin in PATH"
+else
+    _skip "~/bin not in PATH (should be set by .zshrc)"
+fi
+
+# ── Summary ───────────────────────────────────
+echo ""
+echo "────────────────────────────────────────────────────"
+
+if [[ "$DRY_RUN" == true ]]; then
+    echo -e "  ${GREEN}Already OK:${NC} $ALREADY_OK  |  ${YELLOW}Would fix:${NC} $SKIPPED"
+    echo ""
+    echo "  Run without --dry-run to apply fixes."
+else
+    echo -e "  ${GREEN}OK:${NC} $ALREADY_OK  |  ${GREEN}Fixed:${NC} $FIXED  |  ${YELLOW}Skipped:${NC} $SKIPPED"
+fi
+
+echo "────────────────────────────────────────────────────"
+echo ""
+
+if [[ $FIXED -gt 0 ]]; then
+    echo "  Restart your terminal or run: source ~/.zshrc"
+    echo ""
+fi

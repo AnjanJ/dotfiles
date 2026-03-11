@@ -66,6 +66,25 @@ apply_theme() {
     # starship_palette, vscode_theme, zed_theme
     source "$conf"
 
+    # Validate required variables from theme.conf
+    local missing_vars=()
+    local required_vars=(ghostty_theme nvim_plugin_file nvim_colorscheme
+        zellij_theme_file zellij_theme_name starship_palette vscode_theme zed_theme)
+    for var in "${required_vars[@]}"; do
+        if [[ -z "${!var:-}" ]]; then
+            missing_vars+=("$var")
+        fi
+    done
+    if [[ ${#missing_vars[@]} -gt 0 ]]; then
+        echo "Error: theme.conf is missing required variables:"
+        for v in "${missing_vars[@]}"; do
+            echo "  - $v"
+        done
+        echo ""
+        echo "See themes/tokyo-night/theme.conf for an example."
+        return 1
+    fi
+
     # ── Pre-flight validation ──────────────────────────
     _theme_step "Pre-flight validation..."
     local preflight_ok=true
@@ -227,40 +246,33 @@ apply_theme() {
     # ── 6. VS Code ──────────────────────────────────────
     _theme_step "VS Code..."
     local vscode_settings="$HOME/Library/Application Support/Code/User/settings.json"
-    if [[ -f "$vscode_settings" ]]; then
-        # Use python for safe JSON manipulation (always available on macOS)
-        if python3 -c "
-import json, sys
-with open('$vscode_settings', 'r') as f:
-    settings = json.load(f)
-settings['workbench.colorTheme'] = '$vscode_theme'
-with open('$vscode_settings', 'w') as f:
-    json.dump(settings, f, indent=2)
-" 2>/dev/null; then
+    if [[ -f "$vscode_settings" ]] && command -v jq &>/dev/null; then
+        local tmpfile
+        tmpfile=$(mktemp)
+        if jq --arg theme "$vscode_theme" '.["workbench.colorTheme"] = $theme' "$vscode_settings" > "$tmpfile" 2>/dev/null; then
+            mv "$tmpfile" "$vscode_settings"
             _theme_success "VS Code → $vscode_theme"
         else
-            _theme_warning "VS Code: Could not update settings.json (file may not exist yet)"
+            rm -f "$tmpfile"
+            _theme_warning "VS Code: Could not update settings.json"
         fi
-    else
+    elif [[ ! -f "$vscode_settings" ]]; then
         _theme_warning "VS Code: settings.json not found (VS Code may not be installed yet)"
+    else
+        _theme_warning "VS Code: jq not installed, skipping"
     fi
 
     # ── 7. Zed ──────────────────────────────────────────
     _theme_step "Zed..."
     local zed_settings="$DOTFILES_DIR/.config/zed/settings.json"
-    if [[ -f "$zed_settings" ]]; then
-        if python3 -c "
-import json
-with open('$zed_settings', 'r') as f:
-    settings = json.load(f)
-if 'theme' not in settings:
-    settings['theme'] = {}
-settings['theme']['dark'] = '$zed_theme'
-with open('$zed_settings', 'w') as f:
-    json.dump(settings, f, indent=2)
-" 2>/dev/null; then
+    if [[ -f "$zed_settings" ]] && command -v jq &>/dev/null; then
+        local tmpfile
+        tmpfile=$(mktemp)
+        if jq --arg theme "$zed_theme" '.theme.dark = $theme' "$zed_settings" > "$tmpfile" 2>/dev/null; then
+            mv "$tmpfile" "$zed_settings"
             _theme_success "Zed → $zed_theme"
         else
+            rm -f "$tmpfile"
             _theme_warning "Zed: Could not update settings.json"
         fi
     fi
