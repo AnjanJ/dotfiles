@@ -123,7 +123,7 @@ Aerospace, Cloudflare, Sketchybar/Borders, Heroku, LazySql, Render, steipete's C
 - Google Chrome, Firefox, Zen
 
 **Terminals**
-- Ghostty (GPU-accelerated), WezTerm, Warp
+- Ghostty (GPU-accelerated, default), WezTerm, Warp
 
 **Code Editors**
 - Zed, Visual Studio Code

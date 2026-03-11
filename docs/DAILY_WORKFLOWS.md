@@ -30,7 +30,7 @@
 
 ┌─────────────────────────────────────┐
 │ WORKSPACE 3: Work Terminal          │
-│ → Warp                              │
+│ → Ghostty                              │
 │ → Work commands, git, servers       │
 │ Shortcut: Ctrl+Shift+3              │
 │ Launch: Ctrl+Shift+W                │
@@ -110,7 +110,7 @@ WORK APPS
 ---------
 Ctrl+Shift+C  →  Chrome (opens NEW window) 🆕
 Ctrl+Shift+V  →  VS Code (editor)
-Ctrl+Shift+W  →  Warp (work terminal)
+Ctrl+Shift+W  →  Ghostty (work terminal)
 
 PERSONAL APPS
 -------------
@@ -141,7 +141,7 @@ WORK CONTEXT
 ------------
 Ctrl+Shift+1  →  Work Browser (Chrome)
 Ctrl+Shift+2  →  Code Editor (VS Code/Zed)
-Ctrl+Shift+3  →  Work Terminal (Warp)
+Ctrl+Shift+3  →  Work Terminal (Ghostty)
 Ctrl+Shift+4  →  Communication
 
 PERSONAL CONTEXT
@@ -170,7 +170,7 @@ Ctrl+Shift+Tab  →  Toggle between last 2 workspaces ⭐
 # Start work context
 Ctrl+Shift+1    # Chrome (check email, calendar)
 Ctrl+Shift+2    # VS Code (open work project)
-Ctrl+Shift+3    # Warp (start dev server)
+Ctrl+Shift+3    # Ghostty (start dev server)
 Ctrl+Shift+4    # Slack (check messages)
 
 # Now ready to work!
@@ -184,7 +184,7 @@ Ctrl+Shift+2
 # The main workflow loop
 Workspace 2 (VS Code)
   ↓
-Ctrl+Shift+3 (Warp terminal)
+Ctrl+Shift+3 (Ghostty terminal)
   ↓
 Run tests/server
   ↓
@@ -192,7 +192,7 @@ Ctrl+Shift+Tab (back to VS Code)
   ↓
 Write code
   ↓
-Ctrl+Shift+Tab (back to Warp)
+Ctrl+Shift+Tab (back to Ghostty)
   ↓
 Check output
   ↓
@@ -247,16 +247,16 @@ Ctrl+Shift+8    # Go to Obsidian workspace
 Ctrl+` (VS Code shortcut)
 ```
 
-**Or use dedicated Warp:**
+**Or use dedicated Ghostty:**
 ```
-Ctrl+Shift+3 (full Warp in workspace 3)
+Ctrl+Shift+3 (full Ghostty in workspace 3)
 ```
 
-### Warp Terminal (Workspace 3)
+### Ghostty Terminal (Workspace 3)
 
 **Multiple sessions:**
-- Split panes within Warp
-- Or open multiple Warp windows in same workspace
+- Split panes within Ghostty
+- Or open multiple Ghostty windows in same workspace
 
 **Common commands:**
 ```bash
@@ -325,7 +325,7 @@ F11             # Full-screen
 Ctrl+Shift+;    # Service mode
 Backspace       # Close all other windows in workspace
 
-# Only VS Code + Warp toggle
+# Only VS Code + Ghostty toggle
 Ctrl+Shift+Tab  # Quick switch
 ```
 
@@ -928,7 +928,7 @@ Laptop                    BenQ Monitor
 ━━━━━━━━━━━━━━━━━━━━     ━━━━━━━━━━━━━━━━━━━━
 1. Chrome (docs)          5. Firefox (testing)
 2. VS Code (coding)       6. (empty)
-3. Warp (commands)        7. Ghostty (logs)
+3. Ghostty (commands)        7. Ghostty (logs)
 4. Slack (chat)           8. (empty)
 ```
 
@@ -958,7 +958,7 @@ Laptop                    BenQ                  TV
 ```
 C → Chrome
 V → VS Code (Visual Studio Code)
-W → Warp
+W → Ghostty
 F → Firefox
 M → (Proton) Mail
 Z → Zed
@@ -999,7 +999,7 @@ P → 1Password
 **Do:**
 - ✅ Chrome = workspace 1 (work only)
 - ✅ Firefox = workspace 5 (personal only)
-- ✅ Warp = workspace 3 (work only)
+- ✅ Ghostty = workspace 3 (work only)
 - ✅ Ghostty = workspace 7 (personal only)
 
 ### 2. **Use the Toggle (Ctrl+Shift+Tab)**
@@ -1096,7 +1096,7 @@ Edit this file and reorganize!
 **Work:**
 - 🌐 Chrome (browser)
 - 💻 VS Code (editor)
-- ⚡ Warp (terminal)
+- ⚡ Ghostty (terminal)
 - 💬 Slack/Teams (communication)
 
 **Personal:**
@@ -1117,7 +1117,7 @@ WORK        PERSONAL           UTILITIES
 ────────    ──────────────     ─────────
 1. Chrome   5. Firefox + Mail  9. 1Password
 2. VS Code  6. Zed
-3. Warp     7. Ghostty
+3. Ghostty     7. Ghostty
 4. Comm     8. Obsidian
 ```
 
@@ -1144,7 +1144,7 @@ Ctrl+Shift+P      →  1Password
 □ Learn Ctrl+Shift+1/2/3 (work workspaces)
 □ Practice Ctrl+Shift+C (Chrome)
 □ Practice Ctrl+Shift+V (VS Code)
-□ Practice Ctrl+Shift+W (Warp)
+□ Practice Ctrl+Shift+W (Ghostty)
 ```
 
 ### Day 2: Personal Context

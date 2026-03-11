@@ -37,11 +37,11 @@ Like DHH's **[Omakub](https://omakub.org/)** for Ubuntu, this setup provides:
 
 ### 🎨 Theme System (Tokyo Night or Aura Dark)
 
-Choose your theme during install — it's applied across **13 apps**:
+Choose your theme during install — it's applied across **12 apps**:
 
 | Auto-configured | Manual (links provided) |
 |----------------|------------------------|
-| Neovim, Ghostty, tmux, Zellij, Starship, Zed, VS Code, Warp | Slack, Chrome, Firefox, Telegram, Raycast |
+| Neovim, Ghostty, tmux, Zellij, Starship, Zed, VS Code | Slack, Chrome, Firefox, Telegram, Raycast |
 
 Switch anytime: `bash switch-theme.sh`
 
@@ -84,7 +84,9 @@ Switch anytime: `bash switch-theme.sh`
 - Zig
 - Go, Rust (latest)
 - PostgreSQL 14
+- MySQL
 - Redis
+- SQLite (via litecli)
 
 ### CLI Utilities
 - ripgrep, fd, fzf (fuzzy finding)
@@ -164,7 +166,9 @@ Installed Tools:
 │   └── Go
 ├── Databases
 │   ├── PostgreSQL 14
-│   └── Redis
+│   ├── MySQL
+│   ├── Redis
+│   └── SQLite (litecli)
 ├── Work Management
 │   ├── work-setup (configure work identity)
 │   ├── work-nuke (remove work config)
@@ -270,7 +274,7 @@ Each file has a single responsibility. Want to change your Rails workflow? Edit 
 |-----|-----|-----------|
 | `Ctrl+Shift+C` | Chrome (work) | 1 |
 | `Ctrl+Shift+Z` | Zed editor | 2 |
-| `Ctrl+Shift+W` | Warp terminal | 3 |
+| `Ctrl+Shift+W` | Ghostty terminal | 3 |
 | `Ctrl+Shift+F` | Firefox (personal) | 5 |
 | `Ctrl+Shift+G` | Ghostty terminal | 7 |
 | `Ctrl+Shift+O` | Obsidian (PKM) | 8 |
@@ -326,7 +330,7 @@ Each file has a single responsibility. Want to change your Rails workflow? Edit 
 
 ## 🎨 Theming
 
-Choose between **Tokyo Night** (dark blue) or **Aura Dark** (deep purple) during install. The theme is applied across 13 apps automatically.
+Choose between **Tokyo Night** (dark blue) or **Aura Dark** (deep purple) during install. The theme is applied across 12 apps automatically.
 
 | | Tokyo Night | Aura Dark |
 |---|-----------|-----------|
@@ -451,7 +455,7 @@ bash switch-theme.sh aura       # Switch to Aura Dark
 bash switch-theme.sh tokyo-night # Switch to Tokyo Night
 ```
 
-This updates Neovim, Ghostty, tmux, Zellij, Starship, Zed, VS Code, and Warp automatically, then prints instructions for Slack, browsers, Telegram, and Raycast.
+This updates Neovim, Ghostty, tmux, Zellij, Starship, Zed, and VS Code automatically, then prints instructions for Slack, browsers, Telegram, and Raycast.
 
 ### Add More Packages
 

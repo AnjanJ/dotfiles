@@ -112,7 +112,7 @@ automatically-unhide-macos-hidden-apps = false
     ctrl-shift-z = '''exec-and-forget open -a "Zed"'''
 
     # Workspace 3: Work Terminal
-    ctrl-shift-w = '''exec-and-forget open -a "Warp"'''
+    ctrl-shift-w = '''exec-and-forget open -a "Ghostty"'''
 
     # PERSONAL APPS (Workspaces 5-8)
     # Workspace 5: Personal Browser & Email (forces NEW window)

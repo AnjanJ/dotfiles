@@ -250,7 +250,9 @@ check_command gh "GitHub CLI" false
 print_header "8. Databases"
 
 check_command psql "PostgreSQL"
+check_command mysql "MySQL"
 check_command redis-cli "Redis"
+check_command litecli "litecli (SQLite)" false
 
 # Check if PostgreSQL is running
 if pg_isready &> /dev/null; then
@@ -258,6 +260,15 @@ if pg_isready &> /dev/null; then
     ((PASSED++))
 else
     echo -e "${YELLOW}⚠${NC} PostgreSQL: ${YELLOW}not running${NC}"
+    ((WARNINGS++))
+fi
+
+# Check if MySQL is running
+if mysqladmin ping &> /dev/null 2>&1; then
+    echo -e "${GREEN}✓${NC} MySQL: ${GREEN}running${NC}"
+    ((PASSED++))
+else
+    echo -e "${YELLOW}⚠${NC} MySQL: ${YELLOW}not running${NC}"
     ((WARNINGS++))
 fi
 
