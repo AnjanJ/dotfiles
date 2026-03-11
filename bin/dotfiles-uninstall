@@ -7,6 +7,18 @@
 #   - Uninstall Homebrew packages
 #   - Remove language runtimes
 
+if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
+    echo "Usage: dotfiles-uninstall [--yes]"
+    echo ""
+    echo "Remove all dotfiles symlinks. Does NOT uninstall packages or runtimes."
+    echo ""
+    echo "Options:"
+    echo "  --yes   Skip confirmation prompt"
+    exit 0
+fi
+
+set -euo pipefail
+
 DOTFILES_DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
 source "$DOTFILES_DIR/scripts/_helpers.sh"
 

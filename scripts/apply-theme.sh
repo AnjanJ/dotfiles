@@ -6,6 +6,10 @@
 # Applies the selected theme across all configured apps
 # Usage: bash scripts/apply-theme.sh <tokyo-night|aura>
 #    or: source scripts/apply-theme.sh && apply_theme <tokyo-night|aura>
+#
+# Theme settings are defined in themes/<name>/theme.conf
+# To add a new theme, create a directory under themes/ with
+# the required files and a theme.conf registry file.
 # ============================================
 
 # Get dotfiles directory (relative to this script)
@@ -32,6 +36,7 @@ _theme_step() {
     echo -e "${BLUE}==>${NC} $1"
 }
 
+# shellcheck disable=SC2154  # theme.conf variables loaded dynamically
 apply_theme() {
     local THEME="$1"
     local QUIET="${2:-false}"  # pass "true" to suppress manual instructions
@@ -47,31 +52,33 @@ apply_theme() {
         return 1
     fi
 
+    # ── Load theme registry ──────────────────────────
+    local conf="$THEMES_DIR/theme.conf"
+    if [[ ! -f "$conf" ]]; then
+        echo "Error: Theme registry not found: $conf"
+        echo "Each theme needs a theme.conf file. See themes/tokyo-night/theme.conf for an example."
+        return 1
+    fi
+
+    # shellcheck source=/dev/null
+    # Variables loaded from theme.conf: ghostty_theme, ghostty_custom_file,
+    # nvim_plugin_file, nvim_colorscheme, zellij_theme_file, zellij_theme_name,
+    # starship_palette, vscode_theme, zed_theme
+    source "$conf"
+
     # ── Pre-flight validation ──────────────────────────
-    # Check ALL required files exist before modifying anything.
-    # This prevents a half-applied theme if a file is missing.
     _theme_step "Pre-flight validation..."
     local preflight_ok=true
     local missing_files=()
 
-    # Theme source files (per-theme)
-    local required_theme_files
-    if [[ "$THEME" == "aura" ]]; then
-        required_theme_files=(
-            "nvim/aura-theme.lua"
-            "tmux/theme-block.conf"
-            "starship/palette.toml"
-            "zellij/themes/aura.kdl"
-            "ghostty/themes/Aura"
-        )
-    else
-        required_theme_files=(
-            "nvim/tokyo-night-theme.lua"
-            "tmux/theme-block.conf"
-            "starship/palette.toml"
-            "zellij/themes/tokyo-night.kdl"
-        )
-    fi
+    # Required theme source files (derived from registry)
+    local required_theme_files=(
+        "nvim/$nvim_plugin_file"
+        "tmux/theme-block.conf"
+        "starship/palette.toml"
+        "zellij/themes/$zellij_theme_file"
+    )
+    [[ -n "$ghostty_custom_file" ]] && required_theme_files+=("$ghostty_custom_file")
 
     for f in "${required_theme_files[@]}"; do
         if [[ ! -f "$THEMES_DIR/$f" ]]; then
@@ -126,64 +133,42 @@ apply_theme() {
     # ── 1. Ghostty ──────────────────────────────────────
     _theme_step "Ghostty..."
     local ghostty_config="$DOTFILES_DIR/.config/ghostty/config"
-    if [[ "$THEME" == "aura" ]]; then
-        # Install custom Aura theme file
+    if [[ -n "$ghostty_custom_file" ]]; then
         mkdir -p "$DOTFILES_DIR/.config/ghostty/themes"
-        cp "$THEMES_DIR/ghostty/themes/Aura" "$DOTFILES_DIR/.config/ghostty/themes/Aura"
-        # Update theme line in config
-        sed -i '' 's/^theme = .*/theme = Aura/' "$ghostty_config"
-    else
-        # Tokyo Night is built-in
-        sed -i '' 's/^theme = .*/theme = tokyonight_night/' "$ghostty_config"
+        cp "$THEMES_DIR/$ghostty_custom_file" "$DOTFILES_DIR/.config/ghostty/themes/"
     fi
-    _theme_success "Ghostty → $THEME"
+    sed -i '' "s/^theme = .*/theme = $ghostty_theme/" "$ghostty_config"
+    _theme_success "Ghostty → $ghostty_theme"
 
     # ── 2. Neovim ───────────────────────────────────────
     _theme_step "Neovim..."
     local nvim_plugins="$DOTFILES_DIR/.config/nvim/lua/plugins"
     local astroui="$nvim_plugins/astroui.lua"
 
-    # Remove any existing theme plugin files
+    # Remove any existing theme plugin files, then install the right one
     rm -f "$nvim_plugins/tokyo-night-theme.lua" "$nvim_plugins/aura-theme.lua"
-
-    if [[ "$THEME" == "aura" ]]; then
-        cp "$THEMES_DIR/nvim/aura-theme.lua" "$nvim_plugins/aura-theme.lua"
-        local colorscheme="aura-dark"
-    else
-        cp "$THEMES_DIR/nvim/tokyo-night-theme.lua" "$nvim_plugins/tokyo-night-theme.lua"
-        local colorscheme="tokyonight"
-    fi
+    cp "$THEMES_DIR/nvim/$nvim_plugin_file" "$nvim_plugins/$nvim_plugin_file"
 
     # Update colorscheme in astroui.lua
-    sed -i '' "s/colorscheme = \"[^\"]*\"/colorscheme = \"$colorscheme\"/" "$astroui"
-    _theme_success "Neovim → $colorscheme"
+    sed -i '' "s/colorscheme = \"[^\"]*\"/colorscheme = \"$nvim_colorscheme\"/" "$astroui"
+    _theme_success "Neovim → $nvim_colorscheme"
 
     # ── 3. Zellij ───────────────────────────────────────
     _theme_step "Zellij..."
     local zellij_config="$DOTFILES_DIR/.config/zellij/config.kdl"
     local zellij_themes_dir="$DOTFILES_DIR/.config/zellij/themes"
 
-    # Copy theme file
     mkdir -p "$zellij_themes_dir"
-    if [[ "$THEME" == "aura" ]]; then
-        cp "$THEMES_DIR/zellij/themes/aura.kdl" "$zellij_themes_dir/aura.kdl"
-        sed -i '' 's/^theme "[^"]*"/theme "aura"/' "$zellij_config"
-    else
-        cp "$THEMES_DIR/zellij/themes/tokyo-night.kdl" "$zellij_themes_dir/tokyo-night.kdl"
-        sed -i '' 's/^theme "[^"]*"/theme "tokyo-night"/' "$zellij_config"
-    fi
-    _theme_success "Zellij → $THEME"
+    cp "$THEMES_DIR/zellij/themes/$zellij_theme_file" "$zellij_themes_dir/$zellij_theme_file"
+    sed -i '' "s/^theme \"[^\"]*\"/theme \"$zellij_theme_name\"/" "$zellij_config"
+    _theme_success "Zellij → $zellij_theme_name"
 
     # ── 4. Starship ─────────────────────────────────────
     _theme_step "Starship..."
     local starship_config="$DOTFILES_DIR/.config/starship.toml"
     local palette_file="$THEMES_DIR/starship/palette.toml"
 
-    if [[ "$THEME" == "aura" ]]; then
-        sed -i '' 's/^palette = "[^"]*"/palette = "aura"/' "$starship_config"
-    else
-        sed -i '' 's/^palette = "[^"]*"/palette = "tokyonight"/' "$starship_config"
-    fi
+    sed -i '' "s/^palette = \"[^\"]*\"/palette = \"$starship_palette\"/" "$starship_config"
 
     # Replace palette section between sentinel comments
     if grep -q "THEME_PALETTE_START" "$starship_config" && [[ -f "$palette_file" ]]; then
@@ -207,7 +192,7 @@ apply_theme() {
         mv "$tmpfile" "$starship_config"
     fi
 
-    _theme_success "Starship → $THEME"
+    _theme_success "Starship → $starship_palette"
 
     # ── 5. tmux ─────────────────────────────────────────
     _theme_step "tmux..."
@@ -216,7 +201,6 @@ apply_theme() {
 
     # Replace content between THEME_BLOCK_START and THEME_BLOCK_END
     if grep -q "THEME_BLOCK_START" "$tmux_config" && [[ -f "$theme_block" ]]; then
-        # Create a temp file with the replacement
         local tmpfile
         tmpfile=$(mktemp)
         local in_block=false
@@ -244,12 +228,6 @@ apply_theme() {
     _theme_step "VS Code..."
     local vscode_settings="$HOME/Library/Application Support/Code/User/settings.json"
     if [[ -f "$vscode_settings" ]]; then
-        if [[ "$THEME" == "aura" ]]; then
-            local vscode_theme="Aura Dark"
-        else
-            local vscode_theme="Tokyo Night"
-        fi
-
         # Use python for safe JSON manipulation (always available on macOS)
         if python3 -c "
 import json, sys
@@ -271,12 +249,6 @@ with open('$vscode_settings', 'w') as f:
     _theme_step "Zed..."
     local zed_settings="$DOTFILES_DIR/.config/zed/settings.json"
     if [[ -f "$zed_settings" ]]; then
-        if [[ "$THEME" == "aura" ]]; then
-            local zed_theme="Aura Dark"
-        else
-            local zed_theme="Tokyo Night"
-        fi
-
         if python3 -c "
 import json
 with open('$zed_settings', 'r') as f:

@@ -35,7 +35,13 @@ export PATH="$HOME/bin:$PATH:$HOME/.local/bin"
 # Centralized variables - change once, use everywhere!
 
 # === CORE TOOLS ===
-export EDITOR="zed --wait"
+if command -v zed &>/dev/null; then
+  export EDITOR="zed --wait"
+elif command -v nvim &>/dev/null; then
+  export EDITOR="nvim"
+else
+  export EDITOR="vim"
+fi
 export VISUAL="$EDITOR"              # Visual editor (usually same)
 export GIT_EDITOR="$EDITOR"          # Git commit editor
 export BUNDLER_EDITOR="$EDITOR"      # Rails credentials editor

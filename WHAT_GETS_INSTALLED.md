@@ -341,7 +341,7 @@ You chose either **Tokyo Night** or **Aura Dark** at the start of install. This 
 
 Manual instructions are printed for: Slack, Chrome, Firefox, Telegram, Raycast.
 
-Switch anytime later with: `bash switch-theme.sh`
+Switch anytime later with: `dotfiles theme`
 
 ---
 

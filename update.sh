@@ -33,7 +33,7 @@ for arg in "$@"; do
     esac
 done
 
-set -e  # Exit on error
+set -euo pipefail
 
 # Get dotfiles directory
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -277,7 +277,11 @@ print_step "Step 7: Syncing dotfiles repo..."
 
 cd "$DOTFILES_DIR"
 
-if [[ -n $(git status -s) ]]; then
+CURRENT_BRANCH=$(git branch --show-current)
+
+if [[ "$CURRENT_BRANCH" != "main" ]]; then
+    print_warning "On branch '$CURRENT_BRANCH' — skipping auto-commit/push (only runs on main)"
+elif [[ -n $(git status -s) ]]; then
     # Stage snapshot files and any other tracked changes
     git add Brewfile Brewfile.backup .config/mise/config.toml 2>/dev/null || true
     git add -u

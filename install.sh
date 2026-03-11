@@ -55,7 +55,7 @@ if [[ ! -f "$_SCRIPT_DIR/scripts/_helpers.sh" ]]; then
     exec bash "$DOTFILES_TARGET/install.sh" "$@"
 fi
 
-set -e  # Exit on error
+set -euo pipefail
 
 # ── Parse Arguments ───────────────────────────
 
@@ -472,7 +472,7 @@ echo "7. Update dotfiles in the future:"
 echo "   bash $DOTFILES_DIR/update.sh"
 echo ""
 echo "🎨 Theme: $SELECTED_THEME (applied everywhere)"
-echo "   Switch anytime: bash $DOTFILES_DIR/switch-theme.sh"
+echo "   Switch anytime: dotfiles theme"
 echo ""
 if [[ -d "$BACKUP_DIR" ]]; then
     echo "🔧 Backup location: $BACKUP_DIR"

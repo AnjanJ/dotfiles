@@ -532,11 +532,22 @@ open -a Aerospace
 Detailed guides for each tool:
 
 - [What Gets Installed](WHAT_GETS_INSTALLED.md) - Full breakdown of every tool and config change
-- [Neovim Guide](.config/nvim/README.md)
 - [Quick Reference](QUICK_REFERENCE.md) - Print this!
-- [tmux Guide](docs/tmux-guide.md)
-- [Zellij Guide](docs/zellij-guide.md)
-- [Aerospace Guide](.config/aerospace/README.md)
+- [Neovim Guide](.config/nvim/README.md)
+- [Daily Workflows](docs/DAILY_WORKFLOWS.md)
+
+## 🧪 Testing
+
+Automated tests run on every push and PR via GitHub Actions:
+
+- **Shellcheck** — lints all shell scripts
+- **Idempotency** — verifies install/setup can run multiple times safely
+- **Work identity** — tests setup, nuke, and switch lifecycle
+- **SSH config** — adversarial inputs and edge cases
+- **Repo cloner** — SSH alias detection and URL rewriting
+- **Update flow** — symlink creation and refresh
+
+Run locally: `bash tests/test-idempotency.sh` (or any test file in `tests/`)
 
 ## 🙏 Credits
 

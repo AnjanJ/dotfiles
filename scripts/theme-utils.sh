@@ -4,7 +4,7 @@
 # THEME UTILITIES
 # ============================================
 # Shared functions for theme management
-# Sourced by: install.sh, switch-theme.sh, update.sh, apply-theme.sh
+# Sourced by: install.sh, apply-theme.sh
 # ============================================
 
 THEME_STATE_FILE="$HOME/.dotfiles-theme"

@@ -56,6 +56,11 @@ if [[ -z "$WORK_EMAIL" ]]; then
     exit 1
 fi
 
+if [[ ! "$WORK_EMAIL" =~ ^[^@]+@[^@]+\.[^@]+$ ]]; then
+    print_error "Invalid email format: $WORK_EMAIL"
+    exit 1
+fi
+
 # ── 2. Work Directory ─────────────────────────
 echo ""
 print_step "Step 2: Work directory"
