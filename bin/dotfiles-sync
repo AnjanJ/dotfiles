@@ -1,0 +1,151 @@
+#!/usr/bin/env bash
+
+# ============================================
+# DOTFILES SYNC — Quick refresh without upgrade
+# ============================================
+# Pulls latest dotfiles, refreshes symlinks, reapplies theme.
+# Unlike `dotfiles update`, does NOT upgrade brew/mise packages.
+#
+# Usage: dotfiles sync [--dry-run]
+# ============================================
+
+set -euo pipefail
+
+if [[ "${1:-}" == "--help" ]]; then
+    echo "Usage: dotfiles sync [--dry-run]"
+    echo ""
+    echo "Quick sync: pull, refresh symlinks, reapply theme."
+    echo "Does NOT upgrade Homebrew or mise packages."
+    echo ""
+    echo "Options:"
+    echo "  --dry-run  Show what would change without modifying anything"
+    echo "  --help     Show this help"
+    exit 0
+fi
+
+DRY_RUN=false
+[[ "${1:-}" == "--dry-run" ]] && DRY_RUN=true
+
+# Resolve dotfiles directory
+_SELF="${BASH_SOURCE[0]}"
+while [[ -L "$_SELF" ]]; do _SELF="$(readlink "$_SELF")"; done
+DOTFILES_DIR="$(cd "$(dirname "$_SELF")/.." && pwd)"
+unset _SELF
+
+source "$DOTFILES_DIR/scripts/_helpers.sh"
+
+echo ""
+print_step "Dotfiles Sync"
+echo ""
+
+CHANGES=0
+
+# ── 1. Git Pull ──────────────────────────────
+
+print_step "Pulling latest..."
+cd "$DOTFILES_DIR"
+
+if [[ "$DRY_RUN" == true ]]; then
+    BEHIND=$(git fetch origin main 2>/dev/null && git rev-list HEAD..origin/main --count 2>/dev/null || echo "0")
+    if [[ "$BEHIND" -gt 0 ]]; then
+        echo "  Would pull $BEHIND new commit(s)"
+        CHANGES=$((CHANGES + 1))
+    else
+        echo "  Already up to date"
+    fi
+else
+    PULL_OUTPUT=$(git pull origin main 2>&1)
+    if [[ "$PULL_OUTPUT" == *"Already up to date"* ]]; then
+        print_success "Already up to date"
+    else
+        print_success "Pulled latest changes"
+        CHANGES=$((CHANGES + 1))
+    fi
+fi
+
+# ── 2. Refresh Symlinks ─────────────────────
+
+echo ""
+print_step "Checking symlinks..."
+
+_check_link() {
+    local source="$1" target="$2" name="$3"
+    if [[ -L "$target" && "$(readlink "$target")" == "$source" ]]; then
+        return 0
+    fi
+    if [[ "$DRY_RUN" == true ]]; then
+        echo "  Would link: $name → $source"
+    else
+        ln -sf "$source" "$target"
+        print_success "$name refreshed"
+    fi
+    CHANGES=$((CHANGES + 1))
+}
+
+# Shell configs
+_check_link "$DOTFILES_DIR/.zshrc" ~/.zshrc ".zshrc"
+[[ -f "$DOTFILES_DIR/.zshrc-terminal-enhancements" ]] && _check_link "$DOTFILES_DIR/.zshrc-terminal-enhancements" ~/.zshrc-terminal-enhancements ".zshrc-terminal-enhancements"
+[[ -f "$DOTFILES_DIR/.zshrc-dhh-additions" ]] && _check_link "$DOTFILES_DIR/.zshrc-dhh-additions" ~/.zshrc-dhh-additions ".zshrc-dhh-additions"
+[[ -f "$DOTFILES_DIR/.zshrc-elixir-additions" ]] && _check_link "$DOTFILES_DIR/.zshrc-elixir-additions" ~/.zshrc-elixir-additions ".zshrc-elixir-additions"
+[[ -f "$DOTFILES_DIR/.zshrc-work-completions" ]] && _check_link "$DOTFILES_DIR/.zshrc-work-completions" ~/.zshrc-work-completions ".zshrc-work-completions"
+
+# Core configs
+_check_link "$DOTFILES_DIR/.tmux.conf" ~/.tmux.conf ".tmux.conf"
+[[ -f "$DOTFILES_DIR/.gitignore_global" ]] && _check_link "$DOTFILES_DIR/.gitignore_global" ~/.gitignore_global ".gitignore_global"
+_check_link "$DOTFILES_DIR/.config/aerospace" ~/.config/aerospace "aerospace config"
+_check_link "$DOTFILES_DIR/.config/ghostty" ~/.config/ghostty "ghostty config"
+_check_link "$DOTFILES_DIR/.config/nvim" ~/.config/nvim "nvim config"
+_check_link "$DOTFILES_DIR/.config/zellij" ~/.config/zellij "zellij config"
+_check_link "$DOTFILES_DIR/.config/starship.toml" ~/.config/starship.toml "starship config"
+_check_link "$DOTFILES_DIR/.config/mise/config.toml" ~/.config/mise/config.toml "mise config"
+
+# Zed
+mkdir -p ~/.config/zed/snippets
+_check_link "$DOTFILES_DIR/.config/zed/settings.json" ~/.config/zed/settings.json "zed settings"
+_check_link "$DOTFILES_DIR/.config/zed/tasks.json" ~/.config/zed/tasks.json "zed tasks"
+for snippet in "$DOTFILES_DIR/.config/zed/snippets/"*.json; do
+    [[ -f "$snippet" ]] || continue
+    name=$(basename "$snippet")
+    _check_link "$snippet" ~/.config/zed/snippets/"$name" "zed snippet: $name"
+done
+
+# bin scripts
+mkdir -p ~/bin
+for script in "$DOTFILES_DIR/bin/"*; do
+    name=$(basename "$script")
+    _check_link "$script" ~/bin/"$name" "bin/$name"
+done
+
+if [[ "$CHANGES" -eq 0 ]]; then
+    print_success "All symlinks up to date"
+fi
+
+# ── 3. Reapply Theme ────────────────────────
+
+echo ""
+print_step "Checking theme..."
+
+source "$DOTFILES_DIR/scripts/theme-utils.sh"
+CURRENT_THEME=$(get_current_theme)
+
+if [[ "$DRY_RUN" == true ]]; then
+    echo "  Would reapply theme: $CURRENT_THEME"
+else
+    source "$DOTFILES_DIR/scripts/apply-theme.sh"
+    apply_theme "$CURRENT_THEME" "true"  # quiet mode
+    print_success "Theme: $CURRENT_THEME"
+fi
+
+# ── Summary ──────────────────────────────────
+
+echo ""
+if [[ "$DRY_RUN" == true ]]; then
+    if [[ "$CHANGES" -eq 0 ]]; then
+        print_success "Everything in sync — nothing to do"
+    else
+        echo "  $CHANGES change(s) would be made. Run without --dry-run to apply."
+    fi
+else
+    print_success "Sync complete — restart terminal or run: source ~/.zshrc"
+fi
+echo ""

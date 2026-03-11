@@ -269,7 +269,7 @@ Symlinks the mise config, trusts it, then runs `mise install` which downloads an
 
 | Language | Version | Notes |
 |----------|---------|-------|
-| **Ruby** | 3.4.5 | Pinned to specific version |
+| **Ruby** | latest | |
 | **Elixir** | latest | |
 | **Erlang** | latest | Required by Elixir |
 | **Node.js** | latest | |
@@ -325,18 +325,19 @@ Creates symbolic links from the repo to your home directory. This is the core de
 
 ## Step 6b: Apply Theme
 
-You chose either **Tokyo Night** or **Aura Dark** at the start of install. This step applies your choice across 8 apps automatically:
+You chose **Tokyo Night**, **Aura Dark**, or **Catppuccin Mocha** at the start of install. This step applies your choice across 7 apps automatically:
 
 | App | What changes |
 |-----|-------------|
-| Ghostty | `theme = ` line in config (+ custom theme file for Aura) |
+| Ghostty | Theme line between `THEME_START`/`THEME_END` markers in config |
 | Neovim | Plugin file + colorscheme in `astroui.lua` |
 | Zellij | Theme KDL file + `theme` line in `config.kdl` |
-| Starship | `palette` reference + palette section in `starship.toml` |
-| tmux | Theme block in `.tmux.conf` (TPM plugin for Tokyo Night, hand-ported for Aura) |
-| VS Code | `workbench.colorTheme` in settings.json |
-| Warp | Copies theme YAML to `~/.warp/themes/` (Aura only; Tokyo Night is built-in) |
-| Zed | `theme.dark` in `settings.json` |
+| Starship | `palette` reference + palette section between `THEME_PALETTE_START`/`END` markers |
+| tmux | Theme block between `THEME_BLOCK_START`/`END` markers in `.tmux.conf` |
+| VS Code | `workbench.colorTheme` in settings.json (via jq) |
+| Zed | `theme.dark` in `settings.json` (via jq) |
+
+Each theme lives in `themes/<name>/` with a `theme.conf` registry file that drives all the above. Adding a new theme is just creating a new directory.
 
 Manual instructions are printed for: Slack, Chrome, Firefox, Telegram, Raycast.
 
@@ -460,7 +461,7 @@ Five commands in `~/bin/` for managing work identities. These are standalone scr
 | `work-status` | Read-only diagnostic: shows git identity, work directory, SSH hosts, shell config, gh auth, dirty repos |
 | `work-nuke` | Remove all work config. Shows what will be removed, warns about dirty repos, double-confirms, backs up to `~/.work-nuke-backup-*` before deleting. Flags: `--dry-run`, `--yes` |
 | `work-switch` | Change employer — runs `work-nuke --yes` then `work-setup` |
-| `repos-clone` | Interactive repo cloner for GitHub (`gh`) and GitLab (`glab` or API). Lists repos, supports range selection (`1-5 7 9-11`), detects SSH aliases, skips existing repos. Flags: `--dir`, `--org`, `--all` |
+| `repos-clone` | Interactive repo cloner for GitHub, GitLab, Bitbucket, and Codeberg. Lists repos, supports range selection (`1-5 7 9-11`), detects SSH aliases, skips existing repos. Flags: `--dir`, `--org`, `--all` |
 
 **Files involved:**
 - `bin/_work-helpers` — Shared utilities (colors, print helpers, config readers, `confirm_destructive`)

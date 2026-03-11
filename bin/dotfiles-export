@@ -1,0 +1,157 @@
+#!/usr/bin/env bash
+
+# ============================================
+# DOTFILES EXPORT — Portable config snapshot
+# ============================================
+# Exports current setup as a readable summary that can be
+# used to reproduce the environment on a new machine.
+#
+# Usage: dotfiles export [--json]
+# ============================================
+
+set -euo pipefail
+
+if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
+    echo "Usage: dotfiles export [--json]"
+    echo ""
+    echo "Export current setup as a portable snapshot."
+    echo ""
+    echo "Options:"
+    echo "  --json   Output as JSON (requires jq)"
+    echo "  --help   Show this help"
+    exit 0
+fi
+
+JSON_MODE=false
+[[ "${1:-}" == "--json" ]] && JSON_MODE=true
+
+# Resolve dotfiles directory
+_SELF="${BASH_SOURCE[0]}"
+while [[ -L "$_SELF" ]]; do _SELF="$(readlink "$_SELF")"; done
+DOTFILES_DIR="$(cd "$(dirname "$_SELF")/.." && pwd)"
+unset _SELF
+
+source "$DOTFILES_DIR/scripts/_helpers.sh"
+source "$DOTFILES_DIR/scripts/theme-utils.sh"
+
+# ── Gather data ──────────────────────────────
+
+HOSTNAME=$(hostname -s 2>/dev/null || echo "unknown")
+MACOS_VERSION=$(sw_vers -productVersion 2>/dev/null || echo "unknown")
+ARCH=$(uname -m)
+SHELL_VERSION=$("$SHELL" --version 2>&1 | head -1 || echo "unknown")
+CURRENT_THEME=$(get_current_theme)
+GIT_NAME=$(git config --global user.name 2>/dev/null || echo "")
+GIT_EMAIL=$(git config --global user.email 2>/dev/null || echo "")
+DOTFILES_COMMIT=$(git -C "$DOTFILES_DIR" rev-parse --short HEAD 2>/dev/null || echo "unknown")
+
+# mise tools
+MISE_TOOLS=""
+if command -v mise &>/dev/null; then
+    MISE_TOOLS=$(mise current 2>/dev/null || true)
+fi
+
+# Brew formula count
+BREW_COUNT=0
+if command -v brew &>/dev/null; then
+    BREW_COUNT=$(brew list --formula 2>/dev/null | wc -l | tr -d ' ')
+fi
+
+CASK_COUNT=0
+if command -v brew &>/dev/null; then
+    CASK_COUNT=$(brew list --cask 2>/dev/null | wc -l | tr -d ' ')
+fi
+
+# SSH key info
+SSH_KEYS=""
+if [[ -d ~/.ssh ]]; then
+    for pub in ~/.ssh/*.pub; do
+        [[ -f "$pub" ]] || continue
+        key_type=$(awk '{print $1}' "$pub")
+        key_name=$(basename "$pub" .pub)
+        key_bits=$(ssh-keygen -l -f "$pub" 2>/dev/null | awk '{print $1}' || echo "?")
+        SSH_KEYS="${SSH_KEYS}${key_name} (${key_type}, ${key_bits} bits)\n"
+    done
+fi
+
+# ── Output ───────────────────────────────────
+
+if [[ "$JSON_MODE" == true ]]; then
+    if ! command -v jq &>/dev/null; then
+        echo "Error: jq is required for --json output"
+        exit 1
+    fi
+
+    # Build mise tools as JSON object
+    MISE_JSON="{}"
+    if [[ -n "$MISE_TOOLS" ]]; then
+        MISE_JSON=$(echo "$MISE_TOOLS" | awk '{printf "\"%s\": \"%s\",", $1, $2}' | sed 's/,$//' | sed 's/^/{/;s/$/}/')
+    fi
+
+    jq -n \
+        --arg hostname "$HOSTNAME" \
+        --arg macos "$MACOS_VERSION" \
+        --arg arch "$ARCH" \
+        --arg shell "$SHELL_VERSION" \
+        --arg theme "$CURRENT_THEME" \
+        --arg git_name "$GIT_NAME" \
+        --arg git_email "$GIT_EMAIL" \
+        --arg commit "$DOTFILES_COMMIT" \
+        --arg date "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+        --argjson brew_formulas "$BREW_COUNT" \
+        --argjson brew_casks "$CASK_COUNT" \
+        --argjson mise "$MISE_JSON" \
+        '{
+            exported_at: $date,
+            machine: { hostname: $hostname, macos: $macos, arch: $arch },
+            dotfiles: { commit: $commit, theme: $theme },
+            git: { name: $git_name, email: $git_email },
+            shell: $shell,
+            homebrew: { formulas: $brew_formulas, casks: $brew_casks },
+            mise_tools: $mise
+        }'
+else
+    echo ""
+    echo "╔═══════════════════════════════════════════════════════════╗"
+    echo "║   Dotfiles Export — $(date +%Y-%m-%d)                             ║"
+    echo "╚═══════════════════════════════════════════════════════════╝"
+    echo ""
+    echo "Machine:"
+    echo "  Hostname:  $HOSTNAME"
+    echo "  macOS:     $MACOS_VERSION ($ARCH)"
+    echo "  Shell:     $SHELL_VERSION"
+    echo ""
+    echo "Dotfiles:"
+    echo "  Commit:    $DOTFILES_COMMIT"
+    echo "  Theme:     $CURRENT_THEME"
+    echo ""
+    echo "Git Identity:"
+    echo "  Name:      ${GIT_NAME:-not set}"
+    echo "  Email:     ${GIT_EMAIL:-not set}"
+    echo ""
+    echo "Homebrew:"
+    echo "  Formulas:  $BREW_COUNT"
+    echo "  Casks:     $CASK_COUNT"
+    echo ""
+    echo "Language Runtimes (mise):"
+    if [[ -n "$MISE_TOOLS" ]]; then
+        echo "$MISE_TOOLS" | while read -r tool version; do
+            [[ -z "$tool" ]] && continue
+            echo "  $tool:$(printf '%*s' $((12 - ${#tool})) '') $version"
+        done
+    else
+        echo "  (mise not available)"
+    fi
+    echo ""
+    if [[ -n "$SSH_KEYS" ]]; then
+        echo "SSH Keys:"
+        echo -e "$SSH_KEYS" | while read -r line; do
+            [[ -z "$line" ]] && continue
+            echo "  $line"
+        done
+        echo ""
+    fi
+    echo "To reproduce on a new machine:"
+    echo "  bash <(curl -fsSL https://raw.githubusercontent.com/AnjanJ/dotfiles/main/install.sh)"
+    echo ""
+fi

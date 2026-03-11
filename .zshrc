@@ -178,7 +178,7 @@ if [ -f ~/.zshrc-elixir-additions ]; then
   source ~/.zshrc-elixir-additions
 fi
 
-# Work command completions
+# Dotfiles & work command completions
 if [ -f ~/.zshrc-work-completions ]; then
   autoload -Uz compinit && compinit -C
   source ~/.zshrc-work-completions

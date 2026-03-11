@@ -211,6 +211,29 @@ if [[ -d ~/.ssh ]]; then
     done
 
     _ok "SSH key permissions correct"
+
+    # Audit key types — warn about weak/old RSA keys
+    for pub in ~/.ssh/*.pub; do
+        [[ -f "$pub" ]] || continue
+        local_key_type=$(awk '{print $1}' "$pub")
+        local_key_name=$(basename "$pub")
+        case "$local_key_type" in
+            ssh-ed25519|ecdsa-sha2-*)
+                _ok "$local_key_name uses modern key type ($local_key_type)"
+                ;;
+            ssh-rsa)
+                local_bits=$(ssh-keygen -l -f "$pub" 2>/dev/null | awk '{print $1}')
+                if [[ "${local_bits:-0}" -lt 3072 ]]; then
+                    _skip "$local_key_name uses weak RSA ($local_bits bits) — consider upgrading to Ed25519"
+                else
+                    _ok "$local_key_name uses RSA ($local_bits bits)"
+                fi
+                ;;
+            ssh-dss)
+                _skip "$local_key_name uses deprecated DSA — replace with Ed25519"
+                ;;
+        esac
+    done
 else
     _skip "~/.ssh directory not found"
 fi

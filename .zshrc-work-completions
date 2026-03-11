@@ -1,6 +1,142 @@
 # ============================================
-# ZSH COMPLETIONS — Work Management Commands
+# ZSH COMPLETIONS — Dotfiles & Work Commands
 # ============================================
+
+# ── Dotfiles CLI ──────────────────────────────
+
+_dotfiles() {
+    local -a subcommands
+    subcommands=(
+        'update:Update system & sync dotfiles repo'
+        'sync:Quick refresh — pull, relink, reapply theme'
+        'health:Run health check on all tools'
+        'theme:Switch theme (tokyo-night|aura|catppuccin)'
+        'install:Run full installer'
+        'uninstall:Remove all symlinks'
+        'backup:Snapshot dotfiles state'
+        'doctor:Auto-fix common issues'
+        'profile:Measure shell startup time'
+        'export:Export setup snapshot'
+        'edit:Open dotfiles in your editor'
+        'dir:Print dotfiles directory path'
+    )
+
+    if (( CURRENT == 2 )); then
+        _describe 'command' subcommands
+    else
+        case "${words[2]}" in
+            theme)
+                local -a themes=(tokyo-night aura catppuccin)
+                _describe 'theme' themes
+                ;;
+            backup)
+                _arguments \
+                    '--list[List available backups]' \
+                    '--restore[Restore a backup]:backup name'
+                ;;
+            doctor)
+                _arguments \
+                    '--dry-run[Preview what would be fixed]'
+                ;;
+            profile)
+                _arguments \
+                    '--detailed[Show per-component timing]'
+                ;;
+            install)
+                _arguments \
+                    '--interactive[Prompt for every choice]' \
+                    '--force[Force reinstall]' \
+                    '--name[Git user.name]:name' \
+                    '--email[Git personal email]:email' \
+                    '--work-email[Git work email]:email' \
+                    '--work-dir[Work directory]:directory:_directories' \
+                    '--theme[Theme]:theme:(tokyo-night aura catppuccin)' \
+                    '--ssh[SSH mode]:mode:(1password existing generate skip)' \
+                    '--no-macos-defaults[Skip macOS defaults]' \
+                    '--help[Show help]'
+                ;;
+            update)
+                _arguments \
+                    '--interactive[Prompt before each step]' \
+                    '--help[Show help]'
+                ;;
+            sync)
+                _arguments \
+                    '--dry-run[Show what would change]' \
+                    '--help[Show help]'
+                ;;
+            export)
+                _arguments \
+                    '--json[Output as JSON]' \
+                    '--help[Show help]'
+                ;;
+        esac
+    fi
+}
+compdef _dotfiles dotfiles
+
+_dotfiles_theme() {
+    local -a themes=(tokyo-night aura catppuccin)
+    _describe 'theme' themes
+}
+compdef _dotfiles_theme dotfiles-theme
+
+_dotfiles_backup() {
+    _arguments \
+        '--list[List available backups]' \
+        '--restore[Restore a backup]:backup name'
+}
+compdef _dotfiles_backup dotfiles-backup
+
+_dotfiles_doctor() {
+    _arguments \
+        '--dry-run[Preview what would be fixed]'
+}
+compdef _dotfiles_doctor dotfiles-doctor
+
+_dotfiles_profile() {
+    _arguments \
+        '--detailed[Show per-component timing]'
+}
+compdef _dotfiles_profile dotfiles-profile
+
+_dotfiles_update() {
+    _arguments \
+        '--interactive[Prompt before each step]' \
+        '--help[Show help]'
+}
+compdef _dotfiles_update dotfiles-update
+
+_dotfiles_sync() {
+    _arguments \
+        '--dry-run[Show what would change]' \
+        '--help[Show help]'
+}
+compdef _dotfiles_sync dotfiles-sync
+
+_dotfiles_export() {
+    _arguments \
+        '--json[Output as JSON]' \
+        '--help[Show help]'
+}
+compdef _dotfiles_export dotfiles-export
+
+_dotfiles_install() {
+    _arguments \
+        '--interactive[Prompt for every choice]' \
+        '--force[Force reinstall]' \
+        '--name[Git user.name]:name' \
+        '--email[Git personal email]:email' \
+        '--work-email[Git work email]:email' \
+        '--work-dir[Work directory]:directory:_directories' \
+        '--theme[Theme]:theme:(tokyo-night aura catppuccin)' \
+        '--ssh[SSH mode]:mode:(1password existing generate skip)' \
+        '--no-macos-defaults[Skip macOS defaults]' \
+        '--help[Show help]'
+}
+compdef _dotfiles_install dotfiles-install
+
+# ── Work Management ──────────────────────────
 
 _work_nuke() {
     _arguments \
@@ -36,3 +172,10 @@ _work_switch() {
         '--help[Show help message]'
 }
 compdef _work_switch work-switch
+
+# ── Repos Clone ──────────────────────────────
+
+_repos_clone_service() {
+    local -a services=(github gitlab bitbucket codeberg)
+    _describe 'service' services
+}

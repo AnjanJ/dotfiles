@@ -2,15 +2,13 @@
 # GHOSTTY CONFIGURATION
 # ============================================
 # Author: AJ
-# Created: 2025-11-23
 # Description: Ghostty terminal configuration
-#              with Aura Dark theme
+#              Theme managed by `dotfiles theme`
 # ============================================
 
-# Theme: Tokyo Night (built-in from iTerm2-Color-Schemes)
-# Tokyo Night is available in Ghostty's built-in themes
-# Repository: https://github.com/folke/tokyonight.nvim
+# THEME_START
 theme = tokyonight_night
+# THEME_END
 
 # Font configuration
 font-family = "Fira Code"
@@ -33,7 +31,7 @@ mouse-hide-while-typing = true
 # ============================================
 # NOTES
 # ============================================
-# Aura Dark theme is built into Ghostty
-# Sourced from iTerm2-Color-Schemes repository
+# Theme is switched automatically by `dotfiles theme`
+# The THEME_START/THEME_END markers control the theme line.
 # For more themes, see: https://ghostty.org/docs/features/theme
 # ============================================

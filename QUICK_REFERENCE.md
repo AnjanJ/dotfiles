@@ -10,12 +10,17 @@ bash <(curl -fsSL https://raw.githubusercontent.com/AnjanJ/dotfiles/main/install
 git clone https://github.com/AnjanJ/dotfiles.git ~/dotfiles && bash ~/dotfiles/install.sh
 ```
 
-## 🔧 Dotfiles CLI (works from anywhere)
+## 🔧 Dotfiles CLI (works from anywhere, tab-completable)
 
 ```bash
 dotfiles update       # Upgrade system & sync repo
+dotfiles sync         # Quick refresh: pull, relink, reapply theme
 dotfiles health       # Verify all tools are installed
-dotfiles theme aura   # Switch theme (tokyo-night | aura)
+dotfiles theme aura   # Switch theme (tokyo-night | aura | catppuccin)
+dotfiles doctor       # Auto-fix common issues
+dotfiles backup       # Snapshot dotfiles state (--list, --restore)
+dotfiles profile      # Measure shell startup time (--detailed)
+dotfiles export       # Export setup snapshot (--json)
 dotfiles install      # Re-run full installer
 dotfiles edit         # Open dotfiles in your editor
 dotfiles dir          # Print dotfiles directory path
@@ -170,7 +175,7 @@ git remote set-url origin git@github.com-work:company/repo.git
 | `work-nuke` | Remove all work config (with backup + confirmation) |
 | `work-nuke --dry-run` | Preview what would be removed |
 | `work-switch` | Change employer (nuke old + setup new) |
-| `repos-clone` | Interactive repo cloner (GitHub/GitLab) |
+| `repos-clone` | Interactive repo cloner (GitHub/GitLab/Bitbucket/Codeberg) |
 | `repos-clone --dir ~/work --org mycompany` | Clone with presets |
 | `repos-clone --all` | Clone all repos without selection prompt |
 

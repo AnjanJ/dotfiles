@@ -1,6 +1,6 @@
 # 🚀 AJ's Dotfiles
 
-> A complete macOS development environment for Ruby on Rails and Elixir/Phoenix development, with your choice of Tokyo Night or Aura Dark theme applied everywhere.
+> A complete macOS development environment for Ruby on Rails and Elixir/Phoenix development, with your choice of Tokyo Night, Aura Dark, or Catppuccin Mocha theme applied everywhere.
 
 ## 💭 Philosophy
 
@@ -31,19 +31,19 @@ Like DHH's **[Omakub](https://omakub.org/)** for Ubuntu, this setup provides:
 | **Neovim + Zed** | Neovim with AstroNvim for terminal, Zed for GUI — both with full LSP |
 | **zsh + Starship** | Fast, reliable shell with a beautiful prompt |
 | **tmux + Zellij** | Session management with vim integration |
-| **Tokyo Night / Aura** | Choose your theme — applied consistently across all tools |
+| **Tokyo Night / Aura / Catppuccin** | Choose your theme — applied consistently across all tools |
 
 ## ✨ Features
 
-### 🎨 Theme System (Tokyo Night or Aura Dark)
+### 🎨 Theme System (Tokyo Night, Aura Dark, or Catppuccin Mocha)
 
-Choose your theme during install — it's applied across **12 apps**:
+Choose your theme during install — it's applied across **7 apps** automatically:
 
 | Auto-configured | Manual (links provided) |
 |----------------|------------------------|
 | Neovim, Ghostty, tmux, Zellij, Starship, Zed, VS Code | Slack, Chrome, Firefox, Telegram, Raycast |
 
-Switch anytime: `dotfiles theme aura` or `dotfiles theme tokyo-night`
+Switch anytime: `dotfiles theme tokyo-night`, `dotfiles theme aura`, or `dotfiles theme catppuccin`
 
 ### 🛠️ Development Tools
 - **Ruby/Rails** - mise, ruby-lsp, RuboCop, RSpec tasks, ERB formatting
@@ -73,7 +73,7 @@ Switch anytime: `dotfiles theme aura` or `dotfiles theme tokyo-night`
 - **Editors**: Neovim with AstroNvim, Zed (settings, snippets, tasks)
 - **Version Control**: Git (smart defaults + per-directory identity), lazygit, GitHub CLI
 - **Work Management**: work-setup, work-nuke, work-switch, work-status, repos-clone
-- **Dotfiles CLI**: `dotfiles update`, `dotfiles health`, `dotfiles theme`, `dotfiles install`
+- **Dotfiles CLI**: `dotfiles update`, `dotfiles sync`, `dotfiles health`, `dotfiles theme`, `dotfiles doctor`, `dotfiles backup`, `dotfiles profile`, `dotfiles export`
 - **Custom Scripts**: `~/bin` (erb-lint-formatter, etc.)
 
 ### Development
@@ -129,7 +129,7 @@ bash install.sh --help                 # Show all options
 1. ✅ Install Homebrew (if not installed)
 2. ✅ Install all packages from Brewfile
 3. ✅ Create symlinks to dotfiles (shell, tmux, Neovim, Zed, ~/bin)
-4. ✅ Apply your chosen theme (Tokyo Night or Aura Dark)
+4. ✅ Apply your chosen theme (Tokyo Night, Aura Dark, or Catppuccin)
 5. ✅ Set up tmux plugins
 6. ✅ Configure Neovim
 7. ✅ Configure Zed (settings, snippets, tasks)
@@ -172,15 +172,20 @@ Installed Tools:
 │   └── SQLite (litecli)
 ├── Dotfiles CLI
 │   ├── dotfiles update (upgrade & sync)
+│   ├── dotfiles sync (quick refresh — pull, relink, theme)
 │   ├── dotfiles health (verify setup)
 │   ├── dotfiles theme (switch theme)
+│   ├── dotfiles doctor (auto-fix issues)
+│   ├── dotfiles backup (snapshot/restore)
+│   ├── dotfiles profile (shell startup timing)
+│   ├── dotfiles export (portable setup snapshot)
 │   └── dotfiles install (run installer)
 ├── Work Management
 │   ├── work-setup (configure work identity)
 │   ├── work-nuke (remove work config)
 │   ├── work-switch (change employer)
 │   ├── work-status (show current setup)
-│   └── repos-clone (clone from GitHub/GitLab)
+│   └── repos-clone (clone from GitHub/GitLab/Bitbucket/Codeberg)
 ├── Custom Scripts
 │   └── ~/bin (erb-lint-formatter, etc.)
 └── Tools
@@ -336,19 +341,19 @@ Each file has a single responsibility. Want to change your Rails workflow? Edit 
 
 ## 🎨 Theming
 
-Choose between **Tokyo Night** (dark blue) or **Aura Dark** (deep purple) during install. The theme is applied across 12 apps automatically.
+Choose between **Tokyo Night** (dark blue), **Aura Dark** (deep purple), or **Catppuccin Mocha** (warm pastels) during install. The theme is applied across 7 apps automatically.
 
-| | Tokyo Night | Aura Dark |
-|---|-----------|-----------|
-| **Background** | `#1a1b26` | `#15141b` |
-| **Foreground** | `#c0caf5` | `#edecee` |
-| **Primary accent** | `#7aa2f7` blue | `#a277ff` purple |
-| **Secondary** | `#bb9af7` purple | `#61ffca` green |
-| **Success** | `#9ece6a` green | `#61ffca` green |
-| **Error** | `#f7768e` red | `#ff6767` red |
-| **Warning** | `#e0af68` yellow | `#ffca85` orange |
+| | Tokyo Night | Aura Dark | Catppuccin Mocha |
+|---|-----------|-----------|-----------------|
+| **Background** | `#1a1b26` | `#15141b` | `#1e1e2e` |
+| **Foreground** | `#c0caf5` | `#edecee` | `#cdd6f4` |
+| **Primary accent** | `#7aa2f7` blue | `#a277ff` purple | `#b4befe` lavender |
+| **Secondary** | `#bb9af7` purple | `#61ffca` green | `#94e2d5` teal |
+| **Success** | `#9ece6a` green | `#61ffca` green | `#a6e3a1` green |
+| **Error** | `#f7768e` red | `#ff6767` red | `#f38ba8` red |
+| **Warning** | `#e0af68` yellow | `#ffca85` orange | `#f9e2af` yellow |
 
-Switch anytime: `dotfiles theme aura` or `dotfiles theme tokyo-night`
+Switch anytime: `dotfiles theme tokyo-night`, `dotfiles theme aura`, or `dotfiles theme catppuccin`
 
 ## 📁 Repository Structure
 
@@ -377,19 +382,25 @@ dotfiles/
 │   └── starship.toml           # Prompt configuration
 ├── themes/                     # Theme assets (each has a theme.conf registry)
 │   ├── tokyo-night/            # Tokyo Night configs per app
-│   └── aura/                   # Aura Dark configs per app
+│   ├── aura/                   # Aura Dark configs per app
+│   └── catppuccin/             # Catppuccin Mocha configs per app
 ├── bin/                        # CLI commands (all available globally via ~/bin)
-│   ├── dotfiles                # Main CLI: dotfiles <update|health|theme|install|edit|dir>
-│   ├── dotfiles-update         # Shorthand for dotfiles update
-│   ├── dotfiles-health         # Shorthand for dotfiles health
-│   ├── dotfiles-theme          # Shorthand for dotfiles theme
-│   ├── dotfiles-install        # Shorthand for dotfiles install
+│   ├── dotfiles                # Main CLI dispatcher
+│   ├── dotfiles-update         # Upgrade system & sync repo
+│   ├── dotfiles-sync           # Quick refresh: pull, relink, reapply theme
+│   ├── dotfiles-health         # Verify all tools are installed
+│   ├── dotfiles-theme          # Switch theme
+│   ├── dotfiles-install        # Run full installer
 │   ├── dotfiles-uninstall      # Remove all dotfiles symlinks
+│   ├── dotfiles-backup         # Snapshot/restore dotfiles state
+│   ├── dotfiles-doctor         # Auto-fix common issues + SSH key audit
+│   ├── dotfiles-profile        # Measure shell startup time
+│   ├── dotfiles-export         # Export setup as portable snapshot
 │   ├── work-setup              # Configure work identity
 │   ├── work-nuke               # Remove all work config
 │   ├── work-switch             # Change employer
 │   ├── work-status             # Show current work setup
-│   ├── repos-clone             # Clone repos from GitHub/GitLab
+│   ├── repos-clone             # Clone repos from GitHub/GitLab/Bitbucket/Codeberg
 │   ├── erb-lint-formatter      # ERB lint wrapper for Zed
 │   └── _work-helpers           # Shared utilities for work scripts
 ├── Brewfile.backup             # Previous Brewfile (one backup, for rollback)
@@ -418,14 +429,19 @@ All commands work from anywhere — no need to `cd ~/dotfiles` first.
 
 ```bash
 dotfiles update       # Upgrade system & sync repo (pull → brew upgrade → snapshot → push)
+dotfiles sync         # Quick refresh: pull, relink, reapply theme (no upgrades)
 dotfiles health       # Verify all tools are installed and configured
-dotfiles theme aura   # Switch theme (tokyo-night | aura)
+dotfiles theme aura   # Switch theme (tokyo-night | aura | catppuccin)
+dotfiles doctor       # Auto-fix common issues (symlinks, permissions, SSH keys)
+dotfiles backup       # Snapshot dotfiles state (--list, --restore <name>)
+dotfiles profile      # Measure shell startup time (--detailed for per-component)
+dotfiles export       # Export setup snapshot (--json for machine-readable)
 dotfiles install      # Re-run full installer (idempotent)
 dotfiles edit         # Open dotfiles in your editor
 dotfiles dir          # Print dotfiles directory path
 ```
 
-Shorthand commands also work: `dotfiles-update`, `dotfiles-health`, `dotfiles-theme`, `dotfiles-install`
+All commands support tab-completion. Shorthand also works: `dotfiles-update`, `dotfiles-sync`, etc.
 
 ### What `dotfiles update` does
 
@@ -462,11 +478,12 @@ dotfiles install --force            # Force reinstall everything
 
 ### Switch Theme
 
-Switch between Tokyo Night and Aura Dark from anywhere:
+Switch between Tokyo Night, Aura Dark, and Catppuccin Mocha from anywhere:
 
 ```bash
-dotfiles theme aura         # Switch to Aura Dark
 dotfiles theme tokyo-night  # Switch to Tokyo Night
+dotfiles theme aura         # Switch to Aura Dark
+dotfiles theme catppuccin   # Switch to Catppuccin Mocha
 ```
 
 This updates Neovim, Ghostty, tmux, Zellij, Starship, Zed, and VS Code automatically, then prints instructions for Slack, browsers, Telegram, and Raycast.
@@ -541,7 +558,7 @@ Detailed guides for each tool:
 
 Automated tests run on every push and PR via GitHub Actions:
 
-- **Shellcheck** — lints all shell scripts
+- **Shellcheck** — lints all shell scripts (auto-discovers via glob patterns)
 - **Idempotency** — verifies install/setup can run multiple times safely
 - **Work identity** — tests setup, nuke, and switch lifecycle
 - **SSH config** — adversarial inputs and edge cases
@@ -580,4 +597,4 @@ Found a bug or have a suggestion? Open an issue or PR!
 
 *Inspired by DHH's Omakub and ThePrimeagen's workflows*
 
-*Last updated: 2026-03-11*
+*Last updated: 2026-03-12*

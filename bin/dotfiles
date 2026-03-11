@@ -13,6 +13,8 @@ case "${1:-}" in
     backup)    shift; exec bash "$DOTFILES_DIR/bin/dotfiles-backup" "$@" ;;
     doctor)    shift; exec bash "$DOTFILES_DIR/bin/dotfiles-doctor" "$@" ;;
     profile)   shift; exec bash "$DOTFILES_DIR/bin/dotfiles-profile" "$@" ;;
+    sync)      shift; exec bash "$DOTFILES_DIR/bin/dotfiles-sync" "$@" ;;
+    export)    shift; exec bash "$DOTFILES_DIR/bin/dotfiles-export" "$@" ;;
     edit)      cd "$DOTFILES_DIR" && exec "${EDITOR:-vim}" . ;;
     dir)       echo "$DOTFILES_DIR" ;;
     *)
@@ -22,13 +24,15 @@ case "${1:-}" in
         echo ""
         echo "Commands:"
         echo "  update      Update system & sync dotfiles repo"
+        echo "  sync        Quick refresh: pull, relink, reapply theme"
         echo "  health      Run health check on all tools"
-        echo "  theme       Switch theme (tokyo-night|aura)"
+        echo "  theme       Switch theme (tokyo-night|aura|catppuccin)"
         echo "  install     Run full installer"
         echo "  uninstall   Remove all symlinks (keeps repo & packages)"
         echo "  backup      Snapshot dotfiles state (--list, --restore <name>)"
         echo "  doctor      Auto-fix common issues"
         echo "  profile     Measure shell startup time"
+        echo "  export      Export setup snapshot (--json for machine-readable)"
         echo "  edit        Open dotfiles in your editor"
         echo "  dir         Print dotfiles directory path"
         echo ""

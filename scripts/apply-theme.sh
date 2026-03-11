@@ -123,6 +123,10 @@ apply_theme() {
     done
 
     # Check sentinel markers exist in target configs
+    if [[ -f "$DOTFILES_DIR/.config/ghostty/config" ]] && ! grep -q "THEME_START" "$DOTFILES_DIR/.config/ghostty/config"; then
+        missing_files+=("ghostty/config: missing THEME_START/END markers")
+        preflight_ok=false
+    fi
     if [[ -f "$DOTFILES_DIR/.config/starship.toml" ]] && ! grep -q "THEME_PALETTE_START" "$DOTFILES_DIR/.config/starship.toml"; then
         missing_files+=("starship.toml: missing THEME_PALETTE_START/END markers")
         preflight_ok=false
@@ -156,7 +160,28 @@ apply_theme() {
         mkdir -p "$DOTFILES_DIR/.config/ghostty/themes"
         cp "$THEMES_DIR/$ghostty_custom_file" "$DOTFILES_DIR/.config/ghostty/themes/"
     fi
-    sed -i '' "s/^theme = .*/theme = $ghostty_theme/" "$ghostty_config"
+    # Replace theme line between THEME_START/THEME_END markers
+    if grep -q "THEME_START" "$ghostty_config"; then
+        local tmpfile
+        tmpfile=$(mktemp)
+        local in_block=false
+        while IFS= read -r line; do
+            if [[ "$line" == "# THEME_START" ]]; then
+                echo "# THEME_START" >> "$tmpfile"
+                echo "theme = $ghostty_theme" >> "$tmpfile"
+                in_block=true
+            elif [[ "$line" == "# THEME_END" ]]; then
+                echo "# THEME_END" >> "$tmpfile"
+                in_block=false
+            elif [[ "$in_block" == false ]]; then
+                echo "$line" >> "$tmpfile"
+            fi
+        done < "$ghostty_config"
+        mv "$tmpfile" "$ghostty_config"
+    else
+        # Fallback: simple sed replacement
+        sed -i '' "s/^theme = .*/theme = $ghostty_theme/" "$ghostty_config"
+    fi
     _theme_success "Ghostty → $ghostty_theme"
 
     # ── 2. Neovim ───────────────────────────────────────
