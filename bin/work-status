@@ -6,6 +6,13 @@
 # Usage: work-status
 # ============================================
 
+if [[ "${1:-}" == "--help" ]]; then
+    echo "Usage: work-status"
+    echo ""
+    echo "Show current work identity, SSH hosts, shell config, and dirty repos."
+    exit 0
+fi
+
 set -euo pipefail
 
 source "$(dirname "$0")/_work-helpers"
@@ -54,7 +61,7 @@ WORK_HOSTS=$(get_work_ssh_hosts)
 if [[ -n "$WORK_HOSTS" ]]; then
     while IFS= read -r host; do
         # Find the IdentityFile for this host
-        keyfile=$(ssh -G "$host" 2>/dev/null | grep "^identityfile " | head -1 | awk '{print $2}')
+        keyfile=$(ssh -n -G "$host" 2>/dev/null | grep "^identityfile " | head -1 | awk '{print $2}')
         keyfile="${keyfile/#\~/$HOME}"
         if [[ -n "$keyfile" && -f "$keyfile" ]]; then
             print_success "Host: $host → $keyfile"

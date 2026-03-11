@@ -28,9 +28,12 @@ _list_ssh_keys() {
     local found=false
     for pub in "$dir"/*.pub; do
         [[ -f "$pub" ]] || continue
-        local name=$(basename "$pub" .pub)
-        local type=$(awk '{print $1}' "$pub")
-        local comment=$(awk '{print $3}' "$pub")
+        local name
+        name=$(basename "$pub" .pub)
+        local type
+        type=$(awk '{print $1}' "$pub")
+        local comment
+        comment=$(awk '{print $3}' "$pub")
         echo "    • $name ($type) ${comment:+— $comment}"
         found=true
     done
@@ -46,7 +49,9 @@ _pick_key() {
 
     for pub in "$dir"/*.pub; do
         [[ -f "$pub" ]] || continue
-        keys+=($(basename "$pub" .pub))
+        local _name
+        _name=$(basename "$pub" .pub)
+        keys+=("$_name")
     done
 
     if [[ ${#keys[@]} -eq 0 ]]; then
@@ -58,7 +63,8 @@ _pick_key() {
     echo "  Available keys:"
     local i=1
     for k in "${keys[@]}"; do
-        local comment=$(awk '{print $3}' "$dir/$k.pub" 2>/dev/null)
+        local comment
+        comment=$(awk '{print $3}' "$dir/$k.pub" 2>/dev/null)
         echo "    $i) $k ${comment:+— $comment}"
         ((i++))
     done
@@ -101,10 +107,14 @@ _pick_services_and_keys() {
         fi
 
         local svc="${_GIT_SERVICES[$((num-1))]}"
-        local display=$(echo "$svc" | cut -d'|' -f1)
-        local hostname=$(echo "$svc" | cut -d'|' -f2)
-        local user=$(echo "$svc" | cut -d'|' -f3)
-        local port=$(echo "$svc" | cut -d'|' -f4)
+        local display
+        display=$(echo "$svc" | cut -d'|' -f1)
+        local hostname
+        hostname=$(echo "$svc" | cut -d'|' -f2)
+        local user
+        user=$(echo "$svc" | cut -d'|' -f3)
+        local port
+        port=$(echo "$svc" | cut -d'|' -f4)
         local alias_name=""
 
         echo ""
@@ -177,11 +187,16 @@ SSHEOF
     fi
 
     for entry in "${SSH_HOSTS[@]}"; do
-        local alias_name=$(echo "$entry" | cut -d'|' -f1)
-        local hostname=$(echo "$entry" | cut -d'|' -f2)
-        local user=$(echo "$entry" | cut -d'|' -f3)
-        local port=$(echo "$entry" | cut -d'|' -f4)
-        local keyfile=$(echo "$entry" | cut -d'|' -f5)
+        local alias_name
+        alias_name=$(echo "$entry" | cut -d'|' -f1)
+        local hostname
+        hostname=$(echo "$entry" | cut -d'|' -f2)
+        local user
+        user=$(echo "$entry" | cut -d'|' -f3)
+        local port
+        port=$(echo "$entry" | cut -d'|' -f4)
+        local keyfile
+        keyfile=$(echo "$entry" | cut -d'|' -f5)
 
         cat >> "$config_file" <<SSHEOF
 Host $alias_name
@@ -378,7 +393,8 @@ _setup_ssh_import() {
     # Copy any other key-like files (custom names)
     for f in "$IMPORT_PATH"/*; do
         [[ -f "$f" ]] || continue
-        local name=$(basename "$f")
+        local name
+        name=$(basename "$f")
         [[ "$name" == ".DS_Store" || "$name" == "*.log" || "$name" == "config" ]] && continue
         [[ ! -f ~/.ssh/"$name" ]] && cp "$f" ~/.ssh/
     done
@@ -454,7 +470,8 @@ _setup_ssh_generate() {
     echo "  Add your public keys to each service:"
     for pub in ~/.ssh/id_ed25519_*.pub; do
         [[ -f "$pub" ]] || continue
-        local name=$(basename "$pub")
+        local name
+        name=$(basename "$pub")
         echo "    cat ~/.ssh/$name | pbcopy"
     done
     echo "  Then paste at: GitHub → Settings → SSH keys → New"

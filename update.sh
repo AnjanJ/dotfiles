@@ -1,5 +1,17 @@
 #!/usr/bin/env bash
 
+for arg in "$@"; do
+    case $arg in
+        --help)
+            echo "Usage: bash update.sh [OPTIONS]"
+            echo ""
+            echo "Options:"
+            echo "  --help    Show this help message"
+            exit 0
+            ;;
+    esac
+done
+
 # ============================================
 # DOTFILES UPDATE SCRIPT
 # ============================================
@@ -9,38 +21,17 @@
 
 set -e  # Exit on error
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+# Get dotfiles directory
+DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Helper functions
-print_step() {
-    echo -e "${BLUE}==>${NC} ${GREEN}$1${NC}"
-}
-
-print_warning() {
-    echo -e "${YELLOW}Warning:${NC} $1"
-}
-
-print_error() {
-    echo -e "${RED}Error:${NC} $1"
-}
-
-print_success() {
-    echo -e "${GREEN}✓${NC} $1"
-}
+# Shared colors & print functions
+source "$DOTFILES_DIR/scripts/_helpers.sh"
 
 # Check if running on macOS
 if [[ "$(uname)" != "Darwin" ]]; then
     print_error "This script is only for macOS"
     exit 1
 fi
-
-# Get dotfiles directory
-DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo ""
 echo "╔═══════════════════════════════════════════════════════════╗"
@@ -144,6 +135,7 @@ create_symlink "$DOTFILES_DIR/.zshrc" ~/.zshrc ".zshrc"
 [[ -f "$DOTFILES_DIR/.zshrc-terminal-enhancements" ]] && create_symlink "$DOTFILES_DIR/.zshrc-terminal-enhancements" ~/.zshrc-terminal-enhancements ".zshrc-terminal-enhancements"
 [[ -f "$DOTFILES_DIR/.zshrc-dhh-additions" ]] && create_symlink "$DOTFILES_DIR/.zshrc-dhh-additions" ~/.zshrc-dhh-additions ".zshrc-dhh-additions"
 [[ -f "$DOTFILES_DIR/.zshrc-elixir-additions" ]] && create_symlink "$DOTFILES_DIR/.zshrc-elixir-additions" ~/.zshrc-elixir-additions ".zshrc-elixir-additions"
+[[ -f "$DOTFILES_DIR/.zshrc-work-completions" ]] && create_symlink "$DOTFILES_DIR/.zshrc-work-completions" ~/.zshrc-work-completions ".zshrc-work-completions"
 
 # tmux
 create_symlink "$DOTFILES_DIR/.tmux.conf" ~/.tmux.conf ".tmux.conf"

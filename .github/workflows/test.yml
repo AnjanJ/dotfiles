@@ -1,0 +1,43 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  idempotency:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run idempotency tests
+        run: bash tests/test-idempotency.sh
+
+  work-nuke:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run work-nuke tests
+        run: bash tests/test-work-nuke.sh
+
+  repos-clone:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run repos-clone tests
+        run: bash tests/test-repos-clone.sh
+
+  ssh-adversarial:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run SSH adversarial tests
+        run: bash tests/test-ssh-adversarial.sh
+
+  update:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run update.sh tests
+        run: bash tests/test-update.sh

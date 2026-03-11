@@ -8,6 +8,18 @@
 # Supports: GitHub (via gh CLI), GitLab (via glab or API)
 # ============================================
 
+if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
+    echo "Usage: repos-clone [--dir DIR] [--org NAME] [--all]"
+    echo ""
+    echo "Interactive repo cloner for GitHub and GitLab."
+    echo ""
+    echo "Options:"
+    echo "  --dir DIR    Target directory for cloned repos"
+    echo "  --org NAME   Organization/group name"
+    echo "  --all        Clone all repos without selection prompt"
+    exit 0
+fi
+
 set -euo pipefail
 
 source "$(dirname "$0")/_work-helpers"
@@ -259,7 +271,7 @@ done
 
 # ── Select Repos ───────────────────────────────
 if [[ "$CLONE_ALL" == true ]]; then
-    SELECTED=$(seq 1 $TOTAL)
+    SELECTED=$(seq 1 "$TOTAL")
 else
     echo ""
     echo "  Enter selections:"
@@ -276,7 +288,7 @@ else
     fi
 
     if [[ "$SELECTION" == "a" ]]; then
-        SELECTED=$(seq 1 $TOTAL)
+        SELECTED=$(seq 1 "$TOTAL")
     else
         # Expand ranges (e.g., "1-5 7 9-11" → "1 2 3 4 5 7 9 10 11")
         SELECTED=""

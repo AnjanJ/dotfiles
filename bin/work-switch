@@ -7,6 +7,13 @@
 # Removes current work setup, then sets up a new one.
 # ============================================
 
+if [[ "${1:-}" == "--help" ]]; then
+    echo "Usage: work-switch"
+    echo ""
+    echo "Change employer: removes current work setup, then runs work-setup."
+    exit 0
+fi
+
 source "$(dirname "$0")/_work-helpers"
 
 SCRIPT_DIR="$(dirname "$0")"

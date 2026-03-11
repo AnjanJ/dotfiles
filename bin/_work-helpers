@@ -57,7 +57,8 @@ list_dirty_repos() {
     local dir="$1"
     [[ -d "$dir" ]] || return
     while IFS= read -r gitdir; do
-        local repo_dir=$(dirname "$gitdir")
+        local repo_dir
+        repo_dir=$(dirname "$gitdir")
         if [[ -n $(git -C "$repo_dir" status -s 2>/dev/null) ]]; then
             echo "  $(basename "$repo_dir")"
         fi

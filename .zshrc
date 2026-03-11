@@ -161,6 +161,11 @@ if [ -f ~/.zshrc-elixir-additions ]; then
   source ~/.zshrc-elixir-additions
 fi
 
+# Work command completions
+if [ -f ~/.zshrc-work-completions ]; then
+  source ~/.zshrc-work-completions
+fi
+
 # ============================================
 # END OF CONFIGURATION
 # ============================================

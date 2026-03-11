@@ -7,12 +7,8 @@
 # Usage: bash scripts/health-check.sh
 # ============================================
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "$DOTFILES_DIR/scripts/_helpers.sh"
 
 # Counters
 PASSED=0
@@ -32,7 +28,8 @@ check_command() {
     local required="${3:-true}"
 
     if command -v "$cmd" &> /dev/null; then
-        local version=$($cmd --version 2>&1 | head -n 1)
+        local version
+        version=$($cmd --version 2>&1 | head -n 1)
         echo -e "${GREEN}✓${NC} $name: ${GREEN}installed${NC} ($version)"
         ((PASSED++))
         return 0
@@ -55,7 +52,8 @@ check_file() {
 
     if [[ "$type" == "link" ]]; then
         if [ -L "$file" ]; then
-            local target=$(readlink "$file")
+            local target
+            target=$(readlink "$file")
             echo -e "${GREEN}✓${NC} $name: ${GREEN}linked${NC} → $target"
             ((PASSED++))
             return 0
@@ -92,7 +90,8 @@ check_mise_tool() {
     local name="$2"
 
     if mise list "$tool" 2>/dev/null | grep -q "$tool"; then
-        local version=$(mise current "$tool" 2>/dev/null)
+        local version
+        version=$(mise current "$tool" 2>/dev/null)
         echo -e "${GREEN}✓${NC} $name: ${GREEN}installed${NC} (${version})"
         ((PASSED++))
         return 0
@@ -108,7 +107,8 @@ check_brew_package() {
     local name="$2"
 
     if brew list "$package" &> /dev/null; then
-        local version=$(brew list --versions "$package" | awk '{print $2}')
+        local version
+        version=$(brew list --versions "$package" | awk '{print $2}')
         echo -e "${GREEN}✓${NC} $name: ${GREEN}installed${NC} (${version})"
         ((PASSED++))
         return 0
@@ -319,6 +319,10 @@ fi
 print_header "10. Custom Scripts (~/bin)"
 
 check_file ~/bin/erb-lint-formatter "erb-lint-formatter" link
+check_file ~/bin/work-setup "work-setup" link
+check_file ~/bin/work-status "work-status" link
+check_file ~/bin/work-nuke "work-nuke" link
+check_file ~/bin/repos-clone "repos-clone" link
 
 # Check ~/bin is in PATH
 if echo "$PATH" | tr ':' '\n' | grep -q "$HOME/bin"; then
@@ -358,6 +362,43 @@ if [[ "$SHELL" == *"zsh"* ]]; then
     ((PASSED++))
 else
     echo -e "${YELLOW}⚠${NC} Default shell: ${YELLOW}not zsh (current: $SHELL)${NC}"
+    ((WARNINGS++))
+fi
+
+# ============================================
+# 12. WORK IDENTITY (optional)
+# ============================================
+print_header "12. Work Identity (optional)"
+
+# Source work helpers for detection functions
+source "$DOTFILES_DIR/bin/_work-helpers" 2>/dev/null
+
+if is_work_configured 2>/dev/null; then
+    local_work_email=$(get_work_email)
+    local_work_dir=$(get_work_dir)
+    echo -e "${GREEN}✓${NC} Work identity: ${GREEN}configured${NC} ($local_work_email)"
+    ((PASSED++))
+
+    if [[ -n "$local_work_dir" && -d "$local_work_dir" ]]; then
+        echo -e "${GREEN}✓${NC} Work directory: ${GREEN}$local_work_dir${NC}"
+        ((PASSED++))
+    elif [[ -n "$local_work_dir" ]]; then
+        echo -e "${YELLOW}⚠${NC} Work directory: ${YELLOW}$local_work_dir (not found)${NC}"
+        ((WARNINGS++))
+    fi
+
+    # Check work SSH hosts
+    local_work_hosts=$(get_work_ssh_hosts)
+    if [[ -n "$local_work_hosts" ]]; then
+        while IFS= read -r host; do
+            echo -e "${GREEN}✓${NC} SSH host: ${GREEN}$host${NC}"
+            ((PASSED++))
+        done <<< "$local_work_hosts"
+    fi
+
+    check_file ~/.zshrc-work ".zshrc-work" file
+else
+    echo -e "${YELLOW}⚠${NC} Work identity: ${YELLOW}not configured (optional — run work-setup)${NC}"
     ((WARNINGS++))
 fi
 

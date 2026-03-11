@@ -13,6 +13,7 @@ SKIP_CONFIRM=false
 
 for arg in "$@"; do
     case $arg in
+        --help) echo "Usage: work-nuke [--dry-run] [--yes]"; echo ""; echo "Remove all work-related configuration with backup."; exit 0 ;;
         --dry-run) DRY_RUN=true ;;
         --yes) SKIP_CONFIRM=true ;;
     esac

@@ -1,0 +1,38 @@
+# ============================================
+# ZSH COMPLETIONS — Work Management Commands
+# ============================================
+
+_work_nuke() {
+    _arguments \
+        '--dry-run[Preview what would be removed]' \
+        '--yes[Skip confirmation prompts]' \
+        '--help[Show help message]'
+}
+compdef _work_nuke work-nuke
+
+_repos_clone() {
+    _arguments \
+        '--dir[Directory to clone into]:directory:_directories' \
+        '--org[Organization or user name]:org name' \
+        '--all[Clone all repos without prompting]' \
+        '--help[Show help message]'
+}
+compdef _repos_clone repos-clone
+
+_work_setup() {
+    _arguments \
+        '--help[Show help message]'
+}
+compdef _work_setup work-setup
+
+_work_status() {
+    _arguments \
+        '--help[Show help message]'
+}
+compdef _work_status work-status
+
+_work_switch() {
+    _arguments \
+        '--help[Show help message]'
+}
+compdef _work_switch work-switch
