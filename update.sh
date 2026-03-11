@@ -55,7 +55,7 @@ echo "║                                                           ║"
 echo "║   This will:                                              ║"
 echo "║   • Pull latest changes from git                          ║"
 echo "║   • Upgrade Homebrew & snapshot Brewfile                   ║"
-echo "║   • Refresh symlinks & theme                              ║"
+echo "║   • Refresh symlinks                                      ║"
 echo "║   • Upgrade mise tools                                    ║"
 echo "║   • Update tmux plugins                                   ║"
 echo "║   • Push changes back to repo                             ║"
@@ -211,19 +211,6 @@ for script in "$DOTFILES_DIR/bin/"*; do
 done
 
 print_success "Symlinks refreshed"
-
-# ============================================
-# 3b. REAPPLY CURRENT THEME (quietly)
-# ============================================
-echo ""
-print_step "Step 3b: Reapplying current theme..."
-
-source "$DOTFILES_DIR/scripts/theme-utils.sh"
-CURRENT_THEME=$(get_current_theme)
-source "$DOTFILES_DIR/scripts/apply-theme.sh"
-apply_theme "$CURRENT_THEME" true
-
-print_success "Theme reapplied: $CURRENT_THEME"
 
 # ============================================
 # 4. UPDATE MISE TOOLS
