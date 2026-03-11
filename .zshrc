@@ -163,6 +163,7 @@ fi
 
 # Work command completions
 if [ -f ~/.zshrc-work-completions ]; then
+  autoload -Uz compinit && compinit -C
   source ~/.zshrc-work-completions
 fi
 

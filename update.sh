@@ -3,7 +3,17 @@
 # ============================================
 # DOTFILES UPDATE SCRIPT
 # ============================================
-# Quick update for syncing dotfiles changes
+# Keeps your system and dotfiles repo in sync.
+#
+# What it does:
+#   1. Pull latest dotfiles from git
+#   2. Upgrade Homebrew packages & snapshot Brewfile
+#   3. Refresh symlinks & theme
+#   4. Upgrade mise tools (config auto-syncs via symlink)
+#   5. Update tmux plugins
+#   6. Reload live configs (tmux, aerospace)
+#   7. Commit & push any changes back to repo
+#
 # Usage: bash update.sh [--interactive]
 # ============================================
 
@@ -44,10 +54,11 @@ echo "║   🔄  AJ's Dotfiles Update                                ║"
 echo "║                                                           ║"
 echo "║   This will:                                              ║"
 echo "║   • Pull latest changes from git                          ║"
-echo "║   • Update Homebrew packages                              ║"
-echo "║   • Refresh symlinks                                      ║"
-echo "║   • Update mise tools                                     ║"
+echo "║   • Upgrade Homebrew & snapshot Brewfile                   ║"
+echo "║   • Refresh symlinks & theme                              ║"
+echo "║   • Upgrade mise tools                                    ║"
 echo "║   • Update tmux plugins                                   ║"
+echo "║   • Push changes back to repo                             ║"
 echo "║                                                           ║"
 echo "╚═══════════════════════════════════════════════════════════╝"
 echo ""
@@ -69,33 +80,25 @@ print_step "Step 1: Pulling latest changes..."
 
 cd "$DOTFILES_DIR"
 
-# Check if there are uncommitted changes
+# Stash uncommitted changes so git pull doesn't conflict, then restore them
+DID_STASH=false
 if [[ -n $(git status -s) ]]; then
-    print_warning "You have uncommitted changes in dotfiles repo"
-    echo ""
-    git status -s
-    echo ""
-    if [[ "$INTERACTIVE" == true ]]; then
-        read -p "Stash changes and continue? (y/n) " -n 1 -r
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            git stash push -m "Auto-stash before update $(date +%Y%m%d_%H%M%S)"
-            print_success "Changes stashed"
-        else
-            print_error "Please commit or stash your changes first"
-            exit 1
-        fi
-    else
-        git stash push -m "Auto-stash before update $(date +%Y%m%d_%H%M%S)"
-        print_success "Changes auto-stashed"
-    fi
+    print_warning "Uncommitted changes detected — stashing temporarily for pull"
+    git stash push -m "Auto-stash before update $(date +%Y%m%d_%H%M%S)"
+    DID_STASH=true
 fi
 
 git pull origin main
 print_success "Repository updated"
 
+# Restore stashed changes immediately after pull
+if [[ "$DID_STASH" == true ]]; then
+    git stash pop || print_warning "Stash pop had conflicts — resolve manually"
+    print_success "Uncommitted changes restored"
+fi
+
 # ============================================
-# 2. UPDATE HOMEBREW PACKAGES
+# 2. UPDATE HOMEBREW & SNAPSHOT BREWFILE
 # ============================================
 echo ""
 print_step "Step 2: Updating Homebrew packages..."
@@ -103,21 +106,50 @@ print_step "Step 2: Updating Homebrew packages..."
 # Update Homebrew itself
 brew update
 
-# Install any new packages from Brewfile
-brew bundle install
+# Upgrade already-installed packages
+brew upgrade
+brew cleanup
 
+print_success "Homebrew packages upgraded"
+
+# Snapshot: dump current system state into Brewfile
+echo ""
+print_step "Step 2b: Snapshotting Brewfile..."
+
+# Rotate backup: remove old backup, keep only one
+if [[ -f "$DOTFILES_DIR/Brewfile.backup" ]]; then
+    rm "$DOTFILES_DIR/Brewfile.backup"
+fi
+if [[ -f "$DOTFILES_DIR/Brewfile" ]]; then
+    cp "$DOTFILES_DIR/Brewfile" "$DOTFILES_DIR/Brewfile.backup"
+    print_success "Previous Brewfile saved to Brewfile.backup"
+fi
+
+# Dump current state (captures brew, casks, mas, vscode, taps, go, uv)
+brew bundle dump --file="$DOTFILES_DIR/Brewfile" --force
+print_success "Brewfile snapshot taken"
+
+# Show what changed
+if [[ -f "$DOTFILES_DIR/Brewfile.backup" ]]; then
+    BREW_ADDED=$(diff "$DOTFILES_DIR/Brewfile.backup" "$DOTFILES_DIR/Brewfile" 2>/dev/null | grep "^>" | wc -l | tr -d ' ')
+    BREW_REMOVED=$(diff "$DOTFILES_DIR/Brewfile.backup" "$DOTFILES_DIR/Brewfile" 2>/dev/null | grep "^<" | wc -l | tr -d ' ')
+    if [[ "$BREW_ADDED" -gt 0 || "$BREW_REMOVED" -gt 0 ]]; then
+        echo -e "  ${YELLOW}+${BREW_ADDED} added, -${BREW_REMOVED} removed since last snapshot${NC}"
+    else
+        echo -e "  ${GREEN}No changes since last snapshot${NC}"
+    fi
+fi
+
+# In interactive mode, also install anything in Brewfile missing from system
 if [[ "$INTERACTIVE" == true ]]; then
-    read -p "Upgrade existing packages? This may take a while. (y/n) " -n 1 -r
+    read -p "Install any missing Brewfile packages? This may require your password. (y/n) " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
-        brew upgrade
-        brew cleanup
-        print_success "Packages upgraded"
+        brew bundle install --no-lock --file="$DOTFILES_DIR/Brewfile"
+        print_success "Brewfile synced to system"
     else
-        print_success "Skipped package upgrade"
+        print_success "Skipped Brewfile sync"
     fi
-else
-    print_success "Homebrew packages synced (run 'brew upgrade' manually to upgrade)"
 fi
 
 # ============================================
@@ -181,7 +213,7 @@ done
 print_success "Symlinks refreshed"
 
 # ============================================
-# 3b. REAPPLY CURRENT THEME
+# 3b. REAPPLY CURRENT THEME (quietly)
 # ============================================
 echo ""
 print_step "Step 3b: Reapplying current theme..."
@@ -189,7 +221,7 @@ print_step "Step 3b: Reapplying current theme..."
 source "$DOTFILES_DIR/scripts/theme-utils.sh"
 CURRENT_THEME=$(get_current_theme)
 source "$DOTFILES_DIR/scripts/apply-theme.sh"
-apply_theme "$CURRENT_THEME"
+apply_theme "$CURRENT_THEME" true
 
 print_success "Theme reapplied: $CURRENT_THEME"
 
@@ -203,10 +235,12 @@ print_step "Step 4: Updating mise tools..."
 mise trust ~/.config/mise/config.toml 2>/dev/null || true
 
 # Update mise itself
-mise self-update || print_warning "mise self-update not available (might need sudo)"
+mise self-update --yes 2>/dev/null || print_warning "mise self-update not available"
 
-# Update all installed tools
-mise upgrade
+# Upgrade all installed tools
+# Note: mise config is symlinked to the repo, so any changes
+# (e.g. 'mise use python@3.13') are already tracked automatically.
+mise upgrade --yes 2>/dev/null || mise install
 
 print_success "mise tools updated"
 
@@ -249,6 +283,30 @@ else
 fi
 
 # ============================================
+# 7. COMMIT & PUSH CHANGES
+# ============================================
+echo ""
+print_step "Step 7: Syncing dotfiles repo..."
+
+cd "$DOTFILES_DIR"
+
+if [[ -n $(git status -s) ]]; then
+    # Stage snapshot files and any other tracked changes
+    git add Brewfile Brewfile.backup .config/mise/config.toml 2>/dev/null || true
+    git add -u
+
+    CHANGES=$(git diff --cached --stat | tail -1)
+    git commit -m "update: snapshot system state
+
+$CHANGES"
+
+    git push origin main
+    print_success "Changes pushed to repo"
+else
+    print_success "Repo already in sync"
+fi
+
+# ============================================
 # UPDATE COMPLETE
 # ============================================
 echo ""
@@ -258,16 +316,5 @@ echo "║   ✅  Update Complete!                                    ║"
 echo "║                                                           ║"
 echo "╚═══════════════════════════════════════════════════════════╝"
 echo ""
-echo "📋 Next Steps:"
-echo ""
-echo "1. Restart your terminal or run:"
-echo "   source ~/.zshrc"
-echo ""
-echo "2. Verify versions:"
-echo "   mise list"
-echo "   brew list --versions"
-echo ""
-echo "3. Check for any warnings above"
-echo ""
-echo "🎉 Your dotfiles are now up to date!"
+echo "   Restart your terminal or run: source ~/.zshrc"
 echo ""

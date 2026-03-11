@@ -34,6 +34,7 @@ _theme_step() {
 
 apply_theme() {
     local THEME="$1"
+    local QUIET="${2:-false}"  # pass "true" to suppress manual instructions
     local THEMES_DIR="$DOTFILES_DIR/themes/$THEME"
 
     if ! validate_theme "$THEME"; then
@@ -306,23 +307,24 @@ with open('$zed_settings', 'w') as f:
     # ── Save state ──────────────────────────────────────
     set_current_theme "$THEME"
 
-    # ── Print manual steps ──────────────────────────────
-    echo ""
-    local manual_file="$THEMES_DIR/manual-instructions.txt"
-    if [[ -f "$manual_file" ]]; then
-        cat "$manual_file"
-    fi
+    # ── Print manual steps (skip in quiet mode, e.g. during update.sh) ──
+    if [[ "$QUIET" != "true" ]]; then
+        echo ""
+        local manual_file="$THEMES_DIR/manual-instructions.txt"
+        if [[ -f "$manual_file" ]]; then
+            cat "$manual_file"
+        fi
 
-    echo ""
-    echo "────────────────────────────────────────────────────"
-    echo "  Post-apply reminders:"
-    echo "────────────────────────────────────────────────────"
-    echo "  • Restart your terminal or run: source ~/.zshrc"
-    echo "  • In tmux: prefix + r to reload, then prefix + I to install plugins"
-    echo "  • In Neovim: run :Lazy sync to install the theme plugin"
-    echo "  • Warp: manually select the theme in Settings → Appearance"
-    echo "────────────────────────────────────────────────────"
-    echo ""
+        echo ""
+        echo "────────────────────────────────────────────────────"
+        echo "  Post-apply reminders:"
+        echo "────────────────────────────────────────────────────"
+        echo "  • Restart your terminal or run: source ~/.zshrc"
+        echo "  • In tmux: prefix + r to reload, then prefix + I to install plugins"
+        echo "  • In Neovim: run :Lazy sync to install the theme plugin"
+        echo "────────────────────────────────────────────────────"
+        echo ""
+    fi
 }
 
 # Allow running directly: bash scripts/apply-theme.sh <theme>
