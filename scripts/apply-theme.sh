@@ -165,7 +165,7 @@ apply_theme() {
     local astroui="$nvim_plugins/astroui.lua"
 
     # Remove any existing theme plugin files, then install the right one
-    rm -f "$nvim_plugins/tokyo-night-theme.lua" "$nvim_plugins/aura-theme.lua"
+    rm -f "$nvim_plugins/tokyo-night-theme.lua" "$nvim_plugins/aura-theme.lua" "$nvim_plugins/catppuccin-theme.lua"
     cp "$THEMES_DIR/nvim/$nvim_plugin_file" "$nvim_plugins/$nvim_plugin_file"
 
     # Update colorscheme in astroui.lua
@@ -303,7 +303,7 @@ apply_theme() {
 # Allow running directly: bash scripts/apply-theme.sh <theme>
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     if [[ -z "$1" ]]; then
-        echo "Usage: bash scripts/apply-theme.sh <tokyo-night|aura>"
+        echo "Usage: bash scripts/apply-theme.sh <tokyo-night|aura|catppuccin>"
         exit 1
     fi
     apply_theme "$1"

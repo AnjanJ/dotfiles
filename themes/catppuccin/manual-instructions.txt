@@ -1,0 +1,43 @@
+
+══════════════════════════════════════════════════════
+  Manual Theme Steps: Catppuccin Mocha
+══════════════════════════════════════════════════════
+
+The following apps need manual theme selection.
+Most are one-click installs — just follow the links!
+
+──────────────────────────────────────────────────────
+SLACK
+──────────────────────────────────────────────────────
+  1. Open Slack → Preferences → Themes
+  2. Scroll to "Colors" section and click "Custom Theme"
+  3. Paste this color string:
+     #1e1e2e,#181825,#89b4fa,#cdd6f4,#313244,#cdd6f4,#a6e3a1,#f38ba8,#1e1e2e,#cdd6f4
+
+──────────────────────────────────────────────────────
+GOOGLE CHROME
+──────────────────────────────────────────────────────
+  Install from Chrome Web Store:
+  https://chromewebstore.google.com/detail/catppuccin-chrome-theme-m/bkkmolkhemgaeaeggcmfbghljjjoofoh
+
+──────────────────────────────────────────────────────
+FIREFOX
+──────────────────────────────────────────────────────
+  Install from Firefox Add-ons:
+  https://addons.mozilla.org/en-US/firefox/addon/catppuccin-mocha-mauve/
+
+──────────────────────────────────────────────────────
+TELEGRAM
+──────────────────────────────────────────────────────
+  1. Download the theme file from:
+     https://github.com/catppuccin/telegram
+  2. Open Telegram → Settings → Chat Settings
+  3. Under "Chat background", click "Choose from file"
+  4. Select the downloaded .tdesktop-theme file
+
+──────────────────────────────────────────────────────
+RAYCAST
+──────────────────────────────────────────────────────
+  Search "Catppuccin" at https://ray.so/themes/ and click "Add to Raycast"
+
+══════════════════════════════════════════════════════

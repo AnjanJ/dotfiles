@@ -8,7 +8,7 @@
 # ============================================
 
 THEME_STATE_FILE="$HOME/.dotfiles-theme"
-VALID_THEMES=("tokyo-night" "aura")
+VALID_THEMES=("tokyo-night" "aura" "catppuccin")
 
 # Get the currently active theme (defaults to tokyo-night)
 get_current_theme() {
@@ -47,10 +47,14 @@ prompt_theme_choice() {
     echo "  2) Aura Dark    — Deep purple aesthetic by daltonmenezes"
     echo "     Vibrant, bold colors. Purple and green accents."
     echo ""
+    echo "  3) Catppuccin   — Warm pastel aesthetic by catppuccin"
+    echo "     Soothing pastels. Lavender and teal accents."
+    echo ""
     read -p "Enter choice [1]: " theme_choice
     case "${theme_choice:-1}" in
         1) echo "tokyo-night" ;;
         2) echo "aura" ;;
+        3) echo "catppuccin" ;;
         *)
             echo "Invalid choice, defaulting to Tokyo Night" >&2
             echo "tokyo-night"
