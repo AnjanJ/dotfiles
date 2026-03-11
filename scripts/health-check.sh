@@ -126,7 +126,7 @@ check_brew_package() {
 echo ""
 echo "╔═══════════════════════════════════════════════════════════╗"
 echo "║                                                           ║"
-echo "║   🏥  Dotfiles Health Check                               ║"
+echo "║   🏥  AJ's Dotfiles Health Check                          ║"
 echo "║                                                           ║"
 echo "╚═══════════════════════════════════════════════════════════╝"
 
@@ -329,6 +329,14 @@ fi
 # ============================================
 print_header "10. Custom Scripts (~/bin)"
 
+# Dotfiles CLI
+check_file ~/bin/dotfiles "dotfiles" link
+check_file ~/bin/dotfiles-update "dotfiles-update" link
+check_file ~/bin/dotfiles-health "dotfiles-health" link
+check_file ~/bin/dotfiles-theme "dotfiles-theme" link
+check_file ~/bin/dotfiles-install "dotfiles-install" link
+
+# Work management
 check_file ~/bin/erb-lint-formatter "erb-lint-formatter" link
 check_file ~/bin/work-setup "work-setup" link
 check_file ~/bin/work-status "work-status" link

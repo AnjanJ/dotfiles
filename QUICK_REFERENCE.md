@@ -3,14 +3,22 @@
 ## 🎯 One-Liners
 
 ```bash
-# Install everything
-git clone https://github.com/AnjanJ/dotfiles.git ~/dotfiles && cd ~/dotfiles && bash install.sh
+# Install everything (fresh Mac)
+bash <(curl -fsSL https://raw.githubusercontent.com/AnjanJ/dotfiles/main/install.sh)
 
-# Update dotfiles
-cd ~/dotfiles && git pull && bash install.sh
+# Or clone first
+git clone https://github.com/AnjanJ/dotfiles.git ~/dotfiles && bash ~/dotfiles/install.sh
+```
 
-# Backup current configs
-cp -r ~/.config ~/.config.backup.$(date +%Y%m%d)
+## 🔧 Dotfiles CLI (works from anywhere)
+
+```bash
+dotfiles update       # Upgrade system & sync repo
+dotfiles health       # Verify all tools are installed
+dotfiles theme aura   # Switch theme (tokyo-night | aura)
+dotfiles install      # Re-run full installer
+dotfiles edit         # Open dotfiles in your editor
+dotfiles dir          # Print dotfiles directory path
 ```
 
 ## ⌨️ Essential Keybindings

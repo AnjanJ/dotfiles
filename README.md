@@ -43,7 +43,7 @@ Choose your theme during install — it's applied across **12 apps**:
 |----------------|------------------------|
 | Neovim, Ghostty, tmux, Zellij, Starship, Zed, VS Code | Slack, Chrome, Firefox, Telegram, Raycast |
 
-Switch anytime: `bash switch-theme.sh`
+Switch anytime: `dotfiles theme aura` or `dotfiles theme tokyo-night`
 
 ### 🛠️ Development Tools
 - **Ruby/Rails** - mise, ruby-lsp, RuboCop, RSpec tasks, ERB formatting
@@ -73,6 +73,7 @@ Switch anytime: `bash switch-theme.sh`
 - **Editors**: Neovim with AstroNvim, Zed (settings, snippets, tasks)
 - **Version Control**: Git (smart defaults + per-directory identity), lazygit, GitHub CLI
 - **Work Management**: work-setup, work-nuke, work-switch, work-status, repos-clone
+- **Dotfiles CLI**: `dotfiles update`, `dotfiles health`, `dotfiles theme`, `dotfiles install`
 - **Custom Scripts**: `~/bin` (erb-lint-formatter, etc.)
 
 ### Development
@@ -169,6 +170,11 @@ Installed Tools:
 │   ├── MySQL
 │   ├── Redis
 │   └── SQLite (litecli)
+├── Dotfiles CLI
+│   ├── dotfiles update (upgrade & sync)
+│   ├── dotfiles health (verify setup)
+│   ├── dotfiles theme (switch theme)
+│   └── dotfiles install (run installer)
 ├── Work Management
 │   ├── work-setup (configure work identity)
 │   ├── work-nuke (remove work config)
@@ -342,7 +348,7 @@ Choose between **Tokyo Night** (dark blue) or **Aura Dark** (deep purple) during
 | **Error** | `#f7768e` red | `#ff6767` red |
 | **Warning** | `#e0af68` yellow | `#ffca85` orange |
 
-Switch anytime: `bash switch-theme.sh`
+Switch anytime: `dotfiles theme aura` or `dotfiles theme tokyo-night`
 
 ## 📁 Repository Structure
 
@@ -373,15 +379,20 @@ dotfiles/
 ├── themes/                     # Theme assets
 │   ├── tokyo-night/            # Tokyo Night configs per app
 │   └── aura/                   # Aura Dark configs per app
-├── bin/                        # Custom scripts & work management
-│   ├── erb-lint-formatter      # ERB lint wrapper for Zed
+├── bin/                        # CLI commands (all available globally via ~/bin)
+│   ├── dotfiles                # Main CLI: dotfiles <update|health|theme|install|edit|dir>
+│   ├── dotfiles-update         # Shorthand for dotfiles update
+│   ├── dotfiles-health         # Shorthand for dotfiles health
+│   ├── dotfiles-theme          # Shorthand for dotfiles theme
+│   ├── dotfiles-install        # Shorthand for dotfiles install
 │   ├── work-setup              # Configure work identity
 │   ├── work-nuke               # Remove all work config
 │   ├── work-switch             # Change employer
 │   ├── work-status             # Show current work setup
 │   ├── repos-clone             # Clone repos from GitHub/GitLab
+│   ├── erb-lint-formatter      # ERB lint wrapper for Zed
 │   └── _work-helpers           # Shared utilities for work scripts
-├── switch-theme.sh             # Switch theme anytime
+├── Brewfile.backup             # Previous Brewfile (one backup, for rollback)
 ├── scripts/
 │   ├── _helpers.sh             # Shared colors & print functions
 │   ├── setup-git.sh            # Git identity & defaults setup
@@ -400,59 +411,61 @@ dotfiles/
 
 ## 🔄 Maintenance
 
-### Update Dotfiles
+All commands work from anywhere — no need to `cd ~/dotfiles` first.
 
-Keep your dotfiles in sync with the latest changes:
+### Dotfiles CLI
 
 ```bash
-cd ~/dotfiles
-bash update.sh
+dotfiles update       # Upgrade system & sync repo (pull → brew upgrade → snapshot → push)
+dotfiles health       # Verify all tools are installed and configured
+dotfiles theme aura   # Switch theme (tokyo-night | aura)
+dotfiles install      # Re-run full installer (idempotent)
+dotfiles edit         # Open dotfiles in your editor
+dotfiles dir          # Print dotfiles directory path
 ```
 
-The update script will:
-- 🔄 Pull latest changes from git
-- 📦 Update Homebrew packages
-- 🔗 Refresh symlinks
-- 🛠️ Update mise tools
-- 🔌 Update tmux plugins
-- ♻️ Reload configurations
+Shorthand commands also work: `dotfiles-update`, `dotfiles-health`, `dotfiles-theme`, `dotfiles-install`
+
+### What `dotfiles update` does
+
+1. Pull latest changes from git
+2. `brew update` + `brew upgrade` + `brew cleanup`
+3. Snapshot Brewfile (captures any new apps you installed manually)
+4. Refresh all symlinks
+5. Upgrade mise tools
+6. Update tmux plugins
+7. Reload live configs (tmux, aerospace)
+8. Commit & push changes back to repo
+
+**Your Brewfile stays in sync automatically.** Install apps with `brew install` or `mas install` anytime — the next `dotfiles update` captures them into the repo. One `Brewfile.backup` is kept for rollback.
 
 ### Health Check
 
-Verify your installation is working correctly:
-
 ```bash
-cd ~/dotfiles
-bash scripts/health-check.sh
+dotfiles health
 ```
 
-The health check will verify:
-- ✅ All core tools are installed
-- ✅ Configuration files are properly linked
-- ✅ Language runtimes are available
-- ✅ Services are running (PostgreSQL, Redis)
-- ✅ Shell integrations are configured
+Verifies: core tools, config symlinks, language runtimes, running services (PostgreSQL, MySQL, Redis), shell integrations, and work identity.
 
 ### Re-run Installation
 
 The install script is **truly idempotent** — run it any number of times with identical results:
 
 ```bash
-bash ~/dotfiles/install.sh                # Non-interactive, skips what's done
-bash ~/dotfiles/install.sh --interactive  # Prompt for every choice
-bash ~/dotfiles/install.sh --force        # Force reinstall everything
+dotfiles install                    # Non-interactive, skips what's done
+dotfiles install --interactive      # Prompt for every choice
+dotfiles install --force            # Force reinstall everything
 ```
 
 ## 🔧 Customization
 
 ### Switch Theme
 
-Switch between Tokyo Night and Aura Dark with one command:
+Switch between Tokyo Night and Aura Dark from anywhere:
 
 ```bash
-bash switch-theme.sh            # Interactive picker
-bash switch-theme.sh aura       # Switch to Aura Dark
-bash switch-theme.sh tokyo-night # Switch to Tokyo Night
+dotfiles theme aura         # Switch to Aura Dark
+dotfiles theme tokyo-night  # Switch to Tokyo Night
 ```
 
 This updates Neovim, Ghostty, tmux, Zellij, Starship, Zed, and VS Code automatically, then prints instructions for Slack, browsers, Telegram, and Raycast.
@@ -555,4 +568,4 @@ Found a bug or have a suggestion? Open an issue or PR!
 
 *Inspired by DHH's Omakub and ThePrimeagen's workflows*
 
-*Last updated: 2026-03-08*
+*Last updated: 2026-03-11*
