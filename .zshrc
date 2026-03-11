@@ -24,7 +24,9 @@
 # ============================================
 
 # Prompt (Starship - blazing-fast, cross-shell, written in Rust)
-eval "$(starship init zsh)"
+if command -v starship &>/dev/null; then
+  eval "$(starship init zsh)"
+fi
 
 # PATH
 export PATH="$HOME/bin:$PATH:$HOME/.local/bin"
@@ -45,7 +47,9 @@ fi
 export VISUAL="$EDITOR"              # Visual editor (usually same)
 export GIT_EDITOR="$EDITOR"          # Git commit editor
 export BUNDLER_EDITOR="$EDITOR"      # Rails credentials editor
-export PAGER="bat"                   # File pager (bat with syntax highlighting)
+if command -v bat &>/dev/null; then
+  export PAGER="bat"                   # File pager (bat with syntax highlighting)
+fi
 export BROWSER="open"                # Browser command (macOS)
 
 # === VERSIONS ===
@@ -74,7 +78,9 @@ export ERL_AFLAGS="-kernel shell_history enabled"  # Elixir history
 # ============================================
 
 # mise (polyglot version manager)
-eval "$(mise activate zsh)"
+if command -v mise &>/dev/null; then
+  eval "$(mise activate zsh)"
+fi
 
 # ============================================
 # 4. PROJECT-SPECIFIC ALIASES

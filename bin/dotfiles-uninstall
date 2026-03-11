@@ -66,7 +66,7 @@ if [[ "$FORCE" != true ]]; then
     # Preview what would be removed
     PREVIEW_COUNT=0
     for target in \
-        ~/.zshrc ~/.zshrc-aliases ~/.zshrc-terminal-enhancements \
+        ~/.zshrc ~/.zshrc-terminal-enhancements \
         ~/.zshrc-dhh-additions ~/.zshrc-elixir-additions ~/.zshrc-work-completions \
         ~/.tmux.conf ~/.gitignore_global \
         ~/.config/aerospace ~/.config/ghostty ~/.config/nvim ~/.config/zellij \
@@ -119,7 +119,6 @@ print_step "Removing symlinks..."
 
 # Shell configuration
 remove_symlink ~/.zshrc ".zshrc"
-remove_symlink ~/.zshrc-aliases ".zshrc-aliases"
 remove_symlink ~/.zshrc-terminal-enhancements ".zshrc-terminal-enhancements"
 remove_symlink ~/.zshrc-dhh-additions ".zshrc-dhh-additions"
 remove_symlink ~/.zshrc-elixir-additions ".zshrc-elixir-additions"

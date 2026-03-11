@@ -217,7 +217,7 @@ dotfiles/
 ├── .zshrc-dhh-additions        # Rails workflows, aliases, functions
 ├── .zshrc-elixir-additions     # Elixir/Phoenix development
 ├── .zshrc-terminal-enhancements # Terminal multiplexers, editors
-├── .zshrc-work                 # Work-specific (not committed to public repo)
+├── .zshrc-work                 # Work-specific (created by work-setup, not in repo)
 ├── .tmux.conf                  # tmux: sessions, vim integration, shortcuts
 ├── .config/
 │   ├── aerospace/              # Window management: layouts, keybindings
@@ -363,7 +363,6 @@ dotfiles/
 ├── .zshrc-dhh-additions        # Rails workflows
 ├── .zshrc-elixir-additions     # Elixir/Phoenix
 ├── .zshrc-terminal-enhancements # Terminal tools
-├── .zshrc-work                 # Work-specific (optional)
 ├── .tmux.conf                  # tmux configuration
 ├── .config/
 │   ├── aerospace/              # Window manager config
@@ -376,7 +375,7 @@ dotfiles/
 │   │   └── snippets/           # ruby.json, erb.json, zig.json
 │   ├── zellij/                 # Zellij config + theme
 │   └── starship.toml           # Prompt configuration
-├── themes/                     # Theme assets
+├── themes/                     # Theme assets (each has a theme.conf registry)
 │   ├── tokyo-night/            # Tokyo Night configs per app
 │   └── aura/                   # Aura Dark configs per app
 ├── bin/                        # CLI commands (all available globally via ~/bin)
@@ -385,6 +384,7 @@ dotfiles/
 │   ├── dotfiles-health         # Shorthand for dotfiles health
 │   ├── dotfiles-theme          # Shorthand for dotfiles theme
 │   ├── dotfiles-install        # Shorthand for dotfiles install
+│   ├── dotfiles-uninstall      # Remove all dotfiles symlinks
 │   ├── work-setup              # Configure work identity
 │   ├── work-nuke               # Remove all work config
 │   ├── work-switch             # Change employer
@@ -400,12 +400,13 @@ dotfiles/
 │   ├── health-check.sh         # Verify installation
 │   ├── theme-utils.sh          # Theme utility functions
 │   └── apply-theme.sh          # Apply theme across all apps
-├── tests/
-│   ├── test-idempotency.sh     # 18 idempotency tests (sandboxed)
-│   ├── test-work-nuke.sh       # 9 work-nuke edge case tests
-│   ├── test-repos-clone.sh     # 10 repos-clone logic tests
-│   ├── test-ssh-adversarial.sh # 7 SSH adversarial input tests
-│   └── test-update.sh          # 5 update.sh symlink tests
+├── tests/                      # 170 tests, run via GitHub Actions CI
+│   ├── test-idempotency.sh     # Idempotency tests (sandboxed)
+│   ├── test-work-nuke.sh       # Work-nuke edge case tests
+│   ├── test-repos-clone.sh     # Repos-clone logic tests
+│   ├── test-ssh-adversarial.sh # SSH adversarial input tests
+│   └── test-update.sh          # Update symlink tests
+├── .github/workflows/test.yml  # CI: shellcheck + all test suites
 └── docs/                       # Additional documentation
 ```
 

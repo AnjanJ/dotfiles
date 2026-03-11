@@ -174,7 +174,6 @@ create_symlink() {
 
 # Shell configuration
 create_symlink "$DOTFILES_DIR/.zshrc" ~/.zshrc ".zshrc"
-[[ -f "$DOTFILES_DIR/.zshrc-aliases" ]] && create_symlink "$DOTFILES_DIR/.zshrc-aliases" ~/.zshrc-aliases ".zshrc-aliases"
 [[ -f "$DOTFILES_DIR/.zshrc-terminal-enhancements" ]] && create_symlink "$DOTFILES_DIR/.zshrc-terminal-enhancements" ~/.zshrc-terminal-enhancements ".zshrc-terminal-enhancements"
 [[ -f "$DOTFILES_DIR/.zshrc-dhh-additions" ]] && create_symlink "$DOTFILES_DIR/.zshrc-dhh-additions" ~/.zshrc-dhh-additions ".zshrc-dhh-additions"
 [[ -f "$DOTFILES_DIR/.zshrc-elixir-additions" ]] && create_symlink "$DOTFILES_DIR/.zshrc-elixir-additions" ~/.zshrc-elixir-additions ".zshrc-elixir-additions"

@@ -294,7 +294,6 @@ Creates symbolic links from the repo to your home directory. This is the core de
 | `.zshrc-dhh-additions` | `~/.zshrc-dhh-additions` |
 | `.zshrc-elixir-additions` | `~/.zshrc-elixir-additions` |
 | `.zshrc-terminal-enhancements` | `~/.zshrc-terminal-enhancements` |
-| `.zshrc-aliases` | `~/.zshrc-aliases` |
 | `.tmux.conf` | `~/.tmux.conf` |
 
 ### App Configs (entire directories)

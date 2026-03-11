@@ -261,7 +261,6 @@ create_symlink() {
 
 # Shell configuration
 create_symlink "$DOTFILES_DIR/.zshrc" ~/.zshrc ".zshrc"
-[[ -f "$DOTFILES_DIR/.zshrc-aliases" ]] && create_symlink "$DOTFILES_DIR/.zshrc-aliases" ~/.zshrc-aliases ".zshrc-aliases"
 [[ -f "$DOTFILES_DIR/.zshrc-terminal-enhancements" ]] && create_symlink "$DOTFILES_DIR/.zshrc-terminal-enhancements" ~/.zshrc-terminal-enhancements ".zshrc-terminal-enhancements"
 
 # DHH additions (main Rails workflow file)
