@@ -4,31 +4,98 @@
 # DOTFILES INSTALLATION SCRIPT
 # ============================================
 # One-command setup for macOS development environment
-# Usage: bash install.sh
+#
+# Usage:
+#   bash install.sh                          # Non-interactive, sensible defaults
+#   bash install.sh --interactive            # Prompt for every choice
+#   bash install.sh --name "AJ" --email "aj@example.com"
+#   bash <(curl -fsSL https://raw.githubusercontent.com/AnjanJ/dotfiles/main/install.sh)
+#
+# Flags:
+#   --interactive       Prompt for every choice (original behavior)
+#   --name "Name"       Git user.name
+#   --email "a@b.com"   Git personal email
+#   --work-email "x@y"  Git work email (enables work identity)
+#   --work-dir "~/work" Work directory (default: ~/work)
+#   --theme <name>      Theme: tokyo-night or aura (default: tokyo-night)
+#   --ssh <mode>        SSH: 1password, existing, generate, skip (default: skip)
+#   --no-macos-defaults Skip macOS defaults
+#   --force             Force reinstall even if already configured
+#   --help              Show this help
+#
+# Environment variables (flags take precedence):
+#   DOTFILES_GIT_NAME, DOTFILES_GIT_EMAIL, DOTFILES_WORK_EMAIL
+#   DOTFILES_WORK_DIR, DOTFILES_THEME, DOTFILES_SSH_MODE
 # ============================================
+
+# ── Bootstrap: handle curl-pipe-bash ──────────
+# If this script is piped via curl, clone the repo first and re-exec.
+_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd)"
+
+if [[ ! -f "$_SCRIPT_DIR/scripts/_helpers.sh" ]]; then
+    echo ""
+    echo "Bootstrapping: dotfiles repo not found locally..."
+    DOTFILES_REPO="https://github.com/AnjanJ/dotfiles.git"
+    DOTFILES_TARGET="$HOME/dotfiles"
+
+    if ! command -v git &>/dev/null; then
+        echo "Git not found. Installing Xcode Command Line Tools..."
+        xcode-select --install 2>/dev/null || true
+        echo "Please re-run this script after Xcode tools finish installing."
+        exit 1
+    fi
+
+    if [[ -d "$DOTFILES_TARGET/.git" ]]; then
+        echo "Dotfiles already cloned at $DOTFILES_TARGET, pulling latest..."
+        git -C "$DOTFILES_TARGET" pull origin main 2>/dev/null || true
+    else
+        git clone "$DOTFILES_REPO" "$DOTFILES_TARGET"
+    fi
+
+    exec bash "$DOTFILES_TARGET/install.sh" "$@"
+fi
 
 set -e  # Exit on error
 
-# Parse command line arguments
+# ── Parse Arguments ───────────────────────────
+
+INTERACTIVE=false
 FORCE_INSTALL=false
-for arg in "$@"; do
-    case $arg in
-        --force)
-            FORCE_INSTALL=true
-            shift
-            ;;
+APPLY_MACOS_DEFAULTS=true
+
+# Env var defaults (flags override these)
+GIT_NAME="${DOTFILES_GIT_NAME:-}"
+GIT_EMAIL="${DOTFILES_GIT_EMAIL:-}"
+GIT_WORK_EMAIL="${DOTFILES_WORK_EMAIL:-}"
+WORK_DIR="${DOTFILES_WORK_DIR:-}"
+SELECTED_THEME="${DOTFILES_THEME:-}"
+SSH_MODE="${DOTFILES_SSH_MODE:-}"
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --interactive) INTERACTIVE=true; shift ;;
+        --force) FORCE_INSTALL=true; shift ;;
+        --name) GIT_NAME="$2"; shift 2 ;;
+        --email) GIT_EMAIL="$2"; shift 2 ;;
+        --work-email) GIT_WORK_EMAIL="$2"; shift 2 ;;
+        --work-dir) WORK_DIR="$2"; shift 2 ;;
+        --theme) SELECTED_THEME="$2"; shift 2 ;;
+        --ssh) SSH_MODE="$2"; shift 2 ;;
+        --no-macos-defaults) APPLY_MACOS_DEFAULTS=false; shift ;;
         --help)
-            echo "Usage: bash install.sh [OPTIONS]"
-            echo ""
-            echo "Options:"
-            echo "  --force    Force reinstallation even if already installed"
-            echo "  --help     Show this help message"
+            # Print the usage block from the header
+            sed -n '/^# Usage:/,/^# ====/{ /^# ====/d; s/^# //; s/^#//; p; }' "$0"
             exit 0
             ;;
+        *) shift ;;
     esac
 done
 
-# Get dotfiles directory (needed early for sourcing helpers)
+# Export for sub-scripts
+export INTERACTIVE FORCE_INSTALL GIT_NAME GIT_EMAIL GIT_WORK_EMAIL WORK_DIR SSH_MODE
+
+# ── Setup ─────────────────────────────────────
+
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Shared colors & print functions
@@ -60,18 +127,18 @@ echo "║   • SSH keys (1Password, import, generate, or existing)  ║"
 echo "║   • Custom scripts (~/bin)                                ║"
 echo "║   • Theme: Tokyo Night or Aura (your choice!)              ║"
 echo "║                                                           ║"
-echo "║   💡 Tip: Script is idempotent - safe to re-run          ║"
-echo "║   Use --force to override existing configs               ║"
+echo "║   💡 Idempotent — safe to re-run anytime                 ║"
 echo "║                                                           ║"
 echo "╚═══════════════════════════════════════════════════════════╝"
 echo ""
 
-# Ask for confirmation
-read -p "Continue with installation? (y/n) " -n 1 -r
-echo
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    print_warning "Installation cancelled"
-    exit 1
+if [[ "$INTERACTIVE" == true ]]; then
+    read -p "Continue with installation? (y/n) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        print_warning "Installation cancelled"
+        exit 1
+    fi
 fi
 
 echo ""
@@ -82,9 +149,21 @@ print_step "Dotfiles directory: $DOTFILES_DIR"
 # ============================================
 source "$DOTFILES_DIR/scripts/theme-utils.sh"
 
-SELECTED_THEME=$(prompt_theme_choice)
+if [[ -z "$SELECTED_THEME" ]]; then
+    if [[ "$INTERACTIVE" == true ]]; then
+        SELECTED_THEME=$(prompt_theme_choice)
+    else
+        SELECTED_THEME=$(get_current_theme)  # defaults to tokyo-night
+    fi
+fi
+
+if ! validate_theme "$SELECTED_THEME"; then
+    print_warning "Invalid theme '$SELECTED_THEME', using tokyo-night"
+    SELECTED_THEME="tokyo-night"
+fi
+
 echo ""
-print_success "Theme selected: $SELECTED_THEME"
+print_success "Theme: $SELECTED_THEME"
 
 # ============================================
 # 1. INSTALL HOMEBREW
@@ -132,50 +211,25 @@ mkdir -p ~/bin
 print_success "Directories created"
 
 # ============================================
-# 4. BACKUP EXISTING CONFIGURATIONS
+# 4. SET UP MISE (VERSION MANAGER)
 # ============================================
 echo ""
-print_step "Step 4: Backing up existing configurations..."
-
-BACKUP_DIR="$HOME/.dotfiles_backup_$(date +%Y%m%d_%H%M%S)"
-mkdir -p "$BACKUP_DIR"
-
-# Backup files if they exist
-[[ -f ~/.zshrc ]] && cp ~/.zshrc "$BACKUP_DIR/"
-[[ -f ~/.tmux.conf ]] && cp ~/.tmux.conf "$BACKUP_DIR/"
-[[ -d ~/.config/nvim ]] && cp -r ~/.config/nvim "$BACKUP_DIR/"
-[[ -d ~/.config/aerospace ]] && cp -r ~/.config/aerospace "$BACKUP_DIR/"
-[[ -d ~/.config/ghostty ]] && cp -r ~/.config/ghostty "$BACKUP_DIR/"
-[[ -d ~/.config/zellij ]] && cp -r ~/.config/zellij "$BACKUP_DIR/"
-[[ -d ~/.config/zed ]] && cp -r ~/.config/zed "$BACKUP_DIR/"
-[[ -f ~/.config/starship.toml ]] && cp ~/.config/starship.toml "$BACKUP_DIR/"
-
-print_success "Backup created at: $BACKUP_DIR"
-
-# ============================================
-# 5. SET UP MISE (VERSION MANAGER)
-# ============================================
-echo ""
-print_step "Step 5: Setting up mise (version manager)..."
+print_step "Step 4: Setting up mise (version manager)..."
 
 # Create mise config directory
 mkdir -p ~/.config/mise
 
 # Link mise configuration
-if [ -L ~/.config/mise/config.toml ] && [ "$FORCE_INSTALL" = false ]; then
+if [ -L ~/.config/mise/config.toml ] && [ "$(readlink ~/.config/mise/config.toml)" = "$DOTFILES_DIR/.config/mise/config.toml" ] && [ "$FORCE_INSTALL" = false ]; then
     print_success "mise config already linked"
 else
+    backup_if_needed ~/.config/mise/config.toml
     ln -sf "$DOTFILES_DIR/.config/mise/config.toml" ~/.config/mise/config.toml
     print_success "mise config linked"
 fi
 
 # Trust the mise config file (required for security)
 mise trust ~/.config/mise/config.toml 2>/dev/null || true
-
-# Initialize mise in shell (will be sourced from .zshrc)
-if ! grep -q "mise activate" ~/.zshrc 2>/dev/null; then
-    print_warning "Note: mise activation already in .zshrc"
-fi
 
 # Install all tools defined in mise config
 print_step "Installing language runtimes with mise (this may take a few minutes)..."
@@ -184,12 +238,12 @@ mise install
 print_success "mise configured and tools installed"
 
 # ============================================
-# 6. CREATE SYMLINKS
+# 5. CREATE SYMLINKS
 # ============================================
 echo ""
-print_step "Step 6: Creating symlinks..."
+print_step "Step 5: Creating symlinks..."
 
-# Helper function to create symlink with check
+# Helper function to create symlink with idempotent backup
 create_symlink() {
     local source="$1"
     local target="$2"
@@ -198,6 +252,7 @@ create_symlink() {
     if [ -L "$target" ] && [ "$(readlink "$target")" = "$source" ] && [ "$FORCE_INSTALL" = false ]; then
         print_success "$name already linked"
     else
+        backup_if_needed "$target"
         ln -sf "$source" "$target"
         print_success "$name linked"
     fi
@@ -219,6 +274,9 @@ create_symlink "$DOTFILES_DIR/.zshrc" ~/.zshrc ".zshrc"
 
 # tmux
 create_symlink "$DOTFILES_DIR/.tmux.conf" ~/.tmux.conf ".tmux.conf"
+
+# Git global ignores
+[[ -f "$DOTFILES_DIR/.gitignore_global" ]] && create_symlink "$DOTFILES_DIR/.gitignore_global" ~/.gitignore_global ".gitignore_global"
 
 # Config directories
 create_symlink "$DOTFILES_DIR/.config/aerospace" ~/.config/aerospace "aerospace config"
@@ -244,19 +302,19 @@ done
 print_success "All symlinks processed"
 
 # ============================================
-# 6b. APPLY SELECTED THEME
+# 5b. APPLY SELECTED THEME
 # ============================================
 echo ""
-print_step "Step 6b: Applying $SELECTED_THEME theme everywhere..."
+print_step "Step 5b: Applying $SELECTED_THEME theme everywhere..."
 
 source "$DOTFILES_DIR/scripts/apply-theme.sh"
 apply_theme "$SELECTED_THEME"
 
 # ============================================
-# 7. INSTALL TPM (TMUX PLUGIN MANAGER)
+# 6. INSTALL TPM (TMUX PLUGIN MANAGER)
 # ============================================
 echo ""
-print_step "Step 7: Installing TPM (Tmux Plugin Manager)..."
+print_step "Step 6: Installing TPM (Tmux Plugin Manager)..."
 
 if [[ ! -d ~/.tmux/plugins/tpm ]]; then
     git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
@@ -266,19 +324,19 @@ else
 fi
 
 # ============================================
-# 8. SET UP NEOVIM
+# 7. SET UP NEOVIM
 # ============================================
 echo ""
-print_step "Step 8: Setting up Neovim..."
+print_step "Step 7: Setting up Neovim..."
 
 # AstroNvim will auto-install on first launch
 print_success "Neovim configuration linked (plugins will install on first launch)"
 
 # ============================================
-# 9. SET UP SHELL
+# 8. SET UP SHELL
 # ============================================
 echo ""
-print_step "Step 9: Setting up shell..."
+print_step "Step 8: Setting up shell..."
 
 # Make zsh default shell if not already
 if [[ "$SHELL" != "$(which zsh)" ]]; then
@@ -290,25 +348,31 @@ else
 fi
 
 # ============================================
-# 9b. GIT CONFIGURATION
+# 8b. GIT CONFIGURATION
 # ============================================
 source "$DOTFILES_DIR/scripts/setup-git.sh"
 setup_git
 
 # ============================================
-# 9c. SSH CONFIGURATION
+# 8c. SSH CONFIGURATION
 # ============================================
 source "$DOTFILES_DIR/scripts/setup-ssh.sh"
 setup_ssh
 
 # ============================================
-# 10. MACOS DEFAULTS (OPTIONAL)
+# 9. MACOS DEFAULTS
 # ============================================
 echo ""
-read -p "Apply recommended macOS defaults? (y/n) " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    print_step "Step 10: Applying macOS defaults..."
+if [[ "$INTERACTIVE" == true ]]; then
+    read -p "Apply recommended macOS defaults? (y/n) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        APPLY_MACOS_DEFAULTS=false
+    fi
+fi
+
+if [[ "$APPLY_MACOS_DEFAULTS" == true ]]; then
+    print_step "Step 9: Applying macOS defaults..."
 
     # Keyboard settings
     defaults write NSGlobalDomain KeyRepeat -int 2
@@ -361,18 +425,16 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
 
     print_success "macOS defaults applied (24 settings)"
     print_warning "Some settings require logout/restart to take effect"
+else
+    print_success "macOS defaults skipped"
 fi
 
 # ============================================
-# 11. RUN HEALTH CHECK
+# 10. RUN HEALTH CHECK
 # ============================================
 echo ""
-read -p "Run health check to verify installation? (y/n) " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    print_step "Step 11: Running health check..."
-    bash "$DOTFILES_DIR/scripts/health-check.sh"
-fi
+print_step "Step 10: Running health check..."
+bash "$DOTFILES_DIR/scripts/health-check.sh"
 
 # ============================================
 # INSTALLATION COMPLETE
@@ -399,31 +461,21 @@ echo ""
 echo "4. Start Aerospace (will start on next login):"
 echo "   aerospace reload"
 echo ""
-echo "5. Git & SSH (configured during install):"
-echo "   Verify git:  cd into any repo and run 'git config user.email'"
-echo "   Verify SSH:  ssh -T git@github.com"
+echo "5. Verify mise installations:"
+echo "   mise list"
 echo ""
-echo "6. Verify mise installations:"
-echo "   mise list       # See all installed versions"
-echo "   ruby --version  # Should show Ruby 3.4.5"
-echo "   node --version  # Should show latest"
-echo "   elixir --version # Should show latest"
-echo ""
-echo "7. Run health check anytime:"
+echo "6. Run health check anytime:"
 echo "   bash $DOTFILES_DIR/scripts/health-check.sh"
 echo ""
-echo "8. Update dotfiles in the future:"
+echo "7. Update dotfiles in the future:"
 echo "   bash $DOTFILES_DIR/update.sh"
-echo ""
-echo "📚 Documentation:"
-echo "   • Neovim guide: ~/.config/nvim/README.md"
-echo "   • tmux guide: $DOTFILES_DIR/docs/tmux-guide.md"
-echo "   • Zellij guide: $DOTFILES_DIR/docs/zellij-guide.md"
 echo ""
 echo "🎨 Theme: $SELECTED_THEME (applied everywhere)"
 echo "   Switch anytime: bash $DOTFILES_DIR/switch-theme.sh"
 echo ""
-echo "🔧 Backup location: $BACKUP_DIR"
-echo ""
+if [[ -d "$BACKUP_DIR" ]]; then
+    echo "🔧 Backup location: $BACKUP_DIR"
+    echo ""
+fi
 echo "Enjoy your new setup! 🚀"
 echo ""

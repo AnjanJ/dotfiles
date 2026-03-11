@@ -160,12 +160,18 @@ test_02_setup_git_personal_only() {
     unset _HELPERS_LOADED
     source "$DOTFILES_DIR/scripts/setup-git.sh"
 
+    # Use variables instead of piped stdin (new non-interactive API)
+    export INTERACTIVE=false
+    GIT_NAME="Test User"
+    GIT_EMAIL="test@example.com"
+    GIT_WORK_EMAIL=""
+
     # Run 1
-    printf 'Test User\ntest@example.com\nn\n' | setup_git 2>/dev/null
+    setup_git 2>/dev/null
     snapshot "$TEST_HOME" "$TEST_HOME/snap1"
 
     # Run 2
-    printf 'Test User\ntest@example.com\nn\n' | setup_git 2>/dev/null
+    setup_git 2>/dev/null
     snapshot "$TEST_HOME" "$TEST_HOME/snap2"
 
     assert_snapshots_equal "$TEST_HOME/snap1" "$TEST_HOME/snap2" "State identical after 2 runs"
@@ -194,15 +200,19 @@ test_03_setup_git_with_work() {
     unset _HELPERS_LOADED
     source "$DOTFILES_DIR/scripts/setup-git.sh"
 
-    # Note: read -n 1 for y/n consumes 'y' without \n, so next input starts on same line
-    # Format: name\nemail\ny<work_email>\n<work_dir>\n
+    # Use variables (new non-interactive API)
+    export INTERACTIVE=false
+    GIT_NAME="Test User"
+    GIT_EMAIL="test@example.com"
+    GIT_WORK_EMAIL="work@corp.com"
+    WORK_DIR="$TEST_HOME/work"
 
     # Run 1
-    printf 'Test User\ntest@example.com\nywork@corp.com\n%s/work\n' "$TEST_HOME" | setup_git 2>/dev/null
+    setup_git 2>/dev/null
     snapshot "$TEST_HOME" "$TEST_HOME/snap1"
 
     # Run 2 (identical input)
-    printf 'Test User\ntest@example.com\nywork@corp.com\n%s/work\n' "$TEST_HOME" | setup_git 2>/dev/null
+    setup_git 2>/dev/null
     snapshot "$TEST_HOME" "$TEST_HOME/snap2"
 
     assert_snapshots_equal "$TEST_HOME/snap1" "$TEST_HOME/snap2" "State identical after 2 runs"
@@ -229,12 +239,19 @@ test_04_setup_git_custom_work_dir() {
     unset _HELPERS_LOADED
     source "$DOTFILES_DIR/scripts/setup-git.sh"
 
+    # Use variables (new non-interactive API)
+    export INTERACTIVE=false
+    GIT_NAME="Test User"
+    GIT_EMAIL="test@example.com"
+    GIT_WORK_EMAIL="work@acme.com"
+    WORK_DIR="$TEST_HOME/projects/acme"
+
     # Run 1
-    printf 'Test User\ntest@example.com\nywork@acme.com\n%s/projects/acme\n' "$TEST_HOME" | setup_git 2>/dev/null
+    setup_git 2>/dev/null
     snapshot "$TEST_HOME" "$TEST_HOME/snap1"
 
     # Run 2
-    printf 'Test User\ntest@example.com\nywork@acme.com\n%s/projects/acme\n' "$TEST_HOME" | setup_git 2>/dev/null
+    setup_git 2>/dev/null
     snapshot "$TEST_HOME" "$TEST_HOME/snap2"
 
     assert_snapshots_equal "$TEST_HOME/snap1" "$TEST_HOME/snap2" "State identical after 2 runs"
@@ -533,9 +550,15 @@ test_12_includeif_no_duplicates() {
     unset _HELPERS_LOADED
     source "$DOTFILES_DIR/scripts/setup-git.sh"
 
+    export INTERACTIVE=false
+    GIT_NAME="Test User"
+    GIT_EMAIL="test@example.com"
+    GIT_WORK_EMAIL="work@corp.com"
+    WORK_DIR="$TEST_HOME/work"
+
     # Run 5 times
     for i in 1 2 3 4 5; do
-        printf 'Test User\ntest@example.com\nywork@corp.com\n%s/work\n' "$TEST_HOME" | setup_git 2>/dev/null
+        setup_git 2>/dev/null
     done
 
     local include_count=$(git config --global --get-all "includeIf.gitdir:${TEST_HOME}/work/.path" 2>/dev/null | wc -l | tr -d ' ')
@@ -582,15 +605,20 @@ test_14_git_config_defaults_idempotent() {
     unset _HELPERS_LOADED
     source "$DOTFILES_DIR/scripts/setup-git.sh"
 
+    export INTERACTIVE=false
+    GIT_NAME="Test User"
+    GIT_EMAIL="test@example.com"
+    GIT_WORK_EMAIL=""
+
     # Run 1: set everything
-    printf 'Test User\ntest@example.com\nn\n' | setup_git 2>/dev/null
+    setup_git 2>/dev/null
 
     # User manually changes a setting
     git config --global core.editor "vim"
     assert_eq "$(git config --global core.editor)" "vim" "User changed editor to vim"
 
     # Run 2: setup_git overwrites it back
-    printf 'Test User\ntest@example.com\nn\n' | setup_git 2>/dev/null
+    setup_git 2>/dev/null
     assert_eq "$(git config --global core.editor)" "zed --wait" "Editor reset to zed --wait (expected: setup_git is authoritative)"
 
     teardown_sandbox

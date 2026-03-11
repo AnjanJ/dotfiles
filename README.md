@@ -96,35 +96,47 @@ Switch anytime: `bash switch-theme.sh`
 
 ## 🎯 One-Command Installation
 
-### Quick Install
+### Quick Install (from a fresh Mac)
 
 ```bash
-git clone https://github.com/AnjanJ/dotfiles.git ~/dotfiles
-cd ~/dotfiles
-bash install.sh
+bash <(curl -fsSL https://raw.githubusercontent.com/AnjanJ/dotfiles/main/install.sh)
 ```
 
-That's it! The script will:
+Or if you prefer to clone first:
+
+```bash
+git clone https://github.com/AnjanJ/dotfiles.git ~/dotfiles && bash ~/dotfiles/install.sh
+```
+
+Both are **fully non-interactive** with sensible defaults. No prompts, no questions — just run it.
+
+### Customize via flags
+
+```bash
+bash install.sh --name "AJ" --email "aj@example.com" --theme aura
+bash install.sh --work-email "aj@corp.com" --ssh generate
+bash install.sh --interactive          # Prompt for every choice (old behavior)
+bash install.sh --no-macos-defaults    # Skip macOS system preferences
+bash install.sh --force                # Force reinstall everything
+bash install.sh --help                 # Show all options
+```
+
+### What it does
+
 1. ✅ Install Homebrew (if not installed)
 2. ✅ Install all packages from Brewfile
-3. ✅ Backup your existing configurations
-4. ✅ Create symlinks to dotfiles (shell, tmux, Neovim, Zed, ~/bin)
-5. ✅ Apply your chosen theme (Tokyo Night or Aura Dark)
-6. ✅ Set up tmux plugins
-7. ✅ Configure Neovim
-8. ✅ Configure Zed (settings, snippets, tasks)
-9. ✅ Set up shell environment, Git defaults, and SSH keys
-10. ✅ Apply macOS defaults (optional)
-11. ✅ Run health check (optional)
+3. ✅ Create symlinks to dotfiles (shell, tmux, Neovim, Zed, ~/bin)
+4. ✅ Apply your chosen theme (Tokyo Night or Aura Dark)
+5. ✅ Set up tmux plugins
+6. ✅ Configure Neovim
+7. ✅ Configure Zed (settings, snippets, tasks)
+8. ✅ Set up shell environment, Git defaults, and SSH keys
+9. ✅ Apply macOS defaults
+10. ✅ Run health check
 
-**💡 The install script is idempotent** - safe to run multiple times. Use `--force` to override existing configs.
+**💡 Truly idempotent** — run it 10 times, get the same result. No backup clutter, no duplicate configs, no re-prompting.
 
 **📋 Want the full breakdown?** See [WHAT_GETS_INSTALLED.md](WHAT_GETS_INSTALLED.md) — every tool, language, config, and system change explained step by step.
-
-```bash
-bash install.sh --force  # Force reinstall everything
-bash install.sh --help   # Show all options
-```
 
 ### What Gets Installed
 
@@ -374,7 +386,11 @@ dotfiles/
 │   ├── theme-utils.sh          # Theme utility functions
 │   └── apply-theme.sh          # Apply theme across all apps
 ├── tests/
-│   └── test-idempotency.sh     # 18 idempotency tests (sandboxed)
+│   ├── test-idempotency.sh     # 18 idempotency tests (sandboxed)
+│   ├── test-work-nuke.sh       # 9 work-nuke edge case tests
+│   ├── test-repos-clone.sh     # 10 repos-clone logic tests
+│   ├── test-ssh-adversarial.sh # 7 SSH adversarial input tests
+│   └── test-update.sh          # 5 update.sh symlink tests
 └── docs/                       # Additional documentation
 ```
 
@@ -415,12 +431,12 @@ The health check will verify:
 
 ### Re-run Installation
 
-The install script is **idempotent** - you can safely run it multiple times:
+The install script is **truly idempotent** — run it any number of times with identical results:
 
 ```bash
-cd ~/dotfiles
-bash install.sh        # Skip already-installed components
-bash install.sh --force # Force reinstall everything
+bash ~/dotfiles/install.sh                # Non-interactive, skips what's done
+bash ~/dotfiles/install.sh --interactive  # Prompt for every choice
+bash ~/dotfiles/install.sh --force        # Force reinstall everything
 ```
 
 ## 🔧 Customization

@@ -282,52 +282,52 @@ _print_ssh_troubleshooting() {
 
 setup_ssh() {
     echo ""
-    print_step "Step 9c: SSH key setup..."
+    print_step "Step 8c: SSH key setup..."
 
-    # Back up existing ~/.ssh/
-    if [[ -d ~/.ssh ]]; then
+    # Back up existing ~/.ssh/ (idempotent — only if not already backed up)
+    if [[ -d ~/.ssh && ! -d "$BACKUP_DIR/ssh" ]]; then
+        mkdir -p "$BACKUP_DIR"
         cp -r ~/.ssh "$BACKUP_DIR/ssh"
         print_success "Backed up ~/.ssh/ → $BACKUP_DIR/ssh/"
-        echo "  (restore anytime: cp -r $BACKUP_DIR/ssh/ ~/.ssh/)"
     fi
 
-    echo ""
-    echo "How would you like to set up SSH keys?"
-    echo ""
-    echo "  1) 1Password SSH Agent (recommended)"
-    echo "     Keys stored in 1Password vault, synced across machines, Touch ID"
-    echo ""
-    echo "  2) Import keys from another location"
-    echo "     Copy existing keys from a USB drive, backup folder, iCloud, etc."
-    echo ""
-    echo "  3) Use keys already in ~/.ssh/"
-    echo "     Configure SSH config + fix permissions for your existing keys"
-    echo ""
-    echo "  4) Generate new Ed25519 keys"
-    echo "     Create fresh keys for this machine"
-    echo ""
-    echo "  5) Skip"
-    echo "     Don't touch SSH configuration"
-    echo ""
-    read -p "Choose (1-5): " SSH_CHOICE
-    echo
+    # Determine SSH mode
+    local ssh_choice="${SSH_MODE:-}"
 
-    case "$SSH_CHOICE" in
-        1)
-            _setup_ssh_1password
-            ;;
-        2)
-            _setup_ssh_import
-            ;;
-        3)
-            _setup_ssh_existing
-            ;;
-        4)
-            _setup_ssh_generate
-            ;;
-        5|*)
-            print_success "SSH setup skipped"
-            ;;
+    if [[ -z "$ssh_choice" ]]; then
+        if [[ "$INTERACTIVE" == true ]]; then
+            echo ""
+            echo "How would you like to set up SSH keys?"
+            echo ""
+            echo "  1) 1Password SSH Agent (recommended)"
+            echo "     Keys stored in 1Password vault, synced across machines, Touch ID"
+            echo ""
+            echo "  2) Import keys from another location"
+            echo "     Copy existing keys from a USB drive, backup folder, iCloud, etc."
+            echo ""
+            echo "  3) Use keys already in ~/.ssh/"
+            echo "     Configure SSH config + fix permissions for your existing keys"
+            echo ""
+            echo "  4) Generate new Ed25519 keys"
+            echo "     Create fresh keys for this machine"
+            echo ""
+            echo "  5) Skip"
+            echo "     Don't touch SSH configuration"
+            echo ""
+            read -p "Choose (1-5): " ssh_choice
+            echo
+        else
+            ssh_choice="skip"
+        fi
+    fi
+
+    # Map named modes to handler numbers
+    case "$ssh_choice" in
+        1password|1) _setup_ssh_1password ;;
+        import|2)    _setup_ssh_import ;;
+        existing|3)  _setup_ssh_existing ;;
+        generate|4)  _setup_ssh_generate ;;
+        skip|5|*)    print_success "SSH setup skipped" ;;
     esac
 }
 

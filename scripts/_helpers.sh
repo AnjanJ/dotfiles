@@ -37,3 +37,31 @@ print_success() {
 print_fail() {
     echo -e "${RED}✗${NC} $1"
 }
+
+# ── Shared Constants ──────────────────────────
+
+BACKUP_DIR="${BACKUP_DIR:-$HOME/.dotfiles_backup}"
+
+# ── Idempotent Backup ─────────────────────────
+# Only backs up real files/dirs that are about to be replaced.
+# Skips symlinks (those are ours) and already-backed-up files.
+
+backup_if_needed() {
+    local target="$1"
+
+    # Nothing to back up
+    [[ -e "$target" ]] || return 0
+
+    # Symlinks are ours — no backup needed
+    [[ -L "$target" ]] && return 0
+
+    mkdir -p "$BACKUP_DIR"
+    local name
+    name=$(basename "$target")
+
+    # Don't overwrite an existing backup
+    if [[ ! -e "$BACKUP_DIR/$name" ]]; then
+        cp -r "$target" "$BACKUP_DIR/$name"
+        print_warning "Backed up $target → $BACKUP_DIR/$name"
+    fi
+}

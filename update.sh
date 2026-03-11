@@ -1,23 +1,27 @@
 #!/usr/bin/env bash
 
-for arg in "$@"; do
-    case $arg in
-        --help)
-            echo "Usage: bash update.sh [OPTIONS]"
-            echo ""
-            echo "Options:"
-            echo "  --help    Show this help message"
-            exit 0
-            ;;
-    esac
-done
-
 # ============================================
 # DOTFILES UPDATE SCRIPT
 # ============================================
 # Quick update for syncing dotfiles changes
-# Usage: bash update.sh
+# Usage: bash update.sh [--interactive]
 # ============================================
+
+INTERACTIVE=false
+
+for arg in "$@"; do
+    case $arg in
+        --interactive) INTERACTIVE=true ;;
+        --help)
+            echo "Usage: bash update.sh [OPTIONS]"
+            echo ""
+            echo "Options:"
+            echo "  --interactive  Prompt before each step"
+            echo "  --help         Show this help message"
+            exit 0
+            ;;
+    esac
+done
 
 set -e  # Exit on error
 
@@ -48,12 +52,13 @@ echo "║                                                           ║"
 echo "╚═══════════════════════════════════════════════════════════╝"
 echo ""
 
-# Ask for confirmation
-read -p "Continue with update? (y/n) " -n 1 -r
-echo
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    print_warning "Update cancelled"
-    exit 1
+if [[ "$INTERACTIVE" == true ]]; then
+    read -p "Continue with update? (y/n) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        print_warning "Update cancelled"
+        exit 1
+    fi
 fi
 
 # ============================================
@@ -70,14 +75,19 @@ if [[ -n $(git status -s) ]]; then
     echo ""
     git status -s
     echo ""
-    read -p "Stash changes and continue? (y/n) " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        git stash push -m "Auto-stash before update $(date +%Y%m%d_%H%M%S)"
-        print_success "Changes stashed"
+    if [[ "$INTERACTIVE" == true ]]; then
+        read -p "Stash changes and continue? (y/n) " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            git stash push -m "Auto-stash before update $(date +%Y%m%d_%H%M%S)"
+            print_success "Changes stashed"
+        else
+            print_error "Please commit or stash your changes first"
+            exit 1
+        fi
     else
-        print_error "Please commit or stash your changes first"
-        exit 1
+        git stash push -m "Auto-stash before update $(date +%Y%m%d_%H%M%S)"
+        print_success "Changes auto-stashed"
     fi
 fi
 
@@ -96,18 +106,19 @@ brew update
 # Install any new packages from Brewfile
 brew bundle install
 
-# Upgrade existing packages
-read -p "Upgrade existing packages? This may take a while. (y/n) " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    brew upgrade
-    brew cleanup
-    print_success "Packages upgraded"
+if [[ "$INTERACTIVE" == true ]]; then
+    read -p "Upgrade existing packages? This may take a while. (y/n) " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        brew upgrade
+        brew cleanup
+        print_success "Packages upgraded"
+    else
+        print_success "Skipped package upgrade"
+    fi
 else
-    print_success "Skipped package upgrade"
+    print_success "Homebrew packages synced (run 'brew upgrade' manually to upgrade)"
 fi
-
-print_success "Homebrew updated"
 
 # ============================================
 # 3. REFRESH SYMLINKS
