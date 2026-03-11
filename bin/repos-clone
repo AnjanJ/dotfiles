@@ -5,13 +5,14 @@
 # ============================================
 # Usage: repos-clone [--dir <path>] [--org <name>] [--all]
 #
-# Supports: GitHub (via gh CLI), GitLab (via glab or API)
+# Supports: GitHub (via gh CLI), GitLab (via glab or API),
+#           Bitbucket (via API), Codeberg (Gitea API)
 # ============================================
 
 if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
     echo "Usage: repos-clone [--dir DIR] [--org NAME] [--all]"
     echo ""
-    echo "Interactive repo cloner for GitHub and GitLab."
+    echo "Interactive repo cloner for GitHub, GitLab, Bitbucket, and Codeberg."
     echo ""
     echo "Options:"
     echo "  --dir DIR    Target directory for cloned repos"
@@ -48,13 +49,17 @@ echo ""
 echo "  Which service?"
 echo "    1) GitHub"
 echo "    2) GitLab"
+echo "    3) Bitbucket"
+echo "    4) Codeberg"
 echo ""
-read -p "  Choose (1-2): " SVC_CHOICE
+read -p "  Choose (1-4): " SVC_CHOICE
 echo
 
 case "$SVC_CHOICE" in
     1) SERVICE="github" ;;
     2) SERVICE="gitlab" ;;
+    3) SERVICE="bitbucket" ;;
+    4) SERVICE="codeberg" ;;
     *)
         print_error "Invalid choice"
         exit 1
@@ -72,11 +77,12 @@ print_success "Target: $TARGET_DIR/"
 
 # ── Detect SSH alias ──────────────────────────
 SSH_ALIAS=""
-if [[ "$SERVICE" == "github" ]]; then
-    SVC_HOST="github.com"
-elif [[ "$SERVICE" == "gitlab" ]]; then
-    SVC_HOST="gitlab.com"
-fi
+case "$SERVICE" in
+    github)    SVC_HOST="github.com" ;;
+    gitlab)    SVC_HOST="gitlab.com" ;;
+    bitbucket) SVC_HOST="bitbucket.org" ;;
+    codeberg)  SVC_HOST="codeberg.org" ;;
+esac
 
 # Check if there's an alias in SSH config for this host
 if [[ -f ~/.ssh/config ]]; then
@@ -250,6 +256,91 @@ elif [[ "$SERVICE" == "gitlab" ]]; then
             REPO_URLS+=("git@${CLONE_HOST}:${path}.git")
         done < <(echo "$API_RESPONSE" | jq -r '.[].path_with_namespace' 2>/dev/null || true)
     fi
+
+# ── Bitbucket ─────────────────────────────────
+elif [[ "$SERVICE" == "bitbucket" ]]; then
+    if [[ -z "$ORG_NAME" ]]; then
+        read -p "  Workspace/user name: " ORG_NAME
+    fi
+
+    if [[ -z "$ORG_NAME" ]]; then
+        print_error "No workspace/user specified"
+        exit 1
+    fi
+
+    print_step "Fetching repos from $ORG_NAME..."
+    echo ""
+
+    # Bitbucket REST API v2 (public repos don't need auth, private repos need app password)
+    BB_URL="https://api.bitbucket.org/2.0/repositories/${ORG_NAME}?pagelen=100"
+
+    # Check for credentials
+    BB_AUTH=""
+    if [[ -n "${BITBUCKET_USER:-}" && -n "${BITBUCKET_APP_PASSWORD:-}" ]]; then
+        BB_AUTH="-u ${BITBUCKET_USER}:${BITBUCKET_APP_PASSWORD}"
+    else
+        echo "  Tip: Set BITBUCKET_USER and BITBUCKET_APP_PASSWORD for private repos"
+        echo ""
+    fi
+
+    # shellcheck disable=SC2086
+    API_RESPONSE=$(curl -s $BB_AUTH "$BB_URL" 2>/dev/null || true)
+
+    REPO_NAMES=()
+    REPO_DESCS=()
+    REPO_URLS=()
+
+    while IFS=$'\t' read -r name desc private; do
+        [[ -z "$name" ]] && continue
+        REPO_NAMES+=("$name")
+        if [[ ${#desc} -gt 50 ]]; then
+            desc="${desc:0:47}..."
+        fi
+        visibility="public"
+        [[ "$private" == "true" ]] && visibility="private"
+        REPO_DESCS+=("${desc:-(no description)} [$visibility]")
+        REPO_URLS+=("git@${CLONE_HOST}:${ORG_NAME}/${name}.git")
+    done < <(echo "$API_RESPONSE" | jq -r '.values[] | "\(.slug)\t\(.description // "")\t\(.is_private)"' 2>/dev/null || true)
+
+# ── Codeberg ──────────────────────────────────
+elif [[ "$SERVICE" == "codeberg" ]]; then
+    if [[ -z "$ORG_NAME" ]]; then
+        read -p "  Organization/user name: " ORG_NAME
+    fi
+
+    if [[ -z "$ORG_NAME" ]]; then
+        print_error "No org/user specified"
+        exit 1
+    fi
+
+    print_step "Fetching repos from $ORG_NAME..."
+    echo ""
+
+    # Codeberg uses Gitea API
+    CB_URL="https://codeberg.org/api/v1/orgs/${ORG_NAME}/repos?limit=50"
+    API_RESPONSE=$(curl -s "$CB_URL" 2>/dev/null || true)
+
+    # If org endpoint fails, try user endpoint
+    if ! echo "$API_RESPONSE" | jq -e '.[0].name' &>/dev/null; then
+        CB_URL="https://codeberg.org/api/v1/users/${ORG_NAME}/repos?limit=50"
+        API_RESPONSE=$(curl -s "$CB_URL" 2>/dev/null || true)
+    fi
+
+    REPO_NAMES=()
+    REPO_DESCS=()
+    REPO_URLS=()
+
+    while IFS=$'\t' read -r name desc private; do
+        [[ -z "$name" ]] && continue
+        REPO_NAMES+=("$name")
+        if [[ ${#desc} -gt 50 ]]; then
+            desc="${desc:0:47}..."
+        fi
+        visibility="public"
+        [[ "$private" == "true" ]] && visibility="private"
+        REPO_DESCS+=("${desc:-(no description)} [$visibility]")
+        REPO_URLS+=("git@${CLONE_HOST}:${ORG_NAME}/${name}.git")
+    done < <(echo "$API_RESPONSE" | jq -r '.[] | "\(.name)\t\(.description // "")\t\(.private)"' 2>/dev/null || true)
 fi
 
 # ── Display Repos ──────────────────────────────

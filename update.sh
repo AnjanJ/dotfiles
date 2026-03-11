@@ -131,10 +131,25 @@ print_success "Brewfile snapshot taken"
 
 # Show what changed
 if [[ -f "$DOTFILES_DIR/Brewfile.backup" ]]; then
-    BREW_ADDED=$(diff "$DOTFILES_DIR/Brewfile.backup" "$DOTFILES_DIR/Brewfile" 2>/dev/null | grep -c "^>" || true)
-    BREW_REMOVED=$(diff "$DOTFILES_DIR/Brewfile.backup" "$DOTFILES_DIR/Brewfile" 2>/dev/null | grep -c "^<" || true)
-    if [[ "$BREW_ADDED" -gt 0 || "$BREW_REMOVED" -gt 0 ]]; then
-        echo -e "  ${YELLOW}+${BREW_ADDED} added, -${BREW_REMOVED} removed since last snapshot${NC}"
+    BREW_ADDED_LINES=$(diff "$DOTFILES_DIR/Brewfile.backup" "$DOTFILES_DIR/Brewfile" 2>/dev/null | grep "^> " | sed 's/^> //' || true)
+    BREW_REMOVED_LINES=$(diff "$DOTFILES_DIR/Brewfile.backup" "$DOTFILES_DIR/Brewfile" 2>/dev/null | grep "^< " | sed 's/^< //' || true)
+    BREW_ADDED_COUNT=$(echo "$BREW_ADDED_LINES" | grep -c . || true)
+    BREW_REMOVED_COUNT=$(echo "$BREW_REMOVED_LINES" | grep -c . || true)
+
+    if [[ "$BREW_ADDED_COUNT" -gt 0 || "$BREW_REMOVED_COUNT" -gt 0 ]]; then
+        echo -e "  ${YELLOW}+${BREW_ADDED_COUNT} added, -${BREW_REMOVED_COUNT} removed since last snapshot${NC}"
+        if [[ -n "$BREW_ADDED_LINES" ]]; then
+            while IFS= read -r line; do
+                [[ -z "$line" ]] && continue
+                echo -e "    ${GREEN}+ $line${NC}"
+            done <<< "$BREW_ADDED_LINES"
+        fi
+        if [[ -n "$BREW_REMOVED_LINES" ]]; then
+            while IFS= read -r line; do
+                [[ -z "$line" ]] && continue
+                echo -e "    ${RED}- $line${NC}"
+            done <<< "$BREW_REMOVED_LINES"
+        fi
     else
         echo -e "  ${GREEN}No changes since last snapshot${NC}"
     fi
