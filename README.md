@@ -1,6 +1,6 @@
 # 🚀 AJ's Dotfiles
 
-> A complete macOS development environment for Ruby on Rails and Elixir/Phoenix development, with your choice of Tokyo Night, Aura Dark, or Catppuccin Mocha theme applied everywhere.
+> A complete macOS development environment — Ruby/Rails, Elixir/Phoenix, Node/React, Python, Go, Rust, Zig — with your choice of Tokyo Night, Aura Dark, or Catppuccin Mocha theme applied everywhere.
 
 ## 💭 Philosophy
 
@@ -37,7 +37,7 @@ Like DHH's **[Omakub](https://omakub.org/)** for Ubuntu, this setup provides:
 
 ### 🎨 Theme System (Tokyo Night, Aura Dark, or Catppuccin Mocha)
 
-Choose your theme during install — it's applied across **7 apps** automatically:
+Choose your theme during install — it's applied across **12 apps**:
 
 | Auto-configured | Manual (links provided) |
 |----------------|------------------------|
@@ -341,7 +341,7 @@ Each file has a single responsibility. Want to change your Rails workflow? Edit 
 
 ## 🎨 Theming
 
-Choose between **Tokyo Night** (dark blue), **Aura Dark** (deep purple), or **Catppuccin Mocha** (warm pastels) during install. The theme is applied across 7 apps automatically.
+Choose between **Tokyo Night** (dark blue), **Aura Dark** (deep purple), or **Catppuccin Mocha** (warm pastels) during install. The theme is applied across 12 apps (7 auto-configured + 5 with manual instructions).
 
 | | Tokyo Night | Aura Dark | Catppuccin Mocha |
 |---|-----------|-----------|-----------------|

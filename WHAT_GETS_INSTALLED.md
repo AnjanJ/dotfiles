@@ -325,7 +325,7 @@ Creates symbolic links from the repo to your home directory. This is the core de
 
 ## Step 6b: Apply Theme
 
-You chose **Tokyo Night**, **Aura Dark**, or **Catppuccin Mocha** at the start of install. This step applies your choice across 7 apps automatically:
+You chose **Tokyo Night**, **Aura Dark**, or **Catppuccin Mocha** at the start of install. This step applies your choice across 7 apps automatically (plus 5 more with manual instructions):
 
 | App | What changes |
 |-----|-------------|
