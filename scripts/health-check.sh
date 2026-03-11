@@ -248,6 +248,7 @@ check_command bat "bat"
 check_command eza "eza"
 check_command tree "tree"
 check_command lazygit "lazygit"
+check_command direnv "direnv"
 check_command gh "GitHub CLI" false
 
 # ============================================
