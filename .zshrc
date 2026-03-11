@@ -54,13 +54,15 @@ export BROWSER="open"                # Browser command (macOS)
 
 # === VERSIONS ===
 # Note: Ruby, Node, Elixir, etc. managed by mise (~/.config/mise/config.toml)
-export PG_VERSION="14"               # PostgreSQL version (14.20 installed, 17 available)
-export RUBY_VERSION="3.4.5"          # Ruby (mise global - matches actual)
-export NODE_VERSION="24.7.0"         # Node (mise uses "latest" = 24.7.0)
-export RAILS_VERSION="8.0.4"         # Rails (latest stable)
+# These exports are for scripts/tools that need a version reference.
+# Actual runtime versions are controlled by mise (all set to "latest").
+export PG_VERSION="14"               # PostgreSQL version
+export RUBY_VERSION="latest"         # Ruby (mise manages)
+export NODE_VERSION="latest"         # Node (mise manages)
+export RAILS_VERSION="8.0.4"         # Rails (latest stable, gem-managed)
 export ELIXIR_VERSION="latest"       # Elixir (mise manages)
 export GO_VERSION="latest"           # Go (mise manages)
-export PYTHON_VERSION="3"            # Python (mise manages)
+export PYTHON_VERSION="latest"       # Python (mise manages)
 
 # === DATABASE ===
 export DEFAULT_DB="postgresql"       # Default database for new Rails apps

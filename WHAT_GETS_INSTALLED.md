@@ -10,15 +10,15 @@ Installs [Homebrew](https://brew.sh/) (macOS package manager) if not already pre
 
 ---
 
-## Step 2: Brewfile (322 packages)
+## Step 2: Brewfile (~325 packages)
 
-Runs `brew bundle install` which installs everything declared in the `Brewfile`. This includes Homebrew packages, cask apps, VS Code extensions, and Mac App Store apps (via `mas`):
+Runs `brew bundle install` which installs everything declared in the `Brewfile`. This includes Homebrew formulas, cask apps, VS Code extensions, Mac App Store apps (via `mas`), and Go tools:
 
 ### Taps (10 third-party repos)
 
 Aerospace, Cloudflare, Sketchybar/Borders, Heroku, LazySql, Render, steipete's CLI tools, Supabase, Obsidian CLI
 
-### Brew Packages (72 CLI tools)
+### Brew Packages (75 CLI tools & libraries)
 
 **Shell & Prompt**
 - `starship` — Rust-based prompt (16x faster than Spaceship)
@@ -52,8 +52,9 @@ Aerospace, Cloudflare, Sketchybar/Borders, Heroku, LazySql, Render, steipete's C
 - `tree` — Directory tree viewer
 - `yazi` — Terminal file manager
 
-**Version Manager**
+**Environment & Version Management**
 - `mise` — Polyglot runtime manager (manages Ruby, Node, Elixir, Python, Go, Rust)
+- `direnv` — Per-project environment variables (auto-loads `.envrc` files)
 
 **Languages**
 - `zig` — Systems programming language (installed via Homebrew, not mise)
@@ -117,13 +118,13 @@ Aerospace, Cloudflare, Sketchybar/Borders, Heroku, LazySql, Render, steipete's C
 **Libraries** (dependencies for other tools)
 - `glib`, `pango`, `librsvg`, `libyaml`, `libxmlsec1`, `libidn`, `libre`, `openssl@1.1`, `shared-mime-info`, `criterion`, `poppler`
 
-### Cask Apps (41 GUI apps + 73 fonts)
+### Cask Apps (29 GUI apps + 77 fonts)
 
 **Browsers**
 - Google Chrome, Firefox, Zen
 
 **Terminals**
-- Ghostty (GPU-accelerated, default), WezTerm, Warp
+- Ghostty (GPU-accelerated, default), WezTerm
 
 **Code Editors**
 - Zed, Visual Studio Code
@@ -161,7 +162,7 @@ Aerospace, Cloudflare, Sketchybar/Borders, Heroku, LazySql, Render, steipete's C
 **Other**
 - Android Platform Tools
 
-### Mac App Store Apps (18 via `mas`)
+### Mac App Store Apps (24 via `mas`)
 
 Installed automatically via `brew bundle` using the [mas](https://github.com/mas-cli/mas) CLI. Requires being signed into the App Store.
 
@@ -172,18 +173,26 @@ Installed automatically via `brew bundle` using the [mas](https://github.com/mas
 - Menu Bar Calendar
 - Numbers
 - Bandwidth+
+- Windows App (Remote Desktop)
 
 **Browsers & Privacy**
 - DuckDuckGo
 - Noir (Dark Mode for Safari)
 - Perplexity
+- 1Password for Safari
 
 **Communication**
 - WhatsApp
 
 **Security & Networking**
 - 2FAS (two-factor authentication)
+- Dashlane (password manager)
+- Okta Verify (SSO authentication)
 - Tailscale (mesh VPN)
+
+**Developer**
+- Xcode
+- Developer (Apple developer tools)
 
 **Media & Creative**
 - Gifski (GIF converter)
@@ -199,7 +208,7 @@ Installed automatically via `brew bundle` using the [mas](https://github.com/mas
 **File Sharing**
 - LocalSend (AirDrop alternative, cross-platform)
 
-**Fonts (73 Nerd Fonts)**
+**Fonts (77 Nerd Fonts)**
 
 Every major monospace font with Nerd Font glyphs patched in: Fira Code, JetBrains Mono, Hack, Iosevka, Cascadia Code, IBM Plex Mono, Inconsolata, Meslo, Victor Mono, and 60+ more.
 
@@ -219,11 +228,8 @@ Extensions across these categories:
 - **Productivity:** Bookmarks, Project Manager, Todo Tree, Better Comments, Error Lens
 - **Other:** Docker, YAML, TOML, Markdown, i18n, Import Cost, Code Metrics
 
-### Go Packages (3)
-- `blogwatcher`, `eightctl`, `things3-cli`
-
-### UV Packages (2)
-- `nano-pdf`, `specify-cli`
+### Go Tools (2)
+- `cmd/go`, `cmd/gofmt` (Go standard toolchain)
 
 ---
 
@@ -243,27 +249,7 @@ Creates these directories if they don't exist:
 
 ---
 
-## Step 4: Backup Existing Configs
-
-Before touching anything, copies your current configs to a timestamped directory:
-
-```
-~/.dotfiles_backup_20260308_143022/
-├── .zshrc
-├── .tmux.conf
-├── nvim/
-├── aerospace/
-├── ghostty/
-├── zellij/
-├── zed/
-└── starship.toml
-```
-
-Only backs up files/directories that actually exist. Your originals are always safe.
-
----
-
-## Step 5: mise (Version Manager)
+## Step 4: mise (Version Manager)
 
 Symlinks the mise config, trusts it, then runs `mise install` which downloads and installs:
 
@@ -273,7 +259,7 @@ Symlinks the mise config, trusts it, then runs `mise install` which downloads an
 | **Elixir** | latest | |
 | **Erlang** | latest | Required by Elixir |
 | **Node.js** | latest | |
-| **Python** | 3 | Latest Python 3.x |
+| **Python** | latest | |
 | **Go** | latest | |
 | **Rust** | latest | |
 
@@ -283,7 +269,7 @@ This replaces the need for rbenv, nvm, pyenv, or asdf. One tool manages all lang
 
 ---
 
-## Step 6: Symlinks (17+ links)
+## Step 5: Symlinks (17+ links)
 
 Creates symbolic links from the repo to your home directory. This is the core design — all configs live in git, symlinks point to them.
 
@@ -294,7 +280,9 @@ Creates symbolic links from the repo to your home directory. This is the core de
 | `.zshrc-dhh-additions` | `~/.zshrc-dhh-additions` |
 | `.zshrc-elixir-additions` | `~/.zshrc-elixir-additions` |
 | `.zshrc-terminal-enhancements` | `~/.zshrc-terminal-enhancements` |
+| `.zshrc-work-completions` | `~/.zshrc-work-completions` |
 | `.tmux.conf` | `~/.tmux.conf` |
+| `.gitignore_global` | `~/.gitignore_global` |
 
 ### App Configs (entire directories)
 | Source (in repo) | Links to |
@@ -304,6 +292,7 @@ Creates symbolic links from the repo to your home directory. This is the core de
 | `.config/nvim/` | `~/.config/nvim` |
 | `.config/zellij/` | `~/.config/zellij` |
 | `.config/starship.toml` | `~/.config/starship.toml` |
+| `.config/mise/config.toml` | `~/.config/mise/config.toml` |
 
 ### Zed Editor (individual files)
 | Source (in repo) | Links to |
@@ -323,7 +312,7 @@ Creates symbolic links from the repo to your home directory. This is the core de
 
 ---
 
-## Step 6b: Apply Theme
+## Step 5b: Apply Theme
 
 You chose **Tokyo Night**, **Aura Dark**, or **Catppuccin Mocha** at the start of install. This step applies your choice across 7 apps automatically (plus 5 more with manual instructions):
 
@@ -345,7 +334,7 @@ Switch anytime later with: `dotfiles theme`
 
 ---
 
-## Step 7: TPM (Tmux Plugin Manager)
+## Step 6: TPM (Tmux Plugin Manager)
 
 Clones [TPM](https://github.com/tmux-plugins/tpm) to `~/.tmux/plugins/tpm`.
 
@@ -353,7 +342,7 @@ Plugins are **not** installed yet — you do that manually after install by open
 
 ---
 
-## Step 8: Neovim
+## Step 7: Neovim
 
 Config was already symlinked in Step 6. This step just confirms it.
 
@@ -361,13 +350,13 @@ On first `nvim` launch, [lazy.nvim](https://github.com/folke/lazy.nvim) automati
 
 ---
 
-## Step 9: Default Shell
+## Step 8: Default Shell
 
 Sets zsh as your default shell via `chsh -s $(which zsh)`. Skipped if zsh is already the default (which it is on modern macOS).
 
 ---
 
-## Step 9b: Git Configuration
+## Step 8b: Git Configuration
 
 Configures sensible Git defaults globally:
 
@@ -405,7 +394,7 @@ cd ~/work/company-project && git config user.email       # → work email
 
 ---
 
-## Step 9c: SSH Configuration
+## Step 8c: SSH Configuration
 
 Backs up your existing `~/.ssh/` directory, then offers five options:
 
@@ -479,7 +468,7 @@ Five commands in `~/bin/` for managing work identities. These are standalone scr
 
 ---
 
-## Step 10: macOS Defaults (Optional)
+## Step 9: macOS Defaults (Optional)
 
 **Asks for confirmation before applying.** These are system preference changes:
 
@@ -500,9 +489,9 @@ Some settings require logout/restart to take effect.
 
 ---
 
-## Step 11: Health Check (Optional)
+## Step 10: Health Check
 
-**Asks for confirmation before running.** Runs `scripts/health-check.sh` which validates 11 categories:
+Runs `scripts/health-check.sh` which validates 12 categories:
 
 1. **Core tools** — Homebrew, git, zsh, mise, starship
 2. **Terminals & multiplexers** — tmux, Zellij, Ghostty, TPM
@@ -515,6 +504,7 @@ Some settings require logout/restart to take effect.
 9. **Framework tools** — Bundler, Rails, Mix, Phoenix
 10. **Custom scripts** — `~/bin/erb-lint-formatter`
 11. **Shell integration** — mise activation, starship, default shell
+12. **Work identity** — work email, directory, SSH hosts (optional)
 
 Color-coded output with pass/fail/warning counts at the end.
 
@@ -537,8 +527,7 @@ The script prints these manual steps:
 
 - No cloud service credentials or tokens
 - No private/work configs (`.zshrc-work` is optional and not in the repo)
-- No browser extensions
-- No App Store apps
+- No browser extensions (except Safari extensions via the App Store)
 
 ---
 

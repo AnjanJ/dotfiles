@@ -164,7 +164,8 @@ Installed Tools:
 │   ├── Node.js
 │   ├── Python
 │   ├── Zig
-│   └── Go
+│   ├── Go
+│   └── Rust
 ├── Databases
 │   ├── PostgreSQL 14
 │   ├── MySQL
@@ -179,7 +180,9 @@ Installed Tools:
 │   ├── dotfiles backup (snapshot/restore)
 │   ├── dotfiles profile (shell startup timing)
 │   ├── dotfiles export (portable setup snapshot)
-│   └── dotfiles install (run installer)
+│   ├── dotfiles install (run installer)
+│   ├── dotfiles uninstall (remove symlinks)
+│   └── dotfiles edit / dir (open editor / print path)
 ├── Work Management
 │   ├── work-setup (configure work identity)
 │   ├── work-nuke (remove work config)
