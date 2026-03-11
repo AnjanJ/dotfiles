@@ -118,13 +118,13 @@ Aerospace, Cloudflare, Sketchybar/Borders, Heroku, LazySql, Render, steipete's C
 **Libraries** (dependencies for other tools)
 - `glib`, `pango`, `librsvg`, `libyaml`, `libxmlsec1`, `libidn`, `libre`, `openssl@1.1`, `shared-mime-info`, `criterion`, `poppler`
 
-### Cask Apps (29 GUI apps + 77 fonts)
+### Cask Apps (30 GUI apps + 77 fonts)
 
 **Browsers**
 - Google Chrome, Firefox, Zen
 
 **Terminals**
-- Ghostty (GPU-accelerated, default), WezTerm
+- Ghostty (GPU-accelerated, default), WezTerm, Warp
 
 **Code Editors**
 - Zed, Visual Studio Code
