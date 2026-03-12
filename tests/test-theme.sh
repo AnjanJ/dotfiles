@@ -335,8 +335,9 @@ original_ghostty=$(cat "$MOCK_DOTFILES/.config/ghostty/config")
 original_starship=$(cat "$MOCK_DOTFILES/.config/starship.toml")
 original_tmux=$(cat "$MOCK_DOTFILES/.tmux.conf")
 original_zellij=$(cat "$MOCK_DOTFILES/.config/zellij/config.kdl")
-# Make nvim plugins directory read-only so section 2 (Neovim) fails
-# sed -i cannot create temp file in a read-only directory
+# Make nvim plugins directory and files read-only so section 2 (Neovim) fails
+# sed -i cannot write to read-only files or create temp files in read-only dirs
+chmod 444 "$MOCK_DOTFILES/.config/nvim/lua/plugins/"*.lua 2>/dev/null || true
 chmod 555 "$MOCK_DOTFILES/.config/nvim/lua/plugins"
 
 set +e; apply_theme "tokyo-night" "true" >/dev/null 2>&1; rc=$?; set -e
@@ -349,6 +350,7 @@ fi
 
 # Restore write permission for cleanup
 chmod 755 "$MOCK_DOTFILES/.config/nvim/lua/plugins"
+chmod 644 "$MOCK_DOTFILES/.config/nvim/lua/plugins/"*.lua 2>/dev/null || true
 
 # Verify all configs were rolled back to their original state
 assert_eq "$(cat "$MOCK_DOTFILES/.config/ghostty/config")" "$original_ghostty" \
