@@ -335,22 +335,16 @@ original_ghostty=$(cat "$MOCK_DOTFILES/.config/ghostty/config")
 original_starship=$(cat "$MOCK_DOTFILES/.config/starship.toml")
 original_tmux=$(cat "$MOCK_DOTFILES/.tmux.conf")
 original_zellij=$(cat "$MOCK_DOTFILES/.config/zellij/config.kdl")
-# Make nvim plugins directory and files read-only so section 2 (Neovim) fails
-# sed -i cannot write to read-only files or create temp files in read-only dirs
-chmod 444 "$MOCK_DOTFILES/.config/nvim/lua/plugins/"*.lua 2>/dev/null || true
-chmod 555 "$MOCK_DOTFILES/.config/nvim/lua/plugins"
+# Remove astroui.lua so sed -i fails on nonexistent file in section 2 (Neovim)
+rm -f "$MOCK_DOTFILES/.config/nvim/lua/plugins/astroui.lua"
 
 set +e; apply_theme "tokyo-night" "true" >/dev/null 2>&1; rc=$?; set -e
 
 if [[ $rc -ne 0 ]]; then
-    pass "Apply returns non-zero when section fails"
+    pass "Apply returns non-zero when required config is missing"
 else
-    fail "Apply should return non-zero when nvim plugins dir is read-only"
+    fail "Apply should return non-zero when astroui.lua is missing"
 fi
-
-# Restore write permission for cleanup
-chmod 755 "$MOCK_DOTFILES/.config/nvim/lua/plugins"
-chmod 644 "$MOCK_DOTFILES/.config/nvim/lua/plugins/"*.lua 2>/dev/null || true
 
 # Verify all configs were rolled back to their original state
 assert_eq "$(cat "$MOCK_DOTFILES/.config/ghostty/config")" "$original_ghostty" \
