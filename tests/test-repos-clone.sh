@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2034,SC2001
 
 # ============================================
 # REPOS-CLONE TEST SUITE

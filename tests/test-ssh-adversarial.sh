@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2155,SC2295,SC2034
 
 # ============================================
 # SSH ADVERSARIAL TEST SUITE

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2155,SC2015,SC2295,SC2016,SC2129
 
 # ============================================
 # IDEMPOTENCY TEST SUITE

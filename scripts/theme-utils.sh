@@ -25,7 +25,7 @@ _discover_themes() {
         [[ -f "$conf" ]] || continue
         themes+=("$(basename "$(dirname "$conf")")")
     done
-    echo "${themes[@]}"
+    echo "${themes[@]+"${themes[@]}"}"
 }
 
 # shellcheck disable=SC2207
@@ -49,7 +49,8 @@ set_current_theme() {
 # Check if a theme name is valid
 validate_theme() {
     local theme="$1"
-    for valid in "${VALID_THEMES[@]}"; do
+    local valid
+    for valid in ${VALID_THEMES[@]+"${VALID_THEMES[@]}"}; do
         if [[ "$valid" == "$theme" ]]; then
             return 0
         fi
@@ -58,11 +59,14 @@ validate_theme() {
 }
 
 # Theme descriptions for interactive picker
-declare -A _THEME_DESCRIPTIONS=(
-    ["tokyo-night"]="Tokyo Night  — Dark blue aesthetic by folke\n     Subtle, calm colors. Blue and purple accents."
-    ["aura"]="Aura Dark    — Deep purple aesthetic by daltonmenezes\n     Vibrant, bold colors. Purple and green accents."
-    ["catppuccin"]="Catppuccin   — Warm pastel aesthetic by catppuccin\n     Soothing pastels. Lavender and teal accents."
-)
+_get_theme_description() {
+    case "$1" in
+        tokyo-night) printf "Tokyo Night  — Dark blue aesthetic by folke\n     Subtle, calm colors. Blue and purple accents." ;;
+        aura)        printf "Aura Dark    — Deep purple aesthetic by daltonmenezes\n     Vibrant, bold colors. Purple and green accents." ;;
+        catppuccin)  printf "Catppuccin   — Warm pastel aesthetic by catppuccin\n     Soothing pastels. Lavender and teal accents." ;;
+        *)           printf "%s" "$1" ;;
+    esac
+}
 
 # Interactive theme picker
 prompt_theme_choice() {
@@ -72,9 +76,10 @@ prompt_theme_choice() {
 
     local i=1
     local theme_order=()
-    for theme in "${VALID_THEMES[@]}"; do
+    for theme in ${VALID_THEMES[@]+"${VALID_THEMES[@]}"}; do
         theme_order+=("$theme")
-        local desc="${_THEME_DESCRIPTIONS[$theme]:-$theme}"
+        local desc
+        desc=$(_get_theme_description "$theme")
         echo -e "  $i) $desc"
         echo ""
         i=$((i + 1))

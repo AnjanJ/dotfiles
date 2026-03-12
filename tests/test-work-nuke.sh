@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2155,SC2295,SC2012
 
 # ============================================
 # WORK-NUKE TEST SUITE
