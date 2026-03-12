@@ -91,6 +91,7 @@ Aerospace, Cloudflare, Sketchybar/Borders, Heroku, LazySql, Render, steipete's C
 **Networking**
 - `wget` — File downloader
 - `putty` — SSH/Telnet client
+- `httpie` — Ergonomic HTTP client (intuitive `http GET/POST` syntax)
 
 **Log Viewers**
 - `lnav` — Log file navigator

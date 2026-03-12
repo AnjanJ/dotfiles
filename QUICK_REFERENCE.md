@@ -136,6 +136,18 @@ Your shell replaces standard commands with modern alternatives:
 
 **Original commands**: `cdd`, `lss`, `catt`, `grepp`, `findd`
 
+### Development Services & Logging
+
+| Command | What it does |
+|---------|-------------|
+| `devstart` | Start Redis, PostgreSQL, Mailcatcher |
+| `devstop` | Stop all development services |
+| `sq` | Sidekiq queue status (default, mailers, scheduled, retries, dead) |
+| `logtail` | `tail -f` on Rails development log |
+| `logclear` | Truncate all log files |
+| `logview` | Open Rails log in lnav (SQL-queryable log viewer) |
+| `logspin` | Tail Rails log with tailspin (auto-highlights dates, UUIDs, IPs, JSON) |
+
 ### Git Smart Defaults
 
 These are configured automatically by `install.sh`:
@@ -147,6 +159,8 @@ These are configured automatically by `install.sh`:
 | `diff.algorithm histogram` | Better diffs for moved code blocks |
 | `branch.sort -committerdate` | `git branch` shows most recent first |
 | `commit.verbose` | See the full diff while writing commit messages |
+| `merge.tool nvimdiff` | Use Neovim for 3-way merge conflict resolution |
+| `merge.conflictstyle diff3` | Show base, ours, and theirs in merge conflicts |
 
 ### SSH Setup
 
@@ -236,6 +250,13 @@ nvim
 tmux
 Prefix + U  # Update
 ```
+
+## 🔧 Environment
+
+| Setting | What it does |
+|---------|-------------|
+| `RUBY_YJIT_ENABLE=1` | Enables YJIT JIT compiler for Ruby 3.1+ (significant performance boost) |
+| `~/.zshrc.local` | Machine-specific overrides — sourced last, never committed to git |
 
 ## 🔧 Troubleshooting
 

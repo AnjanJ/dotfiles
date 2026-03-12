@@ -74,6 +74,7 @@ export PROJECTS_DIR="$HOME/code"     # Personal projects directory
 
 # === OTHER ===
 export ERL_AFLAGS="-kernel shell_history enabled"  # Elixir history
+export RUBY_YJIT_ENABLE=1               # Enable YJIT JIT compiler (Ruby 3.1+)
 
 # ============================================
 # 3. TOOL INITIALIZATION
@@ -185,6 +186,11 @@ fi
 if [ -f ~/.zshrc-work-completions ]; then
   autoload -Uz compinit && compinit -C
   source ~/.zshrc-work-completions
+fi
+
+# Machine-specific overrides (not tracked in git)
+if [ -f ~/.zshrc.local ]; then
+  source ~/.zshrc.local
 fi
 
 # ============================================

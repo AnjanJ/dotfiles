@@ -234,12 +234,36 @@ devstop() {
   echo "✅ Services stopped"
 }
 
+# Sidekiq queue status (quick check without opening web UI)
+sq() {
+  if ! command -v redis-cli &> /dev/null; then
+    echo "redis-cli not found"
+    return 1
+  fi
+  if ! redis-cli ping &> /dev/null 2>&1; then
+    echo "Redis not running"
+    return 1
+  fi
+  echo "=== Sidekiq Status ==="
+  redis-cli LLEN queue:default 2>/dev/null | xargs echo "  Default queue:"
+  redis-cli LLEN queue:mailers 2>/dev/null | xargs echo "  Mailers queue:"
+  redis-cli ZCARD schedule 2>/dev/null | xargs echo "  Scheduled:"
+  redis-cli ZCARD retry 2>/dev/null | xargs echo "  Retries:"
+  redis-cli ZCARD dead 2>/dev/null | xargs echo "  Dead:"
+}
+
 # ============================================
 # 7. LOGGING
 # ============================================
 
 alias logtail='tail -f log/development.log'
 alias logclear='truncate -s 0 log/*.log'
+
+# Smart log analysis (lnav — SQL-queryable log viewer)
+alias logview='lnav log/development.log'
+
+# Highlighted log tailing (tailspin — auto-highlights dates, UUIDs, IPs, JSON)
+alias logspin='tailspin -f log/development.log'
 
 # ============================================
 # 8. CODE QUALITY

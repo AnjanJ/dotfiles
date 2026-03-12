@@ -28,8 +28,10 @@ setup_git() {
     git config --global push.autoSetupRemote true
     git config --global branch.sort -committerdate
     git config --global commit.verbose true
+    git config --global merge.tool nvimdiff
+    git config --global merge.conflictstyle diff3
 
-    print_success "Git defaults configured (editor, pull, diff, rerere, push, branch sort)"
+    print_success "Git defaults configured (editor, pull, diff, rerere, push, branch sort, merge tool)"
 
     # ── Backup Existing Configs ───────────────────
     echo ""

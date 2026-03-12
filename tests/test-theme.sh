@@ -335,18 +335,33 @@ original_ghostty=$(cat "$MOCK_DOTFILES/.config/ghostty/config")
 original_starship=$(cat "$MOCK_DOTFILES/.config/starship.toml")
 original_tmux=$(cat "$MOCK_DOTFILES/.tmux.conf")
 original_zellij=$(cat "$MOCK_DOTFILES/.config/zellij/config.kdl")
-# Remove astroui.lua so sed -i fails on nonexistent file in section 2 (Neovim)
-rm -f "$MOCK_DOTFILES/.config/nvim/lua/plugins/astroui.lua"
+
+# Override sed so that section 3 (Zellij) fails AFTER sections 1-2 have
+# already modified Ghostty and Neovim configs.  This triggers the ERR trap
+# and exercises the real rollback path.
+eval 'original_sed=$(which sed)'
+sed() {
+    if [[ "$*" == *"config.kdl"* ]]; then
+        return 1
+    fi
+    command sed "$@"
+}
+export -f sed
 
 set +e; apply_theme "tokyo-night" "true" >/dev/null 2>&1; rc=$?; set -e
 
+# Restore real sed
+unset -f sed
+
 if [[ $rc -ne 0 ]]; then
-    pass "Apply returns non-zero when required config is missing"
+    pass "Apply returns non-zero when mid-apply failure occurs"
 else
-    fail "Apply should return non-zero when astroui.lua is missing"
+    fail "Apply should return non-zero when section 3 (Zellij) fails"
 fi
 
-# Verify all configs were rolled back to their original state
+# Verify all configs were rolled back to their original state.
+# Ghostty and Neovim were modified by sections 1-2 before the failure,
+# so these assertions confirm real rollback — not just no-ops.
 assert_eq "$(cat "$MOCK_DOTFILES/.config/ghostty/config")" "$original_ghostty" \
     "Ghostty config rolled back after failure"
 assert_eq "$(cat "$MOCK_DOTFILES/.config/starship.toml")" "$original_starship" \
