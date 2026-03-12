@@ -40,15 +40,15 @@ print_step "Step 1: Work email"
 EXISTING_EMAIL=$(get_work_email)
 if [[ -n "$EXISTING_EMAIL" ]]; then
     echo "  Current work email: $EXISTING_EMAIL"
-    read -p "  Change it? (y/n) " -n 1 -r
+    read -r -p "  Change it? (y/n) " -n 1
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
-        read -p "  New work email: " WORK_EMAIL
+        read -r -p "  New work email: " WORK_EMAIL
     else
         WORK_EMAIL="$EXISTING_EMAIL"
     fi
 else
-    read -p "  Work email: " WORK_EMAIL
+    read -r -p "  Work email: " WORK_EMAIL
 fi
 
 if [[ -z "$WORK_EMAIL" ]]; then
@@ -68,7 +68,7 @@ print_step "Step 2: Work directory"
 EXISTING_DIR=$(get_work_dir)
 DEFAULT_DIR="${EXISTING_DIR:-$HOME/work}"
 
-read -p "  Work directory [$DEFAULT_DIR]: " WORK_DIR_INPUT
+read -r -p "  Work directory [$DEFAULT_DIR]: " WORK_DIR_INPUT
 WORK_DIR="${WORK_DIR_INPUT:-$DEFAULT_DIR}"
 WORK_DIR="${WORK_DIR/#\~/$HOME}"
 
@@ -97,7 +97,7 @@ print_success "Applied to repos in: $WORK_DIR/"
 # ── 4. SSH Key (Optional) ─────────────────────
 echo ""
 print_step "Step 4: SSH key for work"
-read -p "  Set up an SSH key for work? (y/n) " -n 1 -r
+read -r -p "  Set up an SSH key for work? (y/n) " -n 1
 echo
 
 if [[ $REPLY =~ ^[Yy]$ ]]; then
@@ -107,7 +107,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo "    2) Generate a new Ed25519 key"
     echo "    3) Skip"
     echo ""
-    read -p "  Choose (1-3): " SSH_KEY_CHOICE
+    read -r -p "  Choose (1-3): " SSH_KEY_CHOICE
     echo
 
     WORK_KEYFILE=""
@@ -130,7 +130,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
             if [[ ${#keys[@]} -eq 0 ]]; then
                 print_warning "No keys found in ~/.ssh/"
             else
-                read -p "  Which key? (1-$((i-1))): " KEY_NUM
+                read -r -p "  Which key? (1-$((i-1))): " KEY_NUM
                 if [[ "$KEY_NUM" -ge 1 && "$KEY_NUM" -le ${#keys[@]} ]] 2>/dev/null; then
                     WORK_KEYFILE="${keys[$((KEY_NUM-1))]}"
                     print_success "Selected: $WORK_KEYFILE"
@@ -168,7 +168,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
         echo "    6) Self-hosted Git (custom host)"
         echo ""
         echo "  Enter numbers separated by spaces (e.g., 1 2), or 'none':"
-        read -p "  > " SELECTED_SERVICES
+        read -r -p "  > " SELECTED_SERVICES
 
         if [[ "$SELECTED_SERVICES" != "none" && -n "$SELECTED_SERVICES" ]]; then
             # Known services
@@ -211,17 +211,17 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
                 if [[ -n "${SVC_HOSTS[$num]:-}" ]]; then
                     hostname="${SVC_HOSTS[$num]}"
                 elif [[ "$num" == "5" || "$num" == "6" ]]; then
-                    read -p "  Hostname (e.g., gerrit.example.com): " hostname
+                    read -r -p "  Hostname (e.g., gerrit.example.com): " hostname
                     [[ -z "$hostname" ]] && continue
-                    read -p "  SSH user [git]: " user
+                    read -r -p "  SSH user [git]: " user
                     user="${user:-git}"
-                    read -p "  SSH port [22]: " port
+                    read -r -p "  SSH port [22]: " port
                     port="${port:-22}"
                 else
                     continue
                 fi
 
-                read -p "  Alias suffix for $hostname? (e.g., 'work' → ${hostname}-work, or Enter for none): " alias_suffix
+                read -r -p "  Alias suffix for $hostname? (e.g., 'work' → ${hostname}-work, or Enter for none): " alias_suffix
                 if [[ -n "$alias_suffix" ]]; then
                     alias_name="${hostname}-${alias_suffix}"
                 else
@@ -260,7 +260,7 @@ print_step "Step 5: Shell config"
 if [[ -f ~/.zshrc-work ]]; then
     print_success "~/.zshrc-work already exists (keeping your customizations)"
 else
-    read -p "  Create a work shell config (~/.zshrc-work)? (y/n) " -n 1 -r
+    read -r -p "  Create a work shell config (~/.zshrc-work)? (y/n) " -n 1
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         cat > ~/.zshrc-work <<'ZSHEOF'
@@ -294,7 +294,7 @@ fi
 # ── 6. Clone Repos (Optional) ─────────────────
 echo ""
 print_step "Step 6: Clone repos"
-read -p "  Clone work repos now? (y/n) " -n 1 -r
+read -r -p "  Clone work repos now? (y/n) " -n 1
 echo
 
 if [[ $REPLY =~ ^[Yy]$ ]]; then

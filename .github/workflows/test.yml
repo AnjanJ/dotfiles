@@ -92,3 +92,17 @@ jobs:
       - uses: actions/checkout@v4
       - name: Run work-status tests
         run: bash tests/test-work-status.sh
+
+  backup:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run backup tests
+        run: bash tests/test-backup.sh
+
+  sync:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run sync tests
+        run: bash tests/test-sync.sh

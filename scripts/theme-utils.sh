@@ -80,7 +80,7 @@ prompt_theme_choice() {
         i=$((i + 1))
     done
 
-    read -p "Enter choice [1]: " theme_choice
+    read -r -p "Enter choice [1]: " theme_choice
     local idx="${theme_choice:-1}"
 
     if [[ "$idx" =~ ^[0-9]+$ ]] && [[ "$idx" -ge 1 ]] && [[ "$idx" -le ${#theme_order[@]} ]]; then

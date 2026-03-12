@@ -2,5 +2,7 @@
 # Run dotfiles health check — can be run from anywhere
 # Usage: dotfiles-health
 
+set -euo pipefail
+
 DOTFILES_DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
 exec bash "$DOTFILES_DIR/scripts/health-check.sh" "$@"

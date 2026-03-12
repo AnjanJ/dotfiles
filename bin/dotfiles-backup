@@ -34,7 +34,7 @@ if [[ "${1:-}" == "--list" ]]; then
             name=$(basename "$backup")
             file_count=$(find "$backup" -type f | wc -l | tr -d ' ')
             echo "  $name  ($file_count files)"
-            ((local_count++))
+            local_count=$((local_count + 1))
         done
         if [[ $local_count -eq 0 ]]; then
             echo "  (none)"
@@ -63,6 +63,34 @@ if [[ "${1:-}" == "--restore" ]]; then
         exit 1
     fi
 
+    # Show what will be restored
+    echo ""
+    print_step "Backup '$2' contains:"
+    echo ""
+    RESTORE_COUNT=0
+    while IFS= read -r file; do
+        relative="${file#"$RESTORE_DIR"/}"
+        target="$DOTFILES_DIR/$relative"
+        if [[ -f "$target" ]]; then
+            echo "  overwrite: $relative"
+        else
+            echo "  create:    $relative"
+        fi
+        RESTORE_COUNT=$((RESTORE_COUNT + 1))
+    done < <(find "$RESTORE_DIR" -type f)
+    echo ""
+    echo "  $RESTORE_COUNT file(s) will be restored into $DOTFILES_DIR/"
+
+    # Confirm unless --yes flag
+    if [[ "${3:-}" != "--yes" ]]; then
+        echo ""
+        read -r -p "  Proceed with restore? (y/N) " confirm
+        if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
+            echo "  Cancelled."
+            exit 0
+        fi
+    fi
+
     echo ""
     print_step "Restoring backup: $2"
     echo ""
@@ -73,10 +101,16 @@ if [[ "${1:-}" == "--restore" ]]; then
         relative="${file#"$RESTORE_DIR"/}"
         target="$DOTFILES_DIR/$relative"
         target_dir=$(dirname "$target")
-        mkdir -p "$target_dir"
-        cp "$file" "$target"
+        if ! mkdir -p "$target_dir"; then
+            print_error "Failed to create directory: $target_dir"
+            continue
+        fi
+        if ! cp "$file" "$target"; then
+            print_error "Failed to restore: $relative"
+            continue
+        fi
         print_success "Restored: $relative"
-        ((RESTORED++))
+        RESTORED=$((RESTORED + 1))
     done < <(find "$RESTORE_DIR" -type f)
 
     echo ""
@@ -102,7 +136,7 @@ BACKED_UP=0
 for f in .zshrc .zshrc-dhh-additions .zshrc-elixir-additions .zshrc-terminal-enhancements .zshrc-work-completions .tmux.conf .gitignore_global; do
     if [[ -f "$DOTFILES_DIR/$f" ]]; then
         cp "$DOTFILES_DIR/$f" "$BACKUP_DIR/$f"
-        ((BACKED_UP++))
+        BACKED_UP=$((BACKED_UP + 1))
     fi
 done
 
@@ -111,7 +145,7 @@ for dir in aerospace ghostty mise nvim zed zellij lazygit borders sketchybar; do
     if [[ -d "$DOTFILES_DIR/.config/$dir" ]]; then
         mkdir -p "$BACKUP_DIR/.config/$dir"
         cp -R "$DOTFILES_DIR/.config/$dir/." "$BACKUP_DIR/.config/$dir/"
-        ((BACKED_UP++))
+        BACKED_UP=$((BACKED_UP + 1))
     fi
 done
 
@@ -119,19 +153,19 @@ done
 if [[ -f "$DOTFILES_DIR/.config/starship.toml" ]]; then
     mkdir -p "$BACKUP_DIR/.config"
     cp "$DOTFILES_DIR/.config/starship.toml" "$BACKUP_DIR/.config/starship.toml"
-    ((BACKED_UP++))
+    BACKED_UP=$((BACKED_UP + 1))
 fi
 
 # Brewfile
 if [[ -f "$DOTFILES_DIR/Brewfile" ]]; then
     cp "$DOTFILES_DIR/Brewfile" "$BACKUP_DIR/Brewfile"
-    ((BACKED_UP++))
+    BACKED_UP=$((BACKED_UP + 1))
 fi
 
 # Theme state
 if [[ -f "$HOME/.dotfiles-theme" ]]; then
     cp "$HOME/.dotfiles-theme" "$BACKUP_DIR/.dotfiles-theme"
-    ((BACKED_UP++))
+    BACKED_UP=$((BACKED_UP + 1))
 fi
 
 # Keep only the 5 most recent backups

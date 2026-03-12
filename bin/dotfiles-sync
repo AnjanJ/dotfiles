@@ -27,10 +27,7 @@ DRY_RUN=false
 [[ "${1:-}" == "--dry-run" ]] && DRY_RUN=true
 
 # Resolve dotfiles directory
-_SELF="${BASH_SOURCE[0]}"
-while [[ -L "$_SELF" ]]; do _SELF="$(readlink "$_SELF")"; done
-DOTFILES_DIR="$(cd "$(dirname "$_SELF")/.." && pwd)"
-unset _SELF
+DOTFILES_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
 
 source "$DOTFILES_DIR/scripts/_helpers.sh"
 

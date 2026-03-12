@@ -64,7 +64,7 @@ echo "╚═══════════════════════�
 echo ""
 
 if [[ "$INTERACTIVE" == true ]]; then
-    read -p "Continue with update? (y/n) " -n 1 -r
+    read -r -p "Continue with update? (y/n) " -n 1
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
         print_warning "Update cancelled"
@@ -158,7 +158,7 @@ fi
 
 # In interactive mode, also install anything in Brewfile missing from system
 if [[ "$INTERACTIVE" == true ]]; then
-    read -p "Install any missing Brewfile packages? This may require your password. (y/n) " -n 1 -r
+    read -r -p "Install any missing Brewfile packages? This may require your password. (y/n) " -n 1
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         brew bundle install --no-lock --file="$DOTFILES_DIR/Brewfile"

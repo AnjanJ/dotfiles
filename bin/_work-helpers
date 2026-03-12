@@ -9,10 +9,7 @@
 
 # Shared colors & print functions
 # Resolve symlinks (~/bin/_work-helpers → ~/dotfiles/bin/_work-helpers)
-_SELF="${BASH_SOURCE[0]}"
-while [[ -L "$_SELF" ]]; do _SELF="$(readlink "$_SELF")"; done
-DOTFILES_DIR="$(cd "$(dirname "$_SELF")/.." && pwd)"
-unset _SELF
+DOTFILES_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
 source "$DOTFILES_DIR/scripts/_helpers.sh"
 
 # ── Config Readers ─────────────────────────────
@@ -87,6 +84,6 @@ confirm_destructive() {
     local required_word="$2"
     echo ""
     echo -e "${RED}$prompt${NC}"
-    read -p "  Type '$required_word' to confirm: " CONFIRM_INPUT
+    read -r -p "  Type '$required_word' to confirm: " CONFIRM_INPUT
     [[ "$CONFIRM_INPUT" == "$required_word" ]]
 }

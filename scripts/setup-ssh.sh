@@ -70,7 +70,7 @@ _pick_key() {
     done
     echo "    $i) None / Skip"
 
-    read -p "  Which key for $purpose? (1-$i): " KEY_NUM
+    read -r -p "  Which key for $purpose? (1-$i): " KEY_NUM
     if [[ "$KEY_NUM" -ge 1 && "$KEY_NUM" -lt "$i" ]] 2>/dev/null; then
         echo "${keys[$((KEY_NUM-1))]}"
     else
@@ -94,7 +94,7 @@ _pick_services_and_keys() {
     done
     echo ""
     echo "  Enter numbers separated by spaces (e.g., 1 2 5), or 'none' to skip:"
-    read -p "  > " SELECTED_SERVICES
+    read -r -p "  > " SELECTED_SERVICES
 
     if [[ "$SELECTED_SERVICES" == "none" || -z "$SELECTED_SERVICES" ]]; then
         return
@@ -122,18 +122,18 @@ _pick_services_and_keys() {
 
         # Handle custom hosts (Gerrit, self-hosted)
         if [[ "$hostname" == "CUSTOM" ]]; then
-            read -p "  Hostname (e.g., gerrit.example.com, git.myserver.com): " hostname
+            read -r -p "  Hostname (e.g., gerrit.example.com, git.myserver.com): " hostname
             if [[ -z "$hostname" ]]; then
                 print_warning "No hostname provided, skipping"
                 continue
             fi
-            read -p "  SSH user [git]: " user
+            read -r -p "  SSH user [git]: " user
             user="${user:-git}"
-            read -p "  SSH port [22]: " port
+            read -r -p "  SSH port [22]: " port
             port="${port:-22}"
         fi
 
-        read -p "  Alias for this connection? (e.g., 'work' for github.com-work, or Enter for default): " alias_suffix
+        read -r -p "  Alias for this connection? (e.g., 'work' for github.com-work, or Enter for default): " alias_suffix
         if [[ -n "$alias_suffix" ]]; then
             alias_name="${hostname}-${alias_suffix}"
         else
@@ -314,7 +314,7 @@ setup_ssh() {
             echo "  5) Skip"
             echo "     Don't touch SSH configuration"
             echo ""
-            read -p "Choose (1-5): " ssh_choice
+            read -r -p "Choose (1-5): " ssh_choice
             echo
         else
             ssh_choice="skip"
@@ -362,7 +362,7 @@ _setup_ssh_import() {
     print_step "Import SSH keys..."
     echo ""
     echo "  Enter the path to your keys (e.g., /Volumes/USB/ssh-keys, ~/Desktop/old-ssh)"
-    read -p "  Path: " IMPORT_PATH
+    read -r -p "  Path: " IMPORT_PATH
     IMPORT_PATH="${IMPORT_PATH/#\~/$HOME}"
 
     if [[ ! -d "$IMPORT_PATH" ]]; then
@@ -376,7 +376,7 @@ _setup_ssh_import() {
     _list_ssh_keys "$IMPORT_PATH"
 
     echo ""
-    read -p "  Copy these keys to ~/.ssh/? (y/n) " -n 1 -r
+    read -r -p "  Copy these keys to ~/.ssh/? (y/n) " -n 1
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
         print_warning "Import cancelled"

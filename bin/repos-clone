@@ -52,7 +52,7 @@ echo "    2) GitLab"
 echo "    3) Bitbucket"
 echo "    4) Codeberg"
 echo ""
-read -p "  Choose (1-4): " SVC_CHOICE
+read -r -p "  Choose (1-4): " SVC_CHOICE
 echo
 
 case "$SVC_CHOICE" in
@@ -68,7 +68,7 @@ esac
 
 # ── Target Directory ──────────────────────────
 if [[ -z "$TARGET_DIR" ]]; then
-    read -p "  Clone into directory [$(pwd)]: " TARGET_DIR
+    read -r -p "  Clone into directory [$(pwd)]: " TARGET_DIR
     TARGET_DIR="${TARGET_DIR:-$(pwd)}"
 fi
 TARGET_DIR="${TARGET_DIR/#\~/$HOME}"
@@ -115,7 +115,7 @@ if [[ -f ~/.ssh/config ]]; then
             echo "    $local_i) $a"
             ((local_i++))
         done
-        read -p "  Which to use for clone URLs? (0-$((local_i-1))): " ALIAS_CHOICE
+        read -r -p "  Which to use for clone URLs? (0-$((local_i-1))): " ALIAS_CHOICE
         if [[ "$ALIAS_CHOICE" -ge 1 && "$ALIAS_CHOICE" -le ${#aliases[@]} ]] 2>/dev/null; then
             SSH_ALIAS="${aliases[$((ALIAS_CHOICE-1))]}"
             print_success "Using SSH alias: $SSH_ALIAS"
@@ -148,11 +148,11 @@ if [[ "$SERVICE" == "github" ]]; then
         echo "    1) Your repos ($GH_USER)"
         echo "    2) An organization"
         echo ""
-        read -p "  Choose (1-2): " OWNER_CHOICE
+        read -r -p "  Choose (1-2): " OWNER_CHOICE
         echo
 
         if [[ "$OWNER_CHOICE" == "2" ]]; then
-            read -p "  Organization name: " ORG_NAME
+            read -r -p "  Organization name: " ORG_NAME
         else
             ORG_NAME="$GH_USER"
         fi
@@ -202,7 +202,7 @@ elif [[ "$SERVICE" == "gitlab" ]]; then
         fi
 
         if [[ -z "$ORG_NAME" ]]; then
-            read -p "  Group/user name: " ORG_NAME
+            read -r -p "  Group/user name: " ORG_NAME
         fi
 
         print_step "Fetching repos from $ORG_NAME..."
@@ -226,12 +226,12 @@ elif [[ "$SERVICE" == "gitlab" ]]; then
         print_warning "glab CLI not found. Install: brew install glab"
         echo ""
         echo "  Alternative: Use a GitLab personal access token"
-        read -p "  GitLab URL [https://gitlab.com]: " GITLAB_URL
+        read -r -p "  GitLab URL [https://gitlab.com]: " GITLAB_URL
         GITLAB_URL="${GITLAB_URL:-https://gitlab.com}"
-        read -p "  Personal access token: " GITLAB_TOKEN
+        read -r -p "  Personal access token: " GITLAB_TOKEN
 
         if [[ -z "$ORG_NAME" ]]; then
-            read -p "  Group/user name: " ORG_NAME
+            read -r -p "  Group/user name: " ORG_NAME
         fi
 
         print_step "Fetching repos from $ORG_NAME..."
@@ -260,7 +260,7 @@ elif [[ "$SERVICE" == "gitlab" ]]; then
 # ── Bitbucket ─────────────────────────────────
 elif [[ "$SERVICE" == "bitbucket" ]]; then
     if [[ -z "$ORG_NAME" ]]; then
-        read -p "  Workspace/user name: " ORG_NAME
+        read -r -p "  Workspace/user name: " ORG_NAME
     fi
 
     if [[ -z "$ORG_NAME" ]]; then
@@ -305,7 +305,7 @@ elif [[ "$SERVICE" == "bitbucket" ]]; then
 # ── Codeberg ──────────────────────────────────
 elif [[ "$SERVICE" == "codeberg" ]]; then
     if [[ -z "$ORG_NAME" ]]; then
-        read -p "  Organization/user name: " ORG_NAME
+        read -r -p "  Organization/user name: " ORG_NAME
     fi
 
     if [[ -z "$ORG_NAME" ]]; then
@@ -371,7 +371,7 @@ else
     echo "    • All:     a"
     echo "    • Quit:    q"
     echo ""
-    read -p "  > " SELECTION
+    read -r -p "  > " SELECTION
 
     if [[ "$SELECTION" == "q" ]]; then
         print_success "Cancelled"

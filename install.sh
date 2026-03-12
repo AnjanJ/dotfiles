@@ -133,7 +133,7 @@ echo "╚═══════════════════════�
 echo ""
 
 if [[ "$INTERACTIVE" == true ]]; then
-    read -p "Continue with installation? (y/n) " -n 1 -r
+    read -r -p "Continue with installation? (y/n) " -n 1
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
         print_warning "Installation cancelled"
@@ -367,7 +367,7 @@ setup_ssh
 # ============================================
 echo ""
 if [[ "$INTERACTIVE" == true ]]; then
-    read -p "Apply recommended macOS defaults? (y/n) " -n 1 -r
+    read -r -p "Apply recommended macOS defaults? (y/n) " -n 1
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
         APPLY_MACOS_DEFAULTS=false

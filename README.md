@@ -431,13 +431,18 @@ dotfiles/
 │   ├── health-check.sh         # Verify installation
 │   ├── theme-utils.sh          # Theme utility functions
 │   └── apply-theme.sh          # Apply theme across all apps
-├── tests/                      # 200+ tests, run via GitHub Actions CI
+├── tests/                      # 300 tests across 11 suites, run via GitHub Actions CI
 │   ├── test-idempotency.sh     # Idempotency tests (sandboxed)
 │   ├── test-work-nuke.sh       # Work-nuke edge case tests
 │   ├── test-repos-clone.sh     # Repos-clone logic tests
 │   ├── test-ssh-adversarial.sh # SSH adversarial input tests
 │   ├── test-update.sh          # Update symlink tests
-│   └── test-theme.sh           # Theme system tests (apply, rollback, scaffold)
+│   ├── test-theme.sh           # Theme system tests (apply, rollback, scaffold)
+│   ├── test-doctor.sh          # Doctor auto-fix tests
+│   ├── test-setup-git.sh       # Git identity setup tests
+│   ├── test-work-status.sh     # Work status diagnostic tests
+│   ├── test-backup.sh          # Backup/restore cycle tests
+│   └── test-sync.sh            # Sync symlink refresh tests
 ├── .github/workflows/test.yml  # CI: shellcheck + all test suites
 └── docs/                       # Additional documentation
 ```
@@ -581,15 +586,19 @@ Detailed guides for each tool:
 
 ## 🧪 Testing
 
-Automated tests run on every push and PR via GitHub Actions:
+300 automated tests across 11 suites run on every push and PR via GitHub Actions:
 
 - **Shellcheck** — lints all shell scripts (auto-discovers via glob patterns)
-- **Idempotency** — verifies install/setup can run multiple times safely
-- **Work identity** — tests setup, nuke, and switch lifecycle
+- **Idempotency** — verifies install/setup can run multiple times safely (84 assertions)
+- **Work identity** — tests setup, nuke, switch lifecycle, and status diagnostics
 - **SSH config** — adversarial inputs and edge cases
 - **Repo cloner** — SSH alias detection and URL rewriting
 - **Update flow** — symlink creation and refresh
 - **Theme system** — apply, rollback, idempotency, scaffolding (39 assertions)
+- **Doctor** — auto-fix symlinks, permissions, dry-run mode
+- **Git setup** — identity configuration, work/personal split, smart defaults
+- **Backup** — create, list, restore, prune cycle
+- **Sync** — symlink refresh, broken link repair, dry-run mode
 
 Run locally: `bash tests/test-idempotency.sh` (or any test file in `tests/`)
 

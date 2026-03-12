@@ -33,7 +33,7 @@ if is_work_configured; then
     [[ -n "$WORK_DIR" ]] && echo "  Directory: $WORK_DIR/"
     echo ""
 
-    read -p "Remove current work setup and configure a new one? (y/n) " -n 1 -r
+    read -r -p "Remove current work setup and configure a new one? (y/n) " -n 1
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
         print_warning "Cancelled"

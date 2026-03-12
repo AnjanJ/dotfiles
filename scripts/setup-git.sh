@@ -51,7 +51,7 @@ setup_git() {
             echo "  Current identity: ${existing_name:-<not set>} <${existing_email:-<not set>}>"
             echo ""
         fi
-        read -p "Your full name (for Git commits): " git_name
+        read -r -p "Your full name (for Git commits): " git_name
     fi
 
     # ── Resolve email ─────────────────────────────
@@ -60,7 +60,7 @@ setup_git() {
         GIT_PERSONAL_EMAIL=$(git config --global user.email 2>/dev/null || true)
     fi
     if [[ -z "$GIT_PERSONAL_EMAIL" && "$INTERACTIVE" == true ]]; then
-        read -p "Your personal email: " GIT_PERSONAL_EMAIL
+        read -r -p "Your personal email: " GIT_PERSONAL_EMAIL
     fi
 
     # ── Apply identity ────────────────────────────
@@ -80,11 +80,11 @@ setup_git() {
 
     if [[ -z "$work_email" && "$INTERACTIVE" == true ]]; then
         echo ""
-        read -p "Do you have a separate work Git identity? (y/n) " -n 1 -r
+        read -r -p "Do you have a separate work Git identity? (y/n) " -n 1
         echo
         if [[ $REPLY =~ ^[Yy]$ ]]; then
-            read -p "Work email: " work_email
-            read -p "Work directory [~/work]: " work_dir
+            read -r -p "Work email: " work_email
+            read -r -p "Work directory [~/work]: " work_dir
         fi
     fi
 

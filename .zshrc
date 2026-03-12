@@ -142,9 +142,10 @@ delgems() {
     return 1
   fi
 
-  echo "⚠️  Delete all gems for Ruby $ruby_version? (y/N)"
-  read confirm
-  if [[ $confirm == "y" ]]; then
+  echo "⚠️  Delete all gems for Ruby $ruby_version?"
+  echo "  Type 'yes' to confirm:"
+  read -r confirm
+  if [[ "$confirm" == "yes" ]]; then
     rm -rf "$gem_dir"/*
     echo "✅ Gems deleted for Ruby $ruby_version"
   else

@@ -124,8 +124,6 @@ if command -v tmux > /dev/null; then
     alias tw='tmux new -s work'       # Create work session
     alias tp='tmux new -s personal'   # Create personal session
 
-    # Tmux-inator (quick project switch - to be created)
-    # alias tf='tmux-sessionizer'     # Fuzzy find and open project in tmux
 fi
 
 # ============================================
