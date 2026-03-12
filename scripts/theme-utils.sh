@@ -70,9 +70,9 @@ _get_theme_description() {
 
 # Interactive theme picker
 prompt_theme_choice() {
-    echo ""
-    echo "Choose your theme:"
-    echo ""
+    echo "" >&2
+    echo "Choose your theme:" >&2
+    echo "" >&2
 
     local i=1
     local theme_order=()
@@ -80,8 +80,8 @@ prompt_theme_choice() {
         theme_order+=("$theme")
         local desc
         desc=$(_get_theme_description "$theme")
-        echo -e "  $i) $desc"
-        echo ""
+        echo -e "  $i) $desc" >&2
+        echo "" >&2
         i=$((i + 1))
     done
 

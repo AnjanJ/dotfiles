@@ -27,7 +27,7 @@
 // Theme (Tokyo Night - matching Neovim and tmux)
 // Custom theme located at: ~/.config/zellij/themes/tokyo-night.kdl
 // Based on folke/tokyonight.nvim color palette
-theme "tokyo-night"
+theme "aura"
 
 // Default shell
 default_shell "zsh"

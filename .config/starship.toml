@@ -10,7 +10,7 @@
 # ============================================
 
 # Use Tokyo Night color palette
-palette = "tokyonight"
+palette = "aura"
 
 # Prompt format
 format = """
@@ -296,35 +296,35 @@ style = "cyan bold"
 disabled = false
 
 # THEME_PALETTE_START
-[palettes.tokyonight]
+[palettes.aura]
 # Background and Foreground
-background = "#1a1b26"
-foreground = "#c0caf5"
+background = "#15141b"
+foreground = "#edecee"
 
 # Standard Colors
-black = "#15161e"
-red = "#f7768e"
-green = "#9ece6a"
-yellow = "#e0af68"
-blue = "#7aa2f7"
-magenta = "#bb9af7"
-cyan = "#7dcfff"
-white = "#c0caf5"
+black = "#110f18"
+red = "#ff6767"
+green = "#61ffca"
+yellow = "#ffca85"
+blue = "#82e2ff"
+magenta = "#a277ff"
+cyan = "#82e2ff"
+white = "#edecee"
 
 # Bright Colors
-bright_black = "#414868"
-bright_red = "#f7768e"
-bright_green = "#9ece6a"
-bright_yellow = "#e0af68"
-bright_blue = "#7aa2f7"
-bright_magenta = "#bb9af7"
-bright_cyan = "#7dcfff"
-bright_white = "#c0caf5"
+bright_black = "#6d6d6d"
+bright_red = "#ff6767"
+bright_green = "#61ffca"
+bright_yellow = "#ffca85"
+bright_blue = "#82e2ff"
+bright_magenta = "#f694ff"
+bright_cyan = "#82e2ff"
+bright_white = "#edecee"
 
-# Additional Tokyo Night Colors
-purple = "#bb9af7"      # Primary accent
-orange = "#ff9e64"      # Secondary accent
-pink = "#f7768e"        # Errors/warnings
+# Additional Aura Colors
+purple = "#a277ff"      # Primary accent
+orange = "#ffca85"      # Secondary accent
+pink = "#f694ff"        # Special keywords
 # THEME_PALETTE_END
 
 # ============================================

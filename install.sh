@@ -150,9 +150,14 @@ source "$DOTFILES_DIR/scripts/theme-utils.sh"
 
 if [[ -z "$SELECTED_THEME" ]]; then
     if [[ "$INTERACTIVE" == true ]]; then
+        # --interactive: always let the user choose
         SELECTED_THEME=$(prompt_theme_choice)
+    elif [[ -f "$HOME/.dotfiles-theme" ]]; then
+        # Re-run without --interactive: keep previous choice
+        SELECTED_THEME=$(get_current_theme)
     else
-        SELECTED_THEME=$(get_current_theme)  # defaults to tokyo-night
+        # Fresh install without --interactive: prompt anyway
+        SELECTED_THEME=$(prompt_theme_choice)
     fi
 fi
 

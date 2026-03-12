@@ -6,12 +6,12 @@ gui:
   theme:
     lightTheme: false
     activeBorderColor:
-      - '#7aa2f7'  # Blue
+      - '#a277ff'  # Purple
       - bold
     inactiveBorderColor:
-      - '#565f89'  # Gray
+      - '#6d6d6d'  # Gray
     selectedLineBgColor:
-      - '#24283b'  # Dark
+      - '#1c1b22'  # Dark
   # THEME_END
 
   # Window size

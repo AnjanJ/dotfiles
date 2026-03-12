@@ -7,7 +7,7 @@
 # ============================================
 
 # THEME_START
-theme = tokyonight_night
+theme = Aura
 # THEME_END
 
 # Font configuration

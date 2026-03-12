@@ -331,20 +331,15 @@ apply_theme() {
     # ── 6. VS Code ──────────────────────────────────────
     _theme_step "VS Code..."
     local vscode_settings="$HOME/Library/Application Support/Code/User/settings.json"
-    if [[ -f "$vscode_settings" ]] && command -v jq &>/dev/null; then
-        local tmpfile
-        tmpfile=$(mktemp)
-        if jq --arg theme "$vscode_theme" '.["workbench.colorTheme"] = $theme' "$vscode_settings" > "$tmpfile" 2>/dev/null; then
-            mv "$tmpfile" "$vscode_settings"
+    if [[ -f "$vscode_settings" ]]; then
+        # VS Code uses JSONC (JSON with Comments), so use sed instead of jq
+        if sed -i '' 's/"workbench\.colorTheme": *"[^"]*"/"workbench.colorTheme": "'"$vscode_theme"'"/' "$vscode_settings" 2>/dev/null; then
             _theme_success "VS Code → $vscode_theme"
         else
-            rm -f "$tmpfile"
             _theme_warning "VS Code: Could not update settings.json"
         fi
-    elif [[ ! -f "$vscode_settings" ]]; then
-        _theme_warning "VS Code: settings.json not found (VS Code may not be installed yet)"
     else
-        _theme_warning "VS Code: jq not installed, skipping"
+        _theme_warning "VS Code: settings.json not found (VS Code may not be installed yet)"
     fi
 
     # ── 7. Zed ──────────────────────────────────────────
@@ -378,8 +373,8 @@ apply_theme() {
             # Update SelectedSystemThemes to point to the custom file
             local yaml_path
             yaml_path="$warp_themes_dir/$(basename "$warp_custom_file")"
-            local theme_json="{\"light\":\"Light\",\"dark\":{\"Custom\":{\"name\":\"${yaml_name}\",\"path\":\"${yaml_path}\"}}}"
-            defaults write dev.warp.Warp-Stable SelectedSystemThemes "$theme_json"
+            local theme_json='{"light":"Light","dark":{"Custom":{"name":"'"${yaml_name}"'","path":"'"${yaml_path}"'"}}}'
+            defaults write dev.warp.Warp-Stable SelectedSystemThemes -string "$theme_json"
             _theme_success "Warp → $warp_theme (custom)"
         else
             # Built-in theme — set directly
