@@ -1,0 +1,67 @@
+# Catppuccin Mocha theme for Yazi
+[manager]
+cwd = { fg = "#89b4fa" }
+hovered = { reversed = true }
+preview_hovered = { underline = true }
+find_keyword = { fg = "#f9e2af", bold = true }
+find_position = { fg = "#cba6f7", italic = true }
+marker_selected = { fg = "#a6e3a1", bg = "#a6e3a1" }
+marker_copied = { fg = "#f9e2af", bg = "#f9e2af" }
+marker_cut = { fg = "#f38ba8", bg = "#f38ba8" }
+tab_active = { fg = "#1e1e2e", bg = "#89b4fa" }
+tab_inactive = { fg = "#cdd6f4", bg = "#313244" }
+border_symbol = "│"
+border_style = { fg = "#6c7086" }
+
+[status]
+separator_open = ""
+separator_close = ""
+separator_style = { fg = "#313244", bg = "#313244" }
+mode_normal = { fg = "#1e1e2e", bg = "#89b4fa", bold = true }
+mode_select = { fg = "#1e1e2e", bg = "#a6e3a1", bold = true }
+mode_unset = { fg = "#1e1e2e", bg = "#cba6f7", bold = true }
+progress_label = { bold = true }
+progress_normal = { fg = "#89b4fa" }
+progress_error = { fg = "#f38ba8" }
+
+[input]
+border = { fg = "#89b4fa" }
+title = {}
+value = {}
+selected = { reversed = true }
+
+[select]
+border = { fg = "#89b4fa" }
+active = { fg = "#cba6f7" }
+inactive = {}
+
+[tasks]
+border = { fg = "#89b4fa" }
+title = {}
+hovered = { underline = true }
+
+[which]
+mask = { bg = "#313244" }
+cand = { fg = "#a6e3a1" }
+rest = { fg = "#6c7086" }
+desc = { fg = "#cba6f7" }
+separator = "  "
+separator_style = { fg = "#6c7086" }
+
+[help]
+on = { fg = "#cba6f7" }
+run = { fg = "#a6e3a1" }
+desc = { fg = "#6c7086" }
+hovered = { reversed = true, bold = true }
+footer = { fg = "#cdd6f4", bg = "#313244" }
+
+[filetype]
+rules = [
+  { mime = "image/*", fg = "#a6e3a1" },
+  { mime = "video/*", fg = "#f9e2af" },
+  { mime = "audio/*", fg = "#f9e2af" },
+  { mime = "application/zip", fg = "#cba6f7" },
+  { mime = "application/gzip", fg = "#cba6f7" },
+  { mime = "application/x-tar", fg = "#cba6f7" },
+  { name = "*/", fg = "#89b4fa", bold = true },
+]

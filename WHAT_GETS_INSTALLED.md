@@ -314,7 +314,7 @@ Creates symbolic links from the repo to your home directory. This is the core de
 
 ## Step 5b: Apply Theme
 
-You chose **Tokyo Night**, **Aura Dark**, or **Catppuccin Mocha** at the start of install. This step applies your choice across 8 apps automatically (plus 5 more with manual instructions):
+You chose **Tokyo Night**, **Aura Dark**, or **Catppuccin Mocha** at the start of install. This step applies your choice across 17 apps automatically (plus 5 more with manual instructions):
 
 | App | What changes |
 |-----|-------------|
@@ -326,6 +326,15 @@ You chose **Tokyo Night**, **Aura Dark**, or **Catppuccin Mocha** at the start o
 | VS Code | `workbench.colorTheme` in settings.json (via jq) |
 | Zed | `theme.dark` in `settings.json` (via jq) |
 | Warp | Custom YAML in `~/.warp/themes/` + macOS defaults (if Warp is installed) |
+| bat | `--theme=` in `~/.config/bat/config` |
+| git-delta | `delta.syntax-theme` in global git config |
+| fzf | `--color=` via `~/.zshrc-theme-env` (sourced by shell) |
+| lazygit | `gui.theme` block between `THEME_START`/`END` markers in config.yml |
+| borders | `active_color`/`inactive_color` in `bordersrc` (via sed) |
+| sketchybar | Color exports between `THEME_COLORS_START`/`END` markers in sketchybarrc |
+| yazi | `theme.toml` copied to `~/.config/yazi/` |
+| gitui | `theme.ron` copied to `~/.config/gitui/` |
+| lsd | `colors.yaml` copied to `~/.config/lsd/` |
 
 Each theme lives in `themes/<name>/` with a `theme.conf` registry file that drives all the above. Adding a new theme is just creating a new directory.
 

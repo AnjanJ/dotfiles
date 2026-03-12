@@ -1,0 +1,9 @@
+  theme:
+    lightTheme: false
+    activeBorderColor:
+      - '#a277ff'  # Purple
+      - bold
+    inactiveBorderColor:
+      - '#6d6d6d'  # Gray
+    selectedLineBgColor:
+      - '#1c1b22'  # Dark

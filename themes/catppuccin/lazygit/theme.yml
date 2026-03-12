@@ -1,0 +1,9 @@
+  theme:
+    lightTheme: false
+    activeBorderColor:
+      - '#b4befe'  # Lavender
+      - bold
+    inactiveBorderColor:
+      - '#6c7086'  # Overlay0
+    selectedLineBgColor:
+      - '#313244'  # Surface0

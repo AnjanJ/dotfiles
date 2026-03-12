@@ -1,0 +1,67 @@
+# Aura Dark theme for Yazi
+[manager]
+cwd = { fg = "#a277ff" }
+hovered = { reversed = true }
+preview_hovered = { underline = true }
+find_keyword = { fg = "#ffca85", bold = true }
+find_position = { fg = "#a277ff", italic = true }
+marker_selected = { fg = "#61ffca", bg = "#61ffca" }
+marker_copied = { fg = "#ffca85", bg = "#ffca85" }
+marker_cut = { fg = "#ff6767", bg = "#ff6767" }
+tab_active = { fg = "#15141b", bg = "#a277ff" }
+tab_inactive = { fg = "#edecee", bg = "#1c1b22" }
+border_symbol = "│"
+border_style = { fg = "#6d6d6d" }
+
+[status]
+separator_open = ""
+separator_close = ""
+separator_style = { fg = "#1c1b22", bg = "#1c1b22" }
+mode_normal = { fg = "#15141b", bg = "#a277ff", bold = true }
+mode_select = { fg = "#15141b", bg = "#61ffca", bold = true }
+mode_unset = { fg = "#15141b", bg = "#82e2ff", bold = true }
+progress_label = { bold = true }
+progress_normal = { fg = "#a277ff" }
+progress_error = { fg = "#ff6767" }
+
+[input]
+border = { fg = "#a277ff" }
+title = {}
+value = {}
+selected = { reversed = true }
+
+[select]
+border = { fg = "#a277ff" }
+active = { fg = "#82e2ff" }
+inactive = {}
+
+[tasks]
+border = { fg = "#a277ff" }
+title = {}
+hovered = { underline = true }
+
+[which]
+mask = { bg = "#1c1b22" }
+cand = { fg = "#61ffca" }
+rest = { fg = "#6d6d6d" }
+desc = { fg = "#a277ff" }
+separator = "  "
+separator_style = { fg = "#6d6d6d" }
+
+[help]
+on = { fg = "#a277ff" }
+run = { fg = "#61ffca" }
+desc = { fg = "#6d6d6d" }
+hovered = { reversed = true, bold = true }
+footer = { fg = "#edecee", bg = "#1c1b22" }
+
+[filetype]
+rules = [
+  { mime = "image/*", fg = "#61ffca" },
+  { mime = "video/*", fg = "#ffca85" },
+  { mime = "audio/*", fg = "#ffca85" },
+  { mime = "application/zip", fg = "#a277ff" },
+  { mime = "application/gzip", fg = "#a277ff" },
+  { mime = "application/x-tar", fg = "#a277ff" },
+  { name = "*/", fg = "#82e2ff", bold = true },
+]

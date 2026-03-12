@@ -1,0 +1,13 @@
+export BLACK=0xff15141b
+export WHITE=0xffedecee
+export RED=0xffff6767
+export GREEN=0xff61ffca
+export BLUE=0xff82e2ff
+export YELLOW=0xffffca85
+export ORANGE=0xffffca85
+export MAGENTA=0xffa277ff
+export GREY=0xff6d6d6d
+export TRANSPARENT=0x00000000
+export BAR_COLOR=0xff15141b
+export ITEM_BG_COLOR=0xff1c1b22
+export ACCENT_COLOR=$MAGENTA

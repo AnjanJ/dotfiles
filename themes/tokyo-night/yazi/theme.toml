@@ -1,0 +1,67 @@
+# Tokyo Night theme for Yazi
+[manager]
+cwd = { fg = "#7aa2f7" }
+hovered = { reversed = true }
+preview_hovered = { underline = true }
+find_keyword = { fg = "#e0af68", bold = true }
+find_position = { fg = "#bb9af7", italic = true }
+marker_selected = { fg = "#9ece6a", bg = "#9ece6a" }
+marker_copied = { fg = "#e0af68", bg = "#e0af68" }
+marker_cut = { fg = "#f7768e", bg = "#f7768e" }
+tab_active = { fg = "#1a1b26", bg = "#7aa2f7" }
+tab_inactive = { fg = "#c0caf5", bg = "#24283b" }
+border_symbol = "│"
+border_style = { fg = "#565f89" }
+
+[status]
+separator_open = ""
+separator_close = ""
+separator_style = { fg = "#24283b", bg = "#24283b" }
+mode_normal = { fg = "#1a1b26", bg = "#7aa2f7", bold = true }
+mode_select = { fg = "#1a1b26", bg = "#9ece6a", bold = true }
+mode_unset = { fg = "#1a1b26", bg = "#bb9af7", bold = true }
+progress_label = { bold = true }
+progress_normal = { fg = "#7aa2f7" }
+progress_error = { fg = "#f7768e" }
+
+[input]
+border = { fg = "#7aa2f7" }
+title = {}
+value = {}
+selected = { reversed = true }
+
+[select]
+border = { fg = "#7aa2f7" }
+active = { fg = "#bb9af7" }
+inactive = {}
+
+[tasks]
+border = { fg = "#7aa2f7" }
+title = {}
+hovered = { underline = true }
+
+[which]
+mask = { bg = "#24283b" }
+cand = { fg = "#9ece6a" }
+rest = { fg = "#565f89" }
+desc = { fg = "#bb9af7" }
+separator = "  "
+separator_style = { fg = "#565f89" }
+
+[help]
+on = { fg = "#bb9af7" }
+run = { fg = "#9ece6a" }
+desc = { fg = "#565f89" }
+hovered = { reversed = true, bold = true }
+footer = { fg = "#c0caf5", bg = "#24283b" }
+
+[filetype]
+rules = [
+  { mime = "image/*", fg = "#9ece6a" },
+  { mime = "video/*", fg = "#e0af68" },
+  { mime = "audio/*", fg = "#e0af68" },
+  { mime = "application/zip", fg = "#bb9af7" },
+  { mime = "application/gzip", fg = "#bb9af7" },
+  { mime = "application/x-tar", fg = "#bb9af7" },
+  { name = "*/", fg = "#7aa2f7", bold = true },
+]
