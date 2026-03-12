@@ -16,6 +16,7 @@ _discover_themes() {
     if [[ -n "${BASH_SOURCE[0]:-}" ]]; then
         script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
     else
+        # shellcheck disable=SC2296  # zsh-specific syntax
         script_dir="$(cd "$(dirname "${(%):-%x}")/.." && pwd)"
     fi
     local themes_dir="${DOTFILES_DIR:-$script_dir}/themes"

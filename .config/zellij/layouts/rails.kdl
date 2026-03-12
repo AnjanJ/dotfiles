@@ -1,0 +1,24 @@
+// Rails development layout
+// Usage: zellij --layout rails
+
+layout {
+    tab name="editor" focus=true {
+        pane
+    }
+    tab name="server" {
+        pane split_direction="vertical" {
+            pane name="rails server" command="bash" {
+                args "-c" "echo '=> Run: rails s'; exec bash"
+            }
+            pane name="rails console" command="bash" {
+                args "-c" "echo '=> Run: rails c'; exec bash"
+            }
+        }
+    }
+    tab name="tests" {
+        pane name="tests"
+    }
+    tab name="terminal" {
+        pane
+    }
+}

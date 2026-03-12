@@ -291,6 +291,9 @@ Creates symbolic links from the repo to your home directory. This is the core de
 | `.config/ghostty/` | `~/.config/ghostty` |
 | `.config/nvim/` | `~/.config/nvim` |
 | `.config/zellij/` | `~/.config/zellij` |
+| `.config/lazygit/` | `~/.config/lazygit` |
+| `.config/borders/` | `~/.config/borders` |
+| `.config/sketchybar/` | `~/.config/sketchybar` |
 | `.config/starship.toml` | `~/.config/starship.toml` |
 | `.config/mise/config.toml` | `~/.config/mise/config.toml` |
 
@@ -336,7 +339,9 @@ You chose **Tokyo Night**, **Aura Dark**, or **Catppuccin Mocha** at the start o
 | gitui | `theme.ron` copied to `~/.config/gitui/` |
 | lsd | `colors.yaml` copied to `~/.config/lsd/` |
 
-Each theme lives in `themes/<name>/` with a `theme.conf` registry file that drives all the above. Adding a new theme is just creating a new directory.
+Each theme lives in `themes/<name>/` with a `theme.conf` registry file that drives all the above. Themes are auto-discovered from the `themes/` directory — adding a new theme requires zero code changes, just a new directory. Use `dotfiles add-theme <name>` to scaffold the full structure.
+
+If the apply fails partway through the core sections (1-5), all configs are automatically rolled back to their previous state.
 
 Manual instructions are printed for: Slack, Chrome, Firefox, Telegram, Raycast.
 
@@ -372,7 +377,7 @@ Configures sensible Git defaults globally:
 
 | Setting | Value | What it does |
 |---------|-------|-------------|
-| `core.editor` | `zed --wait` | Use Zed as the default editor for commits, rebases, etc. |
+| `core.editor` | `$EDITOR` or `zed --wait` | Respects your `$EDITOR` env var; defaults to Zed if unset |
 | `pull.rebase` | `false` | Merge on pull (no auto-rebase) |
 | `core.excludesfile` | `~/.gitignore_global` | Global gitignore (.DS_Store, .env, etc.) |
 | `diff.algorithm` | `histogram` | Better diffs, especially for moved code blocks |

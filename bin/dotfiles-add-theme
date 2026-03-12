@@ -1,0 +1,198 @@
+#!/usr/bin/env bash
+# Scaffold a new theme directory with all required files
+# Usage: dotfiles add-theme <name>
+
+set -euo pipefail
+
+DOTFILES_DIR="${DOTFILES_DIR:-$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)}"
+source "$DOTFILES_DIR/scripts/_helpers.sh"
+
+if [[ -z "${1:-}" || "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
+    echo "Usage: dotfiles add-theme <name>"
+    echo ""
+    echo "Scaffold a new theme directory with all required files."
+    echo "Theme name must be lowercase letters, numbers, and hyphens only."
+    echo ""
+    echo "Example: dotfiles add-theme dracula"
+    exit 0
+fi
+
+THEME_NAME="$1"
+
+# Validate name: lowercase, numbers, hyphens only
+if [[ ! "$THEME_NAME" =~ ^[a-z0-9][a-z0-9-]*[a-z0-9]$ ]] && [[ ! "$THEME_NAME" =~ ^[a-z0-9]$ ]]; then
+    echo "Error: Theme name must be lowercase letters, numbers, and hyphens only."
+    echo "  Got: '$THEME_NAME'"
+    exit 1
+fi
+
+THEME_DIR="$DOTFILES_DIR/themes/$THEME_NAME"
+
+# Check if theme already exists
+if [[ -d "$THEME_DIR" ]]; then
+    echo "Error: Theme '$THEME_NAME' already exists at $THEME_DIR"
+    exit 1
+fi
+
+echo ""
+print_step "Scaffolding theme: $THEME_NAME"
+echo ""
+
+# Create directory structure
+mkdir -p "$THEME_DIR"/{ghostty,nvim,tmux,starship,zellij/themes,lazygit,sketchybar,yazi,gitui,lsd}
+
+# theme.conf — template with all required variables
+cat > "$THEME_DIR/theme.conf" << EOF
+# Theme registry for $THEME_NAME
+# Used by apply-theme.sh — fill in all values below
+
+# Ghostty (built-in theme name, or set ghostty_custom_file for a custom theme)
+ghostty_theme=""
+ghostty_custom_file=""
+
+# Neovim (plugin filename and colorscheme name)
+nvim_plugin_file="${THEME_NAME}-theme.lua"
+nvim_colorscheme=""
+
+# Zellij (theme KDL filename and theme name)
+zellij_theme_file="${THEME_NAME}.kdl"
+zellij_theme_name="$THEME_NAME"
+
+# Starship (palette name — must match [palettes.NAME] in starship/palette.toml)
+starship_palette=""
+
+# VS Code (workbench.colorTheme value)
+vscode_theme=""
+
+# Zed (theme.dark value)
+zed_theme=""
+
+# bat / delta (syntax highlighting theme)
+bat_theme=""
+delta_theme=""
+
+# fzf (color string for --color flag)
+fzf_colors=""
+
+# borders (JankyBorders) — ARGB format 0xAARRGGBB
+borders_active=""
+borders_inactive=""
+borders_background=""
+
+# Warp (built-in theme name, or custom YAML filename)
+warp_theme=""
+warp_custom_file=""
+EOF
+
+# Neovim plugin template
+cat > "$THEME_DIR/nvim/${THEME_NAME}-theme.lua" << 'EOF'
+-- TODO: Replace with the actual theme plugin spec
+return {
+  "author/theme-plugin",
+  lazy = false,
+  priority = 1000,
+}
+EOF
+
+# tmux theme block
+cat > "$THEME_DIR/tmux/theme-block.conf" << EOF
+# TODO: Add tmux theme configuration for $THEME_NAME
+EOF
+
+# Starship palette
+cat > "$THEME_DIR/starship/palette.toml" << EOF
+# TODO: Fill in starship palette colors for $THEME_NAME
+[palettes.$THEME_NAME]
+# background = "#000000"
+# foreground = "#ffffff"
+EOF
+
+# Zellij theme
+cat > "$THEME_DIR/zellij/themes/${THEME_NAME}.kdl" << EOF
+// TODO: Fill in zellij theme colors for $THEME_NAME
+themes {
+    $THEME_NAME {
+        fg "#ffffff"
+        bg "#000000"
+        // Add more colors...
+    }
+}
+EOF
+
+# lazygit theme
+cat > "$THEME_DIR/lazygit/theme.yml" << EOF
+# TODO: Fill in lazygit theme colors for $THEME_NAME
+    lightTheme: false
+    activeBorderColor:
+      - '#ffffff'
+      - bold
+    inactiveBorderColor:
+      - '#555555'
+    selectedLineBgColor:
+      - '#333333'
+EOF
+
+# sketchybar colors
+cat > "$THEME_DIR/sketchybar/colors.sh" << EOF
+# TODO: Fill in sketchybar colors for $THEME_NAME
+export BLACK=0xff000000
+export WHITE=0xffffffff
+export RED=0xffff0000
+export GREEN=0xff00ff00
+export BLUE=0xff0000ff
+export YELLOW=0xffffff00
+export ORANGE=0xffff8800
+export MAGENTA=0xffff00ff
+export GREY=0xff555555
+export TRANSPARENT=0x00000000
+export BAR_COLOR=\$BLACK
+export ITEM_BG_COLOR=0xff333333
+export ACCENT_COLOR=\$BLUE
+EOF
+
+# yazi theme
+cat > "$THEME_DIR/yazi/theme.toml" << EOF
+# TODO: Fill in yazi theme for $THEME_NAME
+# See: https://yazi-rs.github.io/docs/configuration/theme
+EOF
+
+# gitui theme
+cat > "$THEME_DIR/gitui/theme.ron" << EOF
+// TODO: Fill in gitui theme for $THEME_NAME
+// See: https://github.com/extrawurst/gitui/blob/master/THEMES.md
+(
+)
+EOF
+
+# lsd colors
+cat > "$THEME_DIR/lsd/colors.yaml" << EOF
+# TODO: Fill in lsd colors for $THEME_NAME
+# See: https://github.com/lsd-rs/lsd#color-theme
+EOF
+
+# Manual instructions
+cat > "$THEME_DIR/manual-instructions.txt" << EOF
+
+╔═══════════════════════════════════════════════════════════╗
+║   Manual Steps — $THEME_NAME
+╚═══════════════════════════════════════════════════════════╝
+
+  Apps that need manual theme changes:
+  • macOS:     System Settings → Appearance
+  • Slack:     Preferences → Themes
+  • Spotify:   (use Spicetify if desired)
+  • Firefox:   about:addons → Themes
+
+EOF
+
+print_success "Created theme scaffold at themes/$THEME_NAME/"
+echo ""
+echo "  Next steps:"
+echo "  1. Fill in theme.conf with all color values"
+echo "  2. Add nvim plugin spec to nvim/${THEME_NAME}-theme.lua"
+echo "  3. Add tmux theme block to tmux/theme-block.conf"
+echo "  4. Add starship palette to starship/palette.toml"
+echo "  5. Add zellij colors to zellij/themes/${THEME_NAME}.kdl"
+echo "  6. Fill in lazygit, sketchybar, yazi, gitui, lsd theme files"
+echo "  7. Test: dotfiles theme $THEME_NAME"
+echo ""

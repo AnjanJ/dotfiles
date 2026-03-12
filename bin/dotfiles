@@ -8,6 +8,8 @@ case "${1:-}" in
     update)   shift; exec bash "$DOTFILES_DIR/update.sh" "$@" ;;
     health)   shift; exec bash "$DOTFILES_DIR/scripts/health-check.sh" "$@" ;;
     theme)    shift; exec bash "$DOTFILES_DIR/scripts/apply-theme.sh" "$@" ;;
+    add-theme) shift; exec bash "$DOTFILES_DIR/bin/dotfiles-add-theme" "$@" ;;
+    cleanup)   shift; exec bash "$DOTFILES_DIR/bin/dotfiles-cleanup" "$@" ;;
     install)   shift; exec bash "$DOTFILES_DIR/install.sh" "$@" ;;
     uninstall) shift; exec bash "$DOTFILES_DIR/bin/dotfiles-uninstall" "$@" ;;
     backup)    shift; exec bash "$DOTFILES_DIR/bin/dotfiles-backup" "$@" ;;
@@ -27,6 +29,8 @@ case "${1:-}" in
         echo "  sync        Quick refresh: pull, relink, reapply theme"
         echo "  health      Run health check on all tools"
         echo "  theme       Switch theme (tokyo-night|aura|catppuccin)"
+        echo "  add-theme   Scaffold a new theme directory"
+        echo "  cleanup     Remove Homebrew packages not in Brewfile"
         echo "  install     Run full installer"
         echo "  uninstall   Remove all symlinks (keeps repo & packages)"
         echo "  backup      Snapshot dotfiles state (--list, --restore <name>)"

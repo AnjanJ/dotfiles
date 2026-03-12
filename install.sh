@@ -284,6 +284,9 @@ create_symlink "$DOTFILES_DIR/.config/ghostty" ~/.config/ghostty "ghostty config
 create_symlink "$DOTFILES_DIR/.config/nvim" ~/.config/nvim "nvim config"
 create_symlink "$DOTFILES_DIR/.config/zellij" ~/.config/zellij "zellij config"
 create_symlink "$DOTFILES_DIR/.config/starship.toml" ~/.config/starship.toml "starship config"
+create_symlink "$DOTFILES_DIR/.config/lazygit" ~/.config/lazygit "lazygit config"
+create_symlink "$DOTFILES_DIR/.config/borders" ~/.config/borders "borders config"
+create_symlink "$DOTFILES_DIR/.config/sketchybar" ~/.config/sketchybar "sketchybar config"
 
 # Zed editor
 create_symlink "$DOTFILES_DIR/.config/zed/settings.json" ~/.config/zed/settings.json "zed settings"

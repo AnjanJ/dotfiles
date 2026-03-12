@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# Clean up Homebrew packages not listed in Brewfile
+# Usage: dotfiles cleanup [--force]
+
+set -euo pipefail
+
+DOTFILES_DIR="${DOTFILES_DIR:-$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)}"
+source "$DOTFILES_DIR/scripts/_helpers.sh"
+
+BREWFILE="$DOTFILES_DIR/Brewfile"
+
+if [[ ! -f "$BREWFILE" ]]; then
+    echo "Error: Brewfile not found at $BREWFILE"
+    exit 1
+fi
+
+if ! command -v brew &>/dev/null; then
+    echo "Error: Homebrew not installed"
+    exit 1
+fi
+
+echo ""
+echo "╔═══════════════════════════════════════════════════════════╗"
+echo "║   Homebrew Cleanup                                        ║"
+echo "╚═══════════════════════════════════════════════════════════╝"
+echo ""
+
+if [[ "${1:-}" == "--force" ]]; then
+    print_step "Removing packages not in Brewfile..."
+    echo ""
+    brew bundle cleanup --file="$BREWFILE" --force
+    echo ""
+    print_step "Running brew cleanup..."
+    brew cleanup
+    echo ""
+    print_success "Cleanup complete"
+else
+    print_step "Packages not in Brewfile (dry run):"
+    echo ""
+    OUTPUT=$(brew bundle cleanup --file="$BREWFILE" 2>&1) || true
+    if [[ -z "$OUTPUT" ]]; then
+        print_success "Everything is clean — no extra packages found"
+    else
+        echo "$OUTPUT"
+        echo ""
+        echo "  Run 'dotfiles cleanup --force' to remove these packages."
+    fi
+fi
+echo ""

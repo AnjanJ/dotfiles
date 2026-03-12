@@ -128,6 +128,7 @@ fi
 # Dump current state (captures brew, casks, mas, vscode, taps, go, uv)
 brew bundle dump --file="$DOTFILES_DIR/Brewfile" --force
 print_success "Brewfile snapshot taken"
+echo "  Tip: Run 'dotfiles cleanup' to find packages not in Brewfile"
 
 # Show what changed
 if [[ -f "$DOTFILES_DIR/Brewfile.backup" ]]; then
@@ -206,6 +207,9 @@ create_symlink "$DOTFILES_DIR/.config/ghostty" ~/.config/ghostty "ghostty config
 create_symlink "$DOTFILES_DIR/.config/nvim" ~/.config/nvim "nvim config"
 create_symlink "$DOTFILES_DIR/.config/zellij" ~/.config/zellij "zellij config"
 create_symlink "$DOTFILES_DIR/.config/starship.toml" ~/.config/starship.toml "starship config"
+create_symlink "$DOTFILES_DIR/.config/lazygit" ~/.config/lazygit "lazygit config"
+create_symlink "$DOTFILES_DIR/.config/borders" ~/.config/borders "borders config"
+create_symlink "$DOTFILES_DIR/.config/sketchybar" ~/.config/sketchybar "sketchybar config"
 create_symlink "$DOTFILES_DIR/.config/mise/config.toml" ~/.config/mise/config.toml "mise config"
 
 # Zed editor

@@ -1,0 +1,17 @@
+// General work layout
+// Usage: zellij --layout work
+
+layout {
+    tab name="editor" focus=true {
+        pane
+    }
+    tab name="server" {
+        pane split_direction="vertical" {
+            pane name="server"
+            pane name="logs"
+        }
+    }
+    tab name="terminal" {
+        pane
+    }
+}

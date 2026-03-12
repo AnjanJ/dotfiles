@@ -141,9 +141,9 @@ if command -v zellij > /dev/null; then
     alias zn='zellij -s'                        # New named session
 
     # Layout shortcuts
-    alias zr='zellij --layout rails'            # Rails layout (to be created)
-    alias zp='zellij --layout phoenix'          # Phoenix layout (to be created)
-    alias zw='zellij --layout work'             # Work layout (to be created)
+    alias zr='zellij --layout rails'            # Rails layout
+    alias zp='zellij --layout phoenix'          # Phoenix layout
+    alias zw='zellij --layout work'             # Work layout
 
     # Quick actions
     alias zt='zellij action new-tab'            # New tab

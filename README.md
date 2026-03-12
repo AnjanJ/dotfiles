@@ -9,7 +9,7 @@ This setup is inspired by **DHH's Omakub** and his "**Everything in one place, e
 ### Core Principles
 
 1. **One Command Installation** - From zero to productive development environment in minutes
-2. **Unified Theme** - Choose Tokyo Night, Aura Dark, or Catppuccin Mocha — applied across 17 apps for visual consistency
+2. **Unified Theme** - Choose Tokyo Night, Aura Dark, or Catppuccin Mocha — applied across 17 apps for visual consistency. If theme apply fails partway, all configs are automatically restored.
 3. **Keyboard-First** - Vim motions, tiling windows, keyboard shortcuts for everything
 4. **Modular Configuration** - Clean, organized configs that are easy to understand and modify
 5. **Developer Ergonomics** - Tools chosen for speed, reliability, and joy of use
@@ -71,9 +71,9 @@ Switch anytime: `dotfiles theme tokyo-night`, `dotfiles theme aura`, or `dotfile
 - **Prompt**: Starship
 - **Multiplexers**: tmux + Zellij
 - **Editors**: Neovim with AstroNvim, Zed (settings, snippets, tasks)
-- **Version Control**: Git (smart defaults + per-directory identity), lazygit, GitHub CLI
+- **Version Control**: Git (smart defaults, respects `$EDITOR`, per-directory identity), lazygit, GitHub CLI
 - **Work Management**: work-setup, work-nuke, work-switch, work-status, repos-clone
-- **Dotfiles CLI**: `dotfiles update`, `dotfiles sync`, `dotfiles health`, `dotfiles theme`, `dotfiles doctor`, `dotfiles backup`, `dotfiles profile`, `dotfiles export`
+- **Dotfiles CLI**: `dotfiles update`, `dotfiles sync`, `dotfiles health`, `dotfiles theme`, `dotfiles add-theme`, `dotfiles cleanup`, `dotfiles doctor`, `dotfiles backup`, `dotfiles profile`, `dotfiles export`
 - **Custom Scripts**: `~/bin` (erb-lint-formatter, etc.)
 
 ### Development
@@ -176,6 +176,8 @@ Installed Tools:
 │   ├── dotfiles sync (quick refresh — pull, relink, theme)
 │   ├── dotfiles health (verify setup)
 │   ├── dotfiles theme (switch theme)
+│   ├── dotfiles add-theme (scaffold new theme)
+│   ├── dotfiles cleanup (remove unlisted Homebrew packages)
 │   ├── dotfiles doctor (auto-fix issues)
 │   ├── dotfiles backup (snapshot/restore)
 │   ├── dotfiles profile (shell startup timing)
@@ -233,7 +235,10 @@ dotfiles/
 │   ├── mise/                   # Version manager (Ruby, Node, Elixir, etc.)
 │   ├── nvim/                   # Editor: LSP, plugins, keymaps
 │   ├── zed/                    # Zed: settings, snippets, tasks
-│   ├── zellij/                 # Multiplexer: layouts, theme
+│   ├── zellij/                 # Multiplexer: config, theme, layouts (rails, phoenix, work)
+│   ├── lazygit/                # Git UI: config + theme
+│   ├── borders/                # JankyBorders: active window highlighting
+│   ├── sketchybar/             # Menu bar: config + plugins
 │   └── starship.toml           # Prompt: git, languages, colors
 ├── bin/                        # Custom scripts (erb-lint-formatter, etc.)
 └── Brewfile                    # Declarative package management
@@ -342,6 +347,13 @@ Each file has a single responsibility. Want to change your Rails workflow? Edit 
 | `Alt+H/J/K/L` | Navigate panes |
 | `Ctrl+Q` | Quit Zellij |
 
+**Zellij Layouts** (pre-configured via aliases):
+| Alias | Layout | Tabs |
+|-------|--------|------|
+| `zr` | Rails | editor, server (rails s + console), tests, terminal |
+| `zp` | Phoenix | editor, server (phx.server + iex), tests, terminal |
+| `zw` | Work | editor, server (two panes), terminal |
+
 ## 🎨 Theming
 
 Choose between **Tokyo Night** (dark blue), **Aura Dark** (deep purple), or **Catppuccin Mocha** (warm pastels) during install. The theme is applied across 22 apps (17 auto-configured + 5 with manual instructions).
@@ -381,7 +393,10 @@ dotfiles/
 │   │   ├── settings.json       # Language, LSP, formatter, extension settings
 │   │   ├── tasks.json          # RSpec, Rails, Elixir, Zig, npm tasks
 │   │   └── snippets/           # ruby.json, erb.json, zig.json
-│   ├── zellij/                 # Zellij config + theme
+│   ├── zellij/                 # Zellij config, theme, layouts
+│   ├── lazygit/                # Lazygit config + theme
+│   ├── borders/                # JankyBorders window highlighting
+│   ├── sketchybar/             # Menu bar config + plugins
 │   └── starship.toml           # Prompt configuration
 ├── themes/                     # Theme assets (each has a theme.conf registry)
 │   ├── tokyo-night/            # Tokyo Night configs per app
@@ -399,6 +414,8 @@ dotfiles/
 │   ├── dotfiles-doctor         # Auto-fix common issues + SSH key audit
 │   ├── dotfiles-profile        # Measure shell startup time
 │   ├── dotfiles-export         # Export setup as portable snapshot
+│   ├── dotfiles-add-theme      # Scaffold new theme directory
+│   ├── dotfiles-cleanup        # Remove unlisted Homebrew packages
 │   ├── work-setup              # Configure work identity
 │   ├── work-nuke               # Remove all work config
 │   ├── work-switch             # Change employer
@@ -414,12 +431,13 @@ dotfiles/
 │   ├── health-check.sh         # Verify installation
 │   ├── theme-utils.sh          # Theme utility functions
 │   └── apply-theme.sh          # Apply theme across all apps
-├── tests/                      # 170 tests, run via GitHub Actions CI
+├── tests/                      # 200+ tests, run via GitHub Actions CI
 │   ├── test-idempotency.sh     # Idempotency tests (sandboxed)
 │   ├── test-work-nuke.sh       # Work-nuke edge case tests
 │   ├── test-repos-clone.sh     # Repos-clone logic tests
 │   ├── test-ssh-adversarial.sh # SSH adversarial input tests
-│   └── test-update.sh          # Update symlink tests
+│   ├── test-update.sh          # Update symlink tests
+│   └── test-theme.sh           # Theme system tests (apply, rollback, scaffold)
 ├── .github/workflows/test.yml  # CI: shellcheck + all test suites
 └── docs/                       # Additional documentation
 ```
@@ -435,6 +453,8 @@ dotfiles update       # Upgrade system & sync repo (pull → brew upgrade → sn
 dotfiles sync         # Quick refresh: pull, relink, reapply theme (no upgrades)
 dotfiles health       # Verify all tools are installed and configured
 dotfiles theme aura   # Switch theme (tokyo-night | aura | catppuccin)
+dotfiles add-theme x  # Scaffold a new theme directory with all required files
+dotfiles cleanup      # Find/remove Homebrew packages not in Brewfile (--force)
 dotfiles doctor       # Auto-fix common issues (symlinks, permissions, SSH keys)
 dotfiles backup       # Snapshot dotfiles state (--list, --restore <name>)
 dotfiles profile      # Measure shell startup time (--detailed for per-component)
@@ -489,7 +509,9 @@ dotfiles theme aura         # Switch to Aura Dark
 dotfiles theme catppuccin   # Switch to Catppuccin Mocha
 ```
 
-This updates 17 apps automatically (Neovim, Ghostty, tmux, Zellij, Starship, Zed, VS Code, Warp, bat, git-delta, fzf, lazygit, borders, sketchybar, yazi, gitui, lsd), then prints instructions for Slack, browsers, Telegram, and Raycast.
+This updates 17 apps automatically (Neovim, Ghostty, tmux, Zellij, Starship, Zed, VS Code, Warp, bat, git-delta, fzf, lazygit, borders, sketchybar, yazi, gitui, lsd), then prints instructions for Slack, browsers, Telegram, and Raycast. If the apply fails partway through, all configs are automatically rolled back.
+
+Adding a new theme is just creating a `themes/<name>/` directory with a `theme.conf` — themes are auto-discovered, no code changes needed. Use `dotfiles add-theme <name>` to scaffold the full directory structure.
 
 ### Add More Packages
 
@@ -567,6 +589,7 @@ Automated tests run on every push and PR via GitHub Actions:
 - **SSH config** — adversarial inputs and edge cases
 - **Repo cloner** — SSH alias detection and URL rewriting
 - **Update flow** — symlink creation and refresh
+- **Theme system** — apply, rollback, idempotency, scaffolding (39 assertions)
 
 Run locally: `bash tests/test-idempotency.sh` (or any test file in `tests/`)
 

@@ -32,7 +32,8 @@ echo ""
 TIMES=()
 for i in $(seq 1 10); do
     # Time a fresh zsh launch that immediately exits
-    T=$( { TIMEFORMAT='%R'; time zsh -i -c exit; } 2>&1 )
+    # Redirect zsh output to /dev/null, capture only bash's time output
+    T=$( { TIMEFORMAT='%R'; time zsh -i -c exit >/dev/null 2>&1; } 2>&1 )
     TIMES+=("$T")
     printf "  Run %2d: %ss\n" "$i" "$T"
 done
@@ -91,21 +92,40 @@ fi
 print_step "Timing individual components..."
 echo ""
 
+TIMINGS=()
+
 time_command() {
     local name="$1"
     shift
     local T
-    T=$( { TIMEFORMAT='%R'; time "$@" 2>/dev/null; } 2>&1 )
+    T=$( { TIMEFORMAT='%R'; time "$@" >/dev/null 2>&1; } 2>&1 )
     printf "  %-30s %ss\n" "$name" "$T"
+    TIMINGS+=("$T $name")
 }
 
 time_command "starship init" zsh -c 'command -v starship &>/dev/null && starship init zsh >/dev/null'
 time_command "mise activate" zsh -c 'command -v mise &>/dev/null && mise activate zsh >/dev/null'
 time_command "compinit" zsh -c 'autoload -Uz compinit && compinit -C'
+# shellcheck disable=SC2016
+time_command "fzf setup" zsh -c 'command -v fzf &>/dev/null && eval "$(fzf --zsh)" >/dev/null'
+# shellcheck disable=SC2016
+time_command "zoxide init" zsh -c 'command -v zoxide &>/dev/null && eval "$(zoxide init zsh)" >/dev/null'
+# shellcheck disable=SC2016
+time_command "direnv hook" zsh -c 'command -v direnv &>/dev/null && eval "$(direnv hook zsh)" >/dev/null'
 time_command "source dhh-additions" zsh -c '[[ -f ~/.zshrc-dhh-additions ]] && source ~/.zshrc-dhh-additions'
 time_command "source terminal-enhancements" zsh -c '[[ -f ~/.zshrc-terminal-enhancements ]] && source ~/.zshrc-terminal-enhancements'
 time_command "source elixir-additions" zsh -c '[[ -f ~/.zshrc-elixir-additions ]] && source ~/.zshrc-elixir-additions'
+time_command "source completions" zsh -c '[[ -f ~/.zshrc-work-completions ]] && source ~/.zshrc-work-completions'
+time_command "source theme-env" zsh -c '[[ -f ~/.zshrc-theme-env ]] && source ~/.zshrc-theme-env'
 
+echo ""
+echo "────────────────────────────────────────────────────"
+echo "  Slowest components (sorted):"
+echo "  ─────────────────────────────────────────"
+printf '%s\n' "${TIMINGS[@]}" | sort -rn | head -5 | while read -r t name; do
+    printf "  %-30s %ss\n" "$name" "$t"
+done
+echo "────────────────────────────────────────────────────"
 echo ""
 echo "  Tip: Components over 100ms are worth optimizing."
 echo "  Common fixes: lazy-load tools, use cached init, reduce plugin count."

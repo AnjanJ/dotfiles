@@ -325,6 +325,82 @@ assert_contains "$MOCK_DOTFILES/.config/starship.toml" 'palette = "old-palette"'
 teardown_theme_sandbox
 echo ""
 
+# ── Test 8: Rollback on partial failure ──
+echo "Test 8: Rollback restores configs on failure"
+setup_theme_sandbox
+load_theme_functions
+
+# Snapshot original configs before any apply
+original_ghostty=$(cat "$MOCK_DOTFILES/.config/ghostty/config")
+original_starship=$(cat "$MOCK_DOTFILES/.config/starship.toml")
+original_tmux=$(cat "$MOCK_DOTFILES/.tmux.conf")
+original_zellij=$(cat "$MOCK_DOTFILES/.config/zellij/config.kdl")
+# Make nvim plugins directory read-only so section 2 (Neovim) fails
+# sed -i cannot create temp file in a read-only directory
+chmod 555 "$MOCK_DOTFILES/.config/nvim/lua/plugins"
+
+set +e; apply_theme "tokyo-night" "true" >/dev/null 2>&1; rc=$?; set -e
+
+if [[ $rc -ne 0 ]]; then
+    pass "Apply returns non-zero when section fails"
+else
+    fail "Apply should return non-zero when nvim plugins dir is read-only"
+fi
+
+# Restore write permission for cleanup
+chmod 755 "$MOCK_DOTFILES/.config/nvim/lua/plugins"
+
+# Verify all configs were rolled back to their original state
+assert_eq "$(cat "$MOCK_DOTFILES/.config/ghostty/config")" "$original_ghostty" \
+    "Ghostty config rolled back after failure"
+assert_eq "$(cat "$MOCK_DOTFILES/.config/starship.toml")" "$original_starship" \
+    "Starship config rolled back after failure"
+assert_eq "$(cat "$MOCK_DOTFILES/.tmux.conf")" "$original_tmux" \
+    "tmux config rolled back after failure"
+assert_eq "$(cat "$MOCK_DOTFILES/.config/zellij/config.kdl")" "$original_zellij" \
+    "Zellij config rolled back after failure"
+
+teardown_theme_sandbox
+echo ""
+
+# ── Test 9: add-theme scaffolding ──
+echo "Test 9: add-theme scaffolds complete directory"
+SCAFFOLD_DIR=$(mktemp -d)
+
+# Copy helpers so the script can source them
+mkdir -p "$SCAFFOLD_DIR/scripts"
+cp "$REAL_DOTFILES_DIR/scripts/_helpers.sh" "$SCAFFOLD_DIR/scripts/"
+
+DOTFILES_DIR="$SCAFFOLD_DIR" bash "$REAL_DOTFILES_DIR/bin/dotfiles-add-theme" "test-new" >/dev/null 2>&1
+
+assert_file_exists "$SCAFFOLD_DIR/themes/test-new/theme.conf" \
+    "theme.conf created"
+assert_file_exists "$SCAFFOLD_DIR/themes/test-new/nvim/test-new-theme.lua" \
+    "nvim plugin template created"
+assert_file_exists "$SCAFFOLD_DIR/themes/test-new/tmux/theme-block.conf" \
+    "tmux theme block created"
+assert_file_exists "$SCAFFOLD_DIR/themes/test-new/starship/palette.toml" \
+    "starship palette created"
+assert_file_exists "$SCAFFOLD_DIR/themes/test-new/zellij/themes/test-new.kdl" \
+    "zellij theme created"
+assert_file_exists "$SCAFFOLD_DIR/themes/test-new/lazygit/theme.yml" \
+    "lazygit theme created"
+assert_file_exists "$SCAFFOLD_DIR/themes/test-new/sketchybar/colors.sh" \
+    "sketchybar colors created"
+
+# Verify theme.conf has all required variable names
+assert_contains "$SCAFFOLD_DIR/themes/test-new/theme.conf" "ghostty_theme" \
+    "theme.conf has ghostty_theme"
+assert_contains "$SCAFFOLD_DIR/themes/test-new/theme.conf" "nvim_colorscheme" \
+    "theme.conf has nvim_colorscheme"
+assert_contains "$SCAFFOLD_DIR/themes/test-new/theme.conf" "fzf_colors" \
+    "theme.conf has fzf_colors"
+assert_contains "$SCAFFOLD_DIR/themes/test-new/theme.conf" "borders_active" \
+    "theme.conf has borders_active"
+
+rm -rf "$SCAFFOLD_DIR"
+echo ""
+
 # ── Summary ───────────────────────────────────
 
 echo ""

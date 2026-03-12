@@ -17,6 +17,8 @@ dotfiles update       # Upgrade system & sync repo
 dotfiles sync         # Quick refresh: pull, relink, reapply theme
 dotfiles health       # Verify all tools are installed
 dotfiles theme aura   # Switch theme (tokyo-night | aura | catppuccin)
+dotfiles add-theme x  # Scaffold a new theme directory
+dotfiles cleanup      # Find/remove unlisted Homebrew packages (--force)
 dotfiles doctor       # Auto-fix common issues
 dotfiles backup       # Snapshot dotfiles state (--list, --restore)
 dotfiles profile      # Measure shell startup time (--detailed)
@@ -78,6 +80,8 @@ dotfiles dir          # Print dotfiles directory path
 | `Ctrl+G` | Lock (pass-through) |
 | `Alt+H/J/K/L` | Navigate panes |
 | `Ctrl+Q` | Quit |
+
+**Layouts**: `zr` (Rails), `zp` (Phoenix), `zw` (Work)
 
 ### Zed Tasks (`Cmd+Shift+P` > "task: spawn")
 | Task | Command |

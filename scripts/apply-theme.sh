@@ -151,6 +151,58 @@ apply_theme() {
 
     _theme_success "All theme files and configs verified"
 
+    # ── Backup for rollback ────────────────────────────
+    local _ROLLBACK_DIR
+    _ROLLBACK_DIR=$(mktemp -d)
+    local _ROLLBACK_FILES=()
+
+    _backup_for_rollback() {
+        local filepath="$1"
+        if [[ -f "$filepath" ]]; then
+            local safename
+            safename=$(echo "$filepath" | tr '/' '_')
+            cp "$filepath" "$_ROLLBACK_DIR/$safename"
+            _ROLLBACK_FILES+=("$filepath|$_ROLLBACK_DIR/$safename")
+        fi
+    }
+
+    _rollback_theme() {
+        echo ""
+        echo "Error: Theme apply failed — rolling back all changes..."
+        for entry in "${_ROLLBACK_FILES[@]}"; do
+            local orig="${entry%%|*}"
+            local bak="${entry##*|}"
+            if [[ -f "$bak" ]]; then
+                cp "$bak" "$orig"
+            fi
+        done
+        rm -rf "$_ROLLBACK_DIR"
+        echo "All configs restored to their previous state."
+    }
+
+    # Back up all configs that will be modified
+    _backup_for_rollback "$DOTFILES_DIR/.config/ghostty/config"
+    _backup_for_rollback "$DOTFILES_DIR/.config/nvim/lua/plugins/astroui.lua"
+    _backup_for_rollback "$DOTFILES_DIR/.config/nvim/lua/plugins/tokyo-night-theme.lua"
+    _backup_for_rollback "$DOTFILES_DIR/.config/nvim/lua/plugins/aura-theme.lua"
+    _backup_for_rollback "$DOTFILES_DIR/.config/nvim/lua/plugins/catppuccin-theme.lua"
+    _backup_for_rollback "$DOTFILES_DIR/.config/zellij/config.kdl"
+    _backup_for_rollback "$DOTFILES_DIR/.config/starship.toml"
+    _backup_for_rollback "$DOTFILES_DIR/.tmux.conf"
+    _backup_for_rollback "$DOTFILES_DIR/.config/zed/settings.json"
+    _backup_for_rollback "$HOME/.config/bat/config"
+    _backup_for_rollback "$HOME/.zshrc-theme-env"
+    _backup_for_rollback "$DOTFILES_DIR/.config/lazygit/config.yml"
+    _backup_for_rollback "$DOTFILES_DIR/.config/borders/bordersrc"
+    _backup_for_rollback "$DOTFILES_DIR/.config/sketchybar/sketchybarrc"
+    _backup_for_rollback "$HOME/.config/yazi/theme.toml"
+    _backup_for_rollback "$HOME/.config/gitui/theme.ron"
+    _backup_for_rollback "$HOME/.config/lsd/colors.yaml"
+
+    # Set ERR trap for automatic rollback (requires errtrace for functions)
+    set -o errtrace
+    trap '_rollback_theme; return 1' ERR
+
     echo ""
     _theme_step "Applying theme: $THEME"
     echo ""
@@ -270,6 +322,12 @@ apply_theme() {
         _theme_warning "tmux: Could not find THEME_BLOCK markers in .tmux.conf"
     fi
 
+    # ── Mandatory sections done — disable ERR trap ─────
+    # Sections 6-17 are optional (guarded by command -v). Failures in
+    # these should not trigger a full rollback of the core theme configs.
+    trap - ERR
+    set +o errtrace
+
     # ── 6. VS Code ──────────────────────────────────────
     _theme_step "VS Code..."
     local vscode_settings="$HOME/Library/Application Support/Code/User/settings.json"
@@ -360,7 +418,7 @@ FZFEOF
     # ── 12. lazygit ────────────────────────────────────────
     if command -v lazygit &>/dev/null; then
         _theme_step "lazygit..."
-        local lazygit_config="$HOME/.config/lazygit/config.yml"
+        local lazygit_config="$DOTFILES_DIR/.config/lazygit/config.yml"
         local lazygit_theme="$THEMES_DIR/lazygit/theme.yml"
         if [[ -f "$lazygit_config" ]] && grep -q "THEME_START" "$lazygit_config" && [[ -f "$lazygit_theme" ]]; then
             local tmpfile
@@ -388,7 +446,7 @@ FZFEOF
     # ── 13. borders (JankyBorders) ────────────────────────
     if command -v borders &>/dev/null; then
         _theme_step "borders..."
-        local borders_config="$HOME/.config/borders/bordersrc"
+        local borders_config="$DOTFILES_DIR/.config/borders/bordersrc"
         if [[ -f "$borders_config" ]]; then
             sed -i '' "s/active_color=0x[0-9a-fA-F]*/active_color=${borders_active}/" "$borders_config"
             sed -i '' "s/inactive_color=0x[0-9a-fA-F]*/inactive_color=${borders_inactive}/" "$borders_config"
@@ -402,7 +460,7 @@ FZFEOF
     # ── 14. sketchybar ─────────────────────────────────────
     if command -v sketchybar &>/dev/null; then
         _theme_step "sketchybar..."
-        local sketchybar_config="$HOME/.config/sketchybar/sketchybarrc"
+        local sketchybar_config="$DOTFILES_DIR/.config/sketchybar/sketchybarrc"
         local sketchybar_colors="$THEMES_DIR/sketchybar/colors.sh"
         if [[ -f "$sketchybar_config" ]] && grep -q "THEME_COLORS_START" "$sketchybar_config" && [[ -f "$sketchybar_colors" ]]; then
             local tmpfile
@@ -465,6 +523,9 @@ FZFEOF
             _theme_warning "lsd: colors file not found at $lsd_colors"
         fi
     fi
+
+    # ── Clean up rollback backups ────────────────────────
+    rm -rf "$_ROLLBACK_DIR"
 
     # ── Save state ──────────────────────────────────────
     set_current_theme "$THEME"

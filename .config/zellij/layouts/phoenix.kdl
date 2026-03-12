@@ -1,0 +1,24 @@
+// Phoenix/Elixir development layout
+// Usage: zellij --layout phoenix
+
+layout {
+    tab name="editor" focus=true {
+        pane
+    }
+    tab name="server" {
+        pane split_direction="vertical" {
+            pane name="phx server" command="bash" {
+                args "-c" "echo '=> Run: mix phx.server'; exec bash"
+            }
+            pane name="iex" command="bash" {
+                args "-c" "echo '=> Run: iex -S mix'; exec bash"
+            }
+        }
+    }
+    tab name="tests" {
+        pane name="tests"
+    }
+    tab name="terminal" {
+        pane
+    }
+}
