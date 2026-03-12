@@ -107,7 +107,7 @@ for f in .zshrc .zshrc-dhh-additions .zshrc-elixir-additions .zshrc-terminal-enh
 done
 
 # Config directories (copy actual files, not symlinks)
-for dir in aerospace ghostty mise nvim zed zellij; do
+for dir in aerospace ghostty mise nvim zed zellij lazygit borders sketchybar; do
     if [[ -d "$DOTFILES_DIR/.config/$dir" ]]; then
         mkdir -p "$BACKUP_DIR/.config/$dir"
         cp -R "$DOTFILES_DIR/.config/$dir/." "$BACKUP_DIR/.config/$dir/"

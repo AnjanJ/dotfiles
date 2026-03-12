@@ -38,23 +38,19 @@ for i in $(seq 1 10); do
     printf "  Run %2d: %ss\n" "$i" "$T"
 done
 
-# Calculate average
-TOTAL=0
-for t in "${TIMES[@]}"; do
-    TOTAL=$(echo "$TOTAL + $t" | bc)
-done
-AVG=$(echo "scale=3; $TOTAL / 10" | bc)
+# Calculate average using awk (no bc dependency)
+AVG=$(printf '%s\n' "${TIMES[@]}" | awk '{s+=$1} END {printf "%.3f", s/NR}')
 
 echo ""
 echo "────────────────────────────────────────────────────"
 echo -e "  Average startup: ${GREEN}${AVG}s${NC}"
 echo "────────────────────────────────────────────────────"
 
-if (( $(echo "$AVG < 0.200" | bc -l) )); then
+if awk "BEGIN{exit(!($AVG < 0.200))}"; then
     echo -e "  ${GREEN}Excellent${NC} — under 200ms"
-elif (( $(echo "$AVG < 0.500" | bc -l) )); then
+elif awk "BEGIN{exit(!($AVG < 0.500))}"; then
     echo -e "  ${YELLOW}Good${NC} — under 500ms"
-elif (( $(echo "$AVG < 1.000" | bc -l) )); then
+elif awk "BEGIN{exit(!($AVG < 1.000))}"; then
     echo -e "  ${YELLOW}Slow${NC} — consider profiling with --detailed"
 else
     echo -e "  ${RED}Very slow${NC} — run with --detailed to find bottlenecks"

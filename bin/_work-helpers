@@ -55,7 +55,7 @@ count_repos() {
 # List repos with dirty working trees in a directory
 list_dirty_repos() {
     local dir="$1"
-    [[ -d "$dir" ]] || return
+    [[ -d "$dir" ]] || return 0
     while IFS= read -r gitdir; do
         local repo_dir
         repo_dir=$(dirname "$gitdir")
@@ -68,7 +68,7 @@ list_dirty_repos() {
 # Find work-related SSH host aliases from ~/.ssh/config
 # Looks for Host blocks between # === WORK: and # === END WORK === markers
 get_work_ssh_hosts() {
-    [[ -f ~/.ssh/config ]] || return
+    [[ -f ~/.ssh/config ]] || return 0
     local in_block=false
     while IFS= read -r line; do
         if [[ "$line" =~ ^#\ ===\ WORK: ]]; then

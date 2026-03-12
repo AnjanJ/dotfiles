@@ -27,7 +27,8 @@ jobs:
             bin/work-* \
             bin/repos-clone \
             bin/_work-helpers \
-            bin/erb-lint-formatter
+            bin/erb-lint-formatter \
+            tests/test-*.sh
 
   idempotency:
     runs-on: macos-latest
@@ -70,3 +71,24 @@ jobs:
       - uses: actions/checkout@v4
       - name: Run update.sh tests
         run: bash tests/test-update.sh
+
+  doctor:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run dotfiles-doctor tests
+        run: bash tests/test-doctor.sh
+
+  setup-git:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run setup-git tests
+        run: bash tests/test-setup-git.sh
+
+  work-status:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run work-status tests
+        run: bash tests/test-work-status.sh
