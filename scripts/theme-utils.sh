@@ -8,7 +8,27 @@
 # ============================================
 
 THEME_STATE_FILE="$HOME/.dotfiles-theme"
-VALID_THEMES=("tokyo-night" "aura" "catppuccin")
+
+# Auto-discover available themes from themes/*/theme.conf
+_discover_themes() {
+    local script_dir
+    # Support both bash (BASH_SOURCE) and zsh (%x)
+    if [[ -n "${BASH_SOURCE[0]:-}" ]]; then
+        script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+    else
+        script_dir="$(cd "$(dirname "${(%):-%x}")/.." && pwd)"
+    fi
+    local themes_dir="${DOTFILES_DIR:-$script_dir}/themes"
+    local themes=()
+    for conf in "$themes_dir"/*/theme.conf; do
+        [[ -f "$conf" ]] || continue
+        themes+=("$(basename "$(dirname "$conf")")")
+    done
+    echo "${themes[@]}"
+}
+
+# shellcheck disable=SC2207
+VALID_THEMES=($(_discover_themes))
 
 # Get the currently active theme (defaults to tokyo-night)
 get_current_theme() {
@@ -36,28 +56,36 @@ validate_theme() {
     return 1
 }
 
+# Theme descriptions for interactive picker
+declare -A _THEME_DESCRIPTIONS=(
+    ["tokyo-night"]="Tokyo Night  — Dark blue aesthetic by folke\n     Subtle, calm colors. Blue and purple accents."
+    ["aura"]="Aura Dark    — Deep purple aesthetic by daltonmenezes\n     Vibrant, bold colors. Purple and green accents."
+    ["catppuccin"]="Catppuccin   — Warm pastel aesthetic by catppuccin\n     Soothing pastels. Lavender and teal accents."
+)
+
 # Interactive theme picker
 prompt_theme_choice() {
     echo ""
     echo "Choose your theme:"
     echo ""
-    echo "  1) Tokyo Night  — Dark blue aesthetic by folke"
-    echo "     Subtle, calm colors. Blue and purple accents."
-    echo ""
-    echo "  2) Aura Dark    — Deep purple aesthetic by daltonmenezes"
-    echo "     Vibrant, bold colors. Purple and green accents."
-    echo ""
-    echo "  3) Catppuccin   — Warm pastel aesthetic by catppuccin"
-    echo "     Soothing pastels. Lavender and teal accents."
-    echo ""
+
+    local i=1
+    local theme_order=()
+    for theme in "${VALID_THEMES[@]}"; do
+        theme_order+=("$theme")
+        local desc="${_THEME_DESCRIPTIONS[$theme]:-$theme}"
+        echo -e "  $i) $desc"
+        echo ""
+        i=$((i + 1))
+    done
+
     read -p "Enter choice [1]: " theme_choice
-    case "${theme_choice:-1}" in
-        1) echo "tokyo-night" ;;
-        2) echo "aura" ;;
-        3) echo "catppuccin" ;;
-        *)
-            echo "Invalid choice, defaulting to Tokyo Night" >&2
-            echo "tokyo-night"
-            ;;
-    esac
+    local idx="${theme_choice:-1}"
+
+    if [[ "$idx" =~ ^[0-9]+$ ]] && [[ "$idx" -ge 1 ]] && [[ "$idx" -le ${#theme_order[@]} ]]; then
+        echo "${theme_order[$((idx - 1))]}"
+    else
+        echo "Invalid choice, defaulting to ${theme_order[0]}" >&2
+        echo "${theme_order[0]}"
+    fi
 }

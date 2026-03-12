@@ -57,6 +57,13 @@ jobs:
       - name: Run SSH adversarial tests
         run: bash tests/test-ssh-adversarial.sh
 
+  theme:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run theme system tests
+        run: bash tests/test-theme.sh
+
   update:
     runs-on: macos-latest
     steps:

@@ -19,7 +19,7 @@ setup_git() {
     # ── Smart Defaults ────────────────────────────
     print_step "Step 8b: Configuring Git defaults..."
 
-    git config --global core.editor "zed --wait"
+    git config --global core.editor "${EDITOR:-zed --wait}"
     git config --global pull.rebase false
     ln -sf "$DOTFILES_DIR/.gitignore_global" ~/.gitignore_global
     git config --global core.excludesfile ~/.gitignore_global
