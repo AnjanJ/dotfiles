@@ -105,7 +105,6 @@ Aerospace, Cloudflare, Sketchybar/Borders, Heroku, LazySql, Render, steipete's C
 - `obsidian-cli` — Obsidian vault CLI
 
 **steipete's macOS CLI Tools**
-- `bird` — X/Twitter CLI
 - `imsg` — iMessage/SMS from terminal
 - `peekaboo` — Screenshots + AI vision
 - `summarize` — URL-to-summary

@@ -26,14 +26,12 @@ FORCE=false
 [[ "${1:-}" == "--yes" ]] && FORCE=true
 
 echo ""
-echo "╔═══════════════════════════════════════════════════════════╗"
-echo "║                                                           ║"
-echo "║   🗑️   AJ's Dotfiles Uninstall                            ║"
-echo "║                                                           ║"
-echo "║   This will remove all symlinks created by dotfiles.      ║"
-echo "║   Your Homebrew packages and runtimes stay untouched.     ║"
-echo "║                                                           ║"
-echo "╚═══════════════════════════════════════════════════════════╝"
+echo ""
+echo "  AJ's Dotfiles Uninstall"
+echo "  =========================================="
+echo ""
+echo "  This will remove all symlinks created by dotfiles."
+echo "  Your Homebrew packages and runtimes stay untouched."
 echo ""
 
 # Collect all symlinks that point into our dotfiles dir
@@ -150,9 +148,10 @@ done
 
 # Summary
 echo ""
-echo "╔═══════════════════════════════════════════════════════════╗"
-echo "║   Uninstall Complete                                      ║"
-echo "╚═══════════════════════════════════════════════════════════╝"
+echo ""
+echo "  =========================================="
+echo "  Uninstall Complete!"
+echo "  =========================================="
 echo ""
 echo -e "${GREEN}Removed:${NC} $REMOVED symlinks"
 [[ $SKIPPED -gt 0 ]] && echo -e "${YELLOW}Skipped:${NC} $SKIPPED (not ours)"

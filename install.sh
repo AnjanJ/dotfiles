@@ -108,28 +108,27 @@ if [[ "$(uname)" != "Darwin" ]]; then
 fi
 
 echo ""
-echo "╔═══════════════════════════════════════════════════════════╗"
-echo "║                                                           ║"
-echo "║   🚀  AJ's Dotfiles Installation                          ║"
-echo "║                                                           ║"
-echo "║   This will install:                                      ║"
-echo "║   • Homebrew packages                                     ║"
-echo "║   • Aerospace (window manager)                            ║"
-echo "║   • Ghostty terminal                                      ║"
-echo "║   • Neovim + AstroNvim                                    ║"
-echo "║   • tmux + plugins                                        ║"
-echo "║   • Zellij                                                ║"
-echo "║   • Zed editor (settings, snippets, tasks)                ║"
-echo "║   • Starship prompt                                       ║"
-echo "║   • Shell configuration                                   ║"
-echo "║   • Git smart defaults + identity setup                    ║"
-echo "║   • SSH keys (1Password, import, generate, or existing)  ║"
-echo "║   • Custom scripts (~/bin)                                ║"
-echo "║   • Theme: Tokyo Night, Aura, or Catppuccin (your choice!) ║"
-echo "║                                                           ║"
-echo "║   💡 Idempotent — safe to re-run anytime                 ║"
-echo "║                                                           ║"
-echo "╚═══════════════════════════════════════════════════════════╝"
+echo ""
+echo "  AJ's Dotfiles Installation"
+echo "  =========================================="
+echo ""
+echo "  This will install:"
+echo "    - Homebrew packages"
+echo "    - Aerospace (window manager)"
+echo "    - Ghostty terminal"
+echo "    - Neovim + AstroNvim"
+echo "    - tmux + plugins"
+echo "    - Zellij"
+echo "    - Zed editor (settings, snippets, tasks)"
+echo "    - Starship prompt"
+echo "    - Shell configuration"
+echo "    - Git smart defaults + identity setup"
+echo "    - SSH keys (1Password, import, generate, or existing)"
+echo "    - Custom scripts (~/bin)"
+echo "    - Theme: Tokyo Night, Aura, or Catppuccin (your choice!)"
+echo ""
+echo "  Idempotent -- safe to re-run anytime"
+echo ""
 echo ""
 
 if [[ "$INTERACTIVE" == true ]]; then
@@ -195,9 +194,11 @@ echo ""
 print_step "Step 2: Installing packages from Brewfile..."
 
 cd "$DOTFILES_DIR"
-brew bundle install
-
-print_success "All packages installed"
+if brew bundle install; then
+    print_success "All packages installed"
+else
+    print_warning "Some packages failed to install (see errors above). Continuing..."
+fi
 
 # ============================================
 # 3. CREATE NECESSARY DIRECTORIES
@@ -443,11 +444,9 @@ bash "$DOTFILES_DIR/scripts/health-check.sh"
 # INSTALLATION COMPLETE
 # ============================================
 echo ""
-echo "╔═══════════════════════════════════════════════════════════╗"
-echo "║                                                           ║"
-echo "║   ✅  Installation Complete!                              ║"
-echo "║                                                           ║"
-echo "╚═══════════════════════════════════════════════════════════╝"
+echo "  =========================================="
+echo "  Installation Complete!"
+echo "  =========================================="
 echo ""
 echo "📋 Next Steps:"
 echo ""

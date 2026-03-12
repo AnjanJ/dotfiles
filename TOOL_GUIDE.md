@@ -1,0 +1,1008 @@
+# Your Complete Tool Guide
+
+Everything installed by your dotfiles — what it does, when to use it, and how to get the most out of it.
+
+---
+
+## Table of Contents
+
+1. [Terminal & Shell](#1-terminal--shell)
+2. [Editors](#2-editors)
+3. [File Navigation & Search](#3-file-navigation--search)
+4. [Git & Version Control](#4-git--version-control)
+5. [Terminal Multiplexers](#5-terminal-multiplexers)
+6. [Window Management & Desktop](#6-window-management--desktop)
+7. [Database Tools](#7-database-tools)
+8. [Containers & DevOps](#8-containers--devops)
+9. [Cloud & Deployment](#9-cloud--deployment)
+10. [API & HTTP Tools](#10-api--http-tools)
+11. [Language & Runtime Management](#11-language--runtime-management)
+12. [Rails Development](#12-rails-development)
+13. [Elixir & Phoenix Development](#13-elixir--phoenix-development)
+14. [Log Viewing & Analysis](#14-log-viewing--analysis)
+15. [Media & Documents](#15-media--documents)
+16. [macOS Productivity](#16-macos-productivity)
+17. [Communication](#17-communication)
+18. [Security & Privacy](#18-security--privacy)
+19. [AI & Assistant Tools](#19-ai--assistant-tools)
+20. [Browsers](#20-browsers)
+21. [Niche CLI Utilities](#21-niche-cli-utilities)
+
+---
+
+## 1. Terminal & Shell
+
+### Ghostty (Primary Terminal)
+**What**: GPU-accelerated terminal emulator with native Metal rendering on macOS.
+**When**: Your daily driver terminal. Open it for everything — coding, git, servers, scripts.
+**Key features**:
+- Blazing fast rendering (Metal/GPU)
+- Themed via your dotfiles theme system (switches with `dotfiles theme`)
+- Ligature support with Nerd Fonts
+- Native macOS feel
+
+**Tips**:
+- Split panes are handled by tmux/zellij inside Ghostty, not by Ghostty itself
+- Config lives at `.config/ghostty/config` — theme auto-managed by `dotfiles theme`
+
+### WezTerm (Secondary Terminal)
+**What**: Cross-platform terminal configurable with Lua.
+**When**: If you need Lua scripting for terminal behavior, SSH multiplexing, or testing something outside Ghostty.
+**Key features**: Lua config, built-in SSH domains, WebGPU rendering, image support.
+
+### Warp (AI Terminal)
+**What**: Modern terminal with built-in AI command suggestions.
+**When**: When you're blanking on a complex command and want AI-assisted completion. Good for learning new CLI tools.
+**Key features**: AI suggestions, blocks-based output, collaborative workflows.
+
+### Starship (Prompt)
+**What**: Cross-shell prompt written in Rust.
+**When**: Always active — it's your prompt. Shows git branch, language versions, directory, and error status.
+**Key features**:
+- Themed via your dotfiles theme system
+- Shows Ruby/Node/Elixir/Python/Go/Rust versions when in a project
+- Git status indicators (branch, ahead/behind, dirty)
+- Custom symbols for vim mode
+
+**Tips**: Config at `.config/starship.toml`. The palette section auto-switches with themes.
+
+### Zsh Configuration
+**What**: Your shell is zsh with 150+ aliases across 4 config files.
+**When**: Always loaded. Use `alias-list` to see what's available.
+
+**Key environment variables**:
+| Variable | Purpose |
+|----------|---------|
+| `RUBY_YJIT_ENABLE=1` | Enables YJIT JIT compiler for Ruby 3.1+ (free performance) |
+| `EDITOR` | Zed (falls back to nvim, then vim) |
+| `PG_VERSION` | PostgreSQL version for service commands |
+| `WORK_DIR` / `PROJECTS_DIR` | Where your code lives |
+
+**Tips**:
+- `~/.zshrc.local` is sourced last — put machine-specific overrides there (never committed)
+- Use `alias-search <keyword>` to find any alias
+- Use `dotfiles profile` if shell startup feels slow
+
+---
+
+## 2. Editors
+
+### Zed (Primary Editor)
+**What**: Fast, Rust-based editor with built-in LSP and AI support.
+**When**: Your primary code editor for Rails, Elixir, Python, Zig, and general editing.
+**Key features**:
+- Native LSP (Ruby LSP, Elixir LS, Pyright, zls)
+- Built-in terminal
+- Collaborative editing (multiplayer)
+- Custom tasks for RSpec, Rails server/console/migrate, Zig build/test
+- Snippets for RSpec, Rails, ERB, Zig
+
+**Tips**:
+- `Cmd+Shift+P > task: spawn` to run pre-configured tasks
+- Snippets: type `desc`, `it`, `service`, `pry`, `er`, `main` + Tab
+- Config at `.config/zed/settings.json`, tasks at `.config/zed/tasks.json`
+
+### Neovim + AstroNvim (Terminal Editor)
+**What**: Vim fork with full IDE features via AstroNvim distribution.
+**When**: Quick edits in terminal, remote servers, or when you want vim motions everywhere.
+**Key features**:
+- 30+ plugins: Telescope, Harpoon, neo-tree, vim-rails, vim-test, toggleterm
+- Full LSP via Mason (Ruby, Elixir, Python, Go, Rust, Zig)
+- Git integration (gitsigns, fugitive)
+- DAP (Debug Adapter Protocol) support
+- Tokyo Night / Aura / Catppuccin themes (synced with dotfiles theme)
+
+**Essential keybindings** (Leader = Space):
+| Key | Action |
+|-----|--------|
+| `Space ff` | Find files (Telescope) |
+| `Space fw` | Find word in project |
+| `Space fb` | Find open buffers |
+| `Space ha` | Harpoon: bookmark file |
+| `Ctrl+H/J/K/L` | Harpoon: jump to bookmarks 1-4 |
+| `gd` | Go to definition |
+| `gr` | Find references |
+| `K` | Hover documentation |
+| `Space la` | Code actions |
+| `Space e` | Toggle file explorer |
+
+**Tips**:
+- Open with `v` (aliased to `nvim`)
+- `vimrc` opens Neovim config for editing
+- `vz` opens `.zshrc`, `vt` opens `.tmux.conf`
+- `:A` in a Rails file jumps to the test (vim-rails)
+- `:Emodel user` jumps to User model, `:Econtroller users` to controller
+
+### VS Code (GUI IDE)
+**What**: Microsoft's editor with 110 extensions installed.
+**When**: Complex debugging, Flutter/Dart development, pair programming, or when you want a full GUI IDE.
+**Key extensions**:
+- GitHub Copilot + Chat for AI assistance
+- GitLens for deep git history
+- Ruby LSP + Solargraph for Ruby intelligence
+- SQLTools for inline database queries
+- Docker integration
+- 9 theme extensions (Tokyo Night, Aura, Kanagawa, GitHub, Material)
+
+**Tips**: Extensions are managed in your Brewfile — `brew bundle install` restores them all.
+
+---
+
+## 3. File Navigation & Search
+
+### Zoxide (`cd` replacement)
+**What**: Smart directory jumper that learns from your habits.
+**When**: Every time you change directories. Type partial paths and it finds the best match.
+**Usage**:
+```bash
+cd projects     # Jumps to most-visited directory matching "projects"
+cd ror api      # Jumps to best match for "ror" + "api"
+cdi             # Interactive picker with fzf
+cdd ~/exact/path  # Original cd for exact paths
+```
+**Tips**: The more you use it, the smarter it gets. It tracks frequency and recency.
+
+### fzf (Fuzzy Finder)
+**What**: General-purpose fuzzy finder for files, history, processes — anything.
+**When**: Whenever you need to search/filter interactively.
+**Usage**:
+```bash
+Ctrl+R          # Search shell history (fzf-enhanced)
+Ctrl+T          # Find files in current directory
+Alt+C           # cd into subdirectory
+vim $(fzf)      # Open a file found by fzf
+glog            # Git log with fzf preview
+vif             # Fuzzy-find and open file in editor
+cdf             # Fuzzy-find and cd to project directory
+```
+**Tips**: fzf colors are themed — they change when you run `dotfiles theme`.
+
+### Ripgrep (`grep` replacement)
+**What**: Line-oriented search tool that's 10-100x faster than grep.
+**When**: Searching for text in files. Respects `.gitignore` by default.
+**Usage**:
+```bash
+grep "def create"         # Actually runs ripgrep
+grep -i "todo" -t ruby    # Case-insensitive, Ruby files only
+grepp "pattern"           # Original grep if you need it
+psg ruby                  # Search running processes
+```
+**Tips**: Use `-t` for file type filters: `grep "class" -t py` searches only Python files.
+
+### fd (`find` replacement)
+**What**: Simple, fast alternative to `find`.
+**When**: Finding files by name or pattern.
+**Usage**:
+```bash
+find user          # Finds all files matching "user"
+find -e rb model   # Find .rb files matching "model"
+find -H            # Include hidden files
+findd              # Original find if you need it
+```
+
+### bat (`cat` replacement)
+**What**: `cat` with syntax highlighting, line numbers, and git integration.
+**When**: Viewing file contents. Also used as the `$PAGER`.
+**Usage**:
+```bash
+cat app/models/user.rb   # Syntax-highlighted output
+cat -l ruby file.txt     # Force Ruby highlighting
+catt file.txt            # Original cat
+```
+**Tips**: bat is also used by fzf for preview windows — that's why previews are syntax-highlighted.
+
+### eza (`ls` replacement)
+**What**: Modern `ls` with icons, colors, git status, and tree view.
+**When**: Listing files. Always active as your `ls`.
+**Usage**:
+```bash
+ls                # eza with icons + grouped directories first
+ll                # Long listing with git status
+la                # Long listing including hidden files
+tree              # eza tree view with icons
+lss               # Original ls
+```
+
+### lsd (alternative `ls`)
+**What**: Another modern ls replacement with icons. Similar to eza.
+**When**: Installed as an alternative. eza is your default, but lsd is available if you prefer its style.
+**Usage**: `lsd`, `lsd -la`, `lsd --tree`
+
+### yazi (Terminal File Manager)
+**What**: Blazing-fast terminal file manager written in Rust.
+**When**: When you need to browse, preview, and manage files visually in the terminal — like a TUI version of Finder.
+**Usage**:
+```bash
+yazi              # Opens file manager in current directory
+yazi ~/projects   # Opens in specific directory
+```
+**Key features**: Image previews, syntax-highlighted file previews, bulk rename, tab support, vim keybindings.
+**Tips**: Press `q` to quit and cd to the directory you were browsing (if configured).
+
+### tree
+**What**: Directory tree viewer (via eza's tree mode).
+**When**: Understanding project structure at a glance.
+**Usage**: `tree` or `tree -L 2` (limit depth).
+
+### tldr / tlrc
+**What**: Simplified, example-focused man pages.
+**When**: You know the command but forgot the flags.
+**Usage**:
+```bash
+help tar          # Shows practical tar examples
+help ffmpeg       # Shows common ffmpeg patterns
+help git-rebase   # Shows git rebase examples
+```
+**Tips**: Much more useful than `man` for quick reference. Use `help` (aliased to `tldr`).
+
+---
+
+## 4. Git & Version Control
+
+### Git (with Smart Defaults)
+**What**: Version control, configured with opinionated defaults by your dotfiles.
+**Auto-configured features**:
+| Feature | What it does |
+|---------|-------------|
+| `push.autoSetupRemote` | `git push` always works — no `-u origin branch` needed |
+| `rerere.enabled` | Remembers how you resolved conflicts and auto-applies next time |
+| `diff.algorithm histogram` | Better diffs when code blocks move around |
+| `branch.sort -committerdate` | `git branch` shows most recently used first |
+| `commit.verbose` | Shows the full diff while you write commit messages |
+| `merge.tool nvimdiff` | Opens Neovim for 3-way merge conflict resolution |
+| `merge.conflictstyle diff3` | Shows base + ours + theirs in conflict markers |
+
+**Your git aliases**:
+```bash
+ga .              # git add
+gc                # git commit (verbose)
+gca               # git commit all
+gco main          # git checkout
+gb                # git branch (sorted by recent)
+gp                # git push
+gl                # git pull
+gd                # git diff
+gdc               # git diff --cached (staged changes)
+gclean            # Delete merged branches
+```
+
+### GitHub CLI (`gh`)
+**What**: Official GitHub CLI for PRs, issues, repos, Actions.
+**When**: Creating PRs, reviewing code, checking CI, managing releases — all from terminal.
+**Usage**:
+```bash
+gh pr create              # Create pull request
+gh pr view --web          # Open PR in browser
+gh pr checks              # View CI status
+gh pr merge               # Merge PR
+gh issue create           # Create issue
+gh repo clone org/repo    # Clone repository
+gh run list               # View GitHub Actions runs
+gh run view               # View specific run details
+```
+**Tips**: `gh` authenticates via browser on first use. Extremely powerful for staying in the terminal.
+
+### lazygit (Git TUI)
+**What**: Beautiful terminal UI for git operations.
+**When**: Staging files, committing, rebasing, resolving conflicts, cherry-picking — anything beyond simple `git add/commit/push`.
+**Usage**: `lg` or `lazygit`
+**Key features**:
+- Stage by file, hunk, or individual line
+- Interactive rebase (squash, reword, reorder, drop)
+- Visual branch management
+- Cherry-pick across branches
+- Stash management
+- Themed with Tokyo Night / your current theme
+
+**Tips**: Press `?` in any panel to see available keybindings. Press `x` for context menu.
+
+### gitui (Alternative Git TUI)
+**What**: Rust-based git TUI, faster than lazygit on very large repos.
+**When**: If lazygit feels slow on a massive repo, or if you prefer gitui's keyboard-driven style.
+**Usage**: `gitui`
+
+### delta (Git Diff Viewer)
+**What**: Syntax-highlighted, side-by-side git diffs.
+**When**: Always active — configured as your git pager. Every `git diff`, `git log -p`, and lazygit diff uses delta.
+**Key features**: Line-by-line change highlighting, side-by-side view, syntax highlighting matching your colorscheme.
+
+---
+
+## 5. Terminal Multiplexers
+
+### tmux (Session Manager)
+**What**: Terminal multiplexer — persist sessions, split panes, and manage multiple workspaces.
+**When**: Running multiple terminal tasks (server + console + tests), keeping sessions alive after disconnect, remote work.
+**Prefix**: `Ctrl+A` (remapped from default `Ctrl+B`)
+
+**Essential keybindings**:
+| Key | Action |
+|-----|--------|
+| `Prefix \|` | Split vertical |
+| `Prefix -` | Split horizontal |
+| `Prefix h/j/k/l` | Navigate panes (vim-style) |
+| `Prefix c` | New window |
+| `Prefix ,` | Rename window |
+| `Prefix r` | Start Rails server |
+| `Prefix C` | Open Rails console |
+| `Prefix I` | Install/update plugins |
+
+**Session aliases**:
+```bash
+ta my-project     # Attach to session
+ts my-project     # Create new session
+tl                # List sessions
+tw                # Work session (pre-configured)
+tp                # Personal session
+tks my-project    # Kill session
+```
+
+**Plugins installed** (8): TPM, sensible, resurrect (persist across restarts), continuum (auto-save), yank, vim-tmux-navigator, open, tokyo-night-tmux.
+
+**Tips**:
+- Sessions survive terminal crashes — `ta` to reattach
+- `tmux-resurrect` saves/restores sessions across system restarts
+- Prefix + I to install plugins after fresh setup
+
+### Zellij (Modern Alternative)
+**What**: Modern multiplexer written in Rust with built-in layouts.
+**When**: When you want pre-configured layouts for specific project types (Rails, Phoenix, Work).
+**Usage**:
+```bash
+zr                # Rails layout (server + console + editor + tests)
+zp                # Phoenix layout
+zw                # Work layout
+za my-session     # Attach to session
+zn my-session     # New named session
+zl                # List sessions
+```
+**Key features**: Layout files in `.config/zellij/layouts/`, vim keybindings, floating panes, tab support.
+
+**Tips**: `Ctrl+O` enters command mode, `Ctrl+G` locks (passthrough to inner app).
+
+---
+
+## 6. Window Management & Desktop
+
+### Aerospace (Tiling Window Manager)
+**What**: i3-inspired tiling window manager for macOS. No SIP disabling required.
+**When**: Always running. Manages all your windows automatically.
+**Key features**:
+- Automatic tiling — windows fill available space
+- 9 virtual workspaces
+- Vim-style navigation
+- App-specific workspace launchers
+
+**Keybindings**:
+| Key | Action |
+|-----|--------|
+| `Ctrl+Shift+H/J/K/L` | Navigate windows |
+| `Ctrl+Alt+H/J/K/L` | Move windows |
+| `Ctrl+Shift+1-9` | Switch workspace |
+| `Ctrl+Alt+1-9` | Move window to workspace |
+| `Ctrl+Shift+/` | Toggle layout (tiles/accordion) |
+| `Ctrl+Shift+-/=` | Resize window |
+| `Ctrl+Shift+C` | Chrome (workspace 1) |
+| `Ctrl+Shift+Z` | Zed (workspace 2) |
+| `Ctrl+Shift+G` | Ghostty (workspace 7) |
+| `Ctrl+Shift+O` | Obsidian (workspace 8) |
+
+**Tips**: Config at `.config/aerospace/aerospace.toml`. Mouse follows focus is enabled. Starts at login.
+
+### Borders (Window Borders)
+**What**: Visual window focus indicator — draws colored borders around the active window.
+**When**: Always running alongside Aerospace. Helps you see which window is focused at a glance.
+**Tips**: Colors are themed — they change with `dotfiles theme`.
+
+### SketchyBar (Custom Status Bar)
+**What**: Highly customizable macOS menu bar replacement.
+**When**: Always running. Shows themed status indicators.
+**Tips**: Config at `.config/sketchybar/sketchybarrc`. Colors auto-switch with themes.
+
+---
+
+## 7. Database Tools
+
+### PostgreSQL 14
+**What**: Your primary relational database. Runs as a Homebrew service.
+**When**: Rails/Phoenix development (default database).
+**Management**:
+```bash
+pg-start          # Start PostgreSQL
+pg-stop           # Stop PostgreSQL
+pg-restart        # Restart
+devstart          # Start all dev services (includes PG)
+devstop           # Stop all dev services
+```
+
+### MySQL
+**What**: Alternative relational database. Runs as a Homebrew service.
+**When**: Projects that require MySQL instead of PostgreSQL.
+
+### Redis
+**What**: In-memory key-value store. Used by Sidekiq, Action Cable, caching.
+**When**: Rails apps with background jobs, WebSockets, or caching.
+**Management**: Started/stopped by `devstart`/`devstop`. Check Sidekiq queues with `sq`.
+
+### pgcli (PostgreSQL CLI)
+**What**: PostgreSQL CLI with smart autocompletion and syntax highlighting.
+**When**: Running SQL queries against your database. Much better than raw `psql`.
+**Usage**:
+```bash
+pgcli -d myapp_development     # Connect to database
+pgcli -d myapp_test            # Connect to test DB
+```
+**Key features**: Context-aware autocomplete (suggests columns from the table you're querying), syntax highlighting, multi-line queries, favorites (`\f`).
+**Tips**: Use `\dt` for tables, `\d tablename` for schema, `\timing` to show query time.
+
+### mycli (MySQL CLI)
+**What**: Same as pgcli but for MySQL.
+**When**: MySQL projects.
+**Usage**: `mycli -d myapp_development`
+
+### litecli (SQLite CLI)
+**What**: Same as pgcli but for SQLite.
+**When**: Quick SQLite databases, development mode Rails with SQLite.
+**Usage**: `litecli db/development.sqlite3`
+
+### lazysql (Database TUI)
+**What**: Terminal UI for databases with vim-style navigation.
+**When**: Browsing tables, editing rows, exploring schema visually — without leaving the terminal.
+**Usage**: `lazysql`
+**Tips**: Configure connections in `~/.config/lazysql/config.toml`.
+
+### Beekeeper Studio (GUI)
+**What**: Modern SQL IDE with beautiful UI.
+**When**: Complex queries, JSON column exploration, data export, ER diagrams. Best for visually exploring data.
+**Tips**: Excellent for JSON-heavy columns where terminal tools fall short.
+
+### Postico (PostgreSQL GUI)
+**What**: Native macOS PostgreSQL client. Clean, fast, focused.
+**When**: Quick PostgreSQL browsing when you want a native Mac app feel.
+
+### Redis Insight (GUI)
+**What**: Official Redis GUI for monitoring and debugging.
+**When**: Debugging cache issues, monitoring Sidekiq queues visually, inspecting Redis keys.
+
+---
+
+## 8. Containers & DevOps
+
+### Docker & Docker Desktop
+**What**: Container runtime for isolated environments.
+**When**: Running services in containers, testing production-like setups, CI debugging.
+**Aliases**:
+```bash
+dc                # docker-compose
+dcu               # docker-compose up
+dcu -d            # docker-compose up (detached)
+dcd               # docker-compose down
+dcr web bash      # docker-compose run --rm web bash
+dcl               # docker-compose logs -f
+```
+
+### lazydocker (Docker TUI)
+**What**: Terminal UI for Docker — see all containers, logs, stats in one view.
+**When**: Monitoring running containers, viewing logs, restarting services.
+**Usage**: `lzd` or `lazydocker`
+**Key features**: Real-time resource usage, log streaming, container restart/remove, image management.
+**Tips**: Much faster than Docker Desktop for quick checks. Press `?` for help.
+
+---
+
+## 9. Cloud & Deployment
+
+### Fly.io CLI (`flyctl`)
+**What**: Deploy and manage apps on Fly.io.
+**When**: Deploying Rails/Phoenix apps to Fly.io.
+**Usage**: `fly deploy`, `fly status`, `fly logs`, `fly ssh console`
+
+### Heroku CLI
+**What**: Manage Heroku apps from terminal.
+**When**: Heroku-hosted projects.
+**Aliases**:
+```bash
+h                 # heroku
+hl                # heroku logs --tail
+hc                # heroku run rails console
+hm                # heroku run rake db:migrate
+```
+
+### Render CLI
+**What**: Manage Render deployments.
+**When**: Projects deployed on Render.
+
+### Cloudflare Tunnel (`cloudflared`)
+**What**: Expose local services to the internet securely via Cloudflare.
+**When**: Sharing a local dev server, testing webhooks, demoing to clients.
+**Usage**: `cloudflared tunnel --url http://localhost:3000`
+
+### Supabase CLI
+**What**: Manage Supabase projects (Postgres + Auth + Storage + Realtime).
+**When**: Projects using Supabase as backend.
+**Usage**: `supabase start`, `supabase db push`, `supabase functions deploy`
+
+---
+
+## 10. API & HTTP Tools
+
+### Bruno (API Client)
+**What**: Git-friendly Postman alternative. Stores collections as `.bru` files.
+**When**: Testing APIs, documenting endpoints, sharing API collections with your team via git.
+**Key features**:
+- Offline-first — no account required
+- Collections stored as plain text in your project repo
+- Environment variables, scripting, assertions
+- Import Postman collections
+
+**Tips**: Create an `api-collections/` folder in your Rails project. Commit `.bru` files alongside code.
+
+### HTTPie
+**What**: Ergonomic HTTP client with intuitive syntax.
+**When**: Quick API testing from the terminal — more readable than curl.
+**Usage**:
+```bash
+http GET localhost:3000/api/users                     # GET request
+http POST localhost:3000/api/users name=John email=j@x.com  # POST with JSON
+http PUT localhost:3000/api/users/1 name=Jane         # PUT
+http DELETE localhost:3000/api/users/1                 # DELETE
+http -a user:pass GET localhost:3000/api/admin         # Basic auth
+http localhost:3000/api/users Authorization:"Bearer token123"  # Bearer token
+```
+**Tips**: HTTPie auto-detects JSON. Key=value becomes JSON body. Key==value becomes query parameter.
+
+### Requestly
+**What**: HTTP interceptor and API debugging proxy.
+**When**: Debugging API calls, mocking responses, testing error scenarios, redirect rules.
+
+---
+
+## 11. Language & Runtime Management
+
+### Mise (Polyglot Version Manager)
+**What**: One tool to manage Ruby, Node, Python, Elixir, Go, Rust versions. Replaces asdf/rbenv/nvm/pyenv.
+**When**: Always active. Automatically switches versions per project via `.tool-versions` or `.mise.toml`.
+**Usage**:
+```bash
+mise install ruby@3.3    # Install Ruby 3.3
+mise use ruby@3.3        # Set in current project
+mise ls                  # List installed versions
+mise outdated            # Check for updates
+mise upgrade             # Upgrade all tools
+```
+**Config**: `~/.config/mise/config.toml` sets global defaults (all "latest").
+**Tips**: Mise is activated in your `.zshrc`. It's faster than asdf (no shims).
+
+### Direnv
+**What**: Automatically loads/unloads environment variables when you enter/leave a directory.
+**When**: Projects that need specific env vars (API keys, database URLs, feature flags).
+**Usage**: Create `.envrc` in your project:
+```bash
+export DATABASE_URL=postgres://localhost/myapp_dev
+export REDIS_URL=redis://localhost:6379
+export SECRET_KEY_BASE=abc123
+```
+Then `direnv allow` to trust it. Variables auto-load when you `cd` into the project.
+**Tips**: Never commit `.envrc` — add it to `.gitignore`.
+
+### uv (Python Package Manager)
+**What**: Blazing-fast Python package installer written in Rust (10-100x faster than pip).
+**When**: Python projects, installing Python packages.
+**Usage**: `uv pip install pandas`, `uv pip sync requirements.txt`
+
+---
+
+## 12. Rails Development
+
+Your Rails workflow is powered by 70+ aliases and functions in `.zshrc-dhh-additions`.
+
+### Core Commands
+```bash
+r                 # bin/rails (use this, not 'rails')
+rs                # rails server
+rc                # rails console
+rgen scaffold User name:string email:string  # generate
+```
+
+### Database
+```bash
+rdm               # db:migrate
+rdr               # db:rollback
+rds               # db:seed
+rdt               # db:test:prepare
+rdb               # rails db (general)
+dbreset           # drop + create + migrate + seed
+psql-dev          # Quick psql access to dev DB
+dbconsole         # rails dbconsole
+```
+
+### Testing (auto-detects RSpec vs Minitest)
+```bash
+rt                # Run tests (current file or all)
+rta               # Run all tests
+rtf               # Run functional/controller tests
+rtu               # Run unit/model tests
+```
+
+### Code Quality
+```bash
+cop               # rubocop -a (auto-correct safe)
+copall            # rubocop -A (auto-correct aggressive)
+brake             # brakeman security scan
+bestpractices     # rails_best_practices
+```
+
+### Environment
+```bash
+dev               # RAILS_ENV=development
+railstest         # RAILS_ENV=test
+prod              # RAILS_ENV=production
+railsenv          # Show current environment
+```
+
+### Credentials
+```bash
+creds             # Edit credentials
+creds-prod        # Edit production credentials
+```
+
+### Services
+```bash
+devstart          # Start Redis + PostgreSQL + Mailcatcher
+devstop           # Stop all services
+sq                # Sidekiq queue status (default, mailers, scheduled, retries, dead)
+```
+
+### Professional Setup (for new Rails projects)
+```bash
+rails-setup-rubocop       # Install RuboCop with Airbnb style
+rails-setup-lefthook      # Install git hooks
+rails-setup-simplecov     # Install test coverage
+rails-setup-ci            # Install GitHub Actions workflow
+rails-setup-gems          # Show recommended gems
+rails-setup-all           # Run all setup steps
+```
+
+### New Project
+```bash
+railsnew myapp            # Creates Rails app with your defaults
+cdroot                    # Jump to Rails root from anywhere in project
+serve production          # Start server with specific environment
+```
+
+---
+
+## 13. Elixir & Phoenix Development
+
+50+ aliases and functions in `.zshrc-elixir-additions`.
+
+### Phoenix
+```bash
+phs               # Phoenix server
+phe               # iex -S mix (Elixir console)
+phep              # iex -S mix phx.server (console + server)
+phr               # Phoenix routes
+```
+
+### Mix & Dependencies
+```bash
+m                 # mix
+mc                # mix compile
+phi               # mix deps.get
+phu               # mix deps.update --all
+```
+
+### Ecto (Database)
+```bash
+phdm              # mix ecto.migrate
+phdr              # mix ecto.rollback
+phds              # mix ecto.setup
+phdreset          # mix ecto.reset
+```
+
+### Testing
+```bash
+pht               # mix test
+phta              # mix test (all)
+phtf              # mix test --failed
+phts              # mix test --stale
+phtc              # mix test --cover
+phtw              # mix test --watch
+```
+
+### Code Quality
+```bash
+phf               # mix format
+phcredo           # mix credo
+phcredos          # mix credo --strict
+phdialyzer        # mix dialyzer
+phcheck           # Run all quality checks
+```
+
+### Generators
+```bash
+phg.live User users name:string   # LiveView generator
+phg.auth                          # Auth generator
+phg.context                       # Context generator
+phg.schema                        # Schema generator
+```
+
+### Development Services
+```bash
+elixir-devstart   # Start PostgreSQL + Redis
+elixir-devstop    # Stop services
+elixir-doctor     # Phoenix health check
+phoenixnew myapp  # Create new Phoenix app
+```
+
+---
+
+## 14. Log Viewing & Analysis
+
+### logtail (tail -f)
+**When**: Quick, simple log following during development.
+**Usage**: `logtail` (equivalent to `tail -f log/development.log`)
+
+### logspin (tailspin)
+**What**: Auto-highlighting log tailing — dates, UUIDs, IPs, URLs, JSON light up in distinct colors.
+**When**: Following logs when you need visual clarity. Makes patterns jump out.
+**Usage**: `logspin`
+**Tips**: Much more readable than raw `tail -f`. Try it once and you won't go back.
+
+### logview (lnav)
+**What**: Advanced log file navigator with SQL querying.
+**When**: Investigating errors, analyzing log patterns, jumping between error occurrences.
+**Usage**: `logview`
+**Key features**:
+- Auto-detects Rails log format
+- Press `e` to jump to next error
+- Press `/` to search
+- Press `;` to open SQL prompt and query logs like a database:
+  ```sql
+  ;SELECT log_line, log_time FROM logfile WHERE log_level = 'ERROR'
+  ```
+- Color-codes severity levels
+
+**Tips**: `lnav` can also open multiple log files simultaneously. Use `lnav log/*.log` for everything.
+
+### logclear
+**When**: Logs getting too large during development.
+**Usage**: `logclear` (truncates all files in `log/`)
+
+---
+
+## 15. Media & Documents
+
+### ffmpeg / ffmpeg-full
+**What**: Swiss army knife for audio/video processing.
+**When**: Converting video formats, extracting audio, resizing, compressing, creating GIFs.
+**Usage**:
+```bash
+ffmpeg -i input.mov output.mp4                        # Convert format
+ffmpeg -i input.mp4 -vf scale=1280:-1 output.mp4      # Resize
+ffmpeg -i input.mp4 -ss 00:01:00 -t 00:00:30 clip.mp4 # Extract clip
+ffmpeg -i video.mp4 -vn audio.mp3                      # Extract audio
+```
+
+### yt-dlp
+**What**: Download videos from YouTube and 1000+ other sites.
+**When**: Saving videos for offline viewing, extracting audio from talks/tutorials.
+**Usage**:
+```bash
+yt-dlp "https://youtube.com/watch?v=..."              # Download best quality
+yt-dlp -x --audio-format mp3 "URL"                    # Extract audio as MP3
+yt-dlp -f "best[height<=720]" "URL"                   # Max 720p
+yt-dlp --list-formats "URL"                            # See available formats
+```
+
+### Pandoc
+**What**: Universal document converter (Markdown, HTML, PDF, DOCX, LaTeX, etc.).
+**When**: Converting documentation between formats.
+**Usage**:
+```bash
+pandoc README.md -o README.pdf                         # Markdown to PDF
+pandoc README.md -o README.docx                        # Markdown to Word
+pandoc input.html -o output.md                         # HTML to Markdown
+```
+
+### unar
+**What**: Multi-format archive extractor (zip, rar, 7z, tar, gz, bz2, etc.).
+**When**: Extracting any archive format with one command.
+**Usage**: `unar archive.zip`, `unar file.rar`, `unar package.7z`
+
+### Gifski / GIPHY CAPTURE
+**What**: Gifski converts video to high-quality GIFs. GIPHY CAPTURE records screen to GIF.
+**When**: Creating GIFs for PRs, documentation, bug reports, demos.
+
+### VLC
+**What**: Universal media player.
+**When**: Playing any audio/video format.
+
+---
+
+## 16. macOS Productivity
+
+### Raycast (Launcher)
+**What**: Spotlight replacement with extensions, clipboard history, snippets, window management.
+**When**: Launching apps, quick calculations, clipboard history, emoji picker, snippets.
+**Tips**: Extensive extension ecosystem. Search "Raycast Store" for integrations.
+
+### TextSniper (OCR)
+**What**: Extract text from any screen region via OCR.
+**When**: Copying text from images, screenshots, videos, or non-selectable UI elements.
+**Usage**: Trigger with your configured hotkey, drag to select region, text copies to clipboard.
+
+### Hidden Bar
+**What**: Hide menu bar icons you don't need to see constantly.
+**When**: Always running. Keeps your menu bar clean.
+
+### iStat Menus
+**What**: System monitoring in the menu bar — CPU, memory, disk, network, temperature.
+**When**: Always running. Glance at system health anytime.
+
+### Menu Bar Calendar
+**What**: Quick calendar access from the menu bar.
+
+### Bandwidth+
+**What**: Network speed monitor in the menu bar.
+**When**: Monitoring upload/download speeds in real-time.
+
+### LocalSend
+**What**: Cross-platform AirDrop alternative.
+**When**: Sending files between macOS, Windows, Linux, Android, iOS on the same network.
+
+### LanguageTool
+**What**: Grammar and style checker.
+**When**: Writing documentation, emails, or any prose.
+
+---
+
+## 17. Communication
+
+| App | When to Use |
+|-----|-------------|
+| **Slack** | Work team communication |
+| **Discord** | Developer communities, open source |
+| **Telegram** | Personal messaging, developer groups |
+| **WhatsApp** | Personal/family messaging |
+| **Signal** | Privacy-focused messaging |
+| **Zoom** | Video meetings |
+
+### Terminal messaging (steipete tools)
+```bash
+imsg "Hey!" +1234567890   # Send iMessage from terminal
+wacli                      # WhatsApp CLI
+```
+
+---
+
+## 18. Security & Privacy
+
+### 1Password + CLI
+**What**: Password manager with CLI integration and SSH agent.
+**When**: Always. Stores passwords, SSH keys, API tokens, secure notes.
+**CLI usage**:
+```bash
+op item get "GitHub Token" --fields password   # Get a secret
+op read "op://vault/item/field"                # Read secret in scripts
+```
+**Tips**: 1Password SSH agent can serve your SSH keys — no files on disk.
+
+### ProtonMail / ProtonVPN / Proton Pass
+**What**: Encrypted email, VPN, and password manager from Proton.
+**When**: ProtonMail for privacy-focused email. ProtonVPN when on untrusted networks. Proton Pass as secondary password manager.
+
+### 2FAS
+**What**: Two-factor authentication app.
+**When**: TOTP codes for services that support 2FA.
+
+### Dashlane
+**What**: Another password manager.
+**When**: Secondary/work password management.
+
+### Okta Verify
+**What**: SSO authentication for work.
+**When**: Work single sign-on.
+
+### Tailscale
+**What**: Zero-config mesh VPN.
+**When**: Accessing home/work machines remotely, connecting personal devices securely.
+
+---
+
+## 19. AI & Assistant Tools
+
+### Claude Code (`claude-code` cask + VS Code extension)
+**What**: Anthropic's Claude AI for coding assistance.
+**When**: Complex coding tasks, code review, debugging, architecture decisions.
+
+### GitHub Copilot (VS Code)
+**What**: AI code completion and chat.
+**When**: In VS Code — inline suggestions while typing, chat for questions.
+
+### Gemini CLI
+**What**: Google's Gemini AI from the terminal.
+**When**: Quick AI queries without leaving the terminal.
+**Usage**: `gemini-cli "explain this error: ..."`
+
+### Perplexity (Mac App Store)
+**What**: AI-powered search engine.
+**When**: Research questions that need sourced answers.
+
+---
+
+## 20. Browsers
+
+### Firefox
+**What**: Independent browser (Gecko engine, not Chromium).
+**When**: Primary browsing, privacy-focused. Excellent developer tools.
+**Extensions installed**: 1Password for Safari (for Safari), Noir (dark mode), DuckDuckGo.
+
+### Zen Browser
+**What**: Firefox-based browser with Arc-like UI.
+**When**: If you prefer a more modern, sidebar-based browser experience.
+
+---
+
+## 21. Niche CLI Utilities
+
+These are specialized tools you might forget about:
+
+| Tool | What It Does | When to Use |
+|------|-------------|-------------|
+| `memo` | Read/write Apple Notes from terminal | Quick notes without opening Notes.app |
+| `obsidian-cli` | Manage Obsidian vaults from terminal | Batch operations on notes |
+| `peekaboo` | Screenshots + AI vision analysis | Analyzing UI screenshots |
+| `summarize` | Summarize any URL | Quick article summaries |
+| `sag` | ElevenLabs text-to-speech | Generate speech from text |
+| `songsee` | Audio visualization | Visualize audio files |
+| `gifgrep` | Search through GIFs | Finding specific GIFs |
+| `goplaces` | Google Places API | Location lookups |
+| `remindctl` | Apple Reminders from terminal | Quick reminders without opening app |
+| `shellcheck` | Bash script linter | Lint your shell scripts before committing |
+| `criterion` | Benchmarking library | Performance testing |
+| `poppler` | PDF rendering library | Used by other tools for PDF support |
+
+---
+
+## Quick Discovery Commands
+
+When you forget what's available:
+
+```bash
+alias-list            # Overview of all alias categories
+alias-search git      # Search for git-related aliases
+alias-rails           # Show all Rails aliases
+alias-phoenix         # Show all Phoenix aliases
+alias-tmux            # Show tmux aliases
+alias-git             # Show git aliases
+
+dotfiles health       # Verify all tools are installed
+dotfiles doctor       # Auto-fix common issues
+
+help <command>        # tldr examples for any command
+```
+
+---
+
+*This guide covers 325+ packages across your dotfiles. Run `dotfiles health` to verify everything is installed. Run `dotfiles update` to keep everything current.*

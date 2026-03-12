@@ -179,7 +179,15 @@ alias ...='cd ../..'
 alias ....='cd ../../..'
 
 # Git with fzf integration
-alias glog='git log --oneline --graph --decorate | fzf --preview "git show --color=always {1}"'
+unalias glog 2>/dev/null
+glog() {
+  git log --graph --color=always \
+      --format="%C(auto)%h%d %s %C(black)%C(bold)%cr" "$@" |
+  fzf --ansi --no-sort --reverse --tiebreak=index \
+      --preview 'f() { set -- $(echo -- "$@" | /usr/bin/grep -o "[a-f0-9]\{7\}"); [ $# -eq 0 ] || git show --color=always $1; }; f {}' \
+      --preview-window=right:60% \
+      --bind "ctrl-y:execute-silent(echo {} | /usr/bin/grep -o '[a-f0-9]\{7\}' | head -1 | pbcopy)+abort"
+}
 
 # Find and edit files quickly
 alias vif='$EDITOR $(fzf)'  # Open file with your default EDITOR using fzf

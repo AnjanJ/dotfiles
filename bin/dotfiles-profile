@@ -18,11 +18,9 @@ DOTFILES_DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
 source "$DOTFILES_DIR/scripts/_helpers.sh"
 
 echo ""
-echo "╔═══════════════════════════════════════════════════════════╗"
-echo "║                                                           ║"
-echo "║   ⏱️   Shell Startup Profiler                              ║"
-echo "║                                                           ║"
-echo "╚═══════════════════════════════════════════════════════════╝"
+echo ""
+echo "  Shell Startup Profiler"
+echo "  =========================================="
 echo ""
 
 # ── Quick benchmark: 10 shell launches ────────
