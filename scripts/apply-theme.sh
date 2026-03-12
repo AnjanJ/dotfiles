@@ -302,6 +302,32 @@ apply_theme() {
         fi
     fi
 
+    # ── 8. Warp ───────────────────────────────────────────
+    if command -v warp-cli &>/dev/null || [[ -d "/Applications/Warp.app" ]]; then
+        _theme_step "Warp..."
+        local warp_themes_dir="$HOME/.warp/themes"
+
+        # Copy custom theme YAML if needed
+        if [[ -n "${warp_custom_file:-}" ]]; then
+            mkdir -p "$warp_themes_dir"
+            cp "$THEMES_DIR/$warp_custom_file" "$warp_themes_dir/"
+            local yaml_name
+            yaml_name=$(basename "$warp_custom_file" .yaml)
+            # Set Warp to use the custom theme (dark mode)
+            defaults write dev.warp.Warp-Stable Theme "\"Custom\""
+            # Update SelectedSystemThemes to point to the custom file
+            local yaml_path
+            yaml_path="$warp_themes_dir/$(basename "$warp_custom_file")"
+            local theme_json="{\"light\":\"Light\",\"dark\":{\"Custom\":{\"name\":\"${yaml_name}\",\"path\":\"${yaml_path}\"}}}"
+            defaults write dev.warp.Warp-Stable SelectedSystemThemes "$theme_json"
+            _theme_success "Warp → $warp_theme (custom)"
+        else
+            # Built-in theme — set directly
+            defaults write dev.warp.Warp-Stable Theme "\"${warp_theme}\""
+            _theme_success "Warp → $warp_theme (built-in)"
+        fi
+    fi
+
     # ── Save state ──────────────────────────────────────
     set_current_theme "$THEME"
 

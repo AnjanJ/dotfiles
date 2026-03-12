@@ -37,11 +37,11 @@ Like DHH's **[Omakub](https://omakub.org/)** for Ubuntu, this setup provides:
 
 ### 🎨 Theme System (Tokyo Night, Aura Dark, or Catppuccin Mocha)
 
-Choose your theme during install — it's applied across **12 apps**:
+Choose your theme during install — it's applied across **13 apps**:
 
 | Auto-configured | Manual (links provided) |
 |----------------|------------------------|
-| Neovim, Ghostty, tmux, Zellij, Starship, Zed, VS Code | Slack, Chrome, Firefox, Telegram, Raycast |
+| Neovim, Ghostty, tmux, Zellij, Starship, Zed, VS Code, Warp | Slack, Chrome, Firefox, Telegram, Raycast |
 
 Switch anytime: `dotfiles theme tokyo-night`, `dotfiles theme aura`, or `dotfiles theme catppuccin`
 
@@ -344,7 +344,7 @@ Each file has a single responsibility. Want to change your Rails workflow? Edit 
 
 ## 🎨 Theming
 
-Choose between **Tokyo Night** (dark blue), **Aura Dark** (deep purple), or **Catppuccin Mocha** (warm pastels) during install. The theme is applied across 12 apps (7 auto-configured + 5 with manual instructions).
+Choose between **Tokyo Night** (dark blue), **Aura Dark** (deep purple), or **Catppuccin Mocha** (warm pastels) during install. The theme is applied across 13 apps (8 auto-configured + 5 with manual instructions).
 
 | | Tokyo Night | Aura Dark | Catppuccin Mocha |
 |---|-----------|-----------|-----------------|
@@ -489,7 +489,7 @@ dotfiles theme aura         # Switch to Aura Dark
 dotfiles theme catppuccin   # Switch to Catppuccin Mocha
 ```
 
-This updates Neovim, Ghostty, tmux, Zellij, Starship, Zed, and VS Code automatically, then prints instructions for Slack, browsers, Telegram, and Raycast.
+This updates Neovim, Ghostty, tmux, Zellij, Starship, Zed, VS Code, and Warp automatically, then prints instructions for Slack, browsers, Telegram, and Raycast.
 
 ### Add More Packages
 

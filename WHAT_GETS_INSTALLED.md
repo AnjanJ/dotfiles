@@ -314,7 +314,7 @@ Creates symbolic links from the repo to your home directory. This is the core de
 
 ## Step 5b: Apply Theme
 
-You chose **Tokyo Night**, **Aura Dark**, or **Catppuccin Mocha** at the start of install. This step applies your choice across 7 apps automatically (plus 5 more with manual instructions):
+You chose **Tokyo Night**, **Aura Dark**, or **Catppuccin Mocha** at the start of install. This step applies your choice across 8 apps automatically (plus 5 more with manual instructions):
 
 | App | What changes |
 |-----|-------------|
@@ -325,6 +325,7 @@ You chose **Tokyo Night**, **Aura Dark**, or **Catppuccin Mocha** at the start o
 | tmux | Theme block between `THEME_BLOCK_START`/`END` markers in `.tmux.conf` |
 | VS Code | `workbench.colorTheme` in settings.json (via jq) |
 | Zed | `theme.dark` in `settings.json` (via jq) |
+| Warp | Custom YAML in `~/.warp/themes/` + macOS defaults (if Warp is installed) |
 
 Each theme lives in `themes/<name>/` with a `theme.conf` registry file that drives all the above. Adding a new theme is just creating a new directory.
 
