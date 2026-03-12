@@ -8,7 +8,6 @@ return {
   "AstroNvim/astroui",
   ---@type AstroUIOpts
   opts = {
-    -- Tokyo Night theme (excellent statusline support)
     colorscheme = "aura-dark",
     -- AstroUI allows you to easily modify highlight groups easily for any and all colorschemes
     highlights = {
