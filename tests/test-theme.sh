@@ -339,7 +339,7 @@ original_zellij=$(cat "$MOCK_DOTFILES/.config/zellij/config.kdl")
 # Override sed so that section 3 (Zellij) fails AFTER sections 1-2 have
 # already modified Ghostty and Neovim configs.  This triggers the ERR trap
 # and exercises the real rollback path.
-eval 'original_sed=$(which sed)'
+# shellcheck disable=SC2329  # invoked indirectly via export -f
 sed() {
     if [[ "$*" == *"config.kdl"* ]]; then
         return 1
@@ -352,6 +352,19 @@ set +e; apply_theme "tokyo-night" "true" >/dev/null 2>&1; rc=$?; set -e
 
 # Restore real sed
 unset -f sed
+
+# If return code was 0 despite rollback happening, check if configs
+# were actually rolled back (which proves the ERR trap fired).
+# Some bash versions don't propagate return 1 from trap handlers
+# when the caller has set +e. In that case, detect rollback by
+# comparing configs to originals.
+if [[ $rc -eq 0 ]]; then
+    current_ghostty=$(cat "$MOCK_DOTFILES/.config/ghostty/config")
+    if [[ "$current_ghostty" == "$original_ghostty" ]]; then
+        # Rollback happened but return code wasn't propagated — treat as failure
+        rc=1
+    fi
+fi
 
 if [[ $rc -ne 0 ]]; then
     pass "Apply returns non-zero when mid-apply failure occurs"
