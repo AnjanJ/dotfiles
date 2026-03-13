@@ -537,6 +537,32 @@ brew bundle install
 - **tmux**: `.tmux.conf`
 - **Neovim**: `.config/nvim/lua/plugins/*.lua`
 
+## 🔒 SSH & Security
+
+### 1Password SSH Agent (Recommended)
+
+During install, you can choose **1Password SSH Agent** for SSH key management. This gives you:
+
+- **Touch ID for git push** — each new terminal session requires biometric approval before SSH operations
+- **No key files on disk** — keys live in your 1Password vault, encrypted and synced
+- **Works everywhere** — GitHub, GitLab, Bitbucket, Codeberg, self-hosted Git
+
+**How it works:**
+1. Install sets up `~/.ssh/config` to use the 1Password agent socket
+2. When you `git push` in a new terminal session, 1Password prompts for Touch ID
+3. Approval lasts until 1Password locks (configurable timeout)
+
+**Recommended 1Password settings for maximum security:**
+| Setting | Value | Why |
+|---------|-------|-----|
+| Ask approval for each new | `application and terminal session` | Per-tab approval, not global |
+| Remember key approval | `until 1Password locks` | Approval expires on lock |
+| Auto-lock after idle | `1 minute` (or shortest you're comfortable with) | Frequent re-authentication |
+
+> **Note:** This is per-session, not per-push. Once you approve in a terminal tab, subsequent pushes in that tab go through until 1Password locks. For additional protection, consider a short auto-lock timeout.
+
+See [QUICK_REFERENCE.md](QUICK_REFERENCE.md#ssh-setup) for SSH troubleshooting and testing commands.
+
 ## 🆘 Troubleshooting
 
 ### Homebrew Not Found

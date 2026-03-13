@@ -184,6 +184,41 @@ git remote set-url origin git@github.com-work:company/repo.git
 
 **Restore old SSH keys:** `cp -r ~/.dotfiles_backup_*/ssh/ ~/.ssh/`
 
+### 1Password SSH Agent — Touch ID for Git
+
+If you chose 1Password during install, every new terminal session requires Touch ID before SSH operations (push, pull, clone).
+
+**Recommended settings** (1Password → Settings → Developer → SSH Agent → Advanced):
+
+| Setting | Recommended | Effect |
+|---------|------------|--------|
+| Ask approval for each new | `application and terminal session` | Per-tab, not global |
+| Remember key approval | `until 1Password locks` | Expires on lock |
+
+**Recommended** (1Password → Settings → Security):
+
+| Setting | Recommended | Effect |
+|---------|------------|--------|
+| Lock when device locks or sleeps | ✅ enabled | Locks with your Mac |
+| Lock after device is idle for | `1 minute` | Short timeout = frequent re-auth |
+
+**Important:** approval is per-session, not per-push. Once approved in a terminal tab, subsequent pushes go through until 1Password locks. A shorter auto-lock timeout means more frequent biometric prompts.
+
+**Manual setup** (if you didn't choose 1Password during install):
+```bash
+# 1. Enable SSH Agent in 1Password → Settings → Developer
+# 2. Create the socket symlink:
+mkdir -p ~/.1password
+ln -sf ~/Library/Group\ Containers/2BUA8C4S2C.com.1password/t/agent.sock ~/.1password/agent.sock
+
+# 3. Add to ~/.ssh/config:
+# Host *
+#     IdentityAgent ~/.1password/agent.sock
+
+# 4. Test:
+ssh -T git@github.com
+```
+
 ## 💼 Work Identity Management
 
 | Command | What it does |
