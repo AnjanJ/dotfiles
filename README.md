@@ -1,6 +1,44 @@
 # 🚀 AJ's Dotfiles
 
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-yellow?logo=buymeacoffee)](https://buymeacoffee.com/anjanj)
+
 > A complete macOS development environment — Ruby/Rails, Elixir/Phoenix, Node/React, Python, Go, Rust, Zig — with your choice of Tokyo Night, Aura Dark, or Catppuccin Mocha theme applied everywhere.
+
+<p align="center">
+  <img src="docs/screenshots/dotfiles-cli.png" alt="Dotfiles CLI" width="600">
+</p>
+
+<details>
+<summary><strong>More screenshots</strong></summary>
+
+### Neovim (AstroNvim + Aura Dark)
+<img src="docs/screenshots/nvim.png" alt="Neovim with AstroNvim" width="600">
+
+### lazygit
+<img src="docs/screenshots/lazygit.png" alt="lazygit" width="600">
+
+### Theme Picker
+<img src="docs/screenshots/theme-picker.png" alt="Theme Picker" width="600">
+
+### Health Check
+<img src="docs/screenshots/health-check.png" alt="Health Check" width="600">
+<img src="docs/screenshots/health-check02.png" alt="Health Check (continued)" width="600">
+<img src="docs/screenshots/health-check03.png" alt="Health Check Summary" width="600">
+
+### Shell Startup Profiler
+<img src="docs/screenshots/profile.png" alt="Shell Startup Profiler" width="600">
+
+### Doctor (Auto-fix)
+<img src="docs/screenshots/doctor.png" alt="Dotfiles Doctor" width="600">
+<img src="docs/screenshots/doctor02.png" alt="Dotfiles Doctor (continued)" width="600">
+
+### Git Log
+<img src="docs/screenshots/git-log.png" alt="Git Log" width="600">
+
+### Directory Listing (eza)
+<img src="docs/screenshots/eza-listing.png" alt="eza listing" width="600">
+
+</details>
 
 ## 💭 Philosophy
 
@@ -356,7 +394,9 @@ Each file has a single responsibility. Want to change your Rails workflow? Edit 
 
 ## 🎨 Theming
 
-Choose between **Tokyo Night** (dark blue), **Aura Dark** (deep purple), or **Catppuccin Mocha** (warm pastels) during install. The theme is applied across 22 apps (17 auto-configured + 5 with manual instructions).
+Choose between **[Tokyo Night](https://github.com/folke/tokyonight.nvim)** (dark blue), **[Aura Dark](https://github.com/daltonmenezes/aura-theme)** (deep purple), or **[Catppuccin Mocha](https://github.com/catppuccin/catppuccin)** (warm pastels) during install. The theme is applied across 22 apps (17 auto-configured + 5 with manual instructions).
+
+> Browse the full galleries: [Tokyo Night](https://github.com/folke/tokyonight.nvim#readme) | [Aura Dark](https://github.com/daltonmenezes/aura-theme#readme) | [Catppuccin](https://github.com/catppuccin/catppuccin#-showcase)
 
 | | Tokyo Night | Aura Dark | Catppuccin Mocha |
 |---|-----------|-----------|-----------------|
@@ -656,6 +696,8 @@ Found a bug or have a suggestion? Open an issue or PR!
 
 **Made with ❤️ by [AJ](https://anjan.dev)**
 
+If this setup saves you time, consider [buying me a coffee ☕](https://buymeacoffee.com/anjanj)
+
 *Inspired by DHH's Omakub and ThePrimeagen's workflows*
 
-*Last updated: 2026-03-12*
+*Last updated: 2026-03-14*
