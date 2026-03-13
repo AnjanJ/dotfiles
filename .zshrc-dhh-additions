@@ -504,9 +504,6 @@ alias hm='heroku run rails db:migrate'
 # 11. ENVIRONMENT SETUP
 # ============================================
 
-# Ruby optimization
-export RUBY_CONFIGURE_OPTS="--with-openssl-dir=$(brew --prefix openssl@1.1)"
-
 # Disable Spring (DHH recommends for simplicity)
 export DISABLE_SPRING=1
 

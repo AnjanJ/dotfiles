@@ -275,6 +275,24 @@ aerospace reload
 :source ~/.config/nvim/init.lua
 ```
 
+### Installing Legacy Ruby (< 2.4)
+
+Old Ruby versions need OpenSSL 1.1 (modern Ruby uses OpenSSL 3.x automatically). Pass it as a one-off build flag — don't add it to your shell config:
+
+```bash
+# Install openssl@1.1 if you don't have it
+brew install openssl@1.1
+
+# Compile old Ruby with OpenSSL 1.1
+RUBY_CONFIGURE_OPTS="--with-openssl-dir=$(brew --prefix openssl@1.1)" mise install ruby@2.x.x
+```
+
+If you work with legacy projects frequently, add it to `~/.zshrc.local`:
+```bash
+export RUBY_CONFIGURE_OPTS="--with-openssl-dir=$(brew --prefix openssl@1.1)"
+```
+Note: this adds ~0.9s to every shell startup due to the `brew --prefix` call.
+
 ### Reset Everything
 ```bash
 # Neovim
