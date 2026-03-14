@@ -1,4 +1,5 @@
 tap "antoniorodr/memo"
+tap "charmbracelet/tap"
 tap "cloudflare/cloudflare"
 tap "felixkratz/formulae"
 tap "heroku/brew"
@@ -26,8 +27,8 @@ brew "gh"
 brew "git"
 brew "git-delta"
 brew "gitui"
-brew "httpie"
 brew "heroku"
+brew "httpie"
 brew "lazydocker"
 brew "lazygit"
 brew "lazysql"
@@ -63,6 +64,7 @@ brew "tmux"
 brew "tree"
 brew "unar"
 brew "uv"
+brew "weasyprint"
 brew "wget"
 brew "yazi"
 brew "yt-dlp"
@@ -70,8 +72,10 @@ brew "zellij"
 brew "zig"
 brew "zoxide"
 brew "antoniorodr/memo/memo"
+brew "charmbracelet/tap/freeze", link: false
 brew "felixkratz/formulae/borders"
 brew "felixkratz/formulae/sketchybar"
+brew "steipete/tap/bird"
 brew "steipete/tap/gifgrep"
 brew "steipete/tap/goplaces"
 brew "steipete/tap/imsg"
@@ -170,6 +174,7 @@ cask "font-ubuntu-nerd-font"
 cask "font-ubuntu-sans-nerd-font"
 cask "font-victor-mono-nerd-font"
 cask "font-zed-mono-nerd-font"
+cask "freeze"
 cask "ghostty"
 cask "notion"
 cask "obsidian"
@@ -211,6 +216,7 @@ mas "Perplexity", id: 6714467650
 mas "Save to Raindrop.io", id: 1549370672
 mas "Tailscale", id: 1475387142
 mas "TextSniper", id: 1528890965
+mas "Tot", id: 1491071483
 mas "WhatsApp", id: 310633997
 mas "Windows App", id: 1295203466
 mas "Xcode", id: 497799835
