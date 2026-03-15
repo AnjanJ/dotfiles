@@ -1,6 +1,6 @@
 # 🚀 AJ's Dotfiles
 
-[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-yellow?logo=buymeacoffee)](https://buymeacoffee.com/anjanj)
+<a href="https://www.buymeacoffee.com/anjanj" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" width="200"></a>
 
 > A complete macOS development environment — Ruby/Rails, Elixir/Phoenix, Node/React, Python, Go, Rust, Zig — with your choice of Tokyo Night, Aura Dark, or Catppuccin Mocha theme applied everywhere.
 
@@ -696,7 +696,9 @@ Found a bug or have a suggestion? Open an issue or PR!
 
 **Made with ❤️ by [AJ](https://anjan.dev)**
 
-If this setup saves you time, consider [buying me a coffee ☕](https://buymeacoffee.com/anjanj)
+If this setup saves you time, consider buying me a coffee:
+
+<a href="https://www.buymeacoffee.com/anjanj" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" width="200"></a>
 
 *Inspired by DHH's Omakub and ThePrimeagen's workflows*
 
