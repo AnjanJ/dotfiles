@@ -48,6 +48,7 @@ brew "neovim"
 brew "openssl@1.1"
 brew "pandoc"
 brew "pgcli"
+brew "pgvector"
 brew "poppler"
 brew "postgresql@14", restart_service: :changed
 brew "putty"
