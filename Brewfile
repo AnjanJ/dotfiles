@@ -97,7 +97,7 @@ mas "GIPHY CAPTURE", id: 668208984
 cask "discord"
 cask "signal"
 cask "telegram"
-mas "WhatsApp", id: 310633997
+cask "whatsapp"
 
 # @group productivity — Personal productivity
 cask "1password"
@@ -111,8 +111,8 @@ cask "raycast"
 brew "antoniorodr/memo/memo"
 brew "yakitrak/yakitrak/obsidian-cli"
 mas "1Password for Safari", id: 1569813296
+cask "tailscale-app"
 mas "Dashlane", id: 517914548
-mas "Tailscale", id: 1475387142
 
 # @group work — Enterprise & work apps
 cask "slack"
@@ -322,17 +322,17 @@ vscode "zhuangtongfa.material-theme"
 mas "2FAS - Two Factor Authentication", id: 6443941139
 mas "Bandwidth+", id: 490461369
 mas "Developer", id: 640199958
-mas "DuckDuckGo", id: 663592361
+cask "duckduckgo"
 mas "Hidden Bar", id: 1452453066
 mas "iStat Menus", id: 1319778037
 mas "Kindle", id: 302584613
 mas "LanguageTool", id: 1534275760
-mas "LocalSend", id: 1661733229
+cask "localsend"
 mas "Menu Bar Calendar", id: 1558360383
 mas "Noir", id: 1592917505
 mas "Numbers", id: 409203825
 mas "Perplexity", id: 6714467650
-mas "Save to Raindrop.io", id: 1549370672
+cask "raindropio"
 mas "TextSniper", id: 1528890965
 mas "Tot", id: 1491071483
 mas "Xcode", id: 497799835
