@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# shellcheck disable=SC2015,SC2181,SC2329
 
 # ============================================
 # PACKAGE GROUP SELECTION TEST SUITE
@@ -68,12 +67,35 @@ assert_file_exists() {
     fi
 }
 
-assert_line_count() {
-    local actual="$1" expected="$2" label="$3"
-    if [[ "$actual" -eq "$expected" ]]; then
+# Assert that a string (output) contains a pattern
+assert_output_matches() {
+    local output="$1" pattern="$2" label="$3"
+    if echo "$output" | /usr/bin/grep -q "$pattern"; then
         pass "$label"
     else
-        fail "$label (expected $expected lines, got $actual)"
+        fail "$label ('$pattern' not found in output)"
+    fi
+}
+
+# Assert a command succeeds (exit 0)
+assert_succeeds() {
+    local label="$1"
+    shift
+    if "$@"; then
+        pass "$label"
+    else
+        fail "$label"
+    fi
+}
+
+# Assert a command fails (exit non-zero)
+assert_fails() {
+    local label="$1"
+    shift
+    if "$@"; then
+        fail "$label"
+    else
+        pass "$label"
     fi
 }
 
@@ -146,23 +168,12 @@ test_parse_groups() {
     count=$(echo "$groups" | wc -l | tr -d ' ')
     assert_eq "$count" "6" "Brewfile has 6 groups"
 
-    echo "$groups" | /usr/bin/grep -q "^taps$"
-    [[ $? -eq 0 ]] && pass "Found taps group" || fail "Missing taps group"
-
-    echo "$groups" | /usr/bin/grep -q "^core$"
-    [[ $? -eq 0 ]] && pass "Found core group" || fail "Missing core group"
-
-    echo "$groups" | /usr/bin/grep -q "^editors$"
-    [[ $? -eq 0 ]] && pass "Found editors group" || fail "Missing editors group"
-
-    echo "$groups" | /usr/bin/grep -q "^work$"
-    [[ $? -eq 0 ]] && pass "Found work group" || fail "Missing work group"
-
-    echo "$groups" | /usr/bin/grep -q "^databases$"
-    [[ $? -eq 0 ]] && pass "Found databases group" || fail "Missing databases group"
-
-    echo "$groups" | /usr/bin/grep -q "^fonts$"
-    [[ $? -eq 0 ]] && pass "Found fonts group" || fail "Missing fonts group"
+    assert_output_matches "$groups" "^taps$" "Found taps group"
+    assert_output_matches "$groups" "^core$" "Found core group"
+    assert_output_matches "$groups" "^editors$" "Found editors group"
+    assert_output_matches "$groups" "^work$" "Found work group"
+    assert_output_matches "$groups" "^databases$" "Found databases group"
+    assert_output_matches "$groups" "^fonts$" "Found fonts group"
 
     teardown_test_env
 }
@@ -182,8 +193,7 @@ test_get_group_entries() {
     core_count=$(echo "$core_entries" | wc -l | tr -d ' ')
     assert_eq "$core_count" "3" "Core group has 3 entries"
 
-    echo "$core_entries" | /usr/bin/grep -q 'brew "git"'
-    [[ $? -eq 0 ]] && pass "Core contains git" || fail "Core missing git"
+    assert_output_matches "$core_entries" 'brew "git"' "Core contains git"
 
     local work_entries
     work_entries=$(_get_group_entries "$TEST_DOTFILES/Brewfile" "work")
@@ -191,14 +201,9 @@ test_get_group_entries() {
     work_count=$(echo "$work_entries" | wc -l | tr -d ' ')
     assert_eq "$work_count" "3" "Work group has 3 entries"
 
-    echo "$work_entries" | /usr/bin/grep -q 'cask "slack"'
-    [[ $? -eq 0 ]] && pass "Work contains slack" || fail "Work missing slack"
-
-    echo "$work_entries" | /usr/bin/grep -q 'cask "zoom"'
-    [[ $? -eq 0 ]] && pass "Work contains zoom" || fail "Work missing zoom"
-
-    echo "$work_entries" | /usr/bin/grep -q 'mas "Okta Verify"'
-    [[ $? -eq 0 ]] && pass "Work contains Okta Verify" || fail "Work missing Okta Verify"
+    assert_output_matches "$work_entries" 'cask "slack"' "Work contains slack"
+    assert_output_matches "$work_entries" 'cask "zoom"' "Work contains zoom"
+    assert_output_matches "$work_entries" 'mas "Okta Verify"' "Work contains Okta Verify"
 
     local editors_entries
     editors_entries=$(_get_group_entries "$TEST_DOTFILES/Brewfile" "editors")
@@ -240,11 +245,11 @@ test_required_groups() {
 
     setup_test_env
 
-    _is_required_group "core" && pass "core is required" || fail "core should be required"
-    _is_required_group "taps" && pass "taps is required" || fail "taps should be required"
-    ! _is_required_group "work" && pass "work is not required" || fail "work should not be required"
-    ! _is_required_group "editors" && pass "editors is not required" || fail "editors should not be required"
-    ! _is_required_group "fonts" && pass "fonts is not required" || fail "fonts should not be required"
+    assert_succeeds "core is required" _is_required_group "core"
+    assert_succeeds "taps is required" _is_required_group "taps"
+    assert_fails "work is not required" _is_required_group "work"
+    assert_fails "editors is not required" _is_required_group "editors"
+    assert_fails "fonts is not required" _is_required_group "fonts"
 
     teardown_test_env
 }
@@ -411,20 +416,11 @@ test_state_persistence() {
     local loaded
     loaded=$(get_saved_groups)
 
-    echo "$loaded" | /usr/bin/grep -q "^+editors$"
-    [[ $? -eq 0 ]] && pass "Loaded +editors" || fail "Missing +editors in saved state"
-
-    echo "$loaded" | /usr/bin/grep -q "^-work$"
-    [[ $? -eq 0 ]] && pass "Loaded -work" || fail "Missing -work in saved state"
-
-    echo "$loaded" | /usr/bin/grep -q "^+databases$"
-    [[ $? -eq 0 ]] && pass "Loaded +databases" || fail "Missing +databases in saved state"
-
-    echo "$loaded" | /usr/bin/grep -q "^-fonts$"
-    [[ $? -eq 0 ]] && pass "Loaded -fonts" || fail "Missing -fonts in saved state"
-
-    echo "$loaded" | /usr/bin/grep -q "^-work:zoom$"
-    [[ $? -eq 0 ]] && pass "Loaded -work:zoom exclusion" || fail "Missing -work:zoom in saved state"
+    assert_output_matches "$loaded" "^+editors$" "Loaded +editors"
+    assert_output_matches "$loaded" "^-work$" "Loaded -work"
+    assert_output_matches "$loaded" "^+databases$" "Loaded +databases"
+    assert_output_matches "$loaded" "^-fonts$" "Loaded -fonts"
+    assert_output_matches "$loaded" "^-work:zoom$" "Loaded -work:zoom exclusion"
 
     teardown_test_env
 }
@@ -497,38 +493,25 @@ test_real_brewfile_groups() {
     local expected_groups=("taps" "core" "editors" "window-mgmt" "terminal-tools" "databases" "cloud-deploy" "media" "communication" "productivity" "work" "languages" "fonts" "vscode-ext" "mac-apps" "extras")
 
     for g in "${expected_groups[@]}"; do
-        echo "$groups" | /usr/bin/grep -q "^${g}$"
-        [[ $? -eq 0 ]] && pass "Real Brewfile has group: $g" || fail "Real Brewfile missing group: $g"
+        assert_output_matches "$groups" "^${g}$" "Real Brewfile has group: $g"
     done
 
     # Verify work group contains expected enterprise apps
     local work_entries
     work_entries=$(_get_group_entries "$real_brewfile" "work")
 
-    echo "$work_entries" | /usr/bin/grep -q "slack"
-    [[ $? -eq 0 ]] && pass "Work group contains slack" || fail "Work group missing slack"
-
-    echo "$work_entries" | /usr/bin/grep -q "zoom"
-    [[ $? -eq 0 ]] && pass "Work group contains zoom" || fail "Work group missing zoom"
-
-    echo "$work_entries" | /usr/bin/grep -q "Okta Verify"
-    [[ $? -eq 0 ]] && pass "Work group contains Okta Verify" || fail "Work group missing Okta Verify"
-
-    echo "$work_entries" | /usr/bin/grep -q "Windows App"
-    [[ $? -eq 0 ]] && pass "Work group contains Windows App" || fail "Work group missing Windows App"
+    assert_output_matches "$work_entries" "slack" "Work group contains slack"
+    assert_output_matches "$work_entries" "zoom" "Work group contains zoom"
+    assert_output_matches "$work_entries" "Okta Verify" "Work group contains Okta Verify"
+    assert_output_matches "$work_entries" "Windows App" "Work group contains Windows App"
 
     # Verify core group has essential tools
     local core_entries
     core_entries=$(_get_group_entries "$real_brewfile" "core")
 
-    echo "$core_entries" | /usr/bin/grep -q '"git"'
-    [[ $? -eq 0 ]] && pass "Core group contains git" || fail "Core group missing git"
-
-    echo "$core_entries" | /usr/bin/grep -q '"fzf"'
-    [[ $? -eq 0 ]] && pass "Core group contains fzf" || fail "Core group missing fzf"
-
-    echo "$core_entries" | /usr/bin/grep -q '"mise"'
-    [[ $? -eq 0 ]] && pass "Core group contains mise" || fail "Core group missing mise"
+    assert_output_matches "$core_entries" '"git"' "Core group contains git"
+    assert_output_matches "$core_entries" '"fzf"' "Core group contains fzf"
+    assert_output_matches "$core_entries" '"mise"' "Core group contains mise"
 
     export DOTFILES_DIR=""
 }
