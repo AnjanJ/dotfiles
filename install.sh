@@ -19,6 +19,7 @@
 #   --work-dir "~/work" Work directory (default: ~/work)
 #   --theme <name>      Theme: tokyo-night or aura (default: tokyo-night)
 #   --ssh <mode>        SSH: 1password, existing, generate, skip (default: skip)
+#   --groups "a,b,c"    Package groups to install (comma-separated)
 #   --no-macos-defaults Skip macOS defaults
 #   --force             Force reinstall even if already configured
 #   --help              Show this help
@@ -70,6 +71,7 @@ GIT_WORK_EMAIL="${DOTFILES_WORK_EMAIL:-}"
 WORK_DIR="${DOTFILES_WORK_DIR:-}"
 SELECTED_THEME="${DOTFILES_THEME:-}"
 SSH_MODE="${DOTFILES_SSH_MODE:-}"
+SELECTED_GROUPS="${DOTFILES_GROUPS:-}"
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -81,6 +83,7 @@ while [[ $# -gt 0 ]]; do
         --work-dir) WORK_DIR="$2"; shift 2 ;;
         --theme) SELECTED_THEME="$2"; shift 2 ;;
         --ssh) SSH_MODE="$2"; shift 2 ;;
+        --groups) SELECTED_GROUPS="$2"; shift 2 ;;
         --no-macos-defaults) APPLY_MACOS_DEFAULTS=false; shift ;;
         --help)
             # Print the usage block from the header
@@ -92,7 +95,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Export for sub-scripts
-export INTERACTIVE FORCE_INSTALL GIT_NAME GIT_EMAIL GIT_WORK_EMAIL WORK_DIR SSH_MODE
+export INTERACTIVE FORCE_INSTALL GIT_NAME GIT_EMAIL GIT_WORK_EMAIL WORK_DIR SSH_MODE SELECTED_GROUPS
 
 # ── Setup ─────────────────────────────────────
 
@@ -198,11 +201,40 @@ fi
 echo ""
 print_step "Step 2: Installing packages from Brewfile..."
 
+source "$DOTFILES_DIR/scripts/package-utils.sh"
+
+# Determine which groups to install
+_PACKAGE_SELECTIONS=""
+
+if [[ -n "$SELECTED_GROUPS" ]]; then
+    # --groups flag: convert comma-separated list to selections format
+    IFS=',' read -ra _groups_arr <<< "$SELECTED_GROUPS"
+    for g in "${_groups_arr[@]}"; do
+        _PACKAGE_SELECTIONS+="+${g}"$'\n'
+    done
+    _PACKAGE_SELECTIONS="${_PACKAGE_SELECTIONS%$'\n'}"
+    save_selected_groups "$_PACKAGE_SELECTIONS"
+elif [[ "$INTERACTIVE" == true ]]; then
+    _PACKAGE_SELECTIONS=$(prompt_package_selection "$DOTFILES_DIR/Brewfile")
+elif [[ -f "$PACKAGES_STATE_FILE" ]]; then
+    _PACKAGE_SELECTIONS=$(get_saved_groups)
+fi
+
 cd "$DOTFILES_DIR"
-if brew bundle install; then
-    print_success "All packages installed"
+if [[ -n "$_PACKAGE_SELECTIONS" ]]; then
+    _FILTERED_BREWFILE=$(generate_filtered_brewfile "$DOTFILES_DIR/Brewfile" "$_PACKAGE_SELECTIONS")
+    if brew bundle install --file="$_FILTERED_BREWFILE"; then
+        print_success "Selected packages installed"
+    else
+        print_warning "Some packages failed to install (see errors above). Continuing..."
+    fi
+    rm -f "$_FILTERED_BREWFILE"
 else
-    print_warning "Some packages failed to install (see errors above). Continuing..."
+    if brew bundle install; then
+        print_success "All packages installed"
+    else
+        print_warning "Some packages failed to install (see errors above). Continuing..."
+    fi
 fi
 
 # ============================================

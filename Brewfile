@@ -1,3 +1,4 @@
+# @group taps — Homebrew tap registries (always included)
 tap "antoniorodr/memo"
 tap "charmbracelet/tap"
 tap "cloudflare/cloudflare"
@@ -9,95 +10,124 @@ tap "render-oss/render"
 tap "steipete/tap"
 tap "supabase/tap"
 tap "yakitrak/yakitrak"
-brew "glib"
+
+# @group core — Essential CLI tools (always installed)
 brew "bat"
-brew "cloudflared"
-brew "criterion"
 brew "direnv"
-brew "docker"
 brew "eza"
 brew "fd"
-brew "ffmpeg"
-brew "pango"
-brew "ffmpeg-full"
-brew "flyctl"
 brew "fzf"
-brew "gemini-cli"
 brew "gh"
 brew "git"
+brew "mas"
+brew "mise"
+brew "ripgrep"
+brew "shellcheck"
+brew "starship"
+brew "tree"
+brew "wget"
+brew "zoxide"
+
+# @group editors — Code editors & terminals
+brew "neovim"
+cask "ghostty"
+cask "visual-studio-code"
+cask "warp"
+cask "wezterm"
+cask "zed"
+
+# @group window-mgmt — Tiling window manager & status bar
+cask "nikitabobko/tap/aerospace"
+brew "felixkratz/formulae/borders"
+brew "felixkratz/formulae/sketchybar"
+
+# @group terminal-tools — Terminal enhancements & TUI tools
 brew "git-delta"
 brew "gitui"
-brew "heroku"
 brew "httpie"
 brew "lazydocker"
 brew "lazygit"
-brew "lazysql"
-brew "libidn"
-brew "libre"
-brew "librsvg"
-brew "libxmlsec1"
-brew "libyaml"
-brew "litecli"
 brew "lnav"
 brew "lsd"
-brew "mas"
-brew "mise"
-brew "mycli"
-brew "mysql", restart_service: :changed
-brew "neovim"
-brew "openssl@1.1"
 brew "pandoc"
-brew "pgcli"
-brew "pgvector"
-brew "poppler"
-brew "postgresql@14", restart_service: :changed
-brew "putty"
-brew "redis", restart_service: :changed
-brew "render"
-brew "ripgrep"
-brew "shared-mime-info"
-brew "shellcheck"
-brew "starship"
 brew "tailspin"
 brew "tldr", link: false
 brew "tlrc"
 brew "tmux"
-brew "tree"
 brew "unar"
-brew "uv"
 brew "weasyprint"
-brew "wget"
 brew "yazi"
-brew "yt-dlp"
 brew "zellij"
-brew "zig"
-brew "zoxide"
-brew "antoniorodr/memo/memo"
-brew "charmbracelet/tap/freeze", link: false
-brew "felixkratz/formulae/borders"
-brew "felixkratz/formulae/sketchybar"
-brew "steipete/tap/bird"
-brew "steipete/tap/gifgrep"
-brew "steipete/tap/goplaces"
-brew "steipete/tap/imsg"
-brew "steipete/tap/peekaboo"
-brew "steipete/tap/remindctl"
-brew "steipete/tap/sag"
-brew "steipete/tap/songsee"
-brew "steipete/tap/summarize"
-brew "steipete/tap/wacli"
+
+# @group databases — Database engines & GUI clients
+brew "litecli"
+brew "lazysql"
+brew "mycli"
+brew "mysql", restart_service: :changed
+brew "pgcli"
+brew "pgvector"
+brew "postgresql@14", restart_service: :changed
+brew "redis", restart_service: :changed
+cask "beekeeper-studio"
+cask "postico"
+cask "redis-insight"
+
+# @group cloud-deploy — Cloud & deployment CLIs
+brew "cloudflared"
+brew "docker"
+brew "flyctl"
+brew "heroku"
+brew "render"
 brew "supabase/tap/supabase"
-brew "yakitrak/yakitrak/obsidian-cli"
+cask "docker-desktop"
+
+# @group media — Media processing tools
+brew "ffmpeg"
+brew "ffmpeg-full"
+brew "glib"
+brew "librsvg"
+brew "pango"
+brew "poppler"
+brew "yt-dlp"
+cask "vlc"
+mas "Gifski", id: 1351639930
+mas "GIPHY CAPTURE", id: 668208984
+
+# @group communication — Personal messaging
+cask "discord"
+cask "signal"
+cask "telegram"
+mas "WhatsApp", id: 310633997
+
+# @group productivity — Personal productivity
 cask "1password"
 cask "1password-cli"
-cask "nikitabobko/tap/aerospace"
-cask "android-platform-tools"
-cask "beekeeper-studio"
-cask "bruno"
-cask "claude-code"
-cask "discord"
-cask "docker-desktop"
-cask "firefox"
+cask "notion"
+cask "obsidian"
+cask "proton-mail"
+cask "proton-pass"
+cask "protonvpn"
+cask "raycast"
+brew "antoniorodr/memo/memo"
+brew "yakitrak/yakitrak/obsidian-cli"
+mas "1Password for Safari", id: 1569813296
+mas "Dashlane", id: 517914548
+mas "Tailscale", id: 1475387142
+
+# @group work — Enterprise & work apps
+cask "slack"
+cask "zoom"
+mas "Okta Verify", id: 490179405
+mas "Windows App", id: 1295203466
+
+# @group languages — Language-specific tools
+brew "criterion"
+brew "uv"
+brew "zig"
+go "cmd/go"
+go "cmd/gofmt"
+
+# @group fonts — Nerd Fonts collection
 cask "font-0xproto-nerd-font"
 cask "font-3270-nerd-font"
 cask "font-adwaita-mono-nerd-font"
@@ -175,52 +205,8 @@ cask "font-ubuntu-nerd-font"
 cask "font-ubuntu-sans-nerd-font"
 cask "font-victor-mono-nerd-font"
 cask "font-zed-mono-nerd-font"
-cask "freeze"
-cask "ghostty"
-cask "notion"
-cask "obsidian"
-cask "postico"
-cask "proton-mail"
-cask "proton-pass"
-cask "protonvpn"
-cask "raycast"
-cask "redis-insight"
-cask "requestly"
-cask "signal"
-cask "slack"
-cask "telegram"
-cask "visual-studio-code"
-cask "vlc"
-cask "warp"
-cask "wezterm"
-cask "zed"
-cask "zen"
-cask "zoom"
-mas "1Password for Safari", id: 1569813296
-mas "2FAS - Two Factor Authentication", id: 6443941139
-mas "Bandwidth+", id: 490461369
-mas "Dashlane", id: 517914548
-mas "Developer", id: 640199958
-mas "DuckDuckGo", id: 663592361
-mas "Gifski", id: 1351639930
-mas "GIPHY CAPTURE", id: 668208984
-mas "Hidden Bar", id: 1452453066
-mas "iStat Menus", id: 1319778037
-mas "Kindle", id: 302584613
-mas "LanguageTool", id: 1534275760
-mas "LocalSend", id: 1661733229
-mas "Menu Bar Calendar", id: 1558360383
-mas "Noir", id: 1592917505
-mas "Numbers", id: 409203825
-mas "Okta Verify", id: 490179405
-mas "Perplexity", id: 6714467650
-mas "Save to Raindrop.io", id: 1549370672
-mas "Tailscale", id: 1475387142
-mas "TextSniper", id: 1528890965
-mas "Tot", id: 1491071483
-mas "WhatsApp", id: 310633997
-mas "Windows App", id: 1295203466
-mas "Xcode", id: 497799835
+
+# @group vscode-ext — VS Code extensions
 vscode "aaron-bond.better-comments"
 vscode "adpyke.codesnap"
 vscode "alefragnani.bookmarks"
@@ -331,5 +317,50 @@ vscode "xabikos.reactsnippets"
 vscode "yzhang.markdown-all-in-one"
 vscode "zh9528.file-size"
 vscode "zhuangtongfa.material-theme"
-go "cmd/go"
-go "cmd/gofmt"
+
+# @group mac-apps — Mac App Store apps
+mas "2FAS - Two Factor Authentication", id: 6443941139
+mas "Bandwidth+", id: 490461369
+mas "Developer", id: 640199958
+mas "DuckDuckGo", id: 663592361
+mas "Hidden Bar", id: 1452453066
+mas "iStat Menus", id: 1319778037
+mas "Kindle", id: 302584613
+mas "LanguageTool", id: 1534275760
+mas "LocalSend", id: 1661733229
+mas "Menu Bar Calendar", id: 1558360383
+mas "Noir", id: 1592917505
+mas "Numbers", id: 409203825
+mas "Perplexity", id: 6714467650
+mas "Save to Raindrop.io", id: 1549370672
+mas "TextSniper", id: 1528890965
+mas "Tot", id: 1491071483
+mas "Xcode", id: 497799835
+
+# @group extras — Miscellaneous utilities
+brew "gemini-cli"
+brew "libidn"
+brew "libre"
+brew "libxmlsec1"
+brew "libyaml"
+brew "openssl@1.1"
+brew "putty"
+brew "shared-mime-info"
+brew "charmbracelet/tap/freeze", link: false
+brew "steipete/tap/bird"
+brew "steipete/tap/gifgrep"
+brew "steipete/tap/goplaces"
+brew "steipete/tap/imsg"
+brew "steipete/tap/peekaboo"
+brew "steipete/tap/remindctl"
+brew "steipete/tap/sag"
+brew "steipete/tap/songsee"
+brew "steipete/tap/summarize"
+brew "steipete/tap/wacli"
+cask "android-platform-tools"
+cask "bruno"
+cask "claude-code"
+cask "firefox"
+cask "freeze"
+cask "requestly"
+cask "zen"

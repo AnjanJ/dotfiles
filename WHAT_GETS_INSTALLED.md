@@ -12,7 +12,13 @@ Installs [Homebrew](https://brew.sh/) (macOS package manager) if not already pre
 
 ## Step 2: Brewfile (~325 packages)
 
-Runs `brew bundle install` which installs everything declared in the `Brewfile`. This includes Homebrew formulas, cask apps, VS Code extensions, Mac App Store apps (via `mas`), and Go tools:
+Runs `brew bundle install` which installs packages declared in the `Brewfile`. This includes Homebrew formulas, cask apps, VS Code extensions, Mac App Store apps (via `mas`), and Go tools.
+
+The Brewfile is organized into **16 `@group` sections**: taps, core, editors, window-mgmt, terminal-tools, databases, cloud-deploy, media, communication, productivity, **work** (enterprise apps like Slack, Zoom, Okta Verify), languages, fonts, vscode-ext, mac-apps, and extras.
+
+- **Non-interactive mode** installs everything (or respects previous selections saved in `~/.dotfiles-packages`)
+- **Interactive mode** (`--interactive`) lets you toggle groups on/off and exclude individual packages within groups
+- **`--groups "core,editors,databases"`** installs only the specified groups
 
 ### Taps (10 third-party repos)
 

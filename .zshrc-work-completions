@@ -52,6 +52,7 @@ _dotfiles() {
                     '--work-dir[Work directory]:directory:_directories' \
                     '--theme[Theme]:theme:(tokyo-night aura catppuccin)' \
                     '--ssh[SSH mode]:mode:(1password existing generate skip)' \
+                    '--groups[Package groups to install]:groups' \
                     '--no-macos-defaults[Skip macOS defaults]' \
                     '--help[Show help]'
                 ;;
@@ -131,6 +132,7 @@ _dotfiles_install() {
         '--work-dir[Work directory]:directory:_directories' \
         '--theme[Theme]:theme:(tokyo-night aura catppuccin)' \
         '--ssh[SSH mode]:mode:(1password existing generate skip)' \
+        '--groups[Package groups to install]:groups' \
         '--no-macos-defaults[Skip macOS defaults]' \
         '--help[Show help]'
 }

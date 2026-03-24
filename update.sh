@@ -7,7 +7,7 @@
 #
 # What it does:
 #   1. Pull latest dotfiles from git
-#   2. Upgrade Homebrew packages & snapshot Brewfile
+#   2. Upgrade Homebrew packages & snapshot diff (preserves organized Brewfile)
 #   3. Refresh symlinks & theme
 #   4. Upgrade mise tools (config auto-syncs via symlink)
 #   5. Update tmux plugins
@@ -111,33 +111,35 @@ brew cleanup
 
 print_success "Homebrew packages upgraded"
 
-# Snapshot: dump current system state into Brewfile
+# Snapshot: dump current system state for comparison
 echo ""
-print_step "Step 2b: Snapshotting Brewfile..."
+print_step "Step 2b: Snapshotting installed packages..."
 
-# Rotate backup: remove old backup, keep only one
+# Rotate backup
 if [[ -f "$DOTFILES_DIR/Brewfile.backup" ]]; then
     rm "$DOTFILES_DIR/Brewfile.backup"
 fi
-if [[ -f "$DOTFILES_DIR/Brewfile" ]]; then
-    cp "$DOTFILES_DIR/Brewfile" "$DOTFILES_DIR/Brewfile.backup"
-    print_success "Previous Brewfile saved to Brewfile.backup"
-fi
+cp "$DOTFILES_DIR/Brewfile" "$DOTFILES_DIR/Brewfile.backup"
+print_success "Previous Brewfile saved to Brewfile.backup"
 
-# Dump current state (captures brew, casks, mas, vscode, taps, go, uv)
-brew bundle dump --file="$DOTFILES_DIR/Brewfile" --force
-print_success "Brewfile snapshot taken"
+# Dump current state to a snapshot file (not the main Brewfile — that has @group markers)
+brew bundle dump --file="$DOTFILES_DIR/Brewfile.snapshot" --force
+print_success "System snapshot taken (Brewfile.snapshot)"
 echo "  Tip: Run 'dotfiles cleanup' to find packages not in Brewfile"
 
-# Show what changed
-if [[ -f "$DOTFILES_DIR/Brewfile.backup" ]]; then
-    BREW_ADDED_LINES=$(diff "$DOTFILES_DIR/Brewfile.backup" "$DOTFILES_DIR/Brewfile" 2>/dev/null | grep "^> " | sed 's/^> //' || true)
-    BREW_REMOVED_LINES=$(diff "$DOTFILES_DIR/Brewfile.backup" "$DOTFILES_DIR/Brewfile" 2>/dev/null | grep "^< " | sed 's/^< //' || true)
+# Show what changed vs the organized Brewfile (ignoring @group comments)
+if [[ -f "$DOTFILES_DIR/Brewfile.snapshot" ]]; then
+    # Compare package lines only (strip comments and blank lines from both)
+    _brewfile_pkgs=$(grep -v '^#' "$DOTFILES_DIR/Brewfile" | grep -v '^$' | sort)
+    _snapshot_pkgs=$(grep -v '^#' "$DOTFILES_DIR/Brewfile.snapshot" | grep -v '^$' | sort)
+
+    BREW_ADDED_LINES=$(comm -13 <(echo "$_brewfile_pkgs") <(echo "$_snapshot_pkgs") || true)
+    BREW_REMOVED_LINES=$(comm -23 <(echo "$_brewfile_pkgs") <(echo "$_snapshot_pkgs") || true)
     BREW_ADDED_COUNT=$(echo "$BREW_ADDED_LINES" | grep -c . || true)
     BREW_REMOVED_COUNT=$(echo "$BREW_REMOVED_LINES" | grep -c . || true)
 
     if [[ "$BREW_ADDED_COUNT" -gt 0 || "$BREW_REMOVED_COUNT" -gt 0 ]]; then
-        echo -e "  ${YELLOW}+${BREW_ADDED_COUNT} added, -${BREW_REMOVED_COUNT} removed since last snapshot${NC}"
+        echo -e "  ${YELLOW}+${BREW_ADDED_COUNT} new on system, -${BREW_REMOVED_COUNT} in Brewfile but not installed${NC}"
         if [[ -n "$BREW_ADDED_LINES" ]]; then
             while IFS= read -r line; do
                 [[ -z "$line" ]] && continue
@@ -153,6 +155,8 @@ if [[ -f "$DOTFILES_DIR/Brewfile.backup" ]]; then
     else
         echo -e "  ${GREEN}No changes since last snapshot${NC}"
     fi
+
+    rm -f "$DOTFILES_DIR/Brewfile.snapshot"
 fi
 
 # In interactive mode, also install anything in Brewfile missing from system
@@ -160,7 +164,19 @@ if [[ "$INTERACTIVE" == true ]]; then
     read -r -p "Install any missing Brewfile packages? This may require your password. (y/n) " -n 1
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
-        brew bundle install --no-lock --file="$DOTFILES_DIR/Brewfile"
+        source "$DOTFILES_DIR/scripts/package-utils.sh"
+        if [[ -f "$PACKAGES_STATE_FILE" ]]; then
+            _saved_selections=$(get_saved_groups)
+            if [[ -n "$_saved_selections" ]]; then
+                _filtered=$(generate_filtered_brewfile "$DOTFILES_DIR/Brewfile" "$_saved_selections")
+                brew bundle install --no-lock --file="$_filtered"
+                rm -f "$_filtered"
+            else
+                brew bundle install --no-lock --file="$DOTFILES_DIR/Brewfile"
+            fi
+        else
+            brew bundle install --no-lock --file="$DOTFILES_DIR/Brewfile"
+        fi
         print_success "Brewfile synced to system"
     else
         print_success "Skipped Brewfile sync"

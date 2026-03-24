@@ -157,6 +157,7 @@ Both are **fully non-interactive** with sensible defaults. No prompts, no questi
 bash install.sh --name "AJ" --email "aj@example.com" --theme aura
 bash install.sh --work-email "aj@corp.com" --ssh generate
 bash install.sh --interactive          # Prompt for every choice (old behavior)
+bash install.sh --groups "core,editors,databases"  # Install only specific package groups
 bash install.sh --no-macos-defaults    # Skip macOS system preferences
 bash install.sh --force                # Force reinstall everything
 bash install.sh --help                 # Show all options
@@ -165,7 +166,7 @@ bash install.sh --help                 # Show all options
 ### What it does
 
 1. ✅ Install Homebrew (if not installed)
-2. ✅ Install all packages from Brewfile
+2. ✅ Install packages from Brewfile (interactive mode lets you select package groups; `--groups` to pick specific ones)
 3. ✅ Create symlinks to dotfiles (shell, tmux, Neovim, Zed, ~/bin)
 4. ✅ Apply your chosen theme (Tokyo Night, Aura Dark, or Catppuccin)
 5. ✅ Set up tmux plugins
@@ -515,14 +516,14 @@ All commands support tab-completion. Shorthand also works: `dotfiles-update`, `d
 
 1. Pull latest changes from git
 2. `brew update` + `brew upgrade` + `brew cleanup`
-3. Snapshot Brewfile (captures any new apps you installed manually)
+3. Snapshot installed packages and show diff against Brewfile (without overwriting the organized Brewfile)
 4. Refresh all symlinks
 5. Upgrade mise tools
 6. Update tmux plugins
 7. Reload live configs (tmux, aerospace)
 8. Commit & push changes back to repo
 
-**Your Brewfile stays in sync automatically.** Install apps with `brew install` or `mas install` anytime — the next `dotfiles update` captures them into the repo. One `Brewfile.backup` is kept for rollback.
+**Your Brewfile stays organized.** The Brewfile is organized into `@group` sections (core, editors, work, databases, etc.) and `dotfiles update` never overwrites it. The snapshot step shows you what's new or missing compared to your system. One `Brewfile.backup` is kept for rollback.
 
 ### Health Check
 
