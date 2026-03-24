@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2015,SC2181,SC2329
 
 # ============================================
 # PACKAGE GROUP SELECTION TEST SUITE
