@@ -3,7 +3,16 @@
     "allow": [
       "Bash(cat:*)",
       "Bash(chmod:*)",
-      "Bash(bash:*)"
+      "Bash(bash:*)",
+      "Bash(wc -l /Users/aj/dotfiles/.zshrc* /Users/aj/dotfiles/.tmux.conf /Users/aj/dotfiles/.config/nvim/init.lua)",
+      "Bash(git -C /Users/aj/dotfiles log --oneline)",
+      "Bash(grep -l \"work\\\\|enterprise\\\\|business\\\\|corporate\" /Users/aj/dotfiles/bin/*)",
+      "Bash(shellcheck:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(mas list:*)",
+      "Bash(gh run:*)"
     ],
     "deny": [],
     "ask": []

@@ -22,6 +22,7 @@
 # ============================================
 # 1. CORE SETTINGS
 # ============================================
+#
 
 # Prompt (Starship - blazing-fast, cross-shell, written in Rust)
 if command -v starship &>/dev/null; then
