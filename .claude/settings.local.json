@@ -12,7 +12,8 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(mas list:*)",
-      "Bash(gh run:*)"
+      "Bash(gh run:*)",
+      "Bash(gh repo:*)"
     ],
     "deny": [],
     "ask": []
