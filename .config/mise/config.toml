@@ -4,8 +4,9 @@ erlang = "latest"
 go = "latest"
 node = "latest"
 python = "latest"
-ruby = "latest"
+ruby = "3.4.9"
 rust = "latest"
+yarn = "latest"
 
 [settings]
 idiomatic_version_file_enable_tools = ["node"]
