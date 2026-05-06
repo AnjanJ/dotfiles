@@ -313,6 +313,9 @@ create_symlink "$DOTFILES_DIR/.zshrc" ~/.zshrc ".zshrc"
 # tmux
 create_symlink "$DOTFILES_DIR/.tmux.conf" ~/.tmux.conf ".tmux.conf"
 
+# wezterm (lives under .config/wezterm/, but wezterm also reads ~/.wezterm.lua first)
+create_symlink "$DOTFILES_DIR/.config/wezterm/wezterm.lua" ~/.wezterm.lua ".wezterm.lua"
+
 # Git global ignores
 [[ -f "$DOTFILES_DIR/.gitignore_global" ]] && create_symlink "$DOTFILES_DIR/.gitignore_global" ~/.gitignore_global ".gitignore_global"
 
