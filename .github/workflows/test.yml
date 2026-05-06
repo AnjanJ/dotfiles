@@ -8,11 +8,11 @@ on:
 
 jobs:
   shellcheck:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Install shellcheck
-        run: brew install shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
       - name: Lint all shell scripts
         run: |
           shellcheck -x \
@@ -30,79 +30,25 @@ jobs:
             bin/erb-lint-formatter \
             tests/test-*.sh
 
-  idempotency:
+  tests:
     runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        suite:
+          - idempotency
+          - work-nuke
+          - repos-clone
+          - ssh-adversarial
+          - theme
+          - update
+          - doctor
+          - setup-git
+          - work-status
+          - backup
+          - sync
+          - packages
     steps:
       - uses: actions/checkout@v4
-      - name: Run idempotency tests
-        run: bash tests/test-idempotency.sh
-
-  work-nuke:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run work-nuke tests
-        run: bash tests/test-work-nuke.sh
-
-  repos-clone:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run repos-clone tests
-        run: bash tests/test-repos-clone.sh
-
-  ssh-adversarial:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run SSH adversarial tests
-        run: bash tests/test-ssh-adversarial.sh
-
-  theme:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run theme system tests
-        run: bash tests/test-theme.sh
-
-  update:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run update.sh tests
-        run: bash tests/test-update.sh
-
-  doctor:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run dotfiles-doctor tests
-        run: bash tests/test-doctor.sh
-
-  setup-git:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run setup-git tests
-        run: bash tests/test-setup-git.sh
-
-  work-status:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run work-status tests
-        run: bash tests/test-work-status.sh
-
-  backup:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run backup tests
-        run: bash tests/test-backup.sh
-
-  sync:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run sync tests
-        run: bash tests/test-sync.sh
+      - name: Run ${{ matrix.suite }} tests
+        run: bash tests/test-${{ matrix.suite }}.sh
