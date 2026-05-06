@@ -52,7 +52,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run ${{ matrix.suite }} tests
-        # Use bash 5.x from PATH (Homebrew). macOS /bin/bash is 3.2 and lacks
-        # `declare -A`, which package-utils.sh requires.
-        shell: bash -e {0}
-        run: bash tests/test-${{ matrix.suite }}.sh
+        # Invoke Homebrew bash 5.x explicitly. macOS /bin/bash is 3.2 and lacks
+        # `declare -A`, which package-utils.sh requires. GitHub's `shell: bash`
+        # always resolves to /bin/bash, so we call brew bash by absolute path.
+        run: /opt/homebrew/bin/bash tests/test-${{ matrix.suite }}.sh
