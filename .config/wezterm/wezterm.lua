@@ -21,7 +21,7 @@ config.font = wezterm.font_with_fallback {
   { family = 'Symbols Nerd Font Mono' },
   'Noto Color Emoji',
 }
-config.font_size = 14.0
+config.font_size = 16.0
 config.freetype_load_target = 'Light'
 config.freetype_render_target = 'HorizontalLcd'
 
@@ -65,6 +65,7 @@ config.tab_bar_at_bottom = false
 config.hide_tab_bar_if_only_one_tab = false
 config.show_tab_index_in_tab_bar = true
 config.tab_max_width = 32
+config.window_frame = { font_size = 14.0 }
 
 -- Custom tab title: respects user-set name; otherwise shows cwd + running process
 wezterm.on('format-tab-title', function(tab, tabs, panes, conf, hover, max_width)

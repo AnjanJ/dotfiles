@@ -165,8 +165,13 @@ if [ -f ~/.zshrc-dhh-additions ]; then
   source ~/.zshrc-dhh-additions
 fi
 
+# compinit runs BEFORE plugins that depend on it (fzf-tab, zsh-completions
+# wired via terminal-enhancements). `-C` skips the security check on insecure
+# directories — saves ~5ms; safe because we own everything in fpath.
+autoload -Uz compinit && compinit -C
+
 # Modern terminal enhancements
-# (fzf, zoxide, bat, eza, fd, ripgrep, etc.)
+# (fzf, zoxide, bat, eza, fd, ripgrep, autosuggestions, syntax-highlight, AI tools)
 if [ -f ~/.zshrc-terminal-enhancements ]; then
   source ~/.zshrc-terminal-enhancements
 fi
@@ -185,7 +190,6 @@ fi
 
 # Dotfiles & work command completions
 if [ -f ~/.zshrc-work-completions ]; then
-  autoload -Uz compinit && compinit -C
   source ~/.zshrc-work-completions
 fi
 

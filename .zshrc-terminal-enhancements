@@ -8,17 +8,18 @@
 #
 # TABLE OF CONTENTS:
 # ──────────────────────────────────────────
-#  1. FZF (fuzzy finder)
+#  1. FZF (fuzzy finder) + fzf-tab (fuzzy tab completion)
 #  2. Zoxide (smart cd)
 #  3. Bat (better cat with syntax highlighting)
 #  4. Eza (better ls with icons/git)
 #  5. Ripgrep (better grep)
 #  6. Fd (better find)
-#  7. TLDR (simple man pages)
-#  8. Tmux (terminal multiplexer)
-#  9. Zellij (modern terminal multiplexer)
-# 10. Neovim (modal text editor)
-# 11. Helpful Aliases (vif, cdf, lg, lzd, etc.)
+#  7. TLDR (simple man pages — provided by tlrc)
+#  8. Zellij (modern terminal multiplexer)
+#  9. Neovim (modal text editor)
+# 10. Helpful Aliases (vif, cdf, lg, lzd, etc.)
+# 11. zsh enhancements (autosuggestions + syntax highlighting)
+# 12. AI/LLM shell tooling (mods, ollama, gh-copilot)
 #
 # ============================================
 
@@ -45,6 +46,12 @@ if command -v fzf > /dev/null; then
         --inline-info
         ${FZF_THEME_COLORS:-}
     "
+
+    # fzf-tab — replace zsh's default tab-complete menu with fzf
+    # Must be sourced AFTER compinit and BEFORE zsh-syntax-highlighting (see section 11).
+    if [[ -f /opt/homebrew/opt/fzf-tab/share/fzf-tab/fzf-tab.zsh ]]; then
+        source /opt/homebrew/opt/fzf-tab/share/fzf-tab/fzf-tab.zsh
+    fi
 fi
 
 # ============================================
@@ -106,27 +113,7 @@ if command -v tldr > /dev/null; then
 fi
 
 # ============================================
-# 8. TMUX (TERMINAL MULTIPLEXER)
-# ============================================
-# Session management and persistent terminal sessions
-
-if command -v tmux > /dev/null; then
-    # Tmux session management
-    alias ta='tmux attach -t'         # Attach to session
-    alias tad='tmux attach -d -t'     # Detach others and attach
-    alias ts='tmux new-session -s'    # Create new session
-    alias tl='tmux list-sessions'     # List all sessions
-    alias tks='tmux kill-session -t'  # Kill specific session
-    alias tkss='tmux kill-server'     # Kill tmux server (all sessions)
-
-    # Quick session shortcuts
-    alias tw='tmux new -s work'       # Create work session
-    alias tp='tmux new -s personal'   # Create personal session
-
-fi
-
-# ============================================
-# 9. ZELLIJ (MODERN TERMINAL MULTIPLEXER)
+# 8. ZELLIJ (MODERN TERMINAL MULTIPLEXER)
 # ============================================
 # Modern Rust-based alternative to tmux with on-screen hints
 
@@ -148,7 +135,7 @@ if command -v zellij > /dev/null; then
 fi
 
 # ============================================
-# 10. NEOVIM
+# 9. NEOVIM
 # ============================================
 # Modern modal text editor with LSP support
 
@@ -169,7 +156,7 @@ if command -v nvim > /dev/null; then
 fi
 
 # ============================================
-# 11. HELPFUL ALIASES
+# 10. HELPFUL ALIASES
 # ============================================
 
 # Quick directory navigation
@@ -205,7 +192,61 @@ alias lzg='lazygit'
 alias lzd='lazydocker'
 
 # ============================================
+# 11. ZSH ENHANCEMENTS
+# ============================================
+# zsh-autosuggestions: fish-style ghost-text completion from history.
+#   Press → (right arrow) or End to accept the suggestion.
+# zsh-syntax-highlighting: colors commands as you type so typos and unknown
+#   commands stand out in red before you hit enter.
+# Order matters: autosuggestions first, syntax-highlighting LAST.
+
+if [[ -f /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]]; then
+    source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+    ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+fi
+
+if [[ -f /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]]; then
+    source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+fi
+
+# ============================================
+# 12. AI / LLM SHELL TOOLING
+# ============================================
+# `mods`: pipe text through an LLM. Defaults to OpenAI; configure in
+#         ~/.config/mods/mods.yml. Use `--api ollama` for local models.
+#         Examples:
+#           cat error.log | mods "what does this error mean?"
+#           git diff | mods "summarize for a commit message"
+#           mods "explain SIGPIPE in 3 sentences"
+#
+# `ollama`: local LLM runtime. Pull a model once, then point mods at it.
+#         Example:
+#           ollama pull qwen2.5-coder:3b
+#           cat script.sh | mods --api ollama -m qwen2.5-coder "review this"
+#
+# `gh copilot`: GitHub Copilot CLI (built-in to gh ≥ 2.49; requires Copilot subscription).
+#         Examples:
+#           gh copilot suggest "find files larger than 100MB"
+#           gh copilot explain "git log --since=7.days"
+#         Aliases below shorten the common cases.
+
+if command -v gh > /dev/null && gh copilot --help >/dev/null 2>&1; then
+    alias ghcs='gh copilot suggest'
+    alias ghce='gh copilot explain'
+fi
+
+# Quick "explain the last command" via mods if available
+if command -v mods > /dev/null; then
+    explain-last() {
+        local last_cmd
+        last_cmd=$(fc -ln -1)
+        echo "Explaining: $last_cmd"
+        echo "$last_cmd" | mods "Explain this shell command in plain English"
+    }
+fi
+
+# ============================================
 # END OF TERMINAL ENHANCEMENTS
 # ============================================
 
-echo "✅ Terminal enhancements loaded! Try: cd (smart zoxide), cdi (interactive), ls, cat, grep, find, help, lg, vim"
+echo "✅ Terminal enhancements loaded! Try: cd (smart zoxide), cdi (interactive), ls, cat, grep, find, help, lg, vim, mods, ghcs"
