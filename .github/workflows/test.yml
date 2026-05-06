@@ -51,8 +51,10 @@ jobs:
           - packages
     steps:
       - uses: actions/checkout@v4
+      - name: Install bash 5.x
+        # macOS /bin/bash is 3.2 (Apple licensing) and lacks `declare -A`,
+        # which scripts/package-utils.sh requires. Brew installs bash 5+ at
+        # /opt/homebrew/bin which we then call explicitly below.
+        run: brew install bash
       - name: Run ${{ matrix.suite }} tests
-        # Invoke Homebrew bash 5.x explicitly. macOS /bin/bash is 3.2 and lacks
-        # `declare -A`, which package-utils.sh requires. GitHub's `shell: bash`
-        # always resolves to /bin/bash, so we call brew bash by absolute path.
         run: /opt/homebrew/bin/bash tests/test-${{ matrix.suite }}.sh
