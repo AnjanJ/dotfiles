@@ -21,6 +21,12 @@
 *.old
 *.orig
 
+# Local-only Brewfile backup (rotated by update.sh; git history is the real backup)
+Brewfile.backup
+
+# Machine-local Claude Code settings (paths, permissions specific to this machine)
+.claude/settings.local.json
+
 # Logs
 *.log
 

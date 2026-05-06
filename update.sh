@@ -315,17 +315,40 @@ CURRENT_BRANCH=$(git branch --show-current)
 if [[ "$CURRENT_BRANCH" != "main" ]]; then
     print_warning "On branch '$CURRENT_BRANCH' — skipping auto-commit/push (only runs on main)"
 elif [[ -n $(git status -s) ]]; then
-    # Stage snapshot files and any other tracked changes
-    git add Brewfile Brewfile.backup .config/mise/config.toml 2>/dev/null || true
+    # Stage tracked changes only (Brewfile.backup is gitignored — local safety net only)
+    git add Brewfile .config/mise/config.toml 2>/dev/null || true
     git add -u
 
-    CHANGES=$(git diff --cached --stat | tail -1)
-    git commit -m "update: snapshot system state
+    # Skip commit when the only diff is whitespace, comment, or ordering churn
+    # in Brewfile/mise config (no functional package changes).
+    MEANINGFUL=false
+    if ! git diff --cached --quiet; then
+        # Any change outside Brewfile/mise config = meaningful by default
+        if git diff --cached --name-only | grep -vE '^(Brewfile|\.config/mise/config\.toml)$' | grep -q .; then
+            MEANINGFUL=true
+        else
+            # Only Brewfile/mise diffs — check for actual package adds/removes
+            # (ignore comment-only and whitespace-only lines)
+            for f in Brewfile .config/mise/config.toml; do
+                if git diff --cached -- "$f" | grep -E '^[+-][^+-]' | grep -vE '^[+-]\s*(#|$)' | grep -q .; then
+                    MEANINGFUL=true
+                    break
+                fi
+            done
+        fi
+    fi
+
+    if [[ "$MEANINGFUL" == true ]]; then
+        CHANGES=$(git diff --cached --stat | tail -1)
+        git commit -m "snapshot: system state
 
 $CHANGES"
-
-    git push origin main
-    print_success "Changes pushed to repo"
+        git push origin main
+        print_success "Changes pushed to repo"
+    else
+        print_success "No meaningful changes — skipping snapshot commit"
+        git reset HEAD -- . >/dev/null 2>&1 || true
+    fi
 else
     print_success "Repo already in sync"
 fi

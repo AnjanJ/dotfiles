@@ -179,7 +179,7 @@ bash install.sh --help                 # Show all options
 
 **💡 Truly idempotent** — run it 10 times, get the same result. No backup clutter, no duplicate configs, no re-prompting.
 
-**📋 Want the full breakdown?** See [WHAT_GETS_INSTALLED.md](WHAT_GETS_INSTALLED.md) — every tool, language, config, and system change explained step by step.
+**📋 Want the full package list?** Read [`Brewfile`](Brewfile) directly — it's organized into `@group` sections (core, editors, work, databases, etc.) with comments explaining each tool.
 
 ### What Gets Installed
 
@@ -465,7 +465,6 @@ dotfiles/
 │   ├── repos-clone             # Clone repos from GitHub/GitLab/Bitbucket/Codeberg
 │   ├── erb-lint-formatter      # ERB lint wrapper for Zed
 │   └── _work-helpers           # Shared utilities for work scripts
-├── Brewfile.backup             # Previous Brewfile (one backup, for rollback)
 ├── scripts/
 │   ├── _helpers.sh             # Shared colors & print functions
 │   ├── setup-git.sh            # Git identity & defaults setup
@@ -524,7 +523,38 @@ All commands support tab-completion. Shorthand also works: `dotfiles-update`, `d
 7. Reload live configs (tmux, aerospace)
 8. Commit & push changes back to repo
 
-**Your Brewfile stays organized.** The Brewfile is organized into `@group` sections (core, editors, work, databases, etc.) and `dotfiles update` never overwrites it. The snapshot step shows you what's new or missing compared to your system. One `Brewfile.backup` is kept for rollback.
+**Your Brewfile stays organized.** The Brewfile is organized into `@group` sections (core, editors, work, databases, etc.) and `dotfiles update` never overwrites it. The snapshot step shows you what's new or missing compared to your system.
+
+#### Brewfile recovery
+
+Two layers of safety net:
+
+**1. Git history is the source of truth.** Every previous Brewfile is one command away:
+
+```bash
+# View the previous version
+git -C ~/dotfiles show HEAD~1:Brewfile
+
+# Restore the previous version to a working file
+git -C ~/dotfiles show HEAD~1:Brewfile > /tmp/Brewfile.previous
+
+# Roll the tracked Brewfile back N commits and reinstall
+git -C ~/dotfiles checkout HEAD~1 -- Brewfile
+brew bundle install --file=~/dotfiles/Brewfile
+```
+
+**2. `Brewfile.backup` (local only, gitignored).** `dotfiles update` writes a copy of the *previous* Brewfile to `~/dotfiles/Brewfile.backup` before each upgrade. It's not tracked in git (no commit noise) but lives on disk for one-step rollback if an upgrade breaks your machine:
+
+```bash
+# Quick rollback after a bad `dotfiles update`
+cp ~/dotfiles/Brewfile.backup ~/dotfiles/Brewfile
+brew bundle install --file=~/dotfiles/Brewfile
+
+# Inspect what changed before rolling back
+diff ~/dotfiles/Brewfile.backup ~/dotfiles/Brewfile
+```
+
+The on-disk backup only holds the *most recent* previous state. For older versions, use `git log -- Brewfile` to find the commit and `git show <sha>:Brewfile` to restore.
 
 ### Health Check
 
@@ -647,7 +677,7 @@ open -a Aerospace
 
 Detailed guides for each tool:
 
-- [What Gets Installed](WHAT_GETS_INSTALLED.md) - Full breakdown of every tool and config change
+- [Brewfile](Brewfile) - Full package list, grouped by purpose
 - [Quick Reference](QUICK_REFERENCE.md) - Print this!
 - [Neovim Guide](.config/nvim/README.md)
 - [Daily Workflows](docs/DAILY_WORKFLOWS.md)
