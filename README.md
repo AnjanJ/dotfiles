@@ -78,9 +78,9 @@ Like DHH's **[Omakub](https://omakub.org/)** for Ubuntu, this setup provides:
 
 Choose your theme during install — it's applied across **22 apps**:
 
-| Auto-configured (17) | Manual (links provided) |
+| Auto-configured (16) | Manual (links provided) |
 |----------------|------------------------|
-| Neovim, Ghostty, tmux, Zellij, Starship, Zed, VS Code, Warp, bat, git-delta, fzf, lazygit, borders, sketchybar, yazi, gitui, lsd | Slack, Chrome, Firefox, Telegram, Raycast |
+| Neovim, Ghostty, Zellij, Starship, Zed, VS Code, Warp, bat, git-delta, fzf, lazygit, borders, sketchybar, yazi, gitui, lsd | Slack, Chrome, Firefox, Telegram, Raycast |
 
 Switch anytime: `dotfiles theme tokyo-night`, `dotfiles theme aura`, or `dotfiles theme catppuccin`
 
@@ -95,11 +95,19 @@ Switch anytime: `dotfiles theme tokyo-night`, `dotfiles theme aura`, or `dotfile
 ### ⌨️ Productivity
 - **Aerospace** - i3-like tiling window manager for macOS
 - **Neovim + AstroNvim** - Modern Vim distribution with LSP, Treesitter, Telescope
-- **tmux** - Session management, vim integration, persistent sessions
-- **Zellij** - Modern alternative to tmux with on-screen hints
+- **Zellij** - Rust-based terminal multiplexer with on-screen hints
 - **Starship** - Fast, customizable prompt (16x faster than Spaceship)
 - **Harpoon** - Quick file navigation (ThePrimeagen workflow)
 - **Smart CLI** - `cd` uses zoxide (frecency), `ls`→eza, `cat`→bat, `grep`→ripgrep, `find`→fd
+- **Shell UX** - syntax-highlight as you type, ghost-text autosuggestions, fzf-tab fuzzy completion
+
+### 🤖 AI-Augmented Shell
+- **Claude Code** - Anthropic's coding agent (cask + VS Code extension)
+- **GitHub Copilot CLI** - `ghcs` (suggest) and `ghce` (explain), built into `gh ≥ 2.49`
+- **mods** - Pipe-friendly LLM (`cat err.log \| mods "explain"`); works with OpenAI, Anthropic, Ollama
+- **ollama** - Local LLM runtime for offline / private workflows
+- **Gemini CLI** - Google's terminal LLM
+- **Perplexity** (Mac App Store) - AI-powered search
 
 ## 📦 What's Included
 
@@ -108,7 +116,7 @@ Switch anytime: `dotfiles theme tokyo-night`, `dotfiles theme aura`, or `dotfile
 - **Terminal**: Ghostty (GPU-accelerated)
 - **Shell**: zsh with modular configuration
 - **Prompt**: Starship
-- **Multiplexers**: tmux + Zellij
+- **Multiplexer**: Zellij
 - **Editors**: Neovim with AstroNvim, Zed (settings, snippets, tasks)
 - **Version Control**: Git (smart defaults, respects `$EDITOR`, per-directory identity), lazygit, GitHub CLI
 - **Work Management**: work-setup, work-nuke, work-switch, work-status, repos-clone
@@ -129,12 +137,14 @@ Switch anytime: `dotfiles theme tokyo-night`, `dotfiles theme aura`, or `dotfile
 - SQLite (via litecli)
 
 ### CLI Utilities
-- ripgrep, fd, fzf (fuzzy finding)
+- ripgrep, fd, fzf, fzf-tab (fuzzy finding + completion)
 - bat (cat with syntax highlighting)
 - eza (modern ls)
+- jq (JSON pipeline tooling)
 - tree (directory visualization)
 - yazi (terminal file manager)
 - lnav, tailspin (log viewers)
+- zsh-autosuggestions, zsh-syntax-highlighting (shell UX)
 
 ## 🎯 One-Command Installation
 
@@ -295,13 +305,7 @@ Each file has a single responsibility. Want to change your Rails workflow? Edit 
    source ~/.zshrc
    ```
 
-2. **Install tmux plugins**
-   ```bash
-   tmux
-   # Press: Ctrl+A then Shift+I
-   ```
-
-3. **Open Neovim** (plugins auto-install)
+2. **Open Neovim** (plugins auto-install)
    ```bash
    nvim
    ```
@@ -347,21 +351,6 @@ Each file has a single responsibility. Want to change your Rails workflow? Edit 
 | `Alt+Shift+N` | Next Firefox window |
 | `Alt+Shift+B` | Previous Firefox window |
 
-#### tmux (Prefix: `Ctrl+A`)
-| Key | Action |
-|-----|--------|
-| `Prefix \|` | Split vertical |
-| `Prefix -` | Split horizontal |
-| `Prefix h/j/k/l` | Navigate panes (vim-style) |
-| `Prefix H/J/K/L` | Resize panes |
-| `Prefix c` | New window |
-| `Prefix r` | Rails server |
-| `Prefix C` | Rails console |
-| `Prefix P` | Phoenix server |
-| `Prefix I` | IEx console |
-| `Prefix Shift+I` | Install plugins |
-| `Prefix Shift+U` | Update plugins |
-
 #### Neovim (Leader: `Space`)
 | Key | Action |
 |-----|--------|
@@ -393,6 +382,171 @@ Each file has a single responsibility. Want to change your Rails workflow? Edit 
 | `zr` | Rails | editor, server (rails s + console), tests, terminal |
 | `zp` | Phoenix | editor, server (phx.server + iex), tests, terminal |
 | `zw` | Work | editor, server (two panes), terminal |
+
+## 🤖 AI-Augmented Shell
+
+A modern shell needs AI tooling. This setup wires LLMs into your daily flow without taking over the terminal.
+
+### Quick reference
+
+| Tool | What it does | Trigger |
+|------|--------------|---------|
+| **Claude Code** | Full coding agent (CLI + IDE) | `claude` or VS Code/Zed extension |
+| **GitHub Copilot CLI** | Suggests/explains shell commands | `ghcs` / `ghce` |
+| **mods** | Pipe text → LLM, get text back | `\| mods "..."` |
+| **ollama** | Run LLMs locally (offline + private) | `ollama run <model>` or via `mods` |
+| **Gemini CLI** | Google's terminal LLM | `gemini` |
+| **explain-last** | "What did that command do?" | `explain-last` |
+
+### `mods` — your everyday LLM pipe
+
+`mods` reads stdin and prints the model's response. It's the unix way to use AI.
+
+```bash
+# Diagnose an error
+cat /var/log/system.log | tail -50 | mods "anything concerning here?"
+
+# Generate a commit message from your diff
+git diff --staged | mods "write a concise conventional-commit message"
+
+# Convert a CSV to JSON
+cat data.csv | mods "convert to JSON, keep types"
+
+# Refactor on the fly
+cat script.sh | mods "rewrite this in idiomatic Python 3.12, keep behavior identical"
+
+# One-shot questions
+mods "explain SIGPIPE in 3 sentences"
+```
+
+**Configuration** (already done in this dotfiles setup):
+- Config file: `~/Library/Application Support/mods/mods.yml` (macOS) — open with `mods --settings`
+- Default API: `ollama` (local) — runs offline, no costs, no data leaves your Mac
+- Default model: `qwen2.5-coder:3b` — fast 3B coding-tuned model
+- Pre-defined roles: `shell`, `reviewer`, `commit`, `diagram` — invoke with `mods --role <name>`
+
+**To use hosted APIs** (optional, when you want a stronger model):
+
+```bash
+export OPENAI_API_KEY="sk-..."         # for `mods --api openai`
+export ANTHROPIC_API_KEY="sk-ant-..."  # for `mods --api anthropic`
+```
+
+```bash
+# Examples using roles
+git diff --staged | mods --role commit
+cat src/auth.rb | mods --role reviewer
+mods --role diagram "auth flow with JWT and refresh tokens"
+```
+
+### `gh copilot` — built into `gh`
+
+Already comes with `gh ≥ 2.49`. Two subcommands, two aliases:
+
+```bash
+ghcs "find files larger than 100MB modified in the last week"
+# Suggests: find . -type f -size +100M -mtime -7
+
+ghce "git rebase --interactive HEAD~5"
+# Explains the command in plain English
+```
+
+Requires an active GitHub Copilot subscription. First run prompts for auth.
+
+### `ollama` — local LLMs (offline + private)
+
+Local models run on your Mac. No data leaves your machine. Great for:
+- Sensitive code/logs you can't send to a hosted API
+- Offline work (flight, travel)
+- Cheap experimentation without per-token costs
+- Latency-sensitive use cases
+
+**Setup (one-time):**
+
+```bash
+# Pull a small, fast coding model (~2GB)
+ollama pull qwen2.5-coder:3b
+
+# Or a more capable general model (~5GB)
+ollama pull llama3.2:3b
+
+# List what you have
+ollama list
+```
+
+**Use directly:**
+
+```bash
+ollama run qwen2.5-coder:3b "write a bash function that retries N times"
+```
+
+**Use via `mods` for piping:**
+
+```bash
+# Configure once: mods --settings, set "default-api: ollama"
+cat error.log | mods "explain"
+
+# Or specify per-call
+cat script.sh | mods --api ollama -m qwen2.5-coder:3b "review for bugs"
+```
+
+**Recommended models** (download once, use forever):
+
+| Model | Size | Best for |
+|-------|------|----------|
+| `qwen2.5-coder:3b` | 2 GB | Fast code review, refactoring, explanations |
+| `qwen2.5-coder:7b` | 4.7 GB | Higher-quality coding tasks |
+| `llama3.2:3b` | 2 GB | General Q&A, summarization |
+| `llama3.1:8b` | 4.7 GB | Better reasoning, longer context |
+| `nomic-embed-text` | 274 MB | Embeddings (RAG, semantic search) |
+
+### `explain-last` — instant context
+
+Custom function in `.zshrc-terminal-enhancements`. Pipes your last shell command through `mods`:
+
+```bash
+$ find . -name "*.rb" -mtime -1 -exec rg -l "TODO" {} \;
+# ...output...
+
+$ explain-last
+# mods explains what the find/rg pipeline does
+```
+
+### Picking the right tool
+
+- **"I need a coding agent that can edit my files."** → Claude Code
+- **"I forgot the syntax for X."** → `ghcs "X"`
+- **"What does this regex/pipe do?"** → `ghce "..."` or `explain-last`
+- **"Process this stdin and give me text back."** → `mods`
+- **"I'm offline / this is sensitive."** → ollama (via mods or directly)
+- **"I want a chat-style interface."** → Claude Code app, Perplexity, or `mods` with `--continue`
+
+## 🐚 Shell UX Enhancements
+
+Three plugins make typing in zsh feel like an editor:
+
+### `zsh-syntax-highlighting`
+Colors commands as you type. Valid commands turn green, unknown ones stay red — catch typos before pressing enter. Quoted strings, paths, options, and operators are all distinctly colored.
+
+### `zsh-autosuggestions`
+Fish-style ghost text. As you type, your shell shows the rest of a previous command in dim gray. Press **→** (right arrow) or **End** to accept. The strategy is `(history completion)` — history first, then tab-completion-aware fallbacks.
+
+```bash
+$ git c█           # ghost text shows "git commit -m"
+$ git commit -m    # press → to accept
+```
+
+### `fzf-tab`
+Replaces zsh's default tab-complete menu with an fzf fuzzy picker. Every `<Tab>` becomes a searchable menu with previews:
+
+```bash
+cd <Tab>            # fuzzy-pick a directory
+git checkout <Tab>  # fuzzy-pick a branch (preview shows git log)
+kill <Tab>          # fuzzy-pick a process
+ssh <Tab>           # fuzzy-pick a host from ~/.ssh/config
+```
+
+Type to filter. Enter to select. Esc to cancel.
 
 ## 🎨 Theming
 

@@ -212,12 +212,15 @@ fi
 # ============================================
 # 12. AI / LLM SHELL TOOLING
 # ============================================
-# `mods`: pipe text through an LLM. Defaults to OpenAI; configure in
-#         ~/.config/mods/mods.yml. Use `--api ollama` for local models.
+# `mods`: pipe text through an LLM. Configured for ollama (local) by default;
+#         config lives at "~/Library/Application Support/mods/mods.yml" on macOS.
+#         Switch to a hosted model with `mods --api openai` etc.
 #         Examples:
 #           cat error.log | mods "what does this error mean?"
 #           git diff | mods "summarize for a commit message"
 #           mods "explain SIGPIPE in 3 sentences"
+#           mods --role reviewer < script.sh         # use a saved persona
+#           mods --api openai -m gpt-4o "complex question"
 #
 # `ollama`: local LLM runtime. Pull a model once, then point mods at it.
 #         Example:
