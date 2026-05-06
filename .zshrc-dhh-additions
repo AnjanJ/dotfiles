@@ -4,6 +4,12 @@
 # Last Updated: 2025-11-23
 # Description: DHH-style Rails/Git workflow
 #              with productivity shortcuts
+#
+# Provenance: Original synthesis. Distilled from DHH's blog posts
+#             and writings on Omakub, Monarchy/37signals tooling,
+#             and his publicly described personal workflow.
+#             Not vendored from any upstream repo — no sync target.
+#             Edit freely; nothing else to track.
 # ============================================
 #
 # TABLE OF CONTENTS:
