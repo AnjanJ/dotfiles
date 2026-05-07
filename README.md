@@ -69,7 +69,7 @@ Like DHH's **[Omakub](https://omakub.org/)** for Ubuntu, this setup provides:
 | **Ghostty** | GPU-accelerated terminal, native macOS, modern |
 | **Neovim + Zed** | Neovim with AstroNvim for terminal, Zed for GUI — both with full LSP |
 | **zsh + Starship** | Fast, reliable shell with a beautiful prompt |
-| **tmux + Zellij** | Session management with vim integration |
+| **Zellij** | Rust-based terminal multiplexer with on-screen hints + Rails/Phoenix/Work layouts |
 | **Tokyo Night / Aura / Catppuccin** | Choose your theme — applied consistently across all tools |
 
 ## ✨ Features
@@ -190,9 +190,9 @@ bash install.sh --help                 # Show all options
 
 1. ✅ Install Homebrew (if not installed)
 2. ✅ Install packages from Brewfile (interactive mode lets you select package groups; `--groups` to pick specific ones)
-3. ✅ Create symlinks to dotfiles (shell, tmux, Neovim, Zed, ~/bin)
+3. ✅ Create symlinks to dotfiles (shell, Neovim, Zed, ~/bin, etc.)
 4. ✅ Apply your chosen theme (Tokyo Night, Aura Dark, or Catppuccin)
-5. ✅ Set up tmux plugins
+5. ✅ Wire `llm-ollama` plugin (so `llm` can talk to local Ollama models)
 6. ✅ Configure Neovim
 7. ✅ Configure Zed (settings, snippets, tasks)
 8. ✅ Set up shell environment, Git defaults, and SSH keys
@@ -215,7 +215,7 @@ Installed Tools:
 │   ├── zsh (modular configuration)
 │   └── Starship prompt
 ├── Multiplexers
-│   ├── tmux (with 8 plugins)
+│   ├── Zellij (with rails/phoenix/work layouts)
 │   └── Zellij
 ├── Editors
 │   ├── Neovim + AstroNvim
@@ -271,7 +271,7 @@ The `.zshrc` is organized into focused, modular files:
 ~/.zshrc                         # Main config (loads everything)
 ~/.zshrc-dhh-additions           # DHH-inspired workflows
 ~/.zshrc-elixir-additions        # Elixir/Phoenix tools
-~/.zshrc-terminal-enhancements   # tmux, Zellij, Neovim aliases
+~/.zshrc-terminal-enhancements   # Zellij + Neovim aliases, fzf-tab, zsh-autosuggestions, llm/AI tooling
 ~/.zshrc-work                    # Work-specific settings (optional)
 ```
 
@@ -290,7 +290,7 @@ dotfiles/
 ├── .zshrc-elixir-additions     # Elixir/Phoenix development
 ├── .zshrc-terminal-enhancements # Terminal multiplexers, editors
 ├── .zshrc-work                 # Work-specific (created by work-setup, not in repo)
-├── .tmux.conf                  # tmux: sessions, vim integration, shortcuts
+├── .tmux.conf                  # tmux config (kept for forks; tmux not in default Brewfile)
 ├── .config/
 │   ├── aerospace/              # Window management: layouts, keybindings
 │   ├── ghostty/                # Terminal: theme, fonts
@@ -625,7 +625,7 @@ dotfiles/
 ├── .zshrc-dhh-additions        # Rails workflows
 ├── .zshrc-elixir-additions     # Elixir/Phoenix
 ├── .zshrc-terminal-enhancements # Terminal tools
-├── .tmux.conf                  # tmux configuration
+├── .tmux.conf                  # tmux config (kept for forks; tmux not in default Brewfile)
 ├── .config/
 │   ├── aerospace/              # Window manager config
 │   ├── ghostty/                # Terminal config
@@ -719,9 +719,8 @@ All commands support tab-completion. Shorthand also works: `dotfiles-update`, `d
 3. Snapshot installed packages and show diff against Brewfile (without overwriting the organized Brewfile)
 4. Refresh all symlinks
 5. Upgrade mise tools
-6. Update tmux plugins
-7. Reload live configs (tmux, aerospace)
-8. Commit & push changes back to repo
+6. Reload live configs (aerospace, tmux if present)
+7. Commit & push changes back to repo
 
 **Your Brewfile stays organized.** The Brewfile is organized into `@group` sections (core, editors, work, databases, etc.) and `dotfiles update` never overwrites it. The snapshot step shows you what's new or missing compared to your system.
 
@@ -786,7 +785,7 @@ dotfiles theme aura         # Switch to Aura Dark
 dotfiles theme catppuccin   # Switch to Catppuccin Mocha
 ```
 
-This updates 17 apps automatically (Neovim, Ghostty, tmux, Zellij, Starship, Zed, VS Code, Warp, bat, git-delta, fzf, lazygit, borders, sketchybar, yazi, gitui, lsd), then prints instructions for Slack, browsers, Telegram, and Raycast. If the apply fails partway through, all configs are automatically rolled back.
+This updates 16 apps automatically (Neovim, Ghostty, Zellij, Starship, Zed, VS Code, Warp, bat, git-delta, fzf, lazygit, borders, sketchybar, yazi, gitui, lsd), then prints instructions for Slack, browsers, Telegram, and Raycast. If the apply fails partway through, all configs are automatically rolled back.
 
 Adding a new theme is just creating a `themes/<name>/` directory with a `theme.conf` — themes are auto-discovered, no code changes needed. Use `dotfiles add-theme <name>` to scaffold the full directory structure.
 
@@ -806,7 +805,7 @@ brew bundle install
 ### Modify Keybindings
 
 - **Aerospace**: `.config/aerospace/aerospace.toml`
-- **tmux**: `.tmux.conf`
+- **Zellij**: `.config/zellij/config.kdl`
 - **Neovim**: `.config/nvim/lua/plugins/*.lua`
 
 ## 🔒 SSH & Security
@@ -865,9 +864,9 @@ eval "$(/opt/homebrew/bin/brew shellenv)"
 eval "$(/usr/local/bin/brew shellenv)"
 ```
 
-### tmux Plugins Not Loading
+### tmux Plugins Not Loading (only if you re-added tmux to your fork)
+tmux is no longer in the default Brewfile (replaced by Zellij). If you re-added it:
 ```bash
-# Remove and reinstall
 rm -rf ~/.tmux/plugins
 git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 tmux

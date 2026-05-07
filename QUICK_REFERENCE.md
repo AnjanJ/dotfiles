@@ -49,17 +49,6 @@ dotfiles dir          # Print dotfiles directory path
 | `Ctrl+Shift+G` | Ghostty (workspace 7) |
 | `Ctrl+Shift+O` | Obsidian (workspace 8) |
 
-### tmux (Prefix: `Ctrl+A`)
-| Key | Action |
-|-----|--------|
-| `Prefix \|` | Split vertical |
-| `Prefix -` | Split horizontal |
-| `Prefix h/j/k/l` | Navigate panes |
-| `Prefix c` | New window |
-| `Prefix r` | Rails server |
-| `Prefix C` | Rails console |
-| `Prefix I` | Install plugins |
-
 ### Neovim (Leader: `Space`)
 | Key | Action |
 |-----|--------|
@@ -255,16 +244,14 @@ gh pr view --web
 <Leader>rs  # Go to spec
 <Leader>ra  # Alternate file
 
-# In tmux
-Prefix r    # Start Rails server
-Prefix C    # Open Rails console
+# In Zellij (Rails layout)
+zr          # Spawn rails layout: editor + server + console + tests
 ```
 
 ### Elixir/Phoenix Development
 ```bash
-# In tmux
-Prefix P    # Start Phoenix server
-Prefix I    # Open IEx
+# In Zellij (Phoenix layout)
+zp          # Spawn phoenix layout: editor + server + iex + tests
 
 # In Neovim
 <Leader>ff  # Find files
@@ -281,9 +268,31 @@ brew bundle install  # Install from Brewfile
 nvim
 :Lazy sync
 
-# tmux plugins
-tmux
-Prefix + U  # Update
+# llm plugins (one-time, after fresh install)
+llm install llm-ollama       # Already wired by install.sh step 7b
+llm install llm-anthropic    # Optional
+```
+
+### AI Shell Tooling
+```bash
+# Pipe text through an LLM (defaults to local qwen2.5-coder:7b via ollama)
+cat error.log | llm "explain this"
+git diff --staged | llm -s "write a conventional-commit message"
+llm -m gpt-4o "switch model per call"      # needs OPENAI_API_KEY or `llm keys set openai`
+llm -c "continue last conversation"
+llm logs                                    # browse history
+
+# GitHub Copilot CLI (built into gh ≥ 2.49)
+ghcs "find files larger than 100MB"        # suggest a command
+ghce "git rebase -i HEAD~5"                # explain a command
+
+# Local LLM management
+ollama list                                 # what's downloaded
+ollama pull qwen3:14b                       # add a heavier model
+ollama run qwen2.5-coder:7b "..."           # direct invoke (rare; prefer `llm`)
+
+# Custom helper
+explain-last                                # explain the last shell command via llm
 ```
 
 ## 🔧 Environment
@@ -300,14 +309,17 @@ Prefix + U  # Update
 # Shell
 source ~/.zshrc
 
-# tmux
-tmux source ~/.tmux.conf
+# Zellij — kill + relaunch session (no live-reload yet)
+zellij kill-all-sessions && zellij
 
 # Aerospace
 aerospace reload
 
 # Neovim
 :source ~/.config/nvim/init.lua
+
+# tmux (only if you re-added it to your fork)
+tmux source ~/.tmux.conf
 ```
 
 ### Installing Legacy Ruby (< 2.4)
@@ -333,7 +345,10 @@ Note: this adds ~0.9s to every shell startup due to the `brew --prefix` call.
 # Neovim
 rm -rf ~/.local/share/nvim ~/.cache/nvim
 
-# tmux plugins
+# Zellij sessions
+zellij kill-all-sessions
+
+# tmux plugins (only if you re-added tmux to your fork)
 rm -rf ~/.tmux/plugins && git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 
 # Shell
@@ -345,9 +360,10 @@ source ~/.zshrc
 ```bash
 # Check versions
 nvim --version
-tmux -V
 zellij --version
 starship --version
+llm --version
+ollama --version
 aerospace --version
 
 # Check Homebrew packages

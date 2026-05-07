@@ -42,7 +42,7 @@ Everything installed by your dotfiles — what it does, when to use it, and how 
 - Native macOS feel
 
 **Tips**:
-- Split panes are handled by tmux/zellij inside Ghostty, not by Ghostty itself
+- Split panes are handled by Zellij inside Ghostty, not by Ghostty itself
 - Config lives at `.config/ghostty/config` — theme auto-managed by `dotfiles theme`
 
 ### WezTerm (Secondary Terminal)
@@ -129,7 +129,7 @@ Everything installed by your dotfiles — what it does, when to use it, and how 
 **Tips**:
 - Open with `v` (aliased to `nvim`)
 - `vimrc` opens Neovim config for editing
-- `vz` opens `.zshrc`, `vt` opens `.tmux.conf`
+- `vz` opens `.zshrc`, `vze` opens `.zshrc-terminal-enhancements`
 - `:A` in a Rails file jumps to the test (vim-rails)
 - `:Emodel user` jumps to User model, `:Econtroller users` to controller
 
@@ -330,43 +330,10 @@ gh run view               # View specific run details
 
 ## 5. Terminal Multiplexers
 
-### tmux (Session Manager)
-**What**: Terminal multiplexer — persist sessions, split panes, and manage multiple workspaces.
-**When**: Running multiple terminal tasks (server + console + tests), keeping sessions alive after disconnect, remote work.
-**Prefix**: `Ctrl+A` (remapped from default `Ctrl+B`)
-
-**Essential keybindings**:
-| Key | Action |
-|-----|--------|
-| `Prefix \|` | Split vertical |
-| `Prefix -` | Split horizontal |
-| `Prefix h/j/k/l` | Navigate panes (vim-style) |
-| `Prefix c` | New window |
-| `Prefix ,` | Rename window |
-| `Prefix r` | Start Rails server |
-| `Prefix C` | Open Rails console |
-| `Prefix I` | Install/update plugins |
-
-**Session aliases**:
-```bash
-ta my-project     # Attach to session
-ts my-project     # Create new session
-tl                # List sessions
-tw                # Work session (pre-configured)
-tp                # Personal session
-tks my-project    # Kill session
-```
-
-**Plugins installed** (8): TPM, sensible, resurrect (persist across restarts), continuum (auto-save), yank, vim-tmux-navigator, open, tokyo-night-tmux.
-
-**Tips**:
-- Sessions survive terminal crashes — `ta` to reattach
-- `tmux-resurrect` saves/restores sessions across system restarts
-- Prefix + I to install plugins after fresh setup
-
-### Zellij (Modern Alternative)
-**What**: Modern multiplexer written in Rust with built-in layouts.
-**When**: When you want pre-configured layouts for specific project types (Rails, Phoenix, Work).
+### Zellij (Default Multiplexer)
+**What**: Rust-based terminal multiplexer with on-screen hints and built-in layouts.
+**When**: Running multiple terminal tasks (server + console + tests), keeping sessions alive, project-specific workspace setups.
+**Why Zellij over tmux**: Discoverable keybindings (always-visible status bar), single-file KDL config, Rails/Phoenix/Work layouts ship with this dotfiles repo, ~30-min learning curve vs 2-3 days for tmux.
 **Usage**:
 ```bash
 zr                # Rails layout (server + console + editor + tests)
@@ -932,22 +899,63 @@ op read "op://vault/item/field"                # Read secret in scripts
 
 ## 19. AI & Assistant Tools
 
-### Claude Code (`claude-code` cask + VS Code extension)
-**What**: Anthropic's Claude AI for coding assistance.
-**When**: Complex coding tasks, code review, debugging, architecture decisions.
+The shell-native AI stack is layered: **`llm`** is the daily-driver client, **`ollama`** is the local runtime that backs it, **`llama.cpp`** is the inference engine inside Ollama. See README's "🤖 AI-Augmented Shell" for the full picture.
 
-### GitHub Copilot (VS Code)
-**What**: AI code completion and chat.
-**When**: In VS Code — inline suggestions while typing, chat for questions.
+### llm (Simon Willison) — daily-driver pipe
+**What**: Pipe stdin through any LLM (local or hosted), get text back. Plugin-based.
+**When**: Quick LLM queries from the shell (`cat err.log | llm "explain"`), commit messages from diffs, code reviews, format conversions.
+**Default model**: `qwen2.5-coder:7b` running locally via Ollama (set with `llm models default`).
+**Common flags**: `-m <model>` switch model, `-s "..."` system prompt, `-c` continue last conversation, `-t <name>` use saved template.
+**Usage**:
+```bash
+cat error.log | llm "what does this mean?"
+git diff --staged | llm -s "write a conventional-commit message"
+llm -m gpt-4o "complex question"          # switch to OpenAI per call
+llm -c "and now in Python"                # continue prior conversation
+llm logs                                   # browse history
+```
+**Plugins**: `llm install llm-ollama` (already wired by install.sh), optional: `llm install llm-anthropic llm-gemini`.
+**Why not `mods`**: Charm sunset that project on 2026-03-09 with an unfixed Ollama streaming-loop bug. `llm` is actively maintained and works cleanly.
+
+### ollama — local LLM runtime
+**What**: Wraps llama.cpp in an HTTP API at `localhost:11434`. Manages model downloads + GPU acceleration on Apple Silicon.
+**When**: Offline / private workflows, sensitive code/logs, cheap experimentation.
+**Usage**:
+```bash
+ollama pull qwen2.5-coder:7b      # download once (~5 GB)
+ollama list                        # what's on disk
+ollama run qwen2.5-coder:7b "..."  # direct (rarely needed; prefer `llm`)
+```
+**Recommended models**: `qwen2.5-coder:7b` (default, fast), `qwen3:14b` (harder reasoning), `llama3.1:8b` (general).
+
+### gh copilot — GitHub Copilot CLI
+**What**: Built into `gh ≥ 2.49`. Suggests + explains shell commands.
+**When**: "What's the syntax for X?" / "What does this command do?"
+**Aliased as**: `ghcs` (suggest), `ghce` (explain).
+**Usage**:
+```bash
+ghcs "find files larger than 100MB modified in last week"
+ghce "git rebase --interactive HEAD~5"
+```
+**Setup**: needs an active Copilot subscription. First run prompts for auth.
+
+### explain-last — instant context
+**What**: Custom function in `.zshrc-terminal-enhancements`. Pipes your last shell command through `llm`.
+**When**: You ran something complex (regex, pipeline) and want a plain-English breakdown.
+**Usage**: just type `explain-last` after the command you want explained.
+
+### Claude Code (`claude-code` cask + VS Code extension)
+**What**: Anthropic's coding agent — can read, edit, and run code in your repo.
+**When**: Multi-file refactors, debugging hard issues, architecture decisions, anything bigger than a one-shot query.
 
 ### Gemini CLI
 **What**: Google's Gemini AI from the terminal.
-**When**: Quick AI queries without leaving the terminal.
-**Usage**: `gemini-cli "explain this error: ..."`
+**When**: Quick AI queries when you specifically want Gemini's perspective.
+**Usage**: `gemini "explain this error: ..."` (note: just `gemini`, not `gemini-cli`).
 
 ### Perplexity (Mac App Store)
 **What**: AI-powered search engine.
-**When**: Research questions that need sourced answers.
+**When**: Research questions that need sourced/cited answers.
 
 ---
 
@@ -994,7 +1002,6 @@ alias-list            # Overview of all alias categories
 alias-search git      # Search for git-related aliases
 alias-rails           # Show all Rails aliases
 alias-phoenix         # Show all Phoenix aliases
-alias-tmux            # Show tmux aliases
 alias-git             # Show git aliases
 
 dotfiles health       # Verify all tools are installed
