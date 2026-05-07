@@ -830,6 +830,68 @@ echo "╔═══════════════════════�
 echo "║   Idempotency Test Suite                                   ║"
 echo "╚═══════════════════════════════════════════════════════════╝"
 
+test_19_llm_ollama_plugin_idempotent() {
+    echo ""
+    echo "Test 19: install.sh step 7b — llm-ollama plugin install is idempotent"
+    setup_sandbox
+
+    # Stub `llm` so the test never touches the real CLI
+    local STUB_DIR="$HOME/stubs"
+    mkdir -p "$STUB_DIR"
+    local CALL_LOG="$HOME/llm-calls.log"
+    : > "$CALL_LOG"
+
+    /bin/cat > "$STUB_DIR/llm" <<EOF
+#!/usr/bin/env bash
+echo "\$*" >> "$CALL_LOG"
+case "\$1" in
+    plugins)
+        # First run: empty (no plugins). After install: report plugin present.
+        if [[ -f "$HOME/.plugin-installed" ]]; then
+            echo "llm-ollama  0.16.0"
+        else
+            echo ""
+        fi
+        ;;
+    install)
+        touch "$HOME/.plugin-installed"
+        echo "installed: \$2"
+        ;;
+esac
+exit 0
+EOF
+    chmod +x "$STUB_DIR/llm"
+
+    # Reproduce the install.sh step 7b logic
+    run_step_7b() {
+        PATH="$STUB_DIR:$PATH" bash -c '
+            if command -v llm &>/dev/null; then
+                if ! llm plugins 2>/dev/null | grep -q llm-ollama; then
+                    llm install llm-ollama >/dev/null
+                fi
+            fi
+        '
+    }
+
+    # Run 1 (fresh — should call install)
+    run_step_7b
+    local installs_after_1=$(/usr/bin/grep -c "^install llm-ollama" "$CALL_LOG")
+    assert_eq "$installs_after_1" "1" "Run 1: plugin installed once"
+    assert_file_exists "$HOME/.plugin-installed" "Run 1: install marker created"
+
+    # Run 2 (already installed — should NOT call install)
+    run_step_7b
+    local installs_after_2=$(/usr/bin/grep -c "^install llm-ollama" "$CALL_LOG")
+    assert_eq "$installs_after_2" "1" "Run 2: still 1 install (idempotent)"
+
+    # Run 3 (sanity)
+    run_step_7b
+    local installs_after_3=$(/usr/bin/grep -c "^install llm-ollama" "$CALL_LOG")
+    assert_eq "$installs_after_3" "1" "Run 3: still 1 install (idempotent)"
+
+    teardown_sandbox
+}
+
 test_01_helpers_source_guard
 test_02_setup_git_personal_only
 test_03_setup_git_with_work
@@ -848,6 +910,7 @@ test_15_nuke_setup_cycle
 test_16_ssh_config_no_key_field
 test_17_work_helpers_functions_with_no_config
 test_18_work_helpers_functions_with_config
+test_19_llm_ollama_plugin_idempotent
 
 # ── Summary ───────────────────────────────────
 
