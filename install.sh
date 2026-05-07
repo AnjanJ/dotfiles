@@ -120,11 +120,11 @@ echo "    - Homebrew packages"
 echo "    - Aerospace (window manager)"
 echo "    - Ghostty terminal"
 echo "    - Neovim + AstroNvim"
-echo "    - tmux + plugins"
-echo "    - Zellij"
+echo "    - Zellij (terminal multiplexer)"
 echo "    - Zed editor (settings, snippets, tasks)"
 echo "    - Starship prompt"
-echo "    - Shell configuration"
+echo "    - Shell configuration (zsh + autosuggestions + syntax-highlighting + fzf-tab)"
+echo "    - AI CLI tooling (llm + ollama + gh copilot)"
 echo "    - Git smart defaults + identity setup"
 echo "    - SSH keys (1Password, import, generate, or existing)"
 echo "    - Custom scripts (~/bin)"
@@ -355,16 +355,19 @@ source "$DOTFILES_DIR/scripts/apply-theme.sh"
 apply_theme "$SELECTED_THEME"
 
 # ============================================
-# 6. INSTALL TPM (TMUX PLUGIN MANAGER)
+# 6. INSTALL TPM (TMUX PLUGIN MANAGER) — only if tmux is present
 # ============================================
-echo ""
-print_step "Step 6: Installing TPM (Tmux Plugin Manager)..."
-
-if [[ ! -d ~/.tmux/plugins/tpm ]]; then
-    git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
-    print_success "TPM installed"
-else
-    print_success "TPM already installed"
+# tmux is no longer in the Brewfile (replaced by zellij), but keep this
+# step so users who re-add tmux to their fork still get TPM auto-installed.
+if command -v tmux &>/dev/null; then
+    echo ""
+    print_step "Step 6: Installing TPM (Tmux Plugin Manager)..."
+    if [[ ! -d ~/.tmux/plugins/tpm ]]; then
+        git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+        print_success "TPM installed"
+    else
+        print_success "TPM already installed"
+    fi
 fi
 
 # ============================================
@@ -375,6 +378,26 @@ print_step "Step 7: Setting up Neovim..."
 
 # AstroNvim will auto-install on first launch
 print_success "Neovim configuration linked (plugins will install on first launch)"
+
+# ============================================
+# 7b. SET UP AI CLI (llm + ollama)
+# ============================================
+# Brewfile already installed `llm` and `ollama`. We need to:
+#   - Wire `llm` to talk to Ollama (one-time plugin install, fast)
+# We deliberately DO NOT pull models here (each is multi-GB) or set API
+# keys (private). Those are surfaced in "Next Steps" at end of install.
+echo ""
+print_step "Step 7b: Wiring llm <-> ollama..."
+
+if command -v llm &>/dev/null; then
+    if ! llm plugins 2>/dev/null | grep -q llm-ollama; then
+        llm install llm-ollama && print_success "llm-ollama plugin installed"
+    else
+        print_success "llm-ollama plugin already installed"
+    fi
+else
+    print_warning "llm not found — skipping plugin install (check Brewfile)"
+fi
 
 # ============================================
 # 8. SET UP SHELL
@@ -492,19 +515,32 @@ echo "📋 Next Steps:"
 echo ""
 echo "1. Restart your terminal or run: source ~/.zshrc"
 echo ""
-echo "2. Open tmux and install plugins:"
-echo "   tmux"
-echo "   Press: Ctrl+A then Shift+I"
-echo ""
-echo "3. Open Neovim to install plugins:"
+echo "2. Open Neovim to install plugins:"
 echo "   nvim"
 echo "   (AstroNvim will auto-install)"
 echo ""
-echo "4. Start Aerospace (will start on next login):"
+echo "3. Start Aerospace (will start on next login):"
 echo "   aerospace reload"
 echo ""
-echo "5. Verify mise installations:"
+echo "4. Verify mise installations:"
 echo "   mise list"
+echo ""
+echo "5. Set up AI tooling (one-time, optional):"
+echo ""
+echo "   # Pull a local model (~5GB, ~5 min) — recommended default"
+echo "   ollama pull qwen2.5-coder:7b"
+echo "   llm models default qwen2.5-coder:7b"
+echo ""
+echo "   # Optional: a larger general model for harder reasoning"
+echo "   ollama pull qwen3:14b"
+echo ""
+echo "   # Optional: hosted-API plugins for llm"
+echo "   llm install llm-anthropic llm-gemini"
+echo "   llm keys set anthropic    # paste key when prompted"
+echo "   llm keys set openai"
+echo ""
+echo "   # Authenticate gh + GitHub Copilot CLI (for ghcs / ghce)"
+echo "   gh auth login"
 echo ""
 echo "6. Run health check anytime:"
 echo "   bash $DOTFILES_DIR/scripts/health-check.sh"
