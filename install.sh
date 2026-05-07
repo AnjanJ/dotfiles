@@ -18,7 +18,9 @@
 #   --work-email "x@y"  Git work email (enables work identity)
 #   --work-dir "~/work" Work directory (default: ~/work)
 #   --theme <name>      Theme: tokyo-night or aura (default: tokyo-night)
-#   --ssh <mode>        SSH: 1password, existing, generate, skip (default: skip)
+#   --ssh <mode>        SSH: 1password, existing, generate, skip
+#                       Default: auto-detect 1Password SSH agent if running,
+#                       otherwise skip. Force with --ssh 1password.
 #   --groups "a,b,c"    Package groups to install (comma-separated)
 #   --no-macos-defaults Skip macOS defaults
 #   --force             Force reinstall even if already configured
@@ -525,7 +527,21 @@ echo ""
 echo "4. Verify mise installations:"
 echo "   mise list"
 echo ""
-echo "5. Set up AI tooling (one-time, optional):"
+echo "5. Sign in to 1Password (recommended for SSH + secrets):"
+echo ""
+echo "   # a) Open 1Password.app → sign in to your account"
+echo "   #    (your vaults sync from cloud automatically)"
+echo "   # b) Enable the SSH Agent:"
+echo "   #    1Password → Settings → Developer → 'Set Up SSH Agent'"
+echo "   # c) Wire the agent into ~/.ssh/config (one-time):"
+echo "   bash $DOTFILES_DIR/scripts/setup-ssh.sh"
+echo "   # d) Test it:"
+echo "   ssh -T git@github.com   # should succeed via Touch ID"
+echo ""
+echo "   Note: SSH keys must already be in your 1Password vault (synced"
+echo "   from another machine, or add them via 1Password → New Item → SSH Key)."
+echo ""
+echo "6. Set up AI tooling (one-time, optional):"
 echo ""
 echo "   # Pull a local model (~5GB, ~5 min) — recommended default"
 echo "   ollama pull qwen2.5-coder:7b"
@@ -542,10 +558,10 @@ echo ""
 echo "   # Authenticate gh + GitHub Copilot CLI (for ghcs / ghce)"
 echo "   gh auth login"
 echo ""
-echo "6. Run health check anytime:"
+echo "7. Run health check anytime:"
 echo "   bash $DOTFILES_DIR/scripts/health-check.sh"
 echo ""
-echo "7. Update dotfiles in the future:"
+echo "8. Update dotfiles in the future:"
 echo "   bash $DOTFILES_DIR/update.sh"
 echo ""
 echo "🎨 Theme: $SELECTED_THEME (applied everywhere)"

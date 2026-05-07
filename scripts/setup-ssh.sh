@@ -317,7 +317,22 @@ setup_ssh() {
             read -r -p "Choose (1-5): " ssh_choice
             echo
         else
-            ssh_choice="skip"
+            # Non-interactive default: auto-detect 1Password SSH agent.
+            # If the user has 1Password installed AND has enabled the SSH
+            # Agent (Settings → Developer → Set Up SSH Agent), wire it up.
+            # Otherwise skip and surface a clear hint at the end of install.
+            local _op_socket="$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+            if [[ -S "$_op_socket" ]]; then
+                ssh_choice="1password"
+                print_success "1Password SSH agent detected — will wire it up"
+            else
+                ssh_choice="skip"
+                if [[ -d "/Applications/1Password.app" ]]; then
+                    print_warning "1Password installed but SSH agent not enabled yet"
+                    echo "  After signing in, go to: 1Password → Settings → Developer → Set Up SSH Agent"
+                    echo "  Then re-run: bash ~/dotfiles/scripts/setup-ssh.sh"
+                fi
+            fi
         fi
     fi
 
