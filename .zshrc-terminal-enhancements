@@ -19,7 +19,7 @@
 #  9. Neovim (modal text editor)
 # 10. Helpful Aliases (vif, cdf, lg, lzd, etc.)
 # 11. zsh enhancements (autosuggestions + syntax highlighting)
-# 12. AI/LLM shell tooling (mods, ollama, gh-copilot)
+# 12. AI/LLM shell tooling (llm, ollama, gh-copilot)
 #
 # ============================================
 
@@ -212,20 +212,24 @@ fi
 # ============================================
 # 12. AI / LLM SHELL TOOLING
 # ============================================
-# `mods`: pipe text through an LLM. Configured for ollama (local) by default;
-#         config lives at "~/Library/Application Support/mods/mods.yml" on macOS.
-#         Switch to a hosted model with `mods --api openai` etc.
+# `llm` (Simon Willison): pipe text through an LLM. Replaces mods (charm sunset
+#         that tool 2026-03-09 with an unfixed ollama streaming bug).
+#         First run: set a default model with `llm models default qwen2.5-coder:7b`.
 #         Examples:
-#           cat error.log | mods "what does this error mean?"
-#           git diff | mods "summarize for a commit message"
-#           mods "explain SIGPIPE in 3 sentences"
-#           mods --role reviewer < script.sh         # use a saved persona
-#           mods --api openai -m gpt-4o "complex question"
+#           cat error.log | llm "what does this error mean?"
+#           git diff | llm -s "summarize for a commit message"
+#           llm "explain SIGPIPE in 3 sentences"
+#           cat script.sh | llm -t reviewer       # use a saved template
+#           llm -m gpt-4o "complex question"      # switch model per call
+#         Plugins extend it: `llm install llm-anthropic llm-gemini llm-ollama`.
+#         Templates (system prompts) live in ~/Library/Application Support/io.datasette.llm/templates/
 #
-# `ollama`: local LLM runtime. Pull a model once, then point mods at it.
+# `ollama`: local LLM runtime backing `llm` for offline / private workflows.
+#         Pull a model once, llm picks it up automatically.
 #         Example:
-#           ollama pull qwen2.5-coder:3b
-#           cat script.sh | mods --api ollama -m qwen2.5-coder "review this"
+#           ollama pull qwen2.5-coder:7b
+#           llm install llm-ollama
+#           cat script.sh | llm -m qwen2.5-coder:7b "review this"
 #
 # `gh copilot`: GitHub Copilot CLI (built-in to gh ≥ 2.49; requires Copilot subscription).
 #         Examples:
@@ -238,13 +242,13 @@ if command -v gh > /dev/null && gh copilot --help >/dev/null 2>&1; then
     alias ghce='gh copilot explain'
 fi
 
-# Quick "explain the last command" via mods if available
-if command -v mods > /dev/null; then
+# Quick "explain the last command" via llm if available
+if command -v llm > /dev/null; then
     explain-last() {
         local last_cmd
         last_cmd=$(fc -ln -1)
         echo "Explaining: $last_cmd"
-        echo "$last_cmd" | mods "Explain this shell command in plain English"
+        echo "$last_cmd" | llm "Explain this shell command in plain English"
     }
 fi
 
@@ -252,4 +256,4 @@ fi
 # END OF TERMINAL ENHANCEMENTS
 # ============================================
 
-echo "✅ Terminal enhancements loaded! Try: cd (smart zoxide), cdi (interactive), ls, cat, grep, find, help, lg, vim, mods, ghcs"
+echo "✅ Terminal enhancements loaded! Try: cd (smart zoxide), cdi (interactive), ls, cat, grep, find, help, lg, vim, llm, ghcs"

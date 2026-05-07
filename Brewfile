@@ -62,8 +62,9 @@ brew "yazi"
 brew "zellij"
 
 # @group ai — AI/LLM CLI tooling for shell-native AI workflows
-brew "charmbracelet/tap/mods"  # Pipe-friendly LLM (`cat err.log | mods "explain"`)
-cask "ollama"                  # Local LLM runtime (run llama3, qwen, etc. offline)
+brew "llm"                     # Pipe-friendly LLM CLI (Simon Willison) — replaces mods.
+                               # Install Ollama plugin once: `llm install llm-ollama`
+cask "ollama"                  # Local LLM runtime (run qwen, llama3, etc. offline)
 
 # @group databases — Database engines & GUI clients
 brew "litecli"
