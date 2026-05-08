@@ -83,7 +83,6 @@ setup_doctor_sandbox() {
     mkdir -p "$MOCK_DOTFILES/.config/zed/snippets"
     mkdir -p "$MOCK_DOTFILES/bin"
     touch "$MOCK_DOTFILES/.zshrc"
-    touch "$MOCK_DOTFILES/.tmux.conf"
     touch "$MOCK_DOTFILES/.gitignore_global"
     touch "$MOCK_DOTFILES/.config/starship.toml"
     touch "$MOCK_DOTFILES/.config/mise/config.toml"
@@ -97,7 +96,6 @@ setup_doctor_sandbox() {
     mkdir -p "$TEST_HOME/.config/mise"
     mkdir -p "$TEST_HOME/.ssh"
     mkdir -p "$TEST_HOME/bin"
-    mkdir -p "$TEST_HOME/.tmux/plugins"
 }
 
 teardown_doctor_sandbox() {

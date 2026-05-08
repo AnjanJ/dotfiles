@@ -28,8 +28,7 @@
 # 12. Rails Environment (dev, railstest, prod)
 # 13. Database Helpers (psql-dev, pg-*, dbconsole)
 # 14. Rails Credentials (creds, creds-prod)
-# 15. Tmux (tm, tma, tml, tmn)
-# 16. Alias Discovery (alias-search, alias-rails, alias-git, etc.)
+# 15. Alias Discovery (alias-search, alias-rails, alias-git, etc.)
 #
 # ============================================
 
@@ -565,17 +564,7 @@ alias creds='bin/rails credentials:edit'
 alias creds-prod='bin/rails credentials:edit --environment production'
 
 # ============================================
-# 16. TMUX
-# ============================================
-
-# All prefixed with 'tm' for consistency
-alias tm='tmux'
-alias tma='tmux attach'
-alias tml='tmux ls'
-alias tmn='tmux new -s'
-
-# ============================================
-# 17. ALIAS DISCOVERY FUNCTIONS
+# 16. ALIAS DISCOVERY FUNCTIONS
 # ============================================
 
 # Search aliases by keyword
@@ -627,14 +616,6 @@ alias-rails-setup() {
   echo ""
 }
 
-# Show all tmux-related aliases
-# Usage: alias-tmux
-alias-tmux() {
-  echo "🖥  Tmux Aliases:"
-  echo "──────────────────────────────────────────"
-  alias | grep -E "^tm[a-z]*=" | sort
-}
-
 # Show all Git-related aliases
 # Usage: alias-git
 alias-git() {
@@ -655,13 +636,10 @@ alias-list() {
   echo "Git (g*):"
   alias | grep -E "^g[a-z]*=" | wc -l | xargs echo "  Count:"
   echo ""
-  echo "Tmux (tm*):"
-  alias | grep -E "^tm[a-z]*=" | wc -l | xargs echo "  Count:"
-  echo ""
   echo "Bundle (b*):"
   alias | grep -E "^b[a-z]*=" | wc -l | xargs echo "  Count:"
   echo ""
-  echo "Use: alias-rails, alias-git, alias-tmux for details"
+  echo "Use: alias-rails, alias-git for details"
   echo "Use: alias-search <keyword> to search"
 }
 

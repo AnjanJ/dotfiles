@@ -10,9 +10,8 @@
 #   2. Upgrade Homebrew packages & snapshot diff (preserves organized Brewfile)
 #   3. Refresh symlinks & theme
 #   4. Upgrade mise tools (config auto-syncs via symlink)
-#   5. Update tmux plugins
-#   6. Reload live configs (tmux, aerospace)
-#   7. Commit & push any changes back to repo
+#   5. Reload live configs (aerospace)
+#   6. Commit & push any changes back to repo
 #
 # Usage: bash update.sh [--interactive]
 # ============================================
@@ -57,7 +56,6 @@ echo "    - Pull latest changes from git"
 echo "    - Upgrade Homebrew & snapshot Brewfile"
 echo "    - Refresh symlinks"
 echo "    - Upgrade mise tools"
-echo "    - Update tmux plugins"
 echo "    - Push changes back to repo"
 echo ""
 echo ""
@@ -210,9 +208,6 @@ create_symlink "$DOTFILES_DIR/.zshrc" ~/.zshrc ".zshrc"
 [[ -f "$DOTFILES_DIR/.zshrc-elixir-additions" ]] && create_symlink "$DOTFILES_DIR/.zshrc-elixir-additions" ~/.zshrc-elixir-additions ".zshrc-elixir-additions"
 [[ -f "$DOTFILES_DIR/.zshrc-work-completions" ]] && create_symlink "$DOTFILES_DIR/.zshrc-work-completions" ~/.zshrc-work-completions ".zshrc-work-completions"
 
-# tmux
-create_symlink "$DOTFILES_DIR/.tmux.conf" ~/.tmux.conf ".tmux.conf"
-
 # Git global ignores
 [[ -f "$DOTFILES_DIR/.gitignore_global" ]] && create_symlink "$DOTFILES_DIR/.gitignore_global" ~/.gitignore_global ".gitignore_global"
 
@@ -265,34 +260,10 @@ mise upgrade --yes 2>/dev/null || mise install
 print_success "mise tools updated"
 
 # ============================================
-# 5. UPDATE TMUX PLUGINS
+# 5. RELOAD CONFIGURATIONS
 # ============================================
 echo ""
-print_step "Step 5: Updating tmux plugins..."
-
-if [[ -d ~/.tmux/plugins/tpm ]]; then
-    # Update TPM itself
-    cd ~/.tmux/plugins/tpm
-    git pull origin master
-
-    # Update all plugins
-    ~/.tmux/plugins/tpm/bin/update_plugins all
-    print_success "tmux plugins updated"
-else
-    print_warning "TPM not found. Run install.sh first"
-fi
-
-# ============================================
-# 6. RELOAD CONFIGURATIONS
-# ============================================
-echo ""
-print_step "Step 6: Reloading configurations..."
-
-# Reload tmux config if tmux is running
-if command -v tmux &> /dev/null && tmux info &> /dev/null 2>&1; then
-    tmux source-file ~/.tmux.conf
-    print_success "tmux config reloaded"
-fi
+print_step "Step 5: Reloading configurations..."
 
 # Reload aerospace if running
 if pgrep -x "Aerospace" > /dev/null; then
@@ -303,10 +274,10 @@ else
 fi
 
 # ============================================
-# 7. COMMIT & PUSH CHANGES
+# 6. COMMIT & PUSH CHANGES
 # ============================================
 echo ""
-print_step "Step 7: Syncing dotfiles repo..."
+print_step "Step 6: Syncing dotfiles repo..."
 
 cd "$DOTFILES_DIR"
 

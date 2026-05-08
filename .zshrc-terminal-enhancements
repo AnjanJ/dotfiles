@@ -113,9 +113,9 @@ if command -v tldr > /dev/null; then
 fi
 
 # ============================================
-# 8. ZELLIJ (MODERN TERMINAL MULTIPLEXER)
+# 8. ZELLIJ (TERMINAL MULTIPLEXER)
 # ============================================
-# Modern Rust-based alternative to tmux with on-screen hints
+# Rust-based multiplexer with on-screen hints
 
 if command -v zellij > /dev/null; then
     # Session management
@@ -148,7 +148,6 @@ if command -v nvim > /dev/null; then
     # Quick edits
     alias vimrc='nvim ~/.config/nvim/init.lua'
     alias vz='nvim ~/.zshrc'
-    alias vt='nvim ~/.tmux.conf'
     alias vze='nvim ~/.zshrc-terminal-enhancements'
 
     # Project root editing

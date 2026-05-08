@@ -246,7 +246,6 @@ echo ""
 print_step "Step 3: Creating configuration directories..."
 
 mkdir -p ~/.config/{aerospace,ghostty,nvim,zellij,zed/snippets}
-mkdir -p ~/.tmux/plugins
 mkdir -p ~/bin
 
 print_success "Directories created"
@@ -312,9 +311,6 @@ create_symlink "$DOTFILES_DIR/.zshrc" ~/.zshrc ".zshrc"
 # Work command completions
 [[ -f "$DOTFILES_DIR/.zshrc-work-completions" ]] && create_symlink "$DOTFILES_DIR/.zshrc-work-completions" ~/.zshrc-work-completions ".zshrc-work-completions"
 
-# tmux
-create_symlink "$DOTFILES_DIR/.tmux.conf" ~/.tmux.conf ".tmux.conf"
-
 # wezterm (lives under .config/wezterm/, but wezterm also reads ~/.wezterm.lua first)
 create_symlink "$DOTFILES_DIR/.config/wezterm/wezterm.lua" ~/.wezterm.lua ".wezterm.lua"
 
@@ -357,39 +353,23 @@ source "$DOTFILES_DIR/scripts/apply-theme.sh"
 apply_theme "$SELECTED_THEME"
 
 # ============================================
-# 6. INSTALL TPM (TMUX PLUGIN MANAGER) — only if tmux is present
-# ============================================
-# tmux is no longer in the Brewfile (replaced by zellij), but keep this
-# step so users who re-add tmux to their fork still get TPM auto-installed.
-if command -v tmux &>/dev/null; then
-    echo ""
-    print_step "Step 6: Installing TPM (Tmux Plugin Manager)..."
-    if [[ ! -d ~/.tmux/plugins/tpm ]]; then
-        git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
-        print_success "TPM installed"
-    else
-        print_success "TPM already installed"
-    fi
-fi
-
-# ============================================
-# 7. SET UP NEOVIM
+# 6. SET UP NEOVIM
 # ============================================
 echo ""
-print_step "Step 7: Setting up Neovim..."
+print_step "Step 6: Setting up Neovim..."
 
 # AstroNvim will auto-install on first launch
 print_success "Neovim configuration linked (plugins will install on first launch)"
 
 # ============================================
-# 7b. SET UP AI CLI (llm + ollama)
+# 6b. SET UP AI CLI (llm + ollama)
 # ============================================
 # Brewfile already installed `llm` and `ollama`. We need to:
 #   - Wire `llm` to talk to Ollama (one-time plugin install, fast)
 # We deliberately DO NOT pull models here (each is multi-GB) or set API
 # keys (private). Those are surfaced in "Next Steps" at end of install.
 echo ""
-print_step "Step 7b: Wiring llm <-> ollama..."
+print_step "Step 6b: Wiring llm <-> ollama..."
 
 if command -v llm &>/dev/null; then
     if ! llm plugins 2>/dev/null | grep -q llm-ollama; then
@@ -402,10 +382,10 @@ else
 fi
 
 # ============================================
-# 8. SET UP SHELL
+# 7. SET UP SHELL
 # ============================================
 echo ""
-print_step "Step 8: Setting up shell..."
+print_step "Step 7: Setting up shell..."
 
 # Make zsh default shell if not already
 if [[ "$SHELL" != "$(which zsh)" ]]; then
@@ -417,19 +397,19 @@ else
 fi
 
 # ============================================
-# 8b. GIT CONFIGURATION
+# 7b. GIT CONFIGURATION
 # ============================================
 source "$DOTFILES_DIR/scripts/setup-git.sh"
 setup_git
 
 # ============================================
-# 8c. SSH CONFIGURATION
+# 7c. SSH CONFIGURATION
 # ============================================
 source "$DOTFILES_DIR/scripts/setup-ssh.sh"
 setup_ssh
 
 # ============================================
-# 9. MACOS DEFAULTS
+# 8. MACOS DEFAULTS
 # ============================================
 echo ""
 if [[ "$INTERACTIVE" == true ]]; then
@@ -441,7 +421,7 @@ if [[ "$INTERACTIVE" == true ]]; then
 fi
 
 if [[ "$APPLY_MACOS_DEFAULTS" == true ]]; then
-    print_step "Step 9: Applying macOS defaults..."
+    print_step "Step 8: Applying macOS defaults..."
 
     # Keyboard settings
     defaults write NSGlobalDomain KeyRepeat -int 2
@@ -499,10 +479,10 @@ else
 fi
 
 # ============================================
-# 10. RUN HEALTH CHECK
+# 9. RUN HEALTH CHECK
 # ============================================
 echo ""
-print_step "Step 10: Running health check..."
+print_step "Step 9: Running health check..."
 bash "$DOTFILES_DIR/scripts/health-check.sh"
 
 # ============================================

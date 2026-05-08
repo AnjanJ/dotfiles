@@ -39,7 +39,7 @@ print_step "Scaffolding theme: $THEME_NAME"
 echo ""
 
 # Create directory structure
-mkdir -p "$THEME_DIR"/{ghostty,nvim,tmux,starship,zellij/themes,lazygit,sketchybar,yazi,gitui,lsd}
+mkdir -p "$THEME_DIR"/{ghostty,nvim,starship,zellij/themes,lazygit,sketchybar,yazi,gitui,lsd}
 
 # theme.conf — template with all required variables
 cat > "$THEME_DIR/theme.conf" << EOF
@@ -92,11 +92,6 @@ return {
   lazy = false,
   priority = 1000,
 }
-EOF
-
-# tmux theme block
-cat > "$THEME_DIR/tmux/theme-block.conf" << EOF
-# TODO: Add tmux theme configuration for $THEME_NAME
 EOF
 
 # Starship palette
@@ -190,9 +185,8 @@ echo ""
 echo "  Next steps:"
 echo "  1. Fill in theme.conf with all color values"
 echo "  2. Add nvim plugin spec to nvim/${THEME_NAME}-theme.lua"
-echo "  3. Add tmux theme block to tmux/theme-block.conf"
-echo "  4. Add starship palette to starship/palette.toml"
-echo "  5. Add zellij colors to zellij/themes/${THEME_NAME}.kdl"
-echo "  6. Fill in lazygit, sketchybar, yazi, gitui, lsd theme files"
-echo "  7. Test: dotfiles theme $THEME_NAME"
+echo "  3. Add starship palette to starship/palette.toml"
+echo "  4. Add zellij colors to zellij/themes/${THEME_NAME}.kdl"
+echo "  5. Fill in lazygit, sketchybar, yazi, gitui, lsd theme files"
+echo "  6. Test: dotfiles theme $THEME_NAME"
 echo ""

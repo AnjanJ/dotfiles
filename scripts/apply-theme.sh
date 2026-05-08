@@ -95,7 +95,6 @@ apply_theme() {
     # Required theme source files (derived from registry)
     local required_theme_files=(
         "nvim/$nvim_plugin_file"
-        "tmux/theme-block.conf"
         "starship/palette.toml"
         "zellij/themes/$zellij_theme_file"
     )
@@ -114,7 +113,6 @@ apply_theme() {
         "$DOTFILES_DIR/.config/nvim/lua/plugins/astroui.lua"
         "$DOTFILES_DIR/.config/zellij/config.kdl"
         "$DOTFILES_DIR/.config/starship.toml"
-        "$DOTFILES_DIR/.tmux.conf"
     )
 
     for f in "${required_configs[@]}"; do
@@ -131,10 +129,6 @@ apply_theme() {
     fi
     if [[ -f "$DOTFILES_DIR/.config/starship.toml" ]] && ! grep -q "THEME_PALETTE_START" "$DOTFILES_DIR/.config/starship.toml"; then
         missing_files+=("starship.toml: missing THEME_PALETTE_START/END markers")
-        preflight_ok=false
-    fi
-    if [[ -f "$DOTFILES_DIR/.tmux.conf" ]] && ! grep -q "THEME_BLOCK_START" "$DOTFILES_DIR/.tmux.conf"; then
-        missing_files+=(".tmux.conf: missing THEME_BLOCK_START/END markers")
         preflight_ok=false
     fi
 
@@ -188,7 +182,6 @@ apply_theme() {
     _backup_for_rollback "$DOTFILES_DIR/.config/nvim/lua/plugins/catppuccin-theme.lua"
     _backup_for_rollback "$DOTFILES_DIR/.config/zellij/config.kdl"
     _backup_for_rollback "$DOTFILES_DIR/.config/starship.toml"
-    _backup_for_rollback "$DOTFILES_DIR/.tmux.conf"
     _backup_for_rollback "$DOTFILES_DIR/.config/zed/settings.json"
     _backup_for_rollback "$HOME/.config/bat/config"
     _backup_for_rollback "$HOME/.zshrc-theme-env"
@@ -292,43 +285,13 @@ apply_theme() {
 
     _theme_success "Starship → $starship_palette"
 
-    # ── 5. tmux ─────────────────────────────────────────
-    _theme_step "tmux..."
-    local tmux_config="$DOTFILES_DIR/.tmux.conf"
-    local theme_block="$THEMES_DIR/tmux/theme-block.conf"
-
-    # Replace content between THEME_BLOCK_START and THEME_BLOCK_END
-    if grep -q "THEME_BLOCK_START" "$tmux_config" && [[ -f "$theme_block" ]]; then
-        local tmpfile
-        tmpfile=$(mktemp)
-        local in_block=false
-
-        while IFS= read -r line; do
-            if [[ "$line" == "# THEME_BLOCK_START" ]]; then
-                echo "# THEME_BLOCK_START" >> "$tmpfile"
-                cat "$theme_block" >> "$tmpfile"
-                in_block=true
-            elif [[ "$line" == "# THEME_BLOCK_END" ]]; then
-                echo "# THEME_BLOCK_END" >> "$tmpfile"
-                in_block=false
-            elif [[ "$in_block" == false ]]; then
-                echo "$line" >> "$tmpfile"
-            fi
-        done < "$tmux_config"
-
-        mv "$tmpfile" "$tmux_config"
-        _theme_success "tmux → $THEME"
-    else
-        _theme_warning "tmux: Could not find THEME_BLOCK markers in .tmux.conf"
-    fi
-
     # ── Mandatory sections done — disable ERR trap ─────
-    # Sections 6-17 are optional (guarded by command -v). Failures in
+    # Sections 5+ are optional (guarded by command -v). Failures in
     # these should not trigger a full rollback of the core theme configs.
     trap - ERR
     set +o errtrace
 
-    # ── 6. VS Code ──────────────────────────────────────
+    # ── 5. VS Code ──────────────────────────────────────
     _theme_step "VS Code..."
     local vscode_settings="$HOME/Library/Application Support/Code/User/settings.json"
     if [[ -f "$vscode_settings" ]]; then
@@ -342,7 +305,7 @@ apply_theme() {
         _theme_warning "VS Code: settings.json not found (VS Code may not be installed yet)"
     fi
 
-    # ── 7. Zed ──────────────────────────────────────────
+    # ── 6. Zed ──────────────────────────────────────────
     _theme_step "Zed..."
     local zed_settings="$DOTFILES_DIR/.config/zed/settings.json"
     if [[ -f "$zed_settings" ]] && command -v jq &>/dev/null; then
@@ -357,7 +320,7 @@ apply_theme() {
         fi
     fi
 
-    # ── 8. Warp ───────────────────────────────────────────
+    # ── 7. Warp ───────────────────────────────────────────
     if command -v warp-cli &>/dev/null || [[ -d "/Applications/Warp.app" ]]; then
         _theme_step "Warp..."
         local warp_themes_dir="$HOME/.warp/themes"
@@ -383,7 +346,7 @@ apply_theme() {
         fi
     fi
 
-    # ── 9. bat ────────────────────────────────────────────
+    # ── 8. bat ────────────────────────────────────────────
     if command -v bat &>/dev/null; then
         _theme_step "bat..."
         mkdir -p "$HOME/.config/bat"
@@ -391,14 +354,14 @@ apply_theme() {
         _theme_success "bat → $bat_theme"
     fi
 
-    # ── 10. git-delta ─────────────────────────────────────
+    # ── 9. git-delta ─────────────────────────────────────
     if command -v delta &>/dev/null; then
         _theme_step "git-delta..."
         git config --global delta.syntax-theme "$delta_theme"
         _theme_success "git-delta → $delta_theme"
     fi
 
-    # ── 11. fzf ────────────────────────────────────────────
+    # ── 10. fzf ────────────────────────────────────────────
     if command -v fzf &>/dev/null; then
         _theme_step "fzf..."
         local fzf_env_file="$HOME/.zshrc-theme-env"
@@ -410,7 +373,7 @@ FZFEOF
         _theme_success "fzf → $THEME colors"
     fi
 
-    # ── 12. lazygit ────────────────────────────────────────
+    # ── 11. lazygit ────────────────────────────────────────
     if command -v lazygit &>/dev/null; then
         _theme_step "lazygit..."
         local lazygit_config="$DOTFILES_DIR/.config/lazygit/config.yml"
@@ -438,7 +401,7 @@ FZFEOF
         fi
     fi
 
-    # ── 13. borders (JankyBorders) ────────────────────────
+    # ── 12. borders (JankyBorders) ────────────────────────
     if command -v borders &>/dev/null; then
         _theme_step "borders..."
         local borders_config="$DOTFILES_DIR/.config/borders/bordersrc"
@@ -452,7 +415,7 @@ FZFEOF
         fi
     fi
 
-    # ── 14. sketchybar ─────────────────────────────────────
+    # ── 13. sketchybar ─────────────────────────────────────
     if command -v sketchybar &>/dev/null; then
         _theme_step "sketchybar..."
         local sketchybar_config="$DOTFILES_DIR/.config/sketchybar/sketchybarrc"
@@ -480,7 +443,7 @@ FZFEOF
         fi
     fi
 
-    # ── 15. yazi ────────────────────────────────────────────
+    # ── 14. yazi ────────────────────────────────────────────
     if command -v yazi &>/dev/null; then
         _theme_step "yazi..."
         local yazi_theme="$THEMES_DIR/yazi/theme.toml"
@@ -493,7 +456,7 @@ FZFEOF
         fi
     fi
 
-    # ── 16. gitui ───────────────────────────────────────────
+    # ── 15. gitui ───────────────────────────────────────────
     if command -v gitui &>/dev/null; then
         _theme_step "gitui..."
         local gitui_theme="$THEMES_DIR/gitui/theme.ron"
@@ -506,7 +469,7 @@ FZFEOF
         fi
     fi
 
-    # ── 17. lsd ─────────────────────────────────────────────
+    # ── 16. lsd ─────────────────────────────────────────────
     if command -v lsd &>/dev/null; then
         _theme_step "lsd..."
         local lsd_colors="$THEMES_DIR/lsd/colors.yaml"
@@ -538,7 +501,6 @@ FZFEOF
         echo "  Post-apply reminders:"
         echo "────────────────────────────────────────────────────"
         echo "  • Restart your terminal or run: source ~/.zshrc"
-        echo "  • In tmux: prefix + r to reload, then prefix + I to install plugins"
         echo "  • In Neovim: run :Lazy sync to install the theme plugin"
         echo "────────────────────────────────────────────────────"
         echo ""

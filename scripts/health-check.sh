@@ -150,12 +150,8 @@ check_command starship "Starship"
 # ============================================
 print_header "2. Terminal & Multiplexers"
 
-check_command tmux "tmux"
 check_command zellij "Zellij" false
 check_brew_package ghostty "Ghostty"
-
-# Check tmux TPM
-check_file ~/.tmux/plugins/tpm "TPM (Tmux Plugin Manager)" dir
 
 # ============================================
 # 3. WINDOW MANAGEMENT
@@ -210,7 +206,6 @@ check_file ~/.zshrc ".zshrc" link "$DOTFILES_DIR/.zshrc"
 check_file ~/.zshrc-dhh-additions ".zshrc-dhh-additions" link "$DOTFILES_DIR/.zshrc-dhh-additions"
 check_file ~/.zshrc-elixir-additions ".zshrc-elixir-additions" link "$DOTFILES_DIR/.zshrc-elixir-additions"
 check_file ~/.zshrc-terminal-enhancements ".zshrc-terminal-enhancements" link "$DOTFILES_DIR/.zshrc-terminal-enhancements"
-check_file ~/.tmux.conf ".tmux.conf" link "$DOTFILES_DIR/.tmux.conf"
 check_file ~/.config/starship.toml "starship.toml" link "$DOTFILES_DIR/.config/starship.toml"
 check_file ~/.config/mise/config.toml "mise config" link "$DOTFILES_DIR/.config/mise/config.toml"
 

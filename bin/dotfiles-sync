@@ -87,7 +87,6 @@ _check_link "$DOTFILES_DIR/.zshrc" ~/.zshrc ".zshrc"
 [[ -f "$DOTFILES_DIR/.zshrc-work-completions" ]] && _check_link "$DOTFILES_DIR/.zshrc-work-completions" ~/.zshrc-work-completions ".zshrc-work-completions"
 
 # Core configs
-_check_link "$DOTFILES_DIR/.tmux.conf" ~/.tmux.conf ".tmux.conf"
 [[ -f "$DOTFILES_DIR/.gitignore_global" ]] && _check_link "$DOTFILES_DIR/.gitignore_global" ~/.gitignore_global ".gitignore_global"
 _check_link "$DOTFILES_DIR/.config/aerospace" ~/.config/aerospace "aerospace config"
 _check_link "$DOTFILES_DIR/.config/ghostty" ~/.config/ghostty "ghostty config"

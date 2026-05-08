@@ -290,7 +290,6 @@ dotfiles/
 ├── .zshrc-elixir-additions     # Elixir/Phoenix development
 ├── .zshrc-terminal-enhancements # Terminal multiplexers, editors
 ├── .zshrc-work                 # Work-specific (created by work-setup, not in repo)
-├── .tmux.conf                  # tmux config (kept for forks; tmux not in default Brewfile)
 ├── .config/
 │   ├── aerospace/              # Window management: layouts, keybindings
 │   ├── ghostty/                # Terminal: theme, fonts
@@ -625,7 +624,6 @@ dotfiles/
 ├── .zshrc-dhh-additions        # Rails workflows
 ├── .zshrc-elixir-additions     # Elixir/Phoenix
 ├── .zshrc-terminal-enhancements # Terminal tools
-├── .tmux.conf                  # tmux config (kept for forks; tmux not in default Brewfile)
 ├── .config/
 │   ├── aerospace/              # Window manager config
 │   ├── ghostty/                # Terminal config
@@ -719,7 +717,7 @@ All commands support tab-completion. Shorthand also works: `dotfiles-update`, `d
 3. Snapshot installed packages and show diff against Brewfile (without overwriting the organized Brewfile)
 4. Refresh all symlinks
 5. Upgrade mise tools
-6. Reload live configs (aerospace, tmux if present)
+6. Reload live configs (aerospace)
 7. Commit & push changes back to repo
 
 **Your Brewfile stays organized.** The Brewfile is organized into `@group` sections (core, editors, work, databases, etc.) and `dotfiles update` never overwrites it. The snapshot step shows you what's new or missing compared to your system.
@@ -862,15 +860,6 @@ eval "$(/opt/homebrew/bin/brew shellenv)"
 
 # Intel
 eval "$(/usr/local/bin/brew shellenv)"
-```
-
-### tmux Plugins Not Loading (only if you re-added tmux to your fork)
-tmux is no longer in the default Brewfile (replaced by Zellij). If you re-added it:
-```bash
-rm -rf ~/.tmux/plugins
-git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
-tmux
-# Press: Ctrl+A then Shift+I
 ```
 
 ### Neovim Errors

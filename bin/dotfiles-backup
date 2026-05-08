@@ -133,7 +133,7 @@ echo ""
 BACKED_UP=0
 
 # Shell configs
-for f in .zshrc .zshrc-dhh-additions .zshrc-elixir-additions .zshrc-terminal-enhancements .zshrc-work-completions .tmux.conf .gitignore_global; do
+for f in .zshrc .zshrc-dhh-additions .zshrc-elixir-additions .zshrc-terminal-enhancements .zshrc-work-completions .gitignore_global; do
     if [[ -f "$DOTFILES_DIR/$f" ]]; then
         cp "$DOTFILES_DIR/$f" "$BACKUP_DIR/$f"
         BACKED_UP=$((BACKED_UP + 1))

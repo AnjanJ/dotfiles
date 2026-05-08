@@ -98,7 +98,6 @@ fix_symlink "$DOTFILES_DIR/.zshrc-dhh-additions" ~/.zshrc-dhh-additions ".zshrc-
 fix_symlink "$DOTFILES_DIR/.zshrc-elixir-additions" ~/.zshrc-elixir-additions ".zshrc-elixir-additions"
 fix_symlink "$DOTFILES_DIR/.zshrc-terminal-enhancements" ~/.zshrc-terminal-enhancements ".zshrc-terminal-enhancements"
 fix_symlink "$DOTFILES_DIR/.zshrc-work-completions" ~/.zshrc-work-completions ".zshrc-work-completions"
-fix_symlink "$DOTFILES_DIR/.tmux.conf" ~/.tmux.conf ".tmux.conf"
 fix_symlink "$DOTFILES_DIR/.gitignore_global" ~/.gitignore_global ".gitignore_global"
 fix_symlink "$DOTFILES_DIR/.config/aerospace" ~/.config/aerospace "aerospace config"
 fix_symlink "$DOTFILES_DIR/.config/ghostty" ~/.config/ghostty "ghostty config"
@@ -131,7 +130,7 @@ echo ""
 print_step "Checking directories..."
 echo ""
 
-for dir in ~/.config/zed/snippets ~/.config/mise ~/.tmux/plugins; do
+for dir in ~/.config/zed/snippets ~/.config/mise; do
     if [[ -d "$dir" ]]; then
         _ok "$dir exists"
     else
@@ -142,21 +141,7 @@ for dir in ~/.config/zed/snippets ~/.config/mise ~/.tmux/plugins; do
     fi
 done
 
-# ── 3. Check TPM ─────────────────────────────
-echo ""
-print_step "Checking tmux plugins..."
-echo ""
-
-if [[ -d ~/.tmux/plugins/tpm ]]; then
-    _ok "TPM installed"
-else
-    if [[ "$DRY_RUN" == false ]]; then
-        git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm 2>/dev/null
-    fi
-    _fix "Installed TPM"
-fi
-
-# ── 4. Check mise trust ──────────────────────
+# ── 3. Check mise trust ──────────────────────
 echo ""
 print_step "Checking mise..."
 echo ""
@@ -182,7 +167,7 @@ else
     _skip "mise not installed (run: brew install mise)"
 fi
 
-# ── 5. Check SSH permissions ─────────────────
+# ── 4. Check SSH permissions ─────────────────
 echo ""
 print_step "Checking SSH permissions..."
 echo ""
@@ -241,7 +226,7 @@ else
     _skip "~/.ssh directory not found"
 fi
 
-# ── 6. Check git config ──────────────────────
+# ── 5. Check git config ──────────────────────
 echo ""
 print_step "Checking git config..."
 echo ""
@@ -267,7 +252,7 @@ else
     _skip "Git user.email not set (run: dotfiles install)"
 fi
 
-# ── 7. Check ~/bin in PATH ───────────────────
+# ── 6. Check ~/bin in PATH ───────────────────
 echo ""
 print_step "Checking PATH..."
 echo ""

@@ -71,7 +71,6 @@ setup_sync_sandbox() {
 
     # Create mock dotfiles source files
     echo "zshrc" > "$MOCK_DOTFILES/.zshrc"
-    echo "tmux" > "$MOCK_DOTFILES/.tmux.conf"
     echo "gitignore" > "$MOCK_DOTFILES/.gitignore_global"
     echo "terminal" > "$MOCK_DOTFILES/.zshrc-terminal-enhancements"
 
@@ -126,7 +125,6 @@ _check_link "$DOTFILES_DIR/.zshrc" ~/.zshrc ".zshrc"
 [[ -f "$DOTFILES_DIR/.zshrc-terminal-enhancements" ]] && _check_link "$DOTFILES_DIR/.zshrc-terminal-enhancements" ~/.zshrc-terminal-enhancements ".zshrc-terminal-enhancements"
 
 # Core configs
-_check_link "$DOTFILES_DIR/.tmux.conf" ~/.tmux.conf ".tmux.conf"
 [[ -f "$DOTFILES_DIR/.gitignore_global" ]] && _check_link "$DOTFILES_DIR/.gitignore_global" ~/.gitignore_global ".gitignore_global"
 
 # bin scripts
@@ -173,8 +171,6 @@ output=$(bash "$MOCK_DOTFILES/bin/dotfiles-sync-test" "$MOCK_DOTFILES" false 2>&
 
 assert_symlink "$TEST_HOME/.zshrc" "$MOCK_DOTFILES/.zshrc" \
     "Creates .zshrc symlink"
-assert_symlink "$TEST_HOME/.tmux.conf" "$MOCK_DOTFILES/.tmux.conf" \
-    "Creates .tmux.conf symlink"
 assert_symlink "$TEST_HOME/.zshrc-terminal-enhancements" "$MOCK_DOTFILES/.zshrc-terminal-enhancements" \
     "Creates .zshrc-terminal-enhancements symlink"
 
@@ -210,7 +206,6 @@ setup_sync_sandbox
 
 # Create correct symlinks first
 ln -sf "$MOCK_DOTFILES/.zshrc" "$TEST_HOME/.zshrc"
-ln -sf "$MOCK_DOTFILES/.tmux.conf" "$TEST_HOME/.tmux.conf"
 ln -sf "$MOCK_DOTFILES/.gitignore_global" "$TEST_HOME/.gitignore_global"
 ln -sf "$MOCK_DOTFILES/.zshrc-terminal-enhancements" "$TEST_HOME/.zshrc-terminal-enhancements"
 mkdir -p "$TEST_HOME/bin"

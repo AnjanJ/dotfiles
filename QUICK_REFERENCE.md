@@ -317,9 +317,6 @@ aerospace reload
 
 # Neovim
 :source ~/.config/nvim/init.lua
-
-# tmux (only if you re-added it to your fork)
-tmux source ~/.tmux.conf
 ```
 
 ### Installing Legacy Ruby (< 2.4)
@@ -347,9 +344,6 @@ rm -rf ~/.local/share/nvim ~/.cache/nvim
 
 # Zellij sessions
 zellij kill-all-sessions
-
-# tmux plugins (only if you re-added tmux to your fork)
-rm -rf ~/.tmux/plugins && git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 
 # Shell
 source ~/.zshrc

@@ -64,7 +64,6 @@ setup_backup_sandbox() {
 
     # Create mock dotfiles that backup will look for
     echo "zshrc content" > "$MOCK_DOTFILES/.zshrc"
-    echo "tmux content" > "$MOCK_DOTFILES/.tmux.conf"
     echo "gitignore content" > "$MOCK_DOTFILES/.gitignore_global"
     mkdir -p "$MOCK_DOTFILES/.config/nvim"
     echo "nvim config" > "$MOCK_DOTFILES/.config/nvim/init.lua"
@@ -135,12 +134,6 @@ if [[ -f "$backup_dir/.zshrc" ]]; then
     pass "Backup includes .zshrc"
 else
     fail "Backup missing .zshrc"
-fi
-
-if [[ -f "$backup_dir/.tmux.conf" ]]; then
-    pass "Backup includes .tmux.conf"
-else
-    fail "Backup missing .tmux.conf"
 fi
 
 if [[ -f "$backup_dir/.gitignore_global" ]]; then

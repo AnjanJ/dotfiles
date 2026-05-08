@@ -119,15 +119,6 @@ fg = "#000000"
 # THEME_PALETTE_END
 EOF
 
-    # Create mock .tmux.conf with markers
-    cat > "$MOCK_DOTFILES/.tmux.conf" << 'EOF'
-set -g prefix C-a
-# THEME_BLOCK_START
-# old theme block
-# THEME_BLOCK_END
-set -g mouse on
-EOF
-
     # Override DOTFILES_DIR in the sourced script
     DOTFILES_DIR="$MOCK_DOTFILES"
     export DOTFILES_DIR
@@ -234,18 +225,15 @@ set +e; apply_theme "tokyo-night" "true" >/dev/null 2>&1; set -e
 # Snapshot configs after first apply
 ghostty_1=$(cat "$MOCK_DOTFILES/.config/ghostty/config")
 starship_1=$(cat "$MOCK_DOTFILES/.config/starship.toml")
-tmux_1=$(cat "$MOCK_DOTFILES/.tmux.conf")
 
 # Apply same theme again
 set +e; apply_theme "tokyo-night" "true" >/dev/null 2>&1; set -e
 
 ghostty_2=$(cat "$MOCK_DOTFILES/.config/ghostty/config")
 starship_2=$(cat "$MOCK_DOTFILES/.config/starship.toml")
-tmux_2=$(cat "$MOCK_DOTFILES/.tmux.conf")
 
 assert_eq "$ghostty_2" "$ghostty_1" "Ghostty config unchanged after second apply"
 assert_eq "$starship_2" "$starship_1" "Starship config unchanged after second apply"
-assert_eq "$tmux_2" "$tmux_1" "tmux config unchanged after second apply"
 
 teardown_theme_sandbox
 echo ""
@@ -333,7 +321,6 @@ load_theme_functions
 # Snapshot original configs before any apply
 original_ghostty=$(cat "$MOCK_DOTFILES/.config/ghostty/config")
 original_starship=$(cat "$MOCK_DOTFILES/.config/starship.toml")
-original_tmux=$(cat "$MOCK_DOTFILES/.tmux.conf")
 original_zellij=$(cat "$MOCK_DOTFILES/.config/zellij/config.kdl")
 
 # Override sed so that section 3 (Zellij) fails AFTER sections 1-2 have
@@ -379,8 +366,6 @@ assert_eq "$(cat "$MOCK_DOTFILES/.config/ghostty/config")" "$original_ghostty" \
     "Ghostty config rolled back after failure"
 assert_eq "$(cat "$MOCK_DOTFILES/.config/starship.toml")" "$original_starship" \
     "Starship config rolled back after failure"
-assert_eq "$(cat "$MOCK_DOTFILES/.tmux.conf")" "$original_tmux" \
-    "tmux config rolled back after failure"
 assert_eq "$(cat "$MOCK_DOTFILES/.config/zellij/config.kdl")" "$original_zellij" \
     "Zellij config rolled back after failure"
 
@@ -401,8 +386,6 @@ assert_file_exists "$SCAFFOLD_DIR/themes/test-new/theme.conf" \
     "theme.conf created"
 assert_file_exists "$SCAFFOLD_DIR/themes/test-new/nvim/test-new-theme.lua" \
     "nvim plugin template created"
-assert_file_exists "$SCAFFOLD_DIR/themes/test-new/tmux/theme-block.conf" \
-    "tmux theme block created"
 assert_file_exists "$SCAFFOLD_DIR/themes/test-new/starship/palette.toml" \
     "starship palette created"
 assert_file_exists "$SCAFFOLD_DIR/themes/test-new/zellij/themes/test-new.kdl" \

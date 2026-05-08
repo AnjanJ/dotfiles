@@ -66,7 +66,7 @@ if [[ "$FORCE" != true ]]; then
     for target in \
         ~/.zshrc ~/.zshrc-terminal-enhancements \
         ~/.zshrc-dhh-additions ~/.zshrc-elixir-additions ~/.zshrc-work-completions \
-        ~/.tmux.conf ~/.gitignore_global \
+        ~/.gitignore_global \
         ~/.config/aerospace ~/.config/ghostty ~/.config/nvim ~/.config/zellij \
         ~/.config/starship.toml ~/.config/mise/config.toml \
         ~/.config/zed/settings.json ~/.config/zed/tasks.json; do
@@ -122,8 +122,7 @@ remove_symlink ~/.zshrc-dhh-additions ".zshrc-dhh-additions"
 remove_symlink ~/.zshrc-elixir-additions ".zshrc-elixir-additions"
 remove_symlink ~/.zshrc-work-completions ".zshrc-work-completions"
 
-# tmux & git
-remove_symlink ~/.tmux.conf ".tmux.conf"
+# Git
 remove_symlink ~/.gitignore_global ".gitignore_global"
 
 # Config directories
