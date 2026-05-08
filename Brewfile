@@ -64,7 +64,7 @@ brew "zellij"
 # @group ai — AI/LLM CLI tooling for shell-native AI workflows
 brew "llm"                     # Pipe-friendly LLM CLI (Simon Willison) — replaces mods.
                                # Install Ollama plugin once: `llm install llm-ollama`
-cask "ollama"                  # Local LLM runtime (run qwen, llama3, etc. offline)
+cask "ollama-app"              # Local LLM runtime (run qwen, llama3, etc. offline)
 
 # @group databases — Database engines & GUI clients
 brew "litecli"
@@ -104,7 +104,7 @@ mas "GIPHY CAPTURE", id: 668208984
 cask "discord"
 cask "signal"
 cask "telegram"
-cask "whatsapp"
+mas "WhatsApp", id: 310633997
 
 # @group productivity — Personal productivity
 cask "1password"
@@ -118,8 +118,8 @@ cask "raycast"
 brew "antoniorodr/memo/memo"
 brew "yakitrak/yakitrak/obsidian-cli"
 mas "1Password for Safari", id: 1569813296
-cask "tailscale-app"
 mas "Dashlane", id: 517914548
+mas "Tailscale", id: 1475387142
 
 # @group work — Enterprise & work apps
 cask "slack"
@@ -245,17 +245,17 @@ vscode "zh9528.file-size"
 mas "2FAS - Two Factor Authentication", id: 6443941139
 mas "Bandwidth+", id: 490461369
 mas "Developer", id: 640199958
-cask "duckduckgo"
+mas "DuckDuckGo", id: 663592361
 mas "Hidden Bar", id: 1452453066
 mas "iStat Menus", id: 1319778037
 mas "Kindle", id: 302584613
 mas "LanguageTool", id: 1534275760
-cask "localsend"
+mas "LocalSend", id: 1661733229
 mas "Menu Bar Calendar", id: 1558360383
 mas "Noir", id: 1592917505
 mas "Numbers", id: 409203825
 mas "Perplexity", id: 6714467650
-cask "raindropio"
+mas "Save to Raindrop.io", id: 1549370672
 mas "TextSniper", id: 1528890965
 mas "Tot", id: 1491071483
 mas "Xcode", id: 497799835

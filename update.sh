@@ -127,9 +127,21 @@ echo "  Tip: Run 'dotfiles cleanup' to find packages not in Brewfile"
 
 # Show what changed vs the organized Brewfile (ignoring @group comments)
 if [[ -f "$DOTFILES_DIR/Brewfile.snapshot" ]]; then
-    # Compare package lines only (strip comments and blank lines from both)
-    _brewfile_pkgs=$(grep -v '^#' "$DOTFILES_DIR/Brewfile" | grep -v '^$' | sort)
-    _snapshot_pkgs=$(grep -v '^#' "$DOTFILES_DIR/Brewfile.snapshot" | grep -v '^$' | sort)
+    # Compare package lines only. Normalize both files so cosmetic differences
+    # (inline comments, indentation, tap-prefixed names) don't show up as drift:
+    #   - drop full-line comments and blank lines
+    #   - strip trailing inline comments (`brew "jq"  # …`  →  `brew "jq"`)
+    #   - resolve `brew "owner/tap/pkg"` → `brew "pkg"` to match what
+    #     `brew bundle dump` writes when the tap is already declared
+    _normalize_brewfile() {
+        sed -E \
+            -e 's/[[:space:]]*#.*$//' \
+            -e 's/[[:space:]]+$//' \
+            -e 's/^(brew |cask )"[^"/]+\/[^"/]+\/([^"]+)"/\1"\2"/' \
+            "$1" | grep -v '^[[:space:]]*$' | sort -u
+    }
+    _brewfile_pkgs=$(_normalize_brewfile "$DOTFILES_DIR/Brewfile")
+    _snapshot_pkgs=$(_normalize_brewfile "$DOTFILES_DIR/Brewfile.snapshot")
 
     BREW_ADDED_LINES=$(comm -13 <(echo "$_brewfile_pkgs") <(echo "$_snapshot_pkgs") || true)
     BREW_REMOVED_LINES=$(comm -23 <(echo "$_brewfile_pkgs") <(echo "$_snapshot_pkgs") || true)
