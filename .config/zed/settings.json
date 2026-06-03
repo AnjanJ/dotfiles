@@ -106,11 +106,41 @@
   "features": {
     "edit_prediction_provider": "zed"
   },
+  "language_models": {
+    "ollama": {
+      "api_url": "http://localhost:11434",
+      "available_models": [
+        {
+          "name": "qwen2.5-coder:7b-base",
+          "display_name": "Qwen2.5 Coder 7B (local, FIM)",
+          "max_tokens": 32768
+        },
+        {
+          "name": "qwen3-coder:30b",
+          "display_name": "Qwen3 Coder 30B (local, agent)",
+          "max_tokens": 131072,
+          "supports_tools": true
+        }
+      ]
+    }
+  },
   "agent": {
     "play_sound_when_agent_done": true,
     "default_model": {
       "provider": "zed.dev",
-      "model": "claude-sonnet-4"
+      "model": "claude-sonnet-4-6-latest"
+    },
+    "inline_assistant_model": {
+      "provider": "ollama",
+      "model": "qwen3-coder:30b"
+    },
+    "commit_message_model": {
+      "provider": "ollama",
+      "model": "qwen2.5-coder:7b-base"
+    },
+    "thread_summary_model": {
+      "provider": "ollama",
+      "model": "qwen2.5-coder:7b-base"
     },
     "enabled": true,
     "button": true,
@@ -119,26 +149,47 @@
     "default_height": 320,
     "inline_alternatives": [
       {
-        "provider": "zed.dev",
-        "model": "claude-sonnet-4"
+        "provider": "ollama",
+        "model": "qwen3-coder:30b"
+      },
+      {
+        "provider": "ollama",
+        "model": "qwen2.5-coder:7b-base"
       },
       {
         "provider": "zed.dev",
-        "model": "claude-opus-4"
+        "model": "claude-sonnet-4-6-latest"
       },
       {
         "provider": "zed.dev",
-        "model": "gpt-4o"
-      },
-      {
-        "provider": "zed.dev",
-        "model": "gpt-4o-mini"
-      },
-      {
-        "provider": "zed.dev",
-        "model": "gemini-2.0-flash"
+        "model": "claude-opus-4-5"
       }
     ]
+  },
+  "context_servers": {
+    "rails-ai-context": {
+      "source": "custom",
+      "command": "npx",
+      "args": ["-y", "@crisnahine/rails-ai-context"]
+    },
+    "git": {
+      "source": "custom",
+      "command": "uvx",
+      "args": ["mcp-server-git"]
+    },
+    "github": {
+      "source": "custom",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_TOKEN": "REPLACE_WITH_YOUR_GH_PAT"
+      }
+    },
+    "sequential-thinking": {
+      "source": "custom",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+    }
   },
   "languages": {
     "Ruby": {

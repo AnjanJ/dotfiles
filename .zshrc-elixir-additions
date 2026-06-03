@@ -324,7 +324,12 @@ alias-search-elixir() {
 # ============================================
 
 # Mix environment (default to dev)
-export MIX_ENV="${MIX_ENV:-dev}"
+# DO NOT export MIX_ENV globally — it overrides mix's per-task defaults
+# (mix test wants :test, mix release wants :prod). Exporting :dev here
+# silently broke `mix test` in every Phoenix project, surfacing as a
+# misleading "cannot invoke sandbox operation with pool ConnectionPool"
+# error at test_helper.exs. Diagnosed 2026-05-31 on humrah-server.
+# export MIX_ENV="${MIX_ENV:-dev}"
 
 # Hex (Elixir package manager) settings
 export HEX_HTTP_CONCURRENCY=8

@@ -202,3 +202,8 @@ fi
 # END OF CONFIGURATION
 # ============================================
 export PATH=$PATH:$HOME/.maestro/bin
+
+# Ollama settings (local AI for Rails dev)
+# MAX_LOADED_MODELS=1 — 36GB unified can't hold 7B + 30B together; explicit single-model swap is cleaner
+export OLLAMA_MAX_LOADED_MODELS=1
+export OLLAMA_KEEP_ALIVE=24h
