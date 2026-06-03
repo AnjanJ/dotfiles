@@ -245,7 +245,7 @@ fi
 echo ""
 print_step "Step 3: Creating configuration directories..."
 
-mkdir -p ~/.config/{aerospace,ghostty,nvim,zellij,zed/snippets}
+mkdir -p ~/.config/{aerospace,alacritty,ghostty,nvim,zellij,zed/snippets}
 mkdir -p ~/bin
 
 print_success "Directories created"
@@ -320,6 +320,7 @@ create_symlink "$DOTFILES_DIR/.config/wezterm/wezterm.lua" ~/.wezterm.lua ".wezt
 # Config directories
 create_symlink "$DOTFILES_DIR/.config/aerospace" ~/.config/aerospace "aerospace config"
 create_symlink "$DOTFILES_DIR/.config/ghostty" ~/.config/ghostty "ghostty config"
+create_symlink "$DOTFILES_DIR/.config/alacritty" ~/.config/alacritty "alacritty config"
 create_symlink "$DOTFILES_DIR/.config/nvim" ~/.config/nvim "nvim config"
 create_symlink "$DOTFILES_DIR/.config/zellij" ~/.config/zellij "zellij config"
 create_symlink "$DOTFILES_DIR/.config/starship.toml" ~/.config/starship.toml "starship config"
@@ -351,6 +352,39 @@ print_step "Step 5b: Applying $SELECTED_THEME theme everywhere..."
 
 source "$DOTFILES_DIR/scripts/apply-theme.sh"
 apply_theme "$SELECTED_THEME"
+
+# ============================================
+# 5c. BUILD ALACRITTY FROM SOURCE
+# ============================================
+# The homebrew alacritty cask is deprecated because it fails the macOS
+# Gatekeeper check (scheduled removal: 2026-09-01). Building from source via
+# `make app` ad-hoc signs the bundle, which Gatekeeper accepts without
+# requiring System Settings overrides or xattr quarantine removal.
+echo ""
+print_step "Step 5c: Building Alacritty from source..."
+
+if [[ -d /Applications/Alacritty.app ]] && [[ "$FORCE_INSTALL" = false ]]; then
+    print_success "Alacritty.app already installed (skipping rebuild)"
+elif ! command -v cargo &>/dev/null; then
+    print_warning "cargo not found — skipping Alacritty build (install rust via mise)"
+elif ! command -v scdoc &>/dev/null; then
+    print_warning "scdoc not found — install with 'brew install scdoc' then rebuild"
+else
+    _ALACRITTY_SRC="$HOME/src/alacritty"
+    mkdir -p "$HOME/src"
+    if [[ ! -d "$_ALACRITTY_SRC" ]]; then
+        git clone --depth 1 https://github.com/alacritty/alacritty.git "$_ALACRITTY_SRC"
+    else
+        (cd "$_ALACRITTY_SRC" && git pull --ff-only) || true
+    fi
+    if (cd "$_ALACRITTY_SRC" && make app); then
+        cp -R "$_ALACRITTY_SRC/target/release/osx/Alacritty.app" /Applications/
+        ln -sfn /Applications/Alacritty.app/Contents/MacOS/alacritty "$HOME/bin/alacritty"
+        print_success "Alacritty.app built and installed (ad-hoc signed)"
+    else
+        print_warning "Alacritty build failed — see output above"
+    fi
+fi
 
 # ============================================
 # 6. SET UP NEOVIM
