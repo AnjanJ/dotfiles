@@ -19,7 +19,6 @@ dotfiles/
 ├── .config/
 │   ├── aerospace/              # Window manager: layouts, keybindings
 │   ├── ghostty/                # Terminal: theme, fonts
-│   ├── alacritty/              # Alternate terminal
 │   ├── wezterm/                # Alternate terminal (linked as ~/.wezterm.lua)
 │   ├── mise/                   # Version manager (Ruby pinned; Node/Elixir/Go/etc. latest)
 │   ├── nvim/                   # Neovim config (AstroNvim)

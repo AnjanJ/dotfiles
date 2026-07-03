@@ -35,7 +35,6 @@ DOTFILES_LINKS=(
     # Whole config directories
     ".config/aerospace:$HOME/.config/aerospace"
     ".config/ghostty:$HOME/.config/ghostty"
-    ".config/alacritty:$HOME/.config/alacritty"
     ".config/nvim:$HOME/.config/nvim"
     ".config/zellij:$HOME/.config/zellij"
     ".config/lazygit:$HOME/.config/lazygit"

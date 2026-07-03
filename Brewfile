@@ -34,17 +34,11 @@ brew "zsh-syntax-highlighting" # Color commands as you type (catches typos pre-e
 
 # @group editors — Code editors & terminals
 brew "neovim"
-brew "scdoc"                   # Manpage builder for alacritty (built from source — see below)
 cask "ghostty"
 cask "visual-studio-code"
 cask "warp"
 cask "wezterm"
 cask "zed"
-# Alacritty is intentionally NOT a cask here:
-#   The homebrew alacritty cask is deprecated for failing macOS Gatekeeper
-#   (auto-removal 2026-09-01). install.sh step 5c builds it from source via
-#   `make app`, which ad-hoc signs the bundle and passes Gatekeeper cleanly.
-#   Requires: rust toolchain (mise installs), scdoc (above).
 
 # @group window-mgmt — Tiling window manager & status bar
 cask "nikitabobko/tap/aerospace"
