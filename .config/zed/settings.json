@@ -127,13 +127,6 @@
   "agent": {
     "tool_permissions": {
       "tools": {
-        "delete_path": {
-          "always_allow": [
-            {
-              "pattern": "^learn_with_bodhi/"
-            }
-          ]
-        },
         "write_file": {
           "default": "allow"
         },
@@ -195,14 +188,6 @@
       "source": "custom",
       "command": "uvx",
       "args": ["mcp-server-git"]
-    },
-    "github": {
-      "source": "custom",
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"],
-      "env": {
-        "GITHUB_TOKEN": "REPLACE_WITH_YOUR_GH_PAT"
-      }
     },
     "sequential-thinking": {
       "source": "custom",
