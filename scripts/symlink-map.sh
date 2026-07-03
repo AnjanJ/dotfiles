@@ -47,6 +47,12 @@ DOTFILES_LINKS=(
     ".config/mise/config.toml:$HOME/.config/mise/config.toml"
     ".config/zed/settings.json:$HOME/.config/zed/settings.json"
     ".config/zed/tasks.json:$HOME/.config/zed/tasks.json"
+
+    # VS Code (lives under ~/Library/Application Support/Code/User — note
+    # the space in the path; each entry is a single quoted string so the
+    # target survives word-splitting)
+    ".config/vscode/settings.json:$HOME/Library/Application Support/Code/User/settings.json"
+    ".config/vscode/keybindings.json:$HOME/Library/Application Support/Code/User/keybindings.json"
 )
 
 # Directories whose contents are linked file-by-file into the target

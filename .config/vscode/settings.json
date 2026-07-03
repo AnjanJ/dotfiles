@@ -1,0 +1,341 @@
+{
+    "workbench.colorTheme": "Aura Dark",
+    "editor.fontSize": 18,
+    "editor.formatOnSave": true,
+    "files.watcherExclude": {
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/node_modules/**": true,
+        "**/.hg/store/**": true,
+        "**/tmp/**": true,
+        "**/dist/**": true,
+        "**/build/**": true,
+        "**/_build/**": true,
+        "**/deps/**": true,
+        "**/.elixir_ls/**": true,
+        "**/coverage/**": true,
+        "**/.next/**": true,
+        "**/.cache/**": true
+    },
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "**/.elixir_ls": true
+    },
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/bower_components": true,
+        "**/*.code-search": true,
+        "**/deps": true,
+        "**/_build": true,
+        "**/dist": true,
+        "**/build": true,
+        "**/.next": true
+    },
+
+    // Editor Performance
+    "editor.minimap.enabled": false,
+    "editor.codeLens": false,
+    "editor.renderWhitespace": "none",
+    "editor.suggestSelection": "first",
+    "editor.acceptSuggestionOnCommitCharacter": false,
+    "editor.quickSuggestionsDelay": 10,
+    "editor.suggestOnTriggerCharacters": true,
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "editor.formatOnPaste": false,
+    "editor.formatOnType": false,
+    "editor.bracketPairColorization.enabled": true,
+    "editor.guides.bracketPairs": true,
+    "editor.linkedEditing": true,
+    "editor.accessibilitySupport": "off",
+    "editor.renderLineHighlight": "line",
+    "editor.smoothScrolling": true,
+    "editor.cursorSmoothCaretAnimation": "on",
+
+    // Terminal Performance
+    "terminal.integrated.gpuAcceleration": "on",
+    "terminal.integrated.rendererType": "auto",
+
+    // Workbench Settings
+    "workbench.editor.limit.enabled": true,
+    "workbench.editor.limit.value": 10,
+    "workbench.editor.limit.perEditorGroup": true,
+    "workbench.startupEditor": "none",
+    "workbench.tips.enabled": false,
+    "workbench.tree.indent": 20,
+    "workbench.tree.renderIndentGuides": "always",
+
+    // Extension Settings
+    "extensions.autoUpdate": "on",
+    "extensions.ignoreRecommendations": false,
+
+    // Git Settings
+    "git.enableSmartCommit": true,
+    "git.autofetch": true,
+    "git.confirmSync": false,
+    "gitlens.hovers.currentLine.over": "line",
+    "gitlens.codeLens.enabled": false,
+
+    // Ruby/Rails Settings
+    "ruby.useLanguageServer": true,
+    "ruby.format": "rubocop",
+    "ruby.lint": {
+        "rubocop": true
+    },
+    "[ruby]": {
+        "editor.defaultFormatter": "Shopify.ruby-lsp",
+        "editor.formatOnSave": true,
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true,
+        "editor.semanticHighlighting.enabled": true,
+        "editor.formatOnType": true
+    },
+    "rubyLsp.formatter": "auto",
+    "rubyLsp.linters": ["rubocop"],
+    "rubyLsp.enabledFeatures": {
+        "codeActions": true,
+        "diagnostics": true,
+        "documentHighlights": true,
+        "documentLink": true,
+        "documentSymbols": true,
+        "foldingRanges": true,
+        "formatting": true,
+        "hover": true,
+        "inlayHint": false,
+        "onTypeFormatting": true,
+        "selectionRanges": true,
+        "semanticHighlighting": true,
+        "completion": true,
+        "codeLens": false
+    },
+    "rubyLsp.rubyVersionManager": {
+        "identifier": "mise"
+    },
+
+    // TypeScript/JavaScript/React Settings
+    "typescript.updateImportsOnFileMove.enabled": "always",
+    "typescript.preferences.includePackageJsonAutoImports": "on",
+    "typescript.suggest.autoImports": true,
+    "typescript.preferences.importModuleSpecifier": "shortest",
+    "typescript.preferences.quoteStyle": "single",
+    "typescript.format.semicolons": "insert",
+    "typescript.inlayHints.parameterNames.enabled": "none",
+    "typescript.inlayHints.variableTypes.enabled": false,
+    "typescript.inlayHints.propertyDeclarationTypes.enabled": false,
+    "typescript.inlayHints.parameterTypes.enabled": false,
+    "typescript.inlayHints.functionLikeReturnTypes.enabled": false,
+    "[typescript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit",
+            "source.fixAll.eslint": "explicit"
+        }
+    },
+    "[typescriptreact]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit",
+            "source.fixAll.eslint": "explicit"
+        }
+    },
+    "[javascript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.fixAll.eslint": "explicit"
+        }
+    },
+    "[javascriptreact]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.fixAll.eslint": "explicit"
+        }
+    },
+
+    // Prettier Settings
+    "prettier.singleQuote": true,
+    "prettier.trailingComma": "es5",
+    "prettier.semi": true,
+    "prettier.tabWidth": 2,
+    "prettier.printWidth": 100,
+    "prettier.bracketSpacing": true,
+    "prettier.arrowParens": "always",
+
+    // ESLint Settings
+    "eslint.validate": [
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact"
+    ],
+    "eslint.format.enable": false,
+    "eslint.run": "onType",
+    "eslint.probe": [
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact"
+    ],
+
+    // Elixir/Phoenix Settings
+    "[elixir]": {
+        "editor.defaultFormatter": "JakeBecker.elixir-ls",
+        "editor.formatOnSave": true,
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true,
+        "editor.trimTrailingWhitespace": true,
+        "editor.formatOnType": true
+    },
+    "[phoenix-heex]": {
+        "editor.defaultFormatter": "JakeBecker.elixir-ls",
+        "editor.formatOnSave": true
+    },
+    "[html-eex]": {
+        "editor.defaultFormatter": "JakeBecker.elixir-ls"
+    },
+    "elixirLS.suggestSpecs": false,
+    "elixirLS.mixEnv": "dev",
+    "elixirLS.fetchDeps": true,
+    "elixirLS.dialyzerEnabled": true,
+    "elixirLS.signatureAfterComplete": true,
+    "elixirLS.enableTestLenses": true,
+
+    // File Associations
+    "files.associations": {
+        "*.heex": "phoenix-heex",
+        "*.leex": "phoenix-heex",
+        "*.erb": "erb",
+        "*.html.erb": "erb",
+        "Gemfile": "ruby",
+        "Guardfile": "ruby",
+        "Rakefile": "ruby",
+        "*.rake": "ruby",
+        "*.gemspec": "ruby",
+        "*.ru": "ruby",
+        "*.arb": "ruby",
+        "*.jbuilder": "ruby",
+        "*.thor": "ruby",
+        "Thorfile": "ruby",
+        "Fastfile": "ruby",
+        "Podfile": "ruby",
+        "Vagrantfile": "ruby",
+        "Brewfile": "ruby",
+        "*.exs": "elixir",
+        "*.ex": "elixir"
+    },
+
+    // Emmet Settings
+    "emmet.includeLanguages": {
+        "erb": "html",
+        "html-eex": "html",
+        "phoenix-heex": "html",
+        "elixir": "html",
+        "javascript": "javascriptreact",
+        "typescript": "typescriptreact"
+    },
+    "emmet.triggerExpansionOnTab": true,
+
+    // Tailwind CSS
+    "tailwindCSS.includeLanguages": {
+        "erb": "html",
+        "html-eex": "html",
+        "phoenix-heex": "html"
+    },
+    "tailwindCSS.emmetCompletions": true,
+
+    // Import Cost Settings (for bundle size monitoring)
+    "importCost.largePackageColor": "#d44e40",
+    "importCost.mediumPackageColor": "#eeaf35",
+    "importCost.smallPackageColor": "#7cc36e",
+
+    // Auto Close Tag
+    "auto-close-tag.activationOnLanguage": [
+        "xml",
+        "php",
+        "blade",
+        "ejs",
+        "jinja",
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact",
+        "erb",
+        "html-eex",
+        "phoenix-heex"
+    ],
+
+    // Auto Rename Tag
+    "auto-rename-tag.activationOnLanguage": [
+        "html",
+        "xml",
+        "php",
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact",
+        "erb",
+        "html-eex",
+        "phoenix-heex"
+    ],
+
+    // Path Intellisense
+    "path-intellisense.autoSlashAfterDirectory": true,
+    "path-intellisense.extensionOnImport": true,
+
+    // Spell Checker
+    "cSpell.language": "en",
+    "cSpell.enableFiletypes": [
+        "elixir",
+        "erb",
+        "phoenix-heex"
+    ],
+
+    // Telemetry (disable for performance)
+    "telemetry.telemetryLevel": "off",
+
+    // Update Settings
+    "update.mode": "manual",
+
+    // Explorer Settings
+    "explorer.confirmDelete": false,
+    "explorer.confirmDragAndDrop": false,
+    "explorer.compactFolders": false,
+    "workbench.colorCustomizations": {},
+    "terminal.integrated.env.osx": {
+        "Q_NEW_SESSION": "1"
+    },
+    "docker.extension.enableComposeLanguageServer": false,
+    "diffEditor.ignoreTrimWhitespace": false,
+    "mdb.mcp.server": "autoStartDisabled",
+    "cSpell.userWords": [
+        "anjan",
+        "jagirdar"
+    ],
+    "vscode-openai.serviceProvider": "VSCode-OpenAI",
+    "vscode-openai.baseUrl": "https://api.arbs.io/openai/inference/v1",
+    "vscode-openai.defaultModel": "gpt-4o-mini-2024-07-18",
+    "vscode-openai.azureDeployment": "gpt-4o",
+    "vscode-openai.scmModel": "gpt-4o-mini-2024-07-18",
+    "vscode-openai.scmDeployment": "gpt-4o",
+    "vscode-openai.embeddingModel": "text-embedding-ada-002",
+    "vscode-openai.embeddingsDeployment": "text-embedding-ada-002",
+    "vscode-openai.azureApiVersion": "2024-06-01",
+    "json.schemaDownload.trustedDomains": {
+        "https://schemastore.azurewebsites.net/": true,
+        "https://raw.githubusercontent.com/microsoft/vscode/": true,
+        "https://raw.githubusercontent.com/devcontainers/spec/": true,
+        "https://www.schemastore.org/": true,
+        "https://json.schemastore.org/": true,
+        "https://json-schema.org/": true,
+        "https://developer.microsoft.com/json-schemas/": true,
+        "https://biomejs.dev": true
+    }
+}

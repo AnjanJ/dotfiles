@@ -24,6 +24,7 @@ dotfiles/
 │   ├── mise/                   # Version manager (Ruby pinned; Node/Elixir/Go/etc. latest)
 │   ├── nvim/                   # Neovim config (AstroNvim)
 │   ├── zed/                    # Zed: settings.json, tasks.json, snippets/
+│   ├── vscode/                 # VS Code: settings.json, keybindings.json (linked into ~/Library/Application Support/Code/User/)
 │   ├── zellij/                 # Multiplexer: config, theme, layouts (rails, phoenix, work)
 │   ├── lazygit/                # Git UI: config + theme
 │   ├── borders/                # JankyBorders: active window highlighting
@@ -83,6 +84,7 @@ Zed's Ruby formatter runs `bin/rubocop-auto`: inside an app whose Gemfile carrie
 ## Customizing
 
 - **Zed**: `.config/zed/settings.json` (languages, LSP, formatters), `tasks.json` (RSpec, Rails, Elixir, Zig, npm tasks), `snippets/`
+- **VS Code**: `.config/vscode/settings.json`, `keybindings.json` — linked into `~/Library/Application Support/Code/User/` (secrets like API keys live in the macOS keychain, not tracked here)
 - **Keybindings**: see [KEYBINDINGS.md](KEYBINDINGS.md)
 - **Packages**: edit `Brewfile`, then `brew bundle install`
 - **Themes**: see [THEMES.md](THEMES.md)
