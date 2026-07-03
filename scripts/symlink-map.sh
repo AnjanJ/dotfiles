@@ -52,6 +52,15 @@ DOTFILES_LINKS=(
     # target survives word-splitting)
     ".config/vscode/settings.json:$HOME/Library/Application Support/Code/User/settings.json"
     ".config/vscode/keybindings.json:$HOME/Library/Application Support/Code/User/keybindings.json"
+
+    # AI layer. Global Claude Code config (permissions, hooks, enabled
+    # plugins, statusline) — NOT the repo's own .claude/, which is
+    # project-scoped context. Secrets (API keys) are stored elsewhere by
+    # each tool, never in these files. The llm default-model preference
+    # lives beside llm's machine state (logs.db etc.), so only the one
+    # file is linked, not the directory.
+    ".config/claude/settings.json:$HOME/.claude/settings.json"
+    ".config/llm/default_model.txt:$HOME/Library/Application Support/io.datasette.llm/default_model.txt"
 )
 
 # Directories whose contents are linked file-by-file into the target

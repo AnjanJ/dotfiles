@@ -1,0 +1,58 @@
+{
+  "permissions": {
+    "allow": [],
+    "deny": [
+      "Read(**/.env*)",
+      "Read(**/.pem)",
+      "Read(**/.key)",
+      "Read(**/secrets/**)",
+      "Read(**/credentials/**)",
+      "Read(**/.aws/**)",
+      "Read(**/.ssh/**)"
+    ],
+    "defaultMode": "auto"
+  },
+  "model": "claude-fable-5[1m]",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude-code-docs/claude-docs-helper.sh hook-check"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline-command.sh"
+  },
+  "enabledPlugins": {
+    "typescript-lsp@claude-plugins-official": true,
+    "clangd-lsp@claude-plugins-official": false,
+    "shipkit@shipkit": true,
+    "ruby-lsp@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true,
+    "bodhikit@bodhikit": false
+  },
+  "extraKnownMarketplaces": {
+    "shipkit": {
+      "source": {
+        "source": "git",
+        "url": "https://codeberg.org/AnjanJ/shipkit.git"
+      }
+    },
+    "bodhikit": {
+      "source": {
+        "source": "git",
+        "url": "https://codeberg.org/AnjanJ/bodhikit.git"
+      }
+    }
+  },
+  "alwaysThinkingEnabled": false,
+  "skipDangerousModePermissionPrompt": true,
+  "skipAutoPermissionPrompt": true
+}

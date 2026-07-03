@@ -24,6 +24,8 @@ dotfiles/
 │   ├── nvim/                   # Neovim config (AstroNvim)
 │   ├── zed/                    # Zed: settings.json, tasks.json, snippets/
 │   ├── vscode/                 # VS Code: settings.json, keybindings.json (linked into ~/Library/Application Support/Code/User/)
+│   ├── claude/                 # Global Claude Code config (~/.claude/settings.json) — distinct from the repo's own project-scoped .claude/
+│   ├── llm/                    # llm default-model preference (secrets/keys stored elsewhere by llm, never here)
 │   ├── zellij/                 # Multiplexer: config, theme, layouts (rails, phoenix, work)
 │   ├── lazygit/                # Git UI: config + theme
 │   ├── borders/                # JankyBorders: active window highlighting
