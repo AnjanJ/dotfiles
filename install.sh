@@ -317,6 +317,9 @@ create_symlink "$DOTFILES_DIR/.config/wezterm/wezterm.lua" ~/.wezterm.lua ".wezt
 # Git global ignores
 [[ -f "$DOTFILES_DIR/.gitignore_global" ]] && create_symlink "$DOTFILES_DIR/.gitignore_global" ~/.gitignore_global ".gitignore_global"
 
+# Global RuboCop config (fallback for standalone Ruby files with no project Gemfile)
+[[ -f "$DOTFILES_DIR/.rubocop.yml" ]] && create_symlink "$DOTFILES_DIR/.rubocop.yml" ~/.rubocop.yml ".rubocop.yml"
+
 # Config directories
 create_symlink "$DOTFILES_DIR/.config/aerospace" ~/.config/aerospace "aerospace config"
 create_symlink "$DOTFILES_DIR/.config/ghostty" ~/.config/ghostty "ghostty config"

@@ -125,10 +125,29 @@
     }
   },
   "agent": {
+    "tool_permissions": {
+      "tools": {
+        "delete_path": {
+          "always_allow": [
+            {
+              "pattern": "^learn_with_bodhi/"
+            }
+          ]
+        },
+        "write_file": {
+          "default": "allow"
+        },
+        "terminal": {
+          "default": "allow"
+        }
+      }
+    },
     "play_sound_when_agent_done": true,
     "default_model": {
-      "provider": "zed.dev",
-      "model": "claude-sonnet-4-6-latest"
+      "effort": "high",
+      "enable_thinking": true,
+      "provider": "deepseek",
+      "model": "deepseek-v4-pro"
     },
     "inline_assistant_model": {
       "provider": "ollama",
@@ -199,15 +218,9 @@
       "format_on_save": "on",
       "formatter": {
         "external": {
-          "command": "bundle",
+          "command": "rubocop-auto",
           "arguments": [
-            "exec",
-            "rubocop",
-            "--server",
-            "--autocorrect",
-            "--stdin",
-            "{buffer_path}",
-            "--stderr"
+            "{buffer_path}"
           ]
         }
       },
@@ -453,6 +466,9 @@
         "linters": [
           "rubocop"
         ],
+        "rubyVersionManager": {
+          "identifier": "mise"
+        },
         "enabledFeatures": {
           "codeActions": true,
           "diagnostics": true,

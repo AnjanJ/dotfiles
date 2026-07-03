@@ -1,0 +1,15 @@
+#!/usr/bin/env sh
+# rubocop-auto: use Bundler's rubocop inside a bundled Rails/Ruby app,
+# fall back to the global mise rubocop for standalone scripts with no Gemfile.
+file="$1"
+dir=$(dirname "$file")
+dir=$(cd "$dir" && pwd)
+
+while [ "$dir" != "/" ]; do
+  if [ -f "$dir/Gemfile" ] && grep -qE "rubocop" "$dir/Gemfile" "$dir/Gemfile.lock" 2>/dev/null; then
+    exec bundle exec rubocop --server --autocorrect --stdin "$file" --stderr
+  fi
+  dir=$(dirname "$dir")
+done
+
+exec rubocop --autocorrect --stdin "$file" --stderr
