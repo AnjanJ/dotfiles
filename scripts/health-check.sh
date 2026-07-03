@@ -240,6 +240,65 @@ fi
 check_command zig "Zig" false
 
 # ============================================
+# 6b. PROJECT TOOLCHAIN DRIFT
+# ============================================
+# Catches the class of bug where a project pins a tool version (in
+# .tool-versions / mise.toml / .ruby-version etc.) that isn't actually
+# installed, so mise silently falls back to the global version and the
+# project runs on the wrong toolchain. Five Ruby projects did exactly
+# this for months. Scans project roots under the configured code dirs;
+# `mise ls --missing` resolves each dir's config and reports only the
+# gaps. Warnings (not failures) — a spare-repo drift shouldn't fail an
+# otherwise-healthy machine.
+print_header "6b. Project Toolchain Drift"
+
+if command -v mise &> /dev/null; then
+    # Where projects live. Override by exporting DOTFILES_CODE_DIRS as a
+    # space-separated list before running health.
+    code_dirs="${DOTFILES_CODE_DIRS:-$HOME/code $HOME/work/code}"
+    drift_found=0
+    scanned=0
+
+    for base in $code_dirs; do
+        [[ -d "$base" ]] || continue
+        # One level deep: each immediate subdir is a project root.
+        for proj in "$base"/*/; do
+            [[ -d "$proj" ]] || continue
+            # Only bother if the project pins something. Test each file
+            # individually — `ls a b c` has shell-dependent exit status
+            # when some paths are missing, so it's not a reliable
+            # "any of these exist" check.
+            pinned=false
+            for vf in .tool-versions .ruby-version .nvmrc mise.toml .mise.toml; do
+                if [[ -f "$proj$vf" ]]; then pinned=true; break; fi
+            done
+            [[ "$pinned" == true ]] || continue
+            scanned=$((scanned + 1))
+            missing=$(cd "$proj" && mise ls --missing 2>/dev/null)
+            if [[ -n "$missing" ]]; then
+                drift_found=1
+                echo -e "${YELLOW}⚠${NC} $(basename "$proj"): ${YELLOW}pinned tool not installed${NC}"
+                # Indent each missing tool line for readability.
+                echo "$missing" | awk '{printf "     %s %s\n", $1, $2}'
+                ((WARNINGS++))
+            fi
+        done
+    done
+
+    if [[ "$scanned" -eq 0 ]]; then
+        echo -e "${GREEN}✓${NC} No pinned projects found under: $code_dirs"
+    elif [[ "$drift_found" -eq 0 ]]; then
+        echo -e "${GREEN}✓${NC} All $scanned pinned project(s) resolve to installed versions"
+        ((PASSED++))
+    else
+        echo -e "     ${YELLOW}Fix: cd into the project and run 'mise install'${NC}"
+    fi
+else
+    echo -e "${YELLOW}⚠${NC} mise not found — skipping toolchain drift scan"
+    ((WARNINGS++))
+fi
+
+# ============================================
 # 7. CLI UTILITIES
 # ============================================
 print_header "7. CLI Utilities"

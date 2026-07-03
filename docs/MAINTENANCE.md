@@ -72,7 +72,7 @@ The on-disk backup only holds the *most recent* previous state. For older versio
 dotfiles health
 ```
 
-Verifies: core tools, every managed symlink (swept from `scripts/symlink-map.sh` — a repo file that was never linked fails loudly), language runtimes, running services (PostgreSQL, MySQL, Redis), shell integrations, and work identity.
+Verifies: core tools, every managed symlink (swept from `scripts/symlink-map.sh` — a repo file that was never linked fails loudly), language runtimes, **project toolchain drift** (scans `~/code` and `~/work/code` for projects that pin a tool version which isn't installed, so they'd silently run on the global version — set `DOTFILES_CODE_DIRS` to change where it looks), running services (PostgreSQL, MySQL, Redis), shell integrations, and work identity.
 
 ## Re-run installation
 
