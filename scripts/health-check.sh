@@ -112,10 +112,22 @@ check_brew_package() {
     local package="$1"
     local name="$2"
 
-    if brew list "$package" &> /dev/null; then
+    # Match against the full installed list (formulae + casks) rather than
+    # `brew list <name>`, which fails for tapped casks like
+    # nikitabobko/tap/aerospace even when they're installed — the cask
+    # appears in `brew list --cask` output as its short token but can't be
+    # queried by that token directly. Compare the last path segment so
+    # "nikitabobko/tap/aerospace" and "aerospace" both match.
+    local token="${package##*/}"
+    if brew list --formula 2>/dev/null | grep -qx "$token" \
+        || brew list --cask 2>/dev/null | grep -qx "$token"; then
         local version
-        version=$(brew list --versions "$package" | awk '{print $2}')
-        echo -e "${GREEN}✓${NC} $name: ${GREEN}installed${NC} (${version})"
+        version=$(brew list --versions "$token" 2>/dev/null | awk '{print $2}')
+        if [[ -n "$version" ]]; then
+            echo -e "${GREEN}✓${NC} $name: ${GREEN}installed${NC} (${version})"
+        else
+            echo -e "${GREEN}✓${NC} $name: ${GREEN}installed${NC}"
+        fi
         ((PASSED++))
         return 0
     else
