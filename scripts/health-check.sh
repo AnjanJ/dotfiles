@@ -190,24 +190,22 @@ else
     ((WARNINGS++))
 fi
 
-# Check Zed config
-check_file ~/.config/zed/settings.json "Zed settings" link "$DOTFILES_DIR/.config/zed/settings.json"
-check_file ~/.config/zed/tasks.json "Zed tasks" link "$DOTFILES_DIR/.config/zed/tasks.json"
-check_file ~/.config/zed/snippets/ruby.json "Zed Ruby snippets" link "$DOTFILES_DIR/.config/zed/snippets/ruby.json"
-check_file ~/.config/zed/snippets/erb.json "Zed ERB snippets" link "$DOTFILES_DIR/.config/zed/snippets/erb.json"
-check_file ~/.config/zed/snippets/zig.json "Zed Zig snippets" link "$DOTFILES_DIR/.config/zed/snippets/zig.json"
+# Zed config links are covered by the managed-symlink sweep in section 5.
 
 # ============================================
-# 5. SHELL CONFIGURATION
+# 5. MANAGED SYMLINKS
 # ============================================
-print_header "5. Shell Configuration"
+print_header "5. Managed Symlinks"
 
-check_file ~/.zshrc ".zshrc" link "$DOTFILES_DIR/.zshrc"
-check_file ~/.zshrc-dhh-additions ".zshrc-dhh-additions" link "$DOTFILES_DIR/.zshrc-dhh-additions"
-check_file ~/.zshrc-elixir-additions ".zshrc-elixir-additions" link "$DOTFILES_DIR/.zshrc-elixir-additions"
-check_file ~/.zshrc-terminal-enhancements ".zshrc-terminal-enhancements" link "$DOTFILES_DIR/.zshrc-terminal-enhancements"
-check_file ~/.config/starship.toml "starship.toml" link "$DOTFILES_DIR/.config/starship.toml"
-check_file ~/.config/mise/config.toml "mise config" link "$DOTFILES_DIR/.config/mise/config.toml"
+# Sweeps every link in scripts/symlink-map.sh — the same single source
+# of truth install/update/sync/doctor use. A file added to the repo but
+# never linked on this machine (e.g. a new bin/ script) fails here
+# instead of passing silently.
+_check_managed_link() {
+    check_file "$2" "$3" link "$1"
+}
+source "$DOTFILES_DIR/scripts/symlink-map.sh"
+dotfiles_for_each_link _check_managed_link
 
 # ============================================
 # 6. LANGUAGE RUNTIMES (mise)
@@ -329,19 +327,9 @@ fi
 # ============================================
 print_header "10. Custom Scripts (~/bin)"
 
-# Dotfiles CLI
-check_file ~/bin/dotfiles "dotfiles" link
-check_file ~/bin/dotfiles-update "dotfiles-update" link
-check_file ~/bin/dotfiles-health "dotfiles-health" link
-check_file ~/bin/dotfiles-theme "dotfiles-theme" link
-check_file ~/bin/dotfiles-install "dotfiles-install" link
-
-# Work management
-check_file ~/bin/erb-lint-formatter "erb-lint-formatter" link
-check_file ~/bin/work-setup "work-setup" link
-check_file ~/bin/work-status "work-status" link
-check_file ~/bin/work-nuke "work-nuke" link
-check_file ~/bin/repos-clone "repos-clone" link
+# Individual bin/ links are covered by the managed-symlink sweep in
+# section 5 (every file in the repo's bin/ is checked, not a hardcoded
+# subset that goes stale when scripts are added).
 
 # Check ~/bin is in PATH
 if echo "$PATH" | tr ':' '\n' | grep -q "$HOME/bin"; then

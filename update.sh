@@ -208,47 +208,16 @@ create_symlink() {
     if [ -L "$target" ] && [ "$(readlink "$target")" = "$source" ]; then
         print_success "$name already up to date"
     else
+        mkdir -p "$(dirname "$target")"
         ln -sf "$source" "$target"
         print_success "$name refreshed"
     fi
 }
 
-# Shell configuration
-create_symlink "$DOTFILES_DIR/.zshrc" ~/.zshrc ".zshrc"
-[[ -f "$DOTFILES_DIR/.zshrc-terminal-enhancements" ]] && create_symlink "$DOTFILES_DIR/.zshrc-terminal-enhancements" ~/.zshrc-terminal-enhancements ".zshrc-terminal-enhancements"
-[[ -f "$DOTFILES_DIR/.zshrc-dhh-additions" ]] && create_symlink "$DOTFILES_DIR/.zshrc-dhh-additions" ~/.zshrc-dhh-additions ".zshrc-dhh-additions"
-[[ -f "$DOTFILES_DIR/.zshrc-elixir-additions" ]] && create_symlink "$DOTFILES_DIR/.zshrc-elixir-additions" ~/.zshrc-elixir-additions ".zshrc-elixir-additions"
-[[ -f "$DOTFILES_DIR/.zshrc-work-completions" ]] && create_symlink "$DOTFILES_DIR/.zshrc-work-completions" ~/.zshrc-work-completions ".zshrc-work-completions"
-
-# Git global ignores
-[[ -f "$DOTFILES_DIR/.gitignore_global" ]] && create_symlink "$DOTFILES_DIR/.gitignore_global" ~/.gitignore_global ".gitignore_global"
-
-# Config directories
-create_symlink "$DOTFILES_DIR/.config/aerospace" ~/.config/aerospace "aerospace config"
-create_symlink "$DOTFILES_DIR/.config/ghostty" ~/.config/ghostty "ghostty config"
-create_symlink "$DOTFILES_DIR/.config/nvim" ~/.config/nvim "nvim config"
-create_symlink "$DOTFILES_DIR/.config/zellij" ~/.config/zellij "zellij config"
-create_symlink "$DOTFILES_DIR/.config/starship.toml" ~/.config/starship.toml "starship config"
-create_symlink "$DOTFILES_DIR/.config/lazygit" ~/.config/lazygit "lazygit config"
-create_symlink "$DOTFILES_DIR/.config/borders" ~/.config/borders "borders config"
-create_symlink "$DOTFILES_DIR/.config/sketchybar" ~/.config/sketchybar "sketchybar config"
-create_symlink "$DOTFILES_DIR/.config/mise/config.toml" ~/.config/mise/config.toml "mise config"
-
-# Zed editor
-mkdir -p ~/.config/zed/snippets
-create_symlink "$DOTFILES_DIR/.config/zed/settings.json" ~/.config/zed/settings.json "zed settings"
-create_symlink "$DOTFILES_DIR/.config/zed/tasks.json" ~/.config/zed/tasks.json "zed tasks"
-for snippet in "$DOTFILES_DIR/.config/zed/snippets/"*.json; do
-    name=$(basename "$snippet")
-    create_symlink "$snippet" ~/.config/zed/snippets/"$name" "zed snippet: $name"
-done
-
-# Custom scripts (~/bin)
-mkdir -p ~/bin
-for script in "$DOTFILES_DIR/bin/"*; do
-    name=$(basename "$script")
-    create_symlink "$script" ~/bin/"$name" "bin/$name"
-done
+# The full list of managed links lives in scripts/symlink-map.sh —
+# the single source of truth shared with install/sync/doctor/health.
+source "$DOTFILES_DIR/scripts/symlink-map.sh"
+dotfiles_for_each_link create_symlink
 
 print_success "Symlinks refreshed"
 

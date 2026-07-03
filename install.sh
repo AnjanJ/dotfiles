@@ -293,57 +293,16 @@ create_symlink() {
         print_success "$name already linked"
     else
         backup_if_needed "$target"
+        mkdir -p "$(dirname "$target")"
         ln -sf "$source" "$target"
         print_success "$name linked"
     fi
 }
 
-# Shell configuration
-create_symlink "$DOTFILES_DIR/.zshrc" ~/.zshrc ".zshrc"
-[[ -f "$DOTFILES_DIR/.zshrc-terminal-enhancements" ]] && create_symlink "$DOTFILES_DIR/.zshrc-terminal-enhancements" ~/.zshrc-terminal-enhancements ".zshrc-terminal-enhancements"
-
-# DHH additions (main Rails workflow file)
-[[ -f "$DOTFILES_DIR/.zshrc-dhh-additions" ]] && create_symlink "$DOTFILES_DIR/.zshrc-dhh-additions" ~/.zshrc-dhh-additions ".zshrc-dhh-additions"
-
-# Elixir additions
-[[ -f "$DOTFILES_DIR/.zshrc-elixir-additions" ]] && create_symlink "$DOTFILES_DIR/.zshrc-elixir-additions" ~/.zshrc-elixir-additions ".zshrc-elixir-additions"
-
-# Work command completions
-[[ -f "$DOTFILES_DIR/.zshrc-work-completions" ]] && create_symlink "$DOTFILES_DIR/.zshrc-work-completions" ~/.zshrc-work-completions ".zshrc-work-completions"
-
-# wezterm (lives under .config/wezterm/, but wezterm also reads ~/.wezterm.lua first)
-create_symlink "$DOTFILES_DIR/.config/wezterm/wezterm.lua" ~/.wezterm.lua ".wezterm.lua"
-
-# Git global ignores
-[[ -f "$DOTFILES_DIR/.gitignore_global" ]] && create_symlink "$DOTFILES_DIR/.gitignore_global" ~/.gitignore_global ".gitignore_global"
-
-# Global RuboCop config (fallback for standalone Ruby files with no project Gemfile)
-[[ -f "$DOTFILES_DIR/.rubocop.yml" ]] && create_symlink "$DOTFILES_DIR/.rubocop.yml" ~/.rubocop.yml ".rubocop.yml"
-
-# Config directories
-create_symlink "$DOTFILES_DIR/.config/aerospace" ~/.config/aerospace "aerospace config"
-create_symlink "$DOTFILES_DIR/.config/ghostty" ~/.config/ghostty "ghostty config"
-create_symlink "$DOTFILES_DIR/.config/alacritty" ~/.config/alacritty "alacritty config"
-create_symlink "$DOTFILES_DIR/.config/nvim" ~/.config/nvim "nvim config"
-create_symlink "$DOTFILES_DIR/.config/zellij" ~/.config/zellij "zellij config"
-create_symlink "$DOTFILES_DIR/.config/starship.toml" ~/.config/starship.toml "starship config"
-create_symlink "$DOTFILES_DIR/.config/lazygit" ~/.config/lazygit "lazygit config"
-create_symlink "$DOTFILES_DIR/.config/borders" ~/.config/borders "borders config"
-create_symlink "$DOTFILES_DIR/.config/sketchybar" ~/.config/sketchybar "sketchybar config"
-
-# Zed editor
-create_symlink "$DOTFILES_DIR/.config/zed/settings.json" ~/.config/zed/settings.json "zed settings"
-create_symlink "$DOTFILES_DIR/.config/zed/tasks.json" ~/.config/zed/tasks.json "zed tasks"
-for snippet in "$DOTFILES_DIR/.config/zed/snippets/"*.json; do
-    name=$(basename "$snippet")
-    create_symlink "$snippet" ~/.config/zed/snippets/"$name" "zed snippet: $name"
-done
-
-# Custom scripts (~/bin)
-for script in "$DOTFILES_DIR/bin/"*; do
-    name=$(basename "$script")
-    create_symlink "$script" ~/bin/"$name" "bin/$name"
-done
+# The full list of managed links lives in scripts/symlink-map.sh —
+# the single source of truth shared with update/sync/doctor/health.
+source "$DOTFILES_DIR/scripts/symlink-map.sh"
+dotfiles_for_each_link create_symlink
 
 print_success "All symlinks processed"
 

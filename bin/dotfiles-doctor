@@ -93,37 +93,10 @@ fix_symlink() {
 print_step "Checking symlinks..."
 echo ""
 
-fix_symlink "$DOTFILES_DIR/.zshrc" ~/.zshrc ".zshrc"
-fix_symlink "$DOTFILES_DIR/.zshrc-dhh-additions" ~/.zshrc-dhh-additions ".zshrc-dhh-additions"
-fix_symlink "$DOTFILES_DIR/.zshrc-elixir-additions" ~/.zshrc-elixir-additions ".zshrc-elixir-additions"
-fix_symlink "$DOTFILES_DIR/.zshrc-terminal-enhancements" ~/.zshrc-terminal-enhancements ".zshrc-terminal-enhancements"
-fix_symlink "$DOTFILES_DIR/.zshrc-work-completions" ~/.zshrc-work-completions ".zshrc-work-completions"
-fix_symlink "$DOTFILES_DIR/.gitignore_global" ~/.gitignore_global ".gitignore_global"
-fix_symlink "$DOTFILES_DIR/.config/aerospace" ~/.config/aerospace "aerospace config"
-fix_symlink "$DOTFILES_DIR/.config/ghostty" ~/.config/ghostty "ghostty config"
-fix_symlink "$DOTFILES_DIR/.config/nvim" ~/.config/nvim "nvim config"
-fix_symlink "$DOTFILES_DIR/.config/zellij" ~/.config/zellij "zellij config"
-fix_symlink "$DOTFILES_DIR/.config/starship.toml" ~/.config/starship.toml "starship config"
-fix_symlink "$DOTFILES_DIR/.config/lazygit" ~/.config/lazygit "lazygit config"
-fix_symlink "$DOTFILES_DIR/.config/borders" ~/.config/borders "borders config"
-fix_symlink "$DOTFILES_DIR/.config/sketchybar" ~/.config/sketchybar "sketchybar config"
-fix_symlink "$DOTFILES_DIR/.config/mise/config.toml" ~/.config/mise/config.toml "mise config"
-fix_symlink "$DOTFILES_DIR/.config/zed/settings.json" ~/.config/zed/settings.json "zed settings"
-fix_symlink "$DOTFILES_DIR/.config/zed/tasks.json" ~/.config/zed/tasks.json "zed tasks"
-
-# Zed snippets
-for snippet in "$DOTFILES_DIR/.config/zed/snippets/"*.json; do
-    [[ -f "$snippet" ]] || continue
-    name=$(basename "$snippet")
-    fix_symlink "$snippet" ~/.config/zed/snippets/"$name" "zed snippet: $name"
-done
-
-# bin/ scripts
-mkdir -p ~/bin
-for script in "$DOTFILES_DIR/bin/"*; do
-    name=$(basename "$script")
-    fix_symlink "$script" ~/bin/"$name" "bin/$name"
-done
+# The full list of managed links lives in scripts/symlink-map.sh —
+# the single source of truth shared with install/update/sync/health.
+source "$DOTFILES_DIR/scripts/symlink-map.sh"
+dotfiles_for_each_link fix_symlink
 
 # ── 2. Check directories ─────────────────────
 echo ""

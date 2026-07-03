@@ -73,44 +73,17 @@ _check_link() {
     if [[ "$DRY_RUN" == true ]]; then
         echo "  Would link: $name → $source"
     else
+        mkdir -p "$(dirname "$target")"
         ln -sf "$source" "$target"
         print_success "$name refreshed"
     fi
     CHANGES=$((CHANGES + 1))
 }
 
-# Shell configs
-_check_link "$DOTFILES_DIR/.zshrc" ~/.zshrc ".zshrc"
-[[ -f "$DOTFILES_DIR/.zshrc-terminal-enhancements" ]] && _check_link "$DOTFILES_DIR/.zshrc-terminal-enhancements" ~/.zshrc-terminal-enhancements ".zshrc-terminal-enhancements"
-[[ -f "$DOTFILES_DIR/.zshrc-dhh-additions" ]] && _check_link "$DOTFILES_DIR/.zshrc-dhh-additions" ~/.zshrc-dhh-additions ".zshrc-dhh-additions"
-[[ -f "$DOTFILES_DIR/.zshrc-elixir-additions" ]] && _check_link "$DOTFILES_DIR/.zshrc-elixir-additions" ~/.zshrc-elixir-additions ".zshrc-elixir-additions"
-[[ -f "$DOTFILES_DIR/.zshrc-work-completions" ]] && _check_link "$DOTFILES_DIR/.zshrc-work-completions" ~/.zshrc-work-completions ".zshrc-work-completions"
-
-# Core configs
-[[ -f "$DOTFILES_DIR/.gitignore_global" ]] && _check_link "$DOTFILES_DIR/.gitignore_global" ~/.gitignore_global ".gitignore_global"
-_check_link "$DOTFILES_DIR/.config/aerospace" ~/.config/aerospace "aerospace config"
-_check_link "$DOTFILES_DIR/.config/ghostty" ~/.config/ghostty "ghostty config"
-_check_link "$DOTFILES_DIR/.config/nvim" ~/.config/nvim "nvim config"
-_check_link "$DOTFILES_DIR/.config/zellij" ~/.config/zellij "zellij config"
-_check_link "$DOTFILES_DIR/.config/starship.toml" ~/.config/starship.toml "starship config"
-_check_link "$DOTFILES_DIR/.config/mise/config.toml" ~/.config/mise/config.toml "mise config"
-
-# Zed
-mkdir -p ~/.config/zed/snippets
-_check_link "$DOTFILES_DIR/.config/zed/settings.json" ~/.config/zed/settings.json "zed settings"
-_check_link "$DOTFILES_DIR/.config/zed/tasks.json" ~/.config/zed/tasks.json "zed tasks"
-for snippet in "$DOTFILES_DIR/.config/zed/snippets/"*.json; do
-    [[ -f "$snippet" ]] || continue
-    name=$(basename "$snippet")
-    _check_link "$snippet" ~/.config/zed/snippets/"$name" "zed snippet: $name"
-done
-
-# bin scripts
-mkdir -p ~/bin
-for script in "$DOTFILES_DIR/bin/"*; do
-    name=$(basename "$script")
-    _check_link "$script" ~/bin/"$name" "bin/$name"
-done
+# The full list of managed links lives in scripts/symlink-map.sh —
+# the single source of truth shared with install/update/doctor/health.
+source "$DOTFILES_DIR/scripts/symlink-map.sh"
+dotfiles_for_each_link _check_link
 
 if [[ "$CHANGES" -eq 0 ]]; then
     print_success "All symlinks up to date"
