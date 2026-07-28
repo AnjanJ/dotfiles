@@ -373,32 +373,62 @@ dotfiles_for_each_link create_symlink
 print_success "All symlinks processed"
 
 # ============================================
-# 5b. APPLY SELECTED THEME
+# 5. APPLY SELECTED THEME
 # ============================================
 echo ""
-print_step "Step 5b: Applying $SELECTED_THEME theme everywhere..."
+print_step "Step 5: Applying $SELECTED_THEME theme everywhere..."
 
 source "$DOTFILES_DIR/scripts/apply-theme.sh"
 apply_theme "$SELECTED_THEME"
 
 # ============================================
-# 6. SET UP NEOVIM
+# 6. SET UP MISE (VERSION MANAGER)
+# ============================================
+# Runs AFTER symlinks + theme so a source-compile failure can't leave
+# the machine unconfigured. See the note on step 4.
+echo ""
+print_step "Step 6: Setting up mise (version manager)..."
+
+# The mise config symlink itself is created in step 4 — it's declared in
+# scripts/symlink-map.sh like every other managed link. Only trust and
+# runtime installation happen here.
+if [[ ! -e "$HOME/.config/mise/config.toml" ]]; then
+    print_warning "mise config not found — skipping runtime install"
+else
+    # Trust the config file (mise refuses to read untrusted configs)
+    mise trust "$HOME/.config/mise/config.toml" 2>/dev/null || true
+
+    print_step "Installing language runtimes (Erlang/Rust compile from source — this can take 30+ min)..."
+
+    # Deliberately NOT fatal: `set -e` would abort the entire install on a
+    # single failed compile. Everything below this point still runs.
+    if mise install; then
+        print_success "Language runtimes installed"
+    else
+        print_warning "Some runtimes failed to build. Everything else continues."
+        print_warning "  Retry individually, e.g.: mise install erlang"
+        FAILED_PACKAGES+=("mise runtimes — rerun 'mise install' to see which")
+    fi
+fi
+
+# ============================================
+# 7. SET UP NEOVIM
 # ============================================
 echo ""
-print_step "Step 6: Setting up Neovim..."
+print_step "Step 7: Setting up Neovim..."
 
 # AstroNvim will auto-install on first launch
 print_success "Neovim configuration linked (plugins will install on first launch)"
 
 # ============================================
-# 6b. SET UP AI CLI (llm + ollama)
+# 7b. SET UP AI CLI (llm + ollama)
 # ============================================
 # Brewfile already installed `llm` and `ollama`. We need to:
 #   - Wire `llm` to talk to Ollama (one-time plugin install, fast)
 # We deliberately DO NOT pull models here (each is multi-GB) or set API
 # keys (private). Those are surfaced in "Next Steps" at end of install.
 echo ""
-print_step "Step 6b: Wiring llm <-> ollama..."
+print_step "Step 7b: Wiring llm <-> ollama..."
 
 if command -v llm &>/dev/null; then
     if ! llm plugins 2>/dev/null | grep -q llm-ollama; then
@@ -411,10 +441,10 @@ else
 fi
 
 # ============================================
-# 7. SET UP SHELL
+# 8. SET UP SHELL
 # ============================================
 echo ""
-print_step "Step 7: Setting up shell..."
+print_step "Step 8: Setting up shell..."
 
 # Make zsh the default shell if it isn't already.
 #
@@ -434,19 +464,19 @@ else
 fi
 
 # ============================================
-# 7b. GIT CONFIGURATION
+# 8b. GIT CONFIGURATION
 # ============================================
 source "$DOTFILES_DIR/scripts/setup-git.sh"
 setup_git
 
 # ============================================
-# 7c. SSH CONFIGURATION
+# 8c. SSH CONFIGURATION
 # ============================================
 source "$DOTFILES_DIR/scripts/setup-ssh.sh"
 setup_ssh
 
 # ============================================
-# 8. MACOS DEFAULTS
+# 9. MACOS DEFAULTS
 # ============================================
 echo ""
 if [[ "$INTERACTIVE" == true ]]; then
@@ -458,7 +488,7 @@ if [[ "$INTERACTIVE" == true ]]; then
 fi
 
 if [[ "$APPLY_MACOS_DEFAULTS" == true ]]; then
-    print_step "Step 8: Applying macOS defaults..."
+    print_step "Step 9: Applying macOS defaults..."
 
     # Keyboard settings
     defaults write NSGlobalDomain KeyRepeat -int 2
@@ -516,10 +546,10 @@ else
 fi
 
 # ============================================
-# 9. RUN HEALTH CHECK
+# 10. RUN HEALTH CHECK
 # ============================================
 echo ""
-print_step "Step 9: Running health check..."
+print_step "Step 10: Running health check..."
 bash "$DOTFILES_DIR/scripts/health-check.sh"
 
 # ============================================
@@ -541,8 +571,10 @@ echo ""
 echo "3. Start Aerospace (will start on next login):"
 echo "   aerospace reload"
 echo ""
-echo "4. Verify mise installations:"
+echo "4. Verify language runtimes:"
 echo "   mise list"
+echo "   # Anything missing (Erlang/Rust compile from source and can fail):"
+echo "   mise install"
 echo ""
 echo "5. Sign in to 1Password (recommended for SSH + secrets):"
 echo ""
