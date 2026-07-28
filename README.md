@@ -82,6 +82,7 @@ Full CLI reference, Brewfile recovery stories, and troubleshooting: [docs/MAINTE
 
 | Doc | Contents |
 |-----|----------|
+| [docs/PACKAGE_CATALOG.md](docs/PACKAGE_CATALOG.md) | Every package installed, by group, with one-line descriptions and links |
 | [docs/KEYBINDINGS.md](docs/KEYBINDINGS.md) | Aerospace, Neovim, Zellij bindings and layouts |
 | [docs/THEMES.md](docs/THEMES.md) | Palettes, switching, adding your own theme |
 | [docs/AI_TOOLS.md](docs/AI_TOOLS.md) | `llm`, Ollama, Copilot CLI — the AI-augmented shell |

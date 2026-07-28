@@ -1,0 +1,265 @@
+abseil	C++ Common Libraries	https://abseil.io
+ada-url	WHATWG-compliant and fast URL parser written in modern C++	https://ada-url.com
+aom	Codec library for encoding and decoding AV1 video streams	https://aomedia.googlesource.com/aom
+aribb24	Library for ARIB STD-B24, decoding JIS 8 bit characters and parsing MPEG-TS	https://code.videolan.org/jeeb/aribb24
+at-spi2-core	Protocol definitions and daemon for D-Bus at-spi	https://www.freedesktop.org/wiki/Accessibility/AT-SPI2/
+atuin	Improved shell history for zsh, bash, fish and nushell	https://atuin.sh/
+bash	Bourne-Again SHell, a UNIX command interpreter	https://www.gnu.org/software/bash/
+bat	Clone of cat(1) with syntax highlighting and Git integration	https://github.com/sharkdp/bat
+bird	Fast X CLI for tweeting, replying, and reading — ⚠️ upstream repo 404s (verified); may fail on a fresh install	https://github.com/steipete/bird
+brotli	Generic-purpose lossless compression algorithm by Google	https://github.com/google/brotli
+c-ares	Asynchronous DNS library	https://c-ares.org/
+ca-certificates	Mozilla CA certificate store	https://curl.se/docs/caextract.html
+cairo	Vector graphics library with cross-device output support	https://cairographics.org/
+cargo-nextest	Next-generation test runner for Rust	https://nexte.st
+certifi	Mozilla CA bundle for Python	https://github.com/certifi/python-certifi
+cffi	C Foreign Function Interface for Python	https://cffi.readthedocs.io/en/latest/
+cjson	Ultralightweight JSON parser in ANSI C	https://github.com/DaveGamble/cJSON
+cliclick	Tool for emulating mouse and keyboard events	https://www.bluem.net/jump/cliclick/
+cloudflared	Cloudflare Tunnel client (formerly Argo Tunnel)	https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/
+criterion	Cross-platform C and C++ unit testing framework for the 21st century	https://github.com/Snaipe/Criterion
+cryptography	Cryptographic recipes and primitives for Python	https://cryptography.io/en/latest/
+dav1d	AV1 decoder targeted to be small and fast	https://code.videolan.org/videolan/dav1d
+dbus	Message bus system, providing inter-application communication	https://wiki.freedesktop.org/www/Software/dbus
+deno	Secure runtime for JavaScript and TypeScript	https://deno.com/
+direnv	Load/unload environment variables based on $PWD	https://direnv.net/
+docker	Pack, ship and run any application as a lightweight container	https://www.docker.com/
+eza	Modern, maintained replacement for ls	https://eza.rocks
+fd	Simple, fast and user-friendly alternative to find	https://github.com/sharkdp/fd
+ffmpeg	Play, record, convert, and stream select audio and video codecs	https://ffmpeg.org/
+ffmpeg-full	Play, record, convert, and stream many audio and video codecs	https://ffmpeg.org/
+flac	Free lossless audio codec	https://xiph.org/flac/
+flyctl	Command-line tools for fly.io services	https://fly.io
+fmt	Open-source formatting library for C++	https://fmt.dev/
+fontconfig	XML-based font configuration API for X Windows	https://wiki.freedesktop.org/www/Software/fontconfig/
+freetype	Software library to render fonts	https://www.freetype.org/
+frei0r	Minimalistic plugin API for video effects	https://frei0r.dyne.org/
+fribidi	Implementation of the Unicode BiDi algorithm	https://github.com/fribidi/fribidi
+fzf	Command-line fuzzy finder written in Go	https://junegunn.github.io/fzf/
+fzf-tab	Replace zsh completion selection menu with fzf	https://github.com/Aloxaf/fzf-tab
+gdk-pixbuf	Toolkit for image loading and pixel buffer manipulation	https://gtk.org
+gemini-cli	Interact with Google Gemini AI models from the command-line	https://geminicli.com
+gettext	GNU internationalization (i18n) and localization (l10n) library	https://www.gnu.org/software/gettext/
+ggml	Tensor library for machine learning	https://github.com/ggml-org/ggml
+gh	GitHub command-line tool	https://cli.github.com/
+ghostscript	Interpreter for PostScript and PDF	https://www.ghostscript.com/
+giflib	Library and utilities for processing GIFs	https://giflib.sourceforge.net/
+git	Distributed revision control system	https://git-scm.com
+git-delta	Syntax-highlighting pager for git and diff output	https://dandavison.github.io/delta/
+gitui	Blazing fast terminal-ui for git written in rust	https://github.com/gitui-org/gitui
+glib	Core application library for C	https://docs.gtk.org/glib/
+gmp	GNU multiple precision arithmetic library	https://gmplib.org/
+gnupg	GNU Privacy Guard (OpenPGP)	https://gnupg.org/
+gnutls	GNU Transport Layer Security (TLS) Library	https://gnutls.org/
+goplaces	Modern Go client + CLI for the Google Places API (New).	https://github.com/openclaw/goplaces
+gpgme	Library access to GnuPG	https://www.gnupg.org/related_software/gpgme/
+gpgmepp	C++ bindings for gpgme	https://www.gnupg.org/related_software/gpgme/
+graphite2	Smart font renderer for non-Roman scripts	https://graphite.sil.org/
+grip	GitHub Markdown previewer	https://github.com/joeyespo/grip
+gsettings-desktop-schemas	GSettings schemas for desktop components	https://download.gnome.org/sources/gsettings-desktop-schemas/
+gtk+3	Toolkit for creating graphical user interfaces	https://gtk.org/
+harfbuzz	OpenType text shaping engine	https://github.com/harfbuzz/harfbuzz
+hdrhistogram_c	C port of the HdrHistogram	https://github.com/HdrHistogram/HdrHistogram_c
+heroku	CLI for Heroku	https://www.npmjs.com/package/heroku/
+hicolor-icon-theme	Fallback theme for FreeDesktop.org icon themes	https://wiki.freedesktop.org/www/Software/icon-theme/
+highway	Performance-portable, length-agnostic SIMD with runtime dispatch	https://github.com/google/highway
+httpie	User-friendly cURL replacement (command-line HTTP client)	https://httpie.io/
+icu4c@78	C/C++ and Java libraries for Unicode and globalization	https://icu.unicode.org/home
+imagemagick-full	Tools and libraries to manipulate images in many formats	https://imagemagick.org
+imath	Library of 2D and 3D vector, matrix, and math operations	https://imath.readthedocs.io/en/latest/
+jbig2dec	JBIG2 decoder and library (for monochrome documents)	https://github.com/ArtifexSoftware/jbig2dec
+jpeg-turbo	JPEG image codec that aids compression and decompression	https://www.libjpeg-turbo.org/
+jpeg-xl	New file format for still image compression	https://jpeg.org/jpegxl/index.html
+jq	Lightweight and flexible command-line JSON processor	https://jqlang.github.io/jq/
+json-c	JSON parser for C	https://github.com/json-c/json-c/wiki
+krb5	Network authentication protocol	https://web.mit.edu/kerberos/
+lame	High quality MPEG Audio Layer III (MP3) encoder	https://lame.sourceforge.io/
+lazydocker	Lazier way to manage everything docker	https://github.com/jesseduffield/lazydocker
+lazygit	Simple terminal UI for git commands	https://github.com/jesseduffield/lazygit/
+lazysql	Cross-platform TUI database management tool	https://github.com/jorgerojas26/lazysql
+leptonica	Image processing and image analysis library	http://www.leptonica.org/
+libarchive	Multi-format archive and compression library	https://www.libarchive.org
+libass	Subtitle renderer for the ASS/SSA subtitle format	https://github.com/libass/libass
+libassuan	Assuan IPC Library	https://www.gnupg.org/related_software/libassuan/
+libavif	Library for encoding and decoding .avif files	https://github.com/AOMediaCodec/libavif
+libb2	Secure hashing function	https://blake2.net/
+libbluray	Blu-Ray disc playback library for media players like VLC	https://www.videolan.org/developers/libbluray.html
+libdatrie	Double-Array Trie Library	https://github.com/tlwg/libdatrie
+libde265	Open h.265 video codec implementation	https://github.com/strukturag/libde265
+libdeflate	Heavily optimized DEFLATE/zlib/gzip compression and decompression	https://github.com/ebiggers/libdeflate
+libepoxy	Library for handling OpenGL function pointer management	https://github.com/anholt/libepoxy
+libffi	Portable Foreign Function Interface library	https://sourceware.org/libffi/
+libgcrypt	Cryptographic library based on the code from GnuPG	https://gnupg.org/related_software/libgcrypt/
+libgit2	C library of Git core methods that is re-entrant and linkable	https://libgit2.org/
+libgpg-error	Common error values for all GnuPG components	https://www.gnupg.org/related_software/libgpg-error/
+libheif	ISO/IEC 23008-12:2017 HEIF file format decoder and encoder	https://www.libde265.org/
+libidn	International domain name library	https://www.gnu.org/software/libidn/
+libidn2	International domain name library (IDNA2008, Punycode and TR46)	https://www.gnu.org/software/libidn/#libidn2
+libimagequant	Palette quantization library extracted from pnquant2	https://pngquant.org/lib/
+libksba	X.509 and CMS library	https://www.gnupg.org/related_software/libksba/
+liblqr	C/C++ seam carving library	https://liblqr.wikidot.com/
+libmicrohttpd	Light HTTP/1.1 server library	https://www.gnu.org/software/libmicrohttpd/
+libnghttp2	HTTP/2 C Library	https://nghttp2.org/
+libnghttp3	HTTP/3 library written in C	https://nghttp2.org/nghttp3/
+libngtcp2	IETF QUIC protocol implementation	https://nghttp2.org/ngtcp2/
+libogg	Ogg Bitstream Library	https://www.xiph.org/ogg/
+libomp	LLVM's OpenMP runtime library	https://openmp.llvm.org/
+libplacebo	Reusable library for GPU-accelerated image/video processing primitives	https://code.videolan.org/videolan/libplacebo
+libpng	Library for manipulating PNG images	https://www.libpng.org/pub/png/libpng.html
+libpq	Postgres C API library	https://www.postgresql.org/docs/current/libpq.html
+libraqm	Library for complex text layout	https://github.com/HOST-Oman/libraqm
+libraw	Library for reading RAW files from digital photo cameras	https://www.libraw.org/
+libre	Toolkit library for asynchronous network I/O with protocol stacks	https://github.com/baresip/re
+librist	Reliable Internet Stream Transport (RIST)	https://code.videolan.org/rist/
+librsvg	Library to render SVG files using Cairo	https://wiki.gnome.org/Projects/LibRsvg
+libsamplerate	Library for sample rate conversion of audio data	https://github.com/libsndfile/libsamplerate
+libsndfile	C library for files containing sampled sound	https://libsndfile.github.io/libsndfile/
+libsodium	NaCl networking and cryptography library	https://libsodium.org/
+libsoxr	High quality, one-dimensional sample-rate conversion library	https://sourceforge.net/projects/soxr/
+libssh	C library SSHv1/SSHv2 client and server protocols	https://www.libssh.org/
+libssh2	C library implementing the SSH2 protocol	https://libssh2.org/
+libtasn1	ASN.1 structure parser library	https://www.gnu.org/software/libtasn1/
+libthai	Thai language support library	https://linux.thai.net/projects/libthai
+libtiff	TIFF library and utilities	https://libtiff.gitlab.io/libtiff/
+libtool	Generic library support script	https://www.gnu.org/software/libtool/
+libudfread	Universal Disk Format reader	https://code.videolan.org/videolan/libudfread
+libultrahdr	Reference codec for the Ultra HDR format	https://developer.android.com/media/platform/hdr-image-format
+libunibreak	Implementation of the Unicode line- and word-breaking algorithms	https://github.com/adah1972/libunibreak
+libunistring	C string library for manipulating Unicode strings	https://www.gnu.org/software/libunistring/
+libusb	Library for USB device access	https://libusb.info/
+libuv	Multi-platform support library with a focus on asynchronous I/O	https://libuv.org/
+libvidstab	Transcode video stabilization plugin	https://github.com/georgmartius/vid.stab
+libvmaf	Perceptual video quality assessment based on multi-method fusion	https://github.com/Netflix/vmaf
+libvorbis	Vorbis general audio compression codec	https://xiph.org/vorbis/
+libvpx	VP8/VP9 video codec	https://www.webmproject.org/code/
+libx11	X.Org: Core X11 protocol client library	https://www.x.org/
+libxau	X.Org: A Sample Authorization Protocol for X	https://www.x.org/
+libxcb	X.Org: Interface to the X Window System protocol	https://www.x.org/
+libxdmcp	X.Org: X Display Manager Control Protocol library	https://www.x.org/
+libxext	X.Org: Library for common extensions to the X11 protocol	https://www.x.org/
+libxfixes	X.Org: Header files for the XFIXES extension	https://www.x.org/
+libxi	X.Org: Library for the X Input Extension	https://www.x.org/
+libxml2	GNOME XML library	http://xmlsoft.org/
+libxmlsec1	XML security library	https://www.aleksey.com/xmlsec/
+libxrender	X.Org: Library for the Render Extension to the X11 protocol	https://www.x.org/
+libxtst	X.Org: Client API for the XTEST & RECORD extensions	https://www.x.org/
+libyaml	YAML Parser	https://github.com/yaml/libyaml
+libzip	C library for reading, creating, and modifying zip archives	https://libzip.org/
+litecli	CLI for SQLite Databases with auto-completion and syntax highlighting	https://litecli.com
+little-cms2	Color management engine supporting ICC profiles	https://www.littlecms.com/
+lld@21	LLVM Project Linker	https://lld.llvm.org/
+llhttp	Port of http_parser to llparse	https://llhttp.org/
+llm	Access large language models from the command-line	https://llm.datasette.io/
+llvm@21	Next-gen compiler infrastructure	https://llvm.org/
+lnav	Curses-based tool for viewing and analyzing log files	https://lnav.org/
+lpeg	Parsing Expression Grammars For Lua	https://www.inf.puc-rio.br/~roberto/lpeg/
+lsd	Clone of ls with colorful output, file type icons, and more	https://github.com/lsd-rs/lsd
+luajit	Just-In-Time Compiler (JIT) for the Lua programming language	https://luajit.org/luajit.html
+luv	Bare libuv bindings for lua	https://github.com/luvit/luv
+lz4	Extremely Fast Compression algorithm	https://lz4.github.io/lz4/
+lzo	Real-time data compression library	https://www.oberhumer.com/opensource/lzo/
+m4	Macro processing language	https://www.gnu.org/software/m4/
+mas	Mac App Store command-line interface	https://github.com/mas-cli/mas
+mbedtls@3	Cryptographic & SSL/TLS library	https://www.trustedfirmware.org/projects/mbed-tls/
+merve	C++ lexer for extracting named exports from CommonJS modules	https://github.com/nodejs/merve
+mise	Polyglot runtime manager (asdf rust clone)	https://mise.jdx.dev/
+mole	Deep clean and optimize your Mac	https://mole.fit
+mpdecimal	Library for decimal floating point arithmetic	https://www.bytereef.org/mpdecimal/
+mpg123	MP3 player for Linux and UNIX	https://www.mpg123.de/
+mycli	CLI for MySQL with auto-completion and syntax highlighting	https://www.mycli.net/
+mysql	Open source relational database management system	https://github.com/mysql/mysql-server
+nanomsg	Socket library in C	https://nanomsg.org/
+nanopb	C library for encoding and decoding Protocol Buffer messages	https://jpa.kapsi.fi/nanopb/docs/index.html
+nbytes	Library of byte handling functions extracted from Node.js core	https://github.com/nodejs/nbytes
+ncurses	Text-based UI library	https://invisible-island.net/ncurses/announce.html
+neovim	Ambitious Vim-fork focused on extensibility and agility	https://neovim.io/
+nettle	Low-level cryptographic library	https://www.lysator.liu.se/~nisse/nettle/
+node	Open-source, cross-platform JavaScript runtime environment	https://nodejs.org/
+npth	New GNU portable threads library	https://gnupg.org/
+nspr	Platform-neutral API for system-level and libc-like functions	https://hg.mozilla.org/projects/nspr
+nss	Libraries for security-enabled client and server applications	https://firefox-source-docs.mozilla.org/security/nss/index.html
+oniguruma	Regular expressions library	https://github.com/kkos/oniguruma/
+opencore-amr	Audio codecs extracted from Android open source project	https://opencore-amr.sourceforge.net/
+openexr	High dynamic-range image file format	https://www.openexr.com/
+openjdk	Development kit for the Java programming language	https://openjdk.org/
+openjdk@17	Development kit for the Java programming language	https://openjdk.org/
+openjpeg	Library for JPEG-2000 image manipulation	https://www.openjpeg.org/
+openjph	Open-source implementation of JPEG2000 Part-15 (or JPH or HTJ2K)	https://github.com/aous72/OpenJPH
+openssl@1.1	Cryptography and SSL/TLS Toolkit	https://openssl.org/
+openssl@3	Cryptography and SSL/TLS Toolkit	https://openssl-library.org
+openssl@4	Cryptography and SSL/TLS Toolkit	https://openssl-library.org
+opus	Audio codec	https://www.opus-codec.org/
+p11-kit	Library to load and enumerate PKCS#11 modules	https://p11-glue.github.io/p11-glue/p11-kit.html
+pandoc	Swiss-army knife of markup format conversion	https://pandoc.org/
+pango	Framework for layout and rendering of i18n text	https://www.gtk.org/docs/architecture/pango
+pcre2	Perl compatible regular expressions library with a new API	https://www.pcre.org/
+pgcli	CLI for Postgres with auto-completion and syntax highlighting	https://pgcli.com/
+pgvector	Open-source vector similarity search for Postgres	https://github.com/pgvector/pgvector
+pillow	Friendly PIL fork (Python Imaging Library)	https://python-pillow.github.io/
+pinentry	Passphrase entry dialog utilizing the Assuan protocol	https://www.gnupg.org/related_software/pinentry/
+pixman	Low-level library for pixel manipulation	https://cairographics.org/
+poppler	PDF rendering library (based on the xpdf-3.0 code base)	https://poppler.freedesktop.org/
+postgresql@14	Object-relational database system	https://www.postgresql.org/
+postgresql@16	Object-relational database system	https://www.postgresql.org/
+protobuf	Protocol buffers (Google's data interchange format)	https://protobuf.dev/
+putty	Implementation of Telnet and SSH	https://putty.software/
+pycparser	C parser in Python	https://github.com/eliben/pycparser
+pydantic	Data validation using Python type hints	https://pydantic.dev/docs/validation
+python@3.14	Interpreted, interactive, object-oriented programming language	https://www.python.org/
+qrencode	QR Code generation	https://fukuchi.org/works/qrencode/index.html.en
+rav1e	Fastest and safest AV1 video encoder	https://github.com/xiph/rav1e
+readline	Library for command-line editing	https://tiswww.case.edu/php/chet/readline/rltop.html
+redis	Persistent key-value database, with built-in net interface	https://redis.io/
+render	Command-line interface for Render	https://render.com/docs/cli
+ripgrep	Search tool like grep and The Silver Searcher	https://github.com/BurntSushi/ripgrep
+rubberband	Audio time stretcher tool and library	https://breakfastquay.com/rubberband/
+sdl2-compat	SDL2 compatibility layer that uses SDL3 behind the scenes	https://github.com/libsdl-org/sdl2-compat
+sdl3	Low-level access to audio, keyboard, mouse, joystick, and graphics	https://libsdl.org/
+shaderc	Collection of tools, libraries, and tests for Vulkan shader compilation	https://github.com/google/shaderc
+shared-mime-info	Database of common MIME types	https://wiki.freedesktop.org/www/Software/shared-mime-info
+shellcheck	Static analysis and lint tool, for (ba)sh scripts	https://www.shellcheck.net/
+simdjson	SIMD-accelerated C++ JSON parser	https://simdjson.org
+simdutf	Unicode conversion routines, fast	https://simdutf.github.io/simdutf/
+snappy	Compression/decompression library aiming for high speed	https://google.github.io/snappy/
+speex	Audio codec designed for speech	https://speex.org/
+sqlite	Command-line interface for SQLite	https://sqlite.org/index.html
+srt	Secure Reliable Transport	https://www.srtalliance.org/
+starship	Cross-shell prompt for astronauts	https://starship.rs/
+summarize	Multi-modal AI tool to extract and summarize content	https://summarize.sh
+supabase	Postgres development platform	https://supabase.com/docs/reference/cli/about
+svt-av1	AV1 encoder	https://gitlab.com/AOMediaCodec/SVT-AV1
+tailspin	Log file highlighter	https://github.com/bensadeh/tailspin
+terminal-notifier	Send macOS User Notifications from the command-line	https://github.com/julienXX/terminal-notifier
+tesseract	OCR (Optical Character Recognition) engine	https://tesseract-ocr.github.io/
+theora	Open video compression format	https://www.theora.org/
+tlrc	Official tldr client written in Rust	https://tldr.sh/tlrc/
+tree	Display directories as trees (with optional color/HTML output)	https://oldmanprogrammer.net/source.php?dir=projects/tree
+tree-sitter	Incremental parsing library	https://tree-sitter.github.io/
+unar	Command-line unarchiving tools supporting multiple formats	https://theunarchiver.com/command-line
+unibilium	Very basic terminfo library	https://github.com/neovim/unibilium
+usage	Tool for working with usage-spec CLIs	https://usage.jdx.dev/
+utf8proc	Clean C library for processing UTF-8 Unicode data	https://juliastrings.github.io/utf8proc/
+uv	Extremely fast Python package installer and resolver, written in Rust	https://docs.astral.sh/uv/
+uvwasi	WASI syscall API built atop libuv	https://github.com/nodejs/uvwasi
+vulkan-headers	Vulkan Header files and API registry	https://www.vulkan.org/
+vulkan-loader	Vulkan ICD Loader	https://github.com/KhronosGroup/Vulkan-Loader
+weasyprint	Convert HTML to PDF	https://www.courtbouillon.org/weasyprint
+webp	Image format providing lossless and lossy compression for web images	https://developers.google.com/speed/webp/
+wget	Internet file retriever	https://www.gnu.org/software/wget/
+whisper-cpp	Port of OpenAI's Whisper model in C/C++	https://github.com/ggml-org/whisper.cpp
+x264	H.264/AVC encoder	https://www.videolan.org/developers/x264.html
+x265	H.265/HEVC encoder	https://bitbucket.org/multicoreware/x265_git
+xorgproto	X.Org: Protocol Headers	https://www.x.org/
+xvid	High-performance, high-quality MPEG-4 video library	https://labs.xvid.com/
+xz	General-purpose data compression with high compression ratio	https://tukaani.org/xz/
+yazi	Blazing fast terminal file manager written in Rust, based on async I/O	https://yazi-rs.github.io
+yt-dlp	Feature-rich command-line audio/video downloader	https://github.com/yt-dlp/yt-dlp
+zellij	Pluggable terminal workspace, with terminal multiplexer as the base feature	https://zellij.dev
+zeromq	High-performance, asynchronous messaging library	https://zeromq.org/
+zig	Programming language designed for robustness, optimality, and clarity	https://ziglang.org/
+zimg	Scaling, colorspace conversion, and dithering library	https://github.com/sekrit-twc/zimg
+zlib-ng-compat	Zlib replacement with optimizations for next generation systems	https://github.com/zlib-ng/zlib-ng
+zoxide	Shell extension to navigate your filesystem faster	https://github.com/ajeetdsouza/zoxide
+zsh-autosuggestions	Fish-like fast/unobtrusive autosuggestions for zsh	https://github.com/zsh-users/zsh-autosuggestions
+zsh-syntax-highlighting	Fish shell like syntax highlighting for zsh	https://github.com/zsh-users/zsh-syntax-highlighting
+zstd	Zstandard is a real-time compression algorithm	https://facebook.github.io/zstd/

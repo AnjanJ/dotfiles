@@ -1,0 +1,108 @@
+aaron-bond.better-comments	Better Comments	Improve your code commenting by annotating with alert, informational, TODOs, and more!
+adpyke.codesnap	CodeSnap	📷 Take beautiful screenshots of your code
+alefragnani.bookmarks	Bookmarks	Mark lines and jump to them
+alefragnani.project-manager	Project Manager	Easily switch between projects
+aliariff.vscode-erb-beautify	ERB Formatter/Beautify	Format/Beautify ERB files
+andrewbutson.vscode-openai	vscode-openai	vscode-openai seamlessly incorporates OpenAI features into VSCode, providing integration with SCM, Code Editor and Chat.
+anthropic.claude-code	Claude Code for VS Code	Claude Code for VS Code: Harness the power of Claude Code without leaving your IDE
+batatop.terminal-auto-rename	Terminal Auto Rename	Automatically renames the terminal with the current folder name.
+biomejs.biome	Biome	Toolchain of the web
+bradlc.vscode-tailwindcss	Tailwind CSS IntelliSense	Intelligent Tailwind CSS tooling for VS Code
+bung87.rails	Rails	Ruby on Rails support for Visual Studio Code
+bung87.vscode-gemfile	vscode-gemfile	provide hover link in Gemfile refers to online site
+castwide.solargraph	Ruby Solargraph	A Ruby language server featuring code completion, intellisense, and inline documentation
+christian-kohler.npm-intellisense	npm Intellisense	Visual Studio Code plugin that autocompletes npm modules in import statements
+christian-kohler.path-intellisense	Path Intellisense	Visual Studio Code plugin that autocompletes filenames
+chrmarti.regex	Regex Previewer	Regex matches previewer for JavaScript, TypeScript, PHP and Haxe in Visual Studio Code.
+daltonmenezes.aura-theme	Aura Theme	A beautiful dark theme for Visual Studio Code
+dart-code.dart-code	Dart	Dart language support and debugger for Visual Studio Code.
+dart-code.flutter	Flutter	Flutter support and debugger for Visual Studio Code.
+davidpallinder.rails-test-runner	Rails Test Runner	Easily run your rails tests from within Visual Studio Code (vscode)
+dbaeumer.vscode-eslint	ESLint	Integrates ESLint JavaScript into VS Code.
+donjayamanne.githistory	Git History	View git log, file history, compare branches or commits
+dotjoshjohnson.xml	XML Tools	XML Formatting, XQuery, and XPath Tools for Visual Studio Code
+drewxs.tokyo-night-dark	Tokyo Night Dark	Darker version of Tokyo Night Dark
+dsznajder.es7-react-js-snippets	ES7+ React/Redux/React-Native snippets	Extensions for React, React-Native and Redux in JS/TS with ES7+ syntax. Customizable. Built-in integration with prettier.
+eamodio.gitlens	GitLens — Git supercharged	Supercharge Git within VS Code — Visualize code authorship at a glance via Git blame annotations and CodeLens, seamlessly navigate and explore Git repositories, gain valuable insights via rich visualizations and powerful comparison commands, and so much more
+editorconfig.editorconfig	EditorConfig	EditorConfig Support for Visual Studio Code
+elia.erb-formatter	Ruby ERB::Formatter	Format ERB files with speed and precision.
+enkia.tokyo-night	Tokyo Night	A clean Visual Studio Code theme that celebrates the lights of Downtown Tokyo at night.
+esbenp.prettier-vscode	Prettier - Code formatter	Code formatter using prettier
+fill-labs.dependi	Dependi	Empowers developers to efficiently manage dependencies and address vulnerabilities in Rust, Go, JavaScript, Typescript, PHP, Python, Dart, C#, and Elixir projects.
+firsttris.vscode-jest-runner	Jest / Vitest Runner	Run and debug Jest, Vitest, Node.js, Bun, Rstest and Deno tests with ease, right from your editor.
+formulahendry.auto-close-tag	Auto Close Tag	Automatically add HTML/XML close tag, same as Visual Studio IDE or Sublime Text
+formulahendry.auto-rename-tag	Auto Rename Tag	Auto rename paired HTML/XML tag
+formulahendry.code-runner	Code Runner	Run C, C++, Java, JS, PHP, Python, Perl, Ruby, Go, Lua, Groovy, PowerShell, CMD, BASH, F#, C#, VBScript, TypeScript, CoffeeScript, Scala, Swift, Julia, Crystal, OCaml, R, AppleScript, Elixir, VB.NET, Clojure, Haxe, Obj-C, Rust, Racket, Scheme, AutoHotkey, AutoIt, Kotlin, Dart, Pascal, Haskell, Nim, D, Lisp, Kit, V, SCSS, Sass, CUDA, Less, Fortran, Ring, Standard ML, Zig, Mojo, Erlang, SPWN, Pkl, Gleam
+github.github-vscode-theme	GitHub Theme	GitHub theme for VS Code
+github.vscode-github-actions	GitHub Actions	GitHub Actions workflows and runs for github.com hosted repositories in VS Code
+github.vscode-pull-request-github	%displayName%	%description%
+gruntfuggly.todo-tree	Todo Tree	Show TODO, FIXME, etc. comment tags in a tree view
+heybourn.headwind	Headwind	An opinionated class sorter for Tailwind CSS
+infeng.vscode-react-typescript	Typescript React code snippets	Code snippets for react in typescript
+irongeek.vscode-env	ENV	Adds formatting and syntax highlighting support for env files (.env) to Visual Studio Code
+jakebecker.elixir-ls	ElixirLS: Elixir support and debugger	Elixir support with debugger, autocomplete, and more - Powered by ElixirLS.
+kaiwood.endwise	endwise	Wisely add closing keywords in Ruby, Crystal, Elixir, Julia, Lua, Makefiles, and shell scripts.
+kisstkondoros.vscode-codemetrics	CodeMetrics	Computes complexity in TypeScript / JavaScript files.
+kisstkondoros.vscode-gutter-preview	Image preview	Shows image preview in the gutter and on hover
+kohkimakimoto.vscode-mac-dictionary	Mac Dictionary	Integrates Mac Dictionary.app with vscode.
+koichisasada.vscode-rdbg	VSCode rdbg Ruby Debugger	Ruby's rdbg debugger support for VSCode
+lamarcke.kanagawa-black	Kanagawa Black	A fork of the Kanagawa VS Code theme, with pitch black niceties.
+lokalise.i18n-ally	i18n Ally	🌍 All in one i18n extension for VS Code
+mechatroner.rainbow-csv	Rainbow CSV	Highlight CSV and TSV files, Run SQL-like queries
+mgmcdermott.vscode-language-babel	Babel JavaScript	VSCode syntax highlighting for today's JavaScript
+mhutchie.git-graph	Git Graph	View a Git Graph of your repository, and perform Git actions from the graph.
+mikestead.dotenv	DotENV	Support for dotenv file syntax
+mintlify.document	Mintlify Doc Writer for Python, JavaScript, TypeScript, C++, PHP, Java, C#, Ruby & more	AI powered documentation writer for JavaScript, Python, Java, Typescript & all other languages
+misogi.ruby-rubocop	ruby-rubocop	execute rubocop for current Ruby code.
+mongodb.mongodb-vscode	MongoDB for VS Code	Connect to MongoDB and Atlas directly from your VS Code environment, navigate your databases and collections, inspect your schema and use playgrounds to prototype queries and aggregations.
+ms-azuretools.vscode-containers	Container Tools	Makes it easy to create, manage, and debug containerized applications.
+ms-azuretools.vscode-docker	Docker	Makes it easy to create, manage, and debug containerized applications.
+ms-python.debugpy	Python Debugger	Python Debugger extension using debugpy.
+ms-python.python	Python	Python language support with extension access points for IntelliSense (Pylance), Debugging (Python Debugger), linting, formatting, refactoring, unit tests, and more.
+ms-python.vscode-pylance	Pylance	A performant, feature-rich language server for Python in VS Code
+ms-python.vscode-python-envs	Python Environments	Provides a unified python environment experience
+ms-vscode.live-server	Live Preview	Hosts a local server in your workspace for you to preview your webpages on.
+ms-vscode.vscode-typescript-next	JavaScript and TypeScript Nightly	Enables typescript@next to power VS Code's built-in JavaScript and TypeScript support
+mtxr.sqltools	SQLTools	Connecting users to many of the most commonly used databases. Welcome to database management done right.
+mtxr.sqltools-driver-mysql	SQLTools MySQL/MariaDB/TiDB	SQLTools MySQL/MariaDB/TiDB
+mtxr.sqltools-driver-pg	SQLTools PostgreSQL/Cockroach Driver	SQLTools PostgreSQL/Cockroach Driver
+mtxr.sqltools-driver-sqlite	SQLTools SQLite	SQLTools SQLite
+naumovs.color-highlight	Color Highlight	Highlight web colors in your editor
+noku.rails-run-spec-vscode	Rails Run Specs	Rails Run Spec Files
+oderwat.indent-rainbow		Makes indentation easier to read
+openai.chatgpt	Codex – OpenAI’s coding agent	Codex is a coding agent that works with you everywhere you code — included in ChatGPT Plus, Pro, Business, Edu, and Enterprise plans.
+pantajoe.vscode-elixir-credo	Credo (Elixir Linter)	VSC Support for Elixir linter 'Credo'.
+patbenatar.advanced-new-file	advanced-new-file	Create files anywhere in your workspace from the keyboard
+phoenixframework.phoenix	Phoenix Framework	Syntax highlighting support for HEEx
+pkief.material-icon-theme	Material Icon Theme	Material Design Icons for Visual Studio Code
+planbcoding.vscode-react-refactor	VSCode React Refactor	Recompose your overgrown JSX without worrying about the given data.
+pranaygp.vscode-css-peek	CSS Peek	Allow peeking to css ID and class strings as definitions from html files to respective CSS. Allows peek and goto definition.
+redhat.vscode-yaml	YAML	YAML Language Support by Red Hat, with built-in Kubernetes syntax support
+riey.erb	Erb	ERB language support for Visual Studio Code
+ritwickdey.liveserver	Live Server	Launch a development local Server with live reload feature for static & dynamic pages
+rust-lang.rust-analyzer	rust-analyzer	Rust language support for Visual Studio Code
+shd101wyy.markdown-preview-enhanced	%displayName%	%description%
+shopify.ruby-extensions-pack	Ruby	An opinionated and auto-configured set of extensions for Ruby development
+shopify.ruby-lsp	Ruby LSP	VS Code plugin for connecting with the Ruby LSP
+sianglim.slim	Slim	Slim language support based on https://github.com/slim-template/ruby-slim.tmbundle
+sorbet.sorbet-vscode-extension	Ruby Sorbet	Ruby IDE features, powered by Sorbet.
+sporto.rails-go-to-spec	Rails Go to Spec	Switch between code and spec in Rails
+steoates.autoimport	Auto Import	Automatically finds, parses and provides code actions and code completion for all available imports. Works with Typescript and TSX
+streetsidesoftware.code-spell-checker	Code Spell Checker	Spelling checker for source code
+swellaby.rust-pack	Rust Extension Pack	Extension Pack for Rust
+switchcase.code-challenging-timer	Code Challenging Timer	Set yourself a time limit and try to beat it.
+tamasfe.even-better-toml	Even Better TOML	Fully-featured TOML support
+tomoki1207.pdf	vscode-pdf	Display pdf file in VSCode.
+ue.alphabetical-sorter	Alphabetical Sorter	Multi line or single line alphabetical sorter.
+usernamehw.errorlens	Error Lens	Improve highlighting of errors, warnings and other language diagnostics.
+vortizhe.simple-ruby-erb	Simple Ruby ERB	Provides simple Ruby and ERB language, code snippets and ERB tag helper support for Visual Studio Code without messing with linting or debugging
+vscjava.vscode-java-dependency	Project Manager for Java	%description%
+vscjava.vscode-java-pack	Extension Pack for Java	Popular extensions for Java development that provides Java IntelliSense, debugging, testing, Maven/Gradle support, project management and more
+wayou.vscode-todo-highlight	TODO Highlight	highlight TODOs, FIXMEs, and any keywords, annotations...
+wix.vscode-import-cost	Import Cost	Display import/require package size in the editor
+wmaurer.change-case		Quickly change the case (camelCase, CONSTANT_CASE, snake_case, etc) of the current selection or current word
+xabikos.javascriptsnippets	JavaScript (ES6) code snippets	Code snippets for JavaScript in ES6 syntax
+xabikos.reactsnippets	Reactjs code snippets	Code snippets for Reactjs development in ES6 syntax
+yzhang.markdown-all-in-one	%ext.displayName%	%ext.description%
+zh9528.file-size	file-size	Show the current text file size in the status bar.
+zhuangtongfa.material-theme	One Dark Pro	Atom's iconic One Dark theme for Visual Studio Code
