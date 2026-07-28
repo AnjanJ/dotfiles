@@ -490,7 +490,7 @@ test_real_brewfile_groups() {
     groups=$(_parse_brewfile_groups "$real_brewfile")
 
     # Verify expected groups exist
-    local expected_groups=("taps" "core" "editors" "window-mgmt" "terminal-tools" "databases" "cloud-deploy" "media" "communication" "productivity" "work" "languages" "fonts" "vscode-ext" "mac-apps" "extras")
+    local expected_groups=("taps" "core" "editors" "window-mgmt" "terminal-tools" "ai" "databases" "cloud-deploy" "media" "communication" "productivity" "work" "languages" "browsers" "utilities" "fonts" "vscode-ext" "extras")
 
     for g in "${expected_groups[@]}"; do
         assert_output_matches "$groups" "^${g}$" "Real Brewfile has group: $g"
@@ -503,7 +503,13 @@ test_real_brewfile_groups() {
     assert_output_matches "$work_entries" "slack" "Work group contains slack"
     assert_output_matches "$work_entries" "zoom" "Work group contains zoom"
     assert_output_matches "$work_entries" "Okta Verify" "Work group contains Okta Verify"
-    assert_output_matches "$work_entries" "Windows App" "Work group contains Windows App"
+
+    # Verify browsers group (mixes casks and mas entries)
+    local browser_entries
+    browser_entries=$(_get_group_entries "$real_brewfile" "browsers")
+
+    assert_output_matches "$browser_entries" "firefox" "Browsers group contains firefox"
+    assert_output_matches "$browser_entries" "DuckDuckGo" "Browsers group contains DuckDuckGo (mas)"
 
     # Verify core group has essential tools
     local core_entries

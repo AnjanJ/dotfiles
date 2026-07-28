@@ -57,7 +57,7 @@ export BROWSER="open"                # Browser command (macOS)
 # Note: Ruby, Node, Elixir, etc. managed by mise (~/.config/mise/config.toml)
 # These exports are for scripts/tools that need a version reference.
 # Actual runtime versions are controlled by mise (all set to "latest").
-export PG_VERSION="14"               # PostgreSQL version
+export PG_VERSION="16"               # PostgreSQL version (matches the running service)
 export RUBY_VERSION="latest"         # Ruby (mise manages)
 export NODE_VERSION="latest"         # Node (mise manages)
 export RAILS_VERSION="8.0.4"         # Rails (latest stable, gem-managed)

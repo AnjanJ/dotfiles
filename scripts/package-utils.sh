@@ -21,6 +21,7 @@ _get_group_description() {
         editors)        echo "Code editors & terminals" ;;
         window-mgmt)    echo "Tiling WM & status bar" ;;
         terminal-tools) echo "Terminal enhancements & TUI tools" ;;
+        ai)             echo "AI/LLM CLI tooling & desktop apps" ;;
         databases)      echo "Database engines & GUI clients" ;;
         cloud-deploy)   echo "Cloud & deployment CLIs" ;;
         media)          echo "Media processing tools" ;;
@@ -28,10 +29,11 @@ _get_group_description() {
         productivity)   echo "Personal productivity" ;;
         work)           echo "Enterprise & work apps" ;;
         languages)      echo "Language-specific tools" ;;
+        browsers)       echo "Web browsers" ;;
+        utilities)      echo "Misc desktop utilities" ;;
         fonts)          echo "Nerd Fonts collection" ;;
         vscode-ext)     echo "VS Code extensions" ;;
-        mac-apps)       echo "Mac App Store apps" ;;
-        extras)         echo "Miscellaneous utilities" ;;
+        extras)         echo "CLI tap tools & low-level libs" ;;
         *)              echo "$1" ;;
     esac
 }

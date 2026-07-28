@@ -52,7 +52,7 @@
     }
   },
   "alwaysThinkingEnabled": false,
-  "effortLevel": "xhigh",
+  "effortLevel": "high",
   "skipDangerousModePermissionPrompt": true,
   "skipAutoPermissionPrompt": true
 }
