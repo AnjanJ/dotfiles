@@ -134,6 +134,9 @@ echo "    - Theme: Tokyo Night, Aura, or Catppuccin (your choice!)"
 echo ""
 echo "  Idempotent -- safe to re-run anytime"
 echo ""
+echo "  Mac App Store apps are skipped unless you're signed in."
+echo "  Xcode (~15GB) is opt-in and never blocks the rest of the install."
+echo ""
 echo ""
 
 if [[ "$INTERACTIVE" == true ]]; then
@@ -223,19 +226,99 @@ elif [[ -f "$PACKAGES_STATE_FILE" ]]; then
 fi
 
 cd "$DOTFILES_DIR"
+
+# Failures are collected rather than just warned about, so the summary at
+# the very end can tell you exactly what to retry. On a fresh Mac, cask and
+# mas entries fail routinely (not signed into the App Store, network blips),
+# and those errors otherwise scroll past hundreds of lines of brew output.
+FAILED_PACKAGES=()
+
+# Xcode is ~15GB from the App Store and frequently stalls or fails on a
+# fresh machine. Pull it out of the main bundle so it can't hold up the
+# rest of the install; it gets its own opt-in step below.
+XCODE_ENTRY=$(grep -E '^mas "Xcode"' "$DOTFILES_DIR/Brewfile" || true)
+
+# Build the Brewfile we'll actually install from.
 if [[ -n "$_PACKAGE_SELECTIONS" ]]; then
-    _FILTERED_BREWFILE=$(generate_filtered_brewfile "$DOTFILES_DIR/Brewfile" "$_PACKAGE_SELECTIONS")
-    if brew bundle install --file="$_FILTERED_BREWFILE"; then
-        print_success "Selected packages installed"
-    else
-        print_warning "Some packages failed to install (see errors above). Continuing..."
-    fi
-    rm -f "$_FILTERED_BREWFILE"
+    _INSTALL_BREWFILE=$(generate_filtered_brewfile "$DOTFILES_DIR/Brewfile" "$_PACKAGE_SELECTIONS")
+    _BREWFILE_IS_TEMP=true
 else
-    if brew bundle install; then
-        print_success "All packages installed"
+    _INSTALL_BREWFILE=$(mktemp "${TMPDIR:-/tmp}/Brewfile.XXXXXX")
+    cp "$DOTFILES_DIR/Brewfile" "$_INSTALL_BREWFILE"
+    _BREWFILE_IS_TEMP=true
+fi
+
+# mas entries only work when the App Store is signed in — strip them
+# otherwise, rather than letting all 24 fail one by one.
+#
+# Detection differs by mas major version: `mas account` was REMOVED in
+# mas 2.x (exits 64 "Unexpected argument"), so relying on it alone would
+# report "not signed in" on every modern install and silently skip every
+# App Store app. `mas config` prints a two-letter storefront when an
+# account is active.
+appstore_ready() {
+    command -v mas &>/dev/null || return 1
+    mas config 2>/dev/null | grep -qE '^store [^ ]* [A-Z]{2}' && return 0
+    mas account &>/dev/null && return 0   # mas 1.x fallback
+    return 1
+}
+
+APPSTORE_READY=false
+if appstore_ready; then
+    APPSTORE_READY=true
+fi
+
+# Always drop Xcode from the bundle — it's handled separately.
+_stripped=$(mktemp "${TMPDIR:-/tmp}/Brewfile.XXXXXX")
+if [[ "$APPSTORE_READY" == true ]]; then
+    grep -vE '^mas "Xcode"' "$_INSTALL_BREWFILE" > "$_stripped"
+    print_success "App Store signed in — Mac App Store apps will be installed"
+else
+    grep -vE '^mas ' "$_INSTALL_BREWFILE" > "$_stripped"
+    _mas_count=$(grep -cE '^mas ' "$_INSTALL_BREWFILE" || true)
+    print_warning "Not signed in to the App Store — skipping $_mas_count Mac App Store app(s)"
+    print_warning "  Sign in via App Store.app, then re-run: brew bundle install --file=Brewfile"
+fi
+mv "$_stripped" "$_INSTALL_BREWFILE"
+
+if brew bundle install --file="$_INSTALL_BREWFILE"; then
+    print_success "Packages installed"
+else
+    print_warning "Some packages failed — collecting the list..."
+    # `brew bundle check --verbose` reports what's still missing, one
+    # "→ Cask foo needs to be installed" line per item. Those lines go to
+    # STDERR, not stdout — redirect 2>&1 or the list comes back empty.
+    while IFS= read -r line; do
+        [[ -z "$line" ]] && continue
+        FAILED_PACKAGES+=("$line")
+    done < <(brew bundle check --file="$_INSTALL_BREWFILE" --verbose 2>&1 \
+             | grep -E '^→' | sed 's/^→ //' || true)
+fi
+
+[[ "$_BREWFILE_IS_TEMP" == true ]] && rm -f "$_INSTALL_BREWFILE"
+
+# ── Xcode (opt-in, separate) ──────────────────
+if [[ -n "$XCODE_ENTRY" && "$APPSTORE_READY" == true ]]; then
+    if [[ -d "/Applications/Xcode.app" ]]; then
+        print_success "Xcode already installed"
     else
-        print_warning "Some packages failed to install (see errors above). Continuing..."
+        _install_xcode=false
+        if [[ "$INTERACTIVE" == true ]]; then
+            read -r -p "Install Xcode now? ~15GB, can take 30+ min (y/n) " -n 1
+            echo
+            [[ $REPLY =~ ^[Yy]$ ]] && _install_xcode=true
+        fi
+
+        if [[ "$_install_xcode" == true ]]; then
+            print_step "Installing Xcode (~15GB — this will take a while)..."
+            if mas install 497799835; then
+                print_success "Xcode installed"
+            else
+                FAILED_PACKAGES+=("Xcode (mas 497799835) — install from the App Store manually")
+            fi
+        else
+            print_warning "Skipped Xcode (~15GB). Install later: mas install 497799835"
+        fi
     fi
 fi
 
@@ -251,37 +334,20 @@ mkdir -p ~/bin
 print_success "Directories created"
 
 # ============================================
-# 4. SET UP MISE (VERSION MANAGER)
+# 4. CREATE SYMLINKS
+# ============================================
+# Deliberately BEFORE `mise install` (step 6). Installing runtimes
+# compiles Erlang and Rust from source — that can take 30+ minutes and
+# fails outright without the right build deps. Under `set -euo pipefail`
+# a failed compile aborts the whole script, so when this ran first you
+# ended up with packages but NO configs on a freshly-wiped machine.
+#
+# Symlinking is fast and near-impossible to fail, so it goes first: the
+# worst case is now "runtimes missing" (rerun `mise install`) instead of
+# "nothing configured".
 # ============================================
 echo ""
-print_step "Step 4: Setting up mise (version manager)..."
-
-# Create mise config directory
-mkdir -p ~/.config/mise
-
-# Link mise configuration
-if [ -L ~/.config/mise/config.toml ] && [ "$(readlink ~/.config/mise/config.toml)" = "$DOTFILES_DIR/.config/mise/config.toml" ] && [ "$FORCE_INSTALL" = false ]; then
-    print_success "mise config already linked"
-else
-    backup_if_needed ~/.config/mise/config.toml
-    ln -sf "$DOTFILES_DIR/.config/mise/config.toml" ~/.config/mise/config.toml
-    print_success "mise config linked"
-fi
-
-# Trust the mise config file (required for security)
-mise trust ~/.config/mise/config.toml 2>/dev/null || true
-
-# Install all tools defined in mise config
-print_step "Installing language runtimes with mise (this may take a few minutes)..."
-mise install
-
-print_success "mise configured and tools installed"
-
-# ============================================
-# 5. CREATE SYMLINKS
-# ============================================
-echo ""
-print_step "Step 5: Creating symlinks..."
+print_step "Step 4: Creating symlinks..."
 
 # Helper function to create symlink with idempotent backup
 create_symlink() {
@@ -350,11 +416,19 @@ fi
 echo ""
 print_step "Step 7: Setting up shell..."
 
-# Make zsh default shell if not already
-if [[ "$SHELL" != "$(which zsh)" ]]; then
-    print_warning "Setting zsh as default shell..."
-    chsh -s "$(which zsh)"
-    print_success "Default shell changed to zsh"
+# Make zsh the default shell if it isn't already.
+#
+# Deliberately match on the *basename*, not the full path: macOS ships
+# /bin/zsh while `which zsh` resolves to /opt/homebrew/bin/zsh. Comparing
+# full paths is true on every run, so the old check called chsh every time
+# and blocked the whole install on an interactive password prompt.
+if [[ "$SHELL" != */zsh ]]; then
+    print_warning "Setting zsh as default shell (may prompt for your password)..."
+    if chsh -s "$(command -v zsh)"; then
+        print_success "Default shell changed to zsh"
+    else
+        print_warning "Could not change shell automatically. Run: chsh -s $(command -v zsh)"
+    fi
 else
     print_success "zsh is already the default shell"
 fi
@@ -514,5 +588,26 @@ if [[ -d "$BACKUP_DIR" ]]; then
     echo "🔧 Backup location: $BACKUP_DIR"
     echo ""
 fi
+
+# ── What did NOT install ──────────────────────
+# Printed last, on purpose: brew emits hundreds of lines and individual
+# failures scroll away long before the install finishes.
+if [[ ${#FAILED_PACKAGES[@]} -gt 0 ]]; then
+    echo "  =========================================="
+    echo "  ⚠️  THESE DID NOT INSTALL (${#FAILED_PACKAGES[@]})"
+    echo "  =========================================="
+    echo ""
+    for pkg in "${FAILED_PACKAGES[@]}"; do
+        echo "    - $pkg"
+    done
+    echo ""
+    echo "  Retry all of them with:"
+    echo "    cd $DOTFILES_DIR && brew bundle install --file=Brewfile"
+    echo ""
+else
+    print_success "Every selected package installed cleanly"
+    echo ""
+fi
+
 echo "Enjoy your new setup! 🚀"
 echo ""
