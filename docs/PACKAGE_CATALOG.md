@@ -9,8 +9,12 @@
 | Formulae / casks | `brew info --json=v2` (Homebrew's own `desc` + `homepage`) |
 | VS Code extensions | each extension's local `package.json` manifest |
 | App Store apps | Apple iTunes Lookup API (`trackName`, `sellerName`, `trackViewUrl`) |
+| Taps | Which packages in *this* Brewfile each tap supplies, resolved from install receipts |
+| Fonts | Whether the font is referenced by a config here, with the file:line that names it |
 
-A blank description means upstream ships none — nothing has been invented to fill a gap.
+Homebrew ships no description for taps or font casks, so those two columns state something
+more useful instead: what the tap actually gives you, and whether a font is really in use.
+Taps flagged **REDUNDANT** supply nothing you use — their formulae moved into homebrew/core.
 
 Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py` · last built 2026-07-29
 
@@ -43,19 +47,19 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 
 | Package | What it is | Learn more |
 |---|---|---|
-| `antoniorodr/memo` | Third-party Homebrew formula repository | [docs](https://github.com/antoniorodr/homebrew-memo) |
-| `charmbracelet/tap` | Third-party Homebrew formula repository | [docs](https://github.com/charmbracelet/homebrew-tap) |
-| `cloudflare/cloudflare` | Third-party Homebrew formula repository | [docs](https://github.com/cloudflare/homebrew-cloudflare) |
-| `felixkratz/formulae` | Third-party Homebrew formula repository | [docs](https://github.com/felixkratz/homebrew-formulae) |
-| `heroku/brew` | Third-party Homebrew formula repository | [docs](https://github.com/heroku/homebrew-brew) |
-| `hmbown/deepseek-tui` | Third-party Homebrew formula repository | [docs](https://github.com/hmbown/homebrew-deepseek-tui) |
-| `jorgerojas26/lazysql` | Third-party Homebrew formula repository | [docs](https://github.com/jorgerojas26/homebrew-lazysql) |
-| `nikitabobko/tap` | Third-party Homebrew formula repository | [docs](https://github.com/nikitabobko/homebrew-tap) |
-| `openclaw/tap` | Third-party Homebrew formula repository | [docs](https://github.com/openclaw/homebrew-tap) |
-| `render-oss/render` | Third-party Homebrew formula repository | [docs](https://github.com/render-oss/homebrew-render) |
-| `steipete/tap` | Third-party Homebrew formula repository | [docs](https://github.com/steipete/homebrew-tap) |
-| `supabase/tap` | Third-party Homebrew formula repository | [docs](https://github.com/supabase/homebrew-tap) |
-| `yakitrak/yakitrak` | Third-party Homebrew formula repository | [docs](https://github.com/yakitrak/homebrew-yakitrak) |
+| `antoniorodr/memo` | Supplies `memo` (Apple Notes/Reminders CLI) | [docs](https://github.com/antoniorodr/homebrew-memo) |
+| `charmbracelet/tap` | Charm's tools — supplies `freeze` (code-screenshot generator) | [docs](https://github.com/charmbracelet/homebrew-tap) |
+| `cloudflare/cloudflare` | ⚠️ REDUNDANT — `cloudflared` now ships in homebrew/core | [docs](https://github.com/cloudflare/homebrew-cloudflare) |
+| `felixkratz/formulae` | Supplies `sketchybar` (menu bar) and `borders` (window highlights) | [docs](https://github.com/felixkratz/homebrew-formulae) |
+| `heroku/brew` | ⚠️ REDUNDANT — `heroku` now ships in homebrew/core | [docs](https://github.com/heroku/homebrew-brew) |
+| `hmbown/deepseek-tui` | ⚠️ Supplies nothing in this Brewfile — safe to drop | [docs](https://github.com/hmbown/homebrew-deepseek-tui) |
+| `jorgerojas26/lazysql` | ⚠️ REDUNDANT — `lazysql` now ships in homebrew/core | [docs](https://github.com/jorgerojas26/homebrew-lazysql) |
+| `nikitabobko/tap` | Supplies the `aerospace` cask (tiling window manager) | [docs](https://github.com/nikitabobko/homebrew-tap) |
+| `openclaw/tap` | Supplies `wacli` (WhatsApp CLI) and `goplaces` | [docs](https://github.com/openclaw/homebrew-tap) |
+| `render-oss/render` | ⚠️ REDUNDANT — `render` now ships in homebrew/core | [docs](https://github.com/render-oss/homebrew-render) |
+| `steipete/tap` | Peter Steinberger's macOS CLIs — supplies `bird`, `gifgrep`, `imsg`, `peekaboo`, `remindctl`, `sag`, `songsee` | [docs](https://github.com/steipete/homebrew-tap) |
+| `supabase/tap` | ⚠️ REDUNDANT — `supabase` now ships in homebrew/core | [docs](https://github.com/supabase/homebrew-tap) |
+| `yakitrak/yakitrak` | Supplies `obsidian-cli` (drive Obsidian from the shell) | [docs](https://github.com/yakitrak/homebrew-yakitrak) |
 
 ## Core CLI
 
@@ -216,7 +220,7 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 | Package | What it is | Learn more |
 |---|---|---|
 | `antoniorodr/memo/memo` | CLI app to manage your Apple Notes and Apple reminders | [docs](https://github.com/antoniorodr/memo) |
-| `yakitrak/yakitrak/obsidian-cli` |  | [docs](https://github.com/Yakitrak/obsidian-cli) |
+| `yakitrak/yakitrak/obsidian-cli` | CLI to open, search, move, create, delete and update Obsidian notes | [docs](https://github.com/Yakitrak/obsidian-cli) |
 | `steipete/tap/remindctl` | Fast CLI for Apple Reminders | [docs](https://github.com/steipete/remindctl) |
 | `1password` | Password manager that keeps all passwords secure behind one password | [docs](https://1password.com/) |
 | `1password-cli` | Command-line interface for 1Password | [docs](https://developer.1password.com/docs/cli) |
@@ -333,84 +337,84 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 
 | Package | What it is | Learn more |
 |---|---|---|
-| `font-0xproto-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-3270-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-adwaita-mono-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-agave-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-anka-coder` |  | [docs](https://code.google.com/p/anka-coder-fonts/) |
-| `font-anonymice-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-arimo-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-atkynson-mono-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-aurulent-sans-mono-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-bigblue-terminal-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-bitstream-vera-sans-mono-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-blex-mono-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-cascadia-code` |  | [docs](https://github.com/microsoft/cascadia-code) |
-| `font-caskaydia-cove-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-caskaydia-mono-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-code-new-roman-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-comic-shanns-mono-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-commit-mono-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-cousine-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-d2coding-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-daddy-time-mono-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-dejavu-sans-mono-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-departure-mono-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-droid-sans-mono-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-envy-code-r-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-fantasque-sans-mono-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-fira-code` |  | [docs](https://github.com/tonsky/FiraCode) |
-| `font-fira-code-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-fira-mono-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-geist-mono-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-go-mono-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-gohufont-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-hack` |  | [docs](https://sourcefoundry.org/hack/) |
-| `font-hack-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-hasklug-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-heavy-data-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-hurmit-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-ibm-plex-mono` |  | [docs](https://github.com/IBM/plex) |
-| `font-im-writing-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-inconsolata` |  | [docs](https://fonts.google.com/specimen/Inconsolata) |
-| `font-inconsolata-go-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-inconsolata-lgc-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-inconsolata-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-intone-mono-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-iosevka-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-iosevka-term-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-iosevka-term-slab-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-jetbrains-mono` |  | [docs](https://www.jetbrains.com/lp/mono) |
-| `font-jetbrains-mono-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-lekton-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-liberation-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-lilex-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-m+-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-martian-mono-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-meslo-lg-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-monaspice-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-monocraft-nerd-font` |  | [docs](https://github.com/IdreesInc/Monocraft) |
-| `font-monofur-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-monoid-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-mononoki-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-noto-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-opendyslexic-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-overpass-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-profont-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-proggy-clean-tt-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-recursive-mono-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-roboto-mono-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-sauce-code-pro-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-shure-tech-mono-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-space-mono-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-symbols-only-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-terminess-ttf-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-tinos-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-ubuntu-mono-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-ubuntu-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-ubuntu-sans-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-victor-mono-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-zed-mono-nerd-font` |  | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-0xproto-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-3270-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-adwaita-mono-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-agave-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-anka-coder` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://code.google.com/p/anka-coder-fonts/) |
+| `font-anonymice-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-arimo-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-atkynson-mono-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-aurulent-sans-mono-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-bigblue-terminal-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-bitstream-vera-sans-mono-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-blex-mono-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-cascadia-code` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/microsoft/cascadia-code) |
+| `font-caskaydia-cove-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-caskaydia-mono-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-code-new-roman-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-comic-shanns-mono-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-commit-mono-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-cousine-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-d2coding-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-daddy-time-mono-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-dejavu-sans-mono-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-departure-mono-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-droid-sans-mono-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-envy-code-r-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-fantasque-sans-mono-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-fira-code` | **IN USE** — Ghostty (`.config/ghostty/config`) and Zed buffer font | [docs](https://github.com/tonsky/FiraCode) |
+| `font-fira-code-nerd-font` | **IN USE** — Nerd-patched Fira Code (ligatures + icons) | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-fira-mono-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-geist-mono-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-go-mono-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-gohufont-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-hack` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://sourcefoundry.org/hack/) |
+| `font-hack-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-hasklug-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-heavy-data-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-hurmit-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-ibm-plex-mono` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/IBM/plex) |
+| `font-im-writing-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-inconsolata` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://fonts.google.com/specimen/Inconsolata) |
+| `font-inconsolata-go-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-inconsolata-lgc-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-inconsolata-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-intone-mono-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-iosevka-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-iosevka-term-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-iosevka-term-slab-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-jetbrains-mono` | **IN USE** — Zed terminal font (`.config/zed/settings.json:66`) | [docs](https://www.jetbrains.com/lp/mono) |
+| `font-jetbrains-mono-nerd-font` | **IN USE** — wezterm's primary font (`.config/wezterm/wezterm.lua:17`) | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-lekton-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-liberation-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-lilex-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-m+-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-martian-mono-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-meslo-lg-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-monaspice-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-monocraft-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/IdreesInc/Monocraft) |
+| `font-monofur-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-monoid-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-mononoki-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-noto-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-opendyslexic-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-overpass-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-profont-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-proggy-clean-tt-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-recursive-mono-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-roboto-mono-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-sauce-code-pro-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-shure-tech-mono-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-space-mono-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-symbols-only-nerd-font` | **IN USE** — wezterm icon fallback (`.config/wezterm/wezterm.lua:21`); required for glyphs | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-terminess-ttf-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-tinos-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-ubuntu-mono-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-ubuntu-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-ubuntu-sans-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-victor-mono-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-zed-mono-nerd-font` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/ryanoasis/nerd-fonts) |
 
 ## VS Code Extensions
 
@@ -455,7 +459,7 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 | `formulahendry.code-runner` | Run C, C++, Java, JS, PHP, Python, Perl, Ruby, Go, Lua, Groovy, PowerShell, CMD, BASH, F#, C#, VBScript, TypeScript, CoffeeScript, Scala, Swift, Julia, Crystal, OCaml, R, AppleScript, Elixir, VB.NET, Clojure, Haxe, Obj-C, Rust, Racket, Scheme, AutoHotkey, AutoIt, Kotlin, Dart, Pascal, Haskell, Nim, D, Lisp, Kit, V, SCSS, Sass, CUDA, Less, Fortran, Ring, Standard ML, Zig, Mojo, Erlang, SPWN, Pkl, Gleam | [docs](https://marketplace.visualstudio.com/items?itemName=formulahendry.code-runner) |
 | `github.github-vscode-theme` | GitHub theme for VS Code | [docs](https://marketplace.visualstudio.com/items?itemName=github.github-vscode-theme) |
 | `github.vscode-github-actions` | GitHub Actions workflows and runs for github.com hosted repositories in VS Code | [docs](https://marketplace.visualstudio.com/items?itemName=github.vscode-github-actions) |
-| `github.vscode-pull-request-github` | %description% | [docs](https://marketplace.visualstudio.com/items?itemName=github.vscode-pull-request-github) |
+| `github.vscode-pull-request-github` | Pull Request and Issue Provider for GitHub | [docs](https://marketplace.visualstudio.com/items?itemName=github.vscode-pull-request-github) |
 | `gruntfuggly.todo-tree` | Show TODO, FIXME, etc. comment tags in a tree view | [docs](https://marketplace.visualstudio.com/items?itemName=gruntfuggly.todo-tree) |
 | `heybourn.headwind` | An opinionated class sorter for Tailwind CSS | [docs](https://marketplace.visualstudio.com/items?itemName=heybourn.headwind) |
 | `infeng.vscode-react-typescript` | Code snippets for react in typescript | [docs](https://marketplace.visualstudio.com/items?itemName=infeng.vscode-react-typescript) |
@@ -501,7 +505,7 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 | `riey.erb` | ERB language support for Visual Studio Code | [docs](https://marketplace.visualstudio.com/items?itemName=riey.erb) |
 | `ritwickdey.liveserver` | Launch a development local Server with live reload feature for static & dynamic pages | [docs](https://marketplace.visualstudio.com/items?itemName=ritwickdey.liveserver) |
 | `rust-lang.rust-analyzer` | Rust language support for Visual Studio Code | [docs](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer) |
-| `shd101wyy.markdown-preview-enhanced` | %description% | [docs](https://marketplace.visualstudio.com/items?itemName=shd101wyy.markdown-preview-enhanced) |
+| `shd101wyy.markdown-preview-enhanced` | Markdown Preview Enhanced ported to vscode | [docs](https://marketplace.visualstudio.com/items?itemName=shd101wyy.markdown-preview-enhanced) |
 | `shopify.ruby-extensions-pack` | An opinionated and auto-configured set of extensions for Ruby development | [docs](https://marketplace.visualstudio.com/items?itemName=shopify.ruby-extensions-pack) |
 | `shopify.ruby-lsp` | VS Code plugin for connecting with the Ruby LSP | [docs](https://marketplace.visualstudio.com/items?itemName=shopify.ruby-lsp) |
 | `sianglim.slim` | Slim language support based on https://github.com/slim-template/ruby-slim.tmbundle | [docs](https://marketplace.visualstudio.com/items?itemName=sianglim.slim) |
@@ -516,7 +520,7 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 | `ue.alphabetical-sorter` | Multi line or single line alphabetical sorter. | [docs](https://marketplace.visualstudio.com/items?itemName=ue.alphabetical-sorter) |
 | `usernamehw.errorlens` | Improve highlighting of errors, warnings and other language diagnostics. | [docs](https://marketplace.visualstudio.com/items?itemName=usernamehw.errorlens) |
 | `vortizhe.simple-ruby-erb` | Provides simple Ruby and ERB language, code snippets and ERB tag helper support for Visual Studio Code without messing with linting or debugging | [docs](https://marketplace.visualstudio.com/items?itemName=vortizhe.simple-ruby-erb) |
-| `vscjava.vscode-java-dependency` | %description% | [docs](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-java-dependency) |
+| `vscjava.vscode-java-dependency` | Manage Java projects in Visual Studio Code | [docs](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-java-dependency) |
 | `vscjava.vscode-java-pack` | Popular extensions for Java development that provides Java IntelliSense, debugging, testing, Maven/Gradle support, project management and more | [docs](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-java-pack) |
 | `wayou.vscode-todo-highlight` | highlight TODOs, FIXMEs, and any keywords, annotations... | [docs](https://marketplace.visualstudio.com/items?itemName=wayou.vscode-todo-highlight) |
 | `wix.vscode-import-cost` | Display import/require package size in the editor | [docs](https://marketplace.visualstudio.com/items?itemName=wix.vscode-import-cost) |

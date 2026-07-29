@@ -35,7 +35,7 @@ formulahendry.auto-rename-tag	Auto Rename Tag	Auto rename paired HTML/XML tag
 formulahendry.code-runner	Code Runner	Run C, C++, Java, JS, PHP, Python, Perl, Ruby, Go, Lua, Groovy, PowerShell, CMD, BASH, F#, C#, VBScript, TypeScript, CoffeeScript, Scala, Swift, Julia, Crystal, OCaml, R, AppleScript, Elixir, VB.NET, Clojure, Haxe, Obj-C, Rust, Racket, Scheme, AutoHotkey, AutoIt, Kotlin, Dart, Pascal, Haskell, Nim, D, Lisp, Kit, V, SCSS, Sass, CUDA, Less, Fortran, Ring, Standard ML, Zig, Mojo, Erlang, SPWN, Pkl, Gleam
 github.github-vscode-theme	GitHub Theme	GitHub theme for VS Code
 github.vscode-github-actions	GitHub Actions	GitHub Actions workflows and runs for github.com hosted repositories in VS Code
-github.vscode-pull-request-github	%displayName%	%description%
+github.vscode-pull-request-github	%displayName%	Pull Request and Issue Provider for GitHub
 gruntfuggly.todo-tree	Todo Tree	Show TODO, FIXME, etc. comment tags in a tree view
 heybourn.headwind	Headwind	An opinionated class sorter for Tailwind CSS
 infeng.vscode-react-typescript	Typescript React code snippets	Code snippets for react in typescript
@@ -81,7 +81,7 @@ redhat.vscode-yaml	YAML	YAML Language Support by Red Hat, with built-in Kubernet
 riey.erb	Erb	ERB language support for Visual Studio Code
 ritwickdey.liveserver	Live Server	Launch a development local Server with live reload feature for static & dynamic pages
 rust-lang.rust-analyzer	rust-analyzer	Rust language support for Visual Studio Code
-shd101wyy.markdown-preview-enhanced	%displayName%	%description%
+shd101wyy.markdown-preview-enhanced	%displayName%	Markdown Preview Enhanced ported to vscode
 shopify.ruby-extensions-pack	Ruby	An opinionated and auto-configured set of extensions for Ruby development
 shopify.ruby-lsp	Ruby LSP	VS Code plugin for connecting with the Ruby LSP
 sianglim.slim	Slim	Slim language support based on https://github.com/slim-template/ruby-slim.tmbundle
@@ -96,7 +96,7 @@ tomoki1207.pdf	vscode-pdf	Display pdf file in VSCode.
 ue.alphabetical-sorter	Alphabetical Sorter	Multi line or single line alphabetical sorter.
 usernamehw.errorlens	Error Lens	Improve highlighting of errors, warnings and other language diagnostics.
 vortizhe.simple-ruby-erb	Simple Ruby ERB	Provides simple Ruby and ERB language, code snippets and ERB tag helper support for Visual Studio Code without messing with linting or debugging
-vscjava.vscode-java-dependency	Project Manager for Java	%description%
+vscjava.vscode-java-dependency	Project Manager for Java	Manage Java projects in Visual Studio Code
 vscjava.vscode-java-pack	Extension Pack for Java	Popular extensions for Java development that provides Java IntelliSense, debugging, testing, Maven/Gradle support, project management and more
 wayou.vscode-todo-highlight	TODO Highlight	highlight TODOs, FIXMEs, and any keywords, annotations...
 wix.vscode-import-cost	Import Cost	Display import/require package size in the editor

@@ -32,6 +32,38 @@ GROUP_TITLES = {
  'extras':'Extras','fonts':'Fonts','vscode-ext':'VS Code Extensions',
 }
 
+# What each tap is actually FOR, and which of OUR packages it supplies.
+# Provenance verified against INSTALL_RECEIPT.json / `brew info --json=v2`,
+# not guessed. Taps marked REDUNDANT ship nothing we use — their formulae
+# have since been absorbed into homebrew/core.
+TAP_INFO = {
+ 'antoniorodr/memo':      "Supplies `memo` (Apple Notes/Reminders CLI)",
+ 'charmbracelet/tap':     "Charm's tools — supplies `freeze` (code-screenshot generator)",
+ 'cloudflare/cloudflare': "⚠️ REDUNDANT — `cloudflared` now ships in homebrew/core",
+ 'felixkratz/formulae':   "Supplies `sketchybar` (menu bar) and `borders` (window highlights)",
+ 'heroku/brew':           "⚠️ REDUNDANT — `heroku` now ships in homebrew/core",
+ 'hmbown/deepseek-tui':   "⚠️ Supplies nothing in this Brewfile — safe to drop",
+ 'jorgerojas26/lazysql':  "⚠️ REDUNDANT — `lazysql` now ships in homebrew/core",
+ 'nikitabobko/tap':       "Supplies the `aerospace` cask (tiling window manager)",
+ 'openclaw/tap':          "Supplies `wacli` (WhatsApp CLI) and `goplaces`",
+ 'render-oss/render':     "⚠️ REDUNDANT — `render` now ships in homebrew/core",
+ 'steipete/tap':          "Peter Steinberger's macOS CLIs — supplies `bird`, `gifgrep`, `imsg`, `peekaboo`, `remindctl`, `sag`, `songsee`",
+ 'supabase/tap':          "⚠️ REDUNDANT — `supabase` now ships in homebrew/core",
+ 'yakitrak/yakitrak':     "Supplies `obsidian-cli` (drive Obsidian from the shell)",
+}
+
+# Homebrew ships no `desc` for font casks, so all 78 would render blank.
+# The useful fact is which ones this setup actually REFERENCES — verified by
+# grepping the configs, with the file:line that names each one.
+FONT_INFO = {
+ 'font-jetbrains-mono-nerd-font': "**IN USE** — wezterm's primary font (`.config/wezterm/wezterm.lua:17`)",
+ 'font-symbols-only-nerd-font':   "**IN USE** — wezterm icon fallback (`.config/wezterm/wezterm.lua:21`); required for glyphs",
+ 'font-fira-code':                "**IN USE** — Ghostty (`.config/ghostty/config`) and Zed buffer font",
+ 'font-fira-code-nerd-font':      "**IN USE** — Nerd-patched Fira Code (ligatures + icons)",
+ 'font-jetbrains-mono':           "**IN USE** — Zed terminal font (`.config/zed/settings.json:66`)",
+}
+FONT_DEFAULT = "Nerd Font — patched with icon glyphs. Not referenced by any config here"
+
 groups, cur = [], None
 for line in open(BF, encoding='utf-8'):
     line = line.rstrip('\n')
@@ -51,7 +83,10 @@ def info(kind, name, rest):
         if r: return md_escape(r[1]), r[2]
     elif kind == 'cask':
         r = cm.get(short)
-        if r: return md_escape(r[1]), r[2]
+        desc, url = (md_escape(r[1]), r[2]) if r else ('', '')
+        if short.startswith('font-') and not desc:
+            desc = FONT_INFO.get(short, FONT_DEFAULT)
+        return desc, url
     elif kind == 'vscode':
         r = vm.get(name.lower())
         if r:
@@ -67,7 +102,8 @@ def info(kind, name, rest):
             return md_escape(f"{nm} — by {sel}"), f"https://apps.apple.com/app/id{mid}"
         return '', f"https://apps.apple.com/app/id{mid}" if mid else ''
     elif kind == 'tap':
-        return 'Third-party Homebrew formula repository', f"https://github.com/{name.split('/')[0]}/homebrew-{name.split('/')[-1]}"
+        return (TAP_INFO.get(name, 'Third-party formula repository'),
+                f"https://github.com/{name.split('/')[0]}/homebrew-{name.split('/')[-1]}")
     return '', ''
 
 now = datetime.date.today().isoformat()
@@ -84,8 +120,12 @@ A('|---|---|')
 A('| Formulae / casks | `brew info --json=v2` (Homebrew\'s own `desc` + `homepage`) |')
 A('| VS Code extensions | each extension\'s local `package.json` manifest |')
 A('| App Store apps | Apple iTunes Lookup API (`trackName`, `sellerName`, `trackViewUrl`) |')
+A('| Taps | Which packages in *this* Brewfile each tap supplies, resolved from install receipts |')
+A('| Fonts | Whether the font is referenced by a config here, with the file:line that names it |')
 A('')
-A('A blank description means upstream ships none — nothing has been invented to fill a gap.')
+A('Homebrew ships no description for taps or font casks, so those two columns state something')
+A('more useful instead: what the tap actually gives you, and whether a font is really in use.')
+A('Taps flagged **REDUNDANT** supply nothing you use — their formulae moved into homebrew/core.')
 A('')
 A(f'Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py` · last built {now}')
 A('')
