@@ -365,11 +365,21 @@ if command -v mise &> /dev/null && mise current ruby &> /dev/null; then
         ((FAILED++))
     fi
 
-    if command -v rails &> /dev/null; then
-        echo -e "${GREEN}✓${NC} Rails: ${GREEN}installed${NC} ($(rails --version))"
+    # macOS ships a /usr/bin/rails STUB that exists, is executable, and exits
+    # 0 while printing "Rails is not currently installed on this system."
+    # So neither `command -v rails` nor its exit code can tell you anything —
+    # the old check reported "installed" and then printed that very error as
+    # the version string. Match the actual version output instead.
+    _rails_version=$(rails --version 2>/dev/null | grep -oE '^Rails [0-9]+\.[0-9]+\.[0-9.]+' || true)
+
+    if [[ -n "$_rails_version" ]]; then
+        echo -e "${GREEN}✓${NC} Rails: ${GREEN}installed${NC} ($_rails_version)"
         ((PASSED++))
+    elif [[ "$(command -v rails)" == "/usr/bin/rails" ]]; then
+        echo -e "${YELLOW}⚠${NC} Rails: ${YELLOW}not installed (only the macOS system stub) — 'gem install rails'${NC}"
+        ((WARNINGS++))
     else
-        echo -e "${YELLOW}⚠${NC} Rails: ${YELLOW}not installed (optional)${NC}"
+        echo -e "${YELLOW}⚠${NC} Rails: ${YELLOW}not installed (optional) — 'gem install rails'${NC}"
         ((WARNINGS++))
     fi
 fi

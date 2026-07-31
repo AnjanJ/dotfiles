@@ -54,5 +54,7 @@
   "alwaysThinkingEnabled": false,
   "effortLevel": "high",
   "skipDangerousModePermissionPrompt": true,
-  "skipAutoPermissionPrompt": true
+  "theme": "dark",
+  "skipAutoPermissionPrompt": true,
+  "tui": "fullscreen"
 }

@@ -197,15 +197,15 @@ alias lzd='lazydocker'
 #   Press → (right arrow) or End to accept the suggestion.
 # zsh-syntax-highlighting: colors commands as you type so typos and unknown
 #   commands stand out in red before you hit enter.
-# Order matters: autosuggestions first, syntax-highlighting LAST.
+# Order matters: autosuggestions first, syntax-highlighting LAST now lives in .zshrc.
 
 if [[ -f /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]]; then
     source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
     ZSH_AUTOSUGGEST_STRATEGY=(history completion)
 fi
 
-if [[ -f /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]]; then
-    source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+if command -v atuin > /dev/null; then
+    eval "$(atuin init zsh)"
 fi
 
 # ============================================
@@ -254,5 +254,3 @@ fi
 # ============================================
 # END OF TERMINAL ENHANCEMENTS
 # ============================================
-
-echo "✅ Terminal enhancements loaded! Try: cd (smart zoxide), cdi (interactive), ls, cat, grep, find, help, lg, vim, llm, ghcs"

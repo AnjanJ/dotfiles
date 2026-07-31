@@ -4,9 +4,10 @@ erlang = "latest"
 go = "latest"
 node = "latest"
 python = "latest"
-ruby = "4.0.5"
+ruby = "latest"
 rust = "latest"
 yarn = "latest"
+java = "temurin-17"
 
 [settings]
 idiomatic_version_file_enable_tools = ["node", "ruby"]
