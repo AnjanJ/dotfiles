@@ -17,7 +17,8 @@
 #   --email "a@b.com"   Git personal email
 #   --work-email "x@y"  Git work email (enables work identity)
 #   --work-dir "~/work" Work directory (default: ~/work)
-#   --theme <name>      Theme: tokyo-night or aura (default: tokyo-night)
+#   --theme <name>      Theme: tokyo-night, aura, or catppuccin
+#                       (default: tokyo-night)
 #   --ssh <mode>        SSH: 1password, existing, generate, skip
 #                       Default: auto-detect 1Password SSH agent if running,
 #                       otherwise skip. Force with --ssh 1password.
@@ -60,6 +61,71 @@ fi
 
 set -euo pipefail
 
+# Homebrew's env hints add several lines of noise after every install.
+# We print our own progress; theirs just buries it.
+export HOMEBREW_NO_ENV_HINTS=1
+
+# ── Abnormal-exit reporting ───────────────────
+# Under `set -e` any unhandled failure kills the script silently — you get
+# a returned prompt and no idea which step died. These traps name the step,
+# line, and command so a failed run is diagnosable instead of a mystery.
+#
+# Deliberately plain `echo` rather than print_warning: these traps are
+# installed BEFORE scripts/_helpers.sh is sourced, so on an early failure
+# the pretty printers don't exist yet and calling them would fail inside
+# the trap — losing the very message we're trying to surface.
+#
+# Note: SIGKILL (e.g. the OOM killer) cannot be trapped. If a run dies with
+# no output from any of these, that absence is itself the diagnosis —
+# suspect memory pressure, not a bug in this script.
+_CURRENT_STEP="startup"
+_INSTALL_COMPLETE=false
+
+_on_error() {
+    local exit_code=$?
+    local line_no=$1
+    echo "" >&2
+    echo "  ==========================================" >&2
+    echo "  ❌ INSTALL FAILED" >&2
+    echo "  ==========================================" >&2
+    echo "" >&2
+    echo "    Step:     $_CURRENT_STEP" >&2
+    echo "    Line:     $line_no of install.sh" >&2
+    echo "    Command:  ${BASH_COMMAND}" >&2
+    echo "    Exit:     $exit_code" >&2
+    echo "" >&2
+    echo "    This script is idempotent — fix the cause and re-run." >&2
+    echo "    Downloads are cached, so a re-run resumes rather than restarts." >&2
+    echo "" >&2
+}
+
+_on_exit() {
+    local exit_code=$?
+    # Stop the sudo keep-alive (set later, once sudo is obtained) so no
+    # background process outlives the script.
+    [[ -n "${_SUDO_KEEPALIVE_PID:-}" ]] && kill "$_SUDO_KEEPALIVE_PID" 2>/dev/null
+    if [[ "$_INSTALL_COMPLETE" == false && $exit_code -eq 0 ]]; then
+        # Exited cleanly but never reached the end — a subshell called
+        # exit, or the process was signalled.
+        echo "" >&2
+        echo "  ⚠️  Install ended early during: $_CURRENT_STEP" >&2
+        echo "     Re-run to continue — nothing is half-applied." >&2
+        echo "" >&2
+    fi
+}
+
+_on_interrupt() {
+    echo "" >&2
+    echo "  ⚠️  Interrupted during: $_CURRENT_STEP" >&2
+    echo "     Re-run to continue — nothing is half-applied." >&2
+    echo "" >&2
+    exit 130
+}
+
+trap '_on_error $LINENO' ERR
+trap _on_exit EXIT
+trap _on_interrupt INT TERM
+
 # ── Parse Arguments ───────────────────────────
 
 INTERACTIVE=false
@@ -74,6 +140,8 @@ WORK_DIR="${DOTFILES_WORK_DIR:-}"
 SELECTED_THEME="${DOTFILES_THEME:-}"
 SSH_MODE="${DOTFILES_SSH_MODE:-}"
 SELECTED_GROUPS="${DOTFILES_GROUPS:-}"
+
+_CURRENT_STEP="parsing arguments"
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -90,6 +158,7 @@ while [[ $# -gt 0 ]]; do
         --help)
             # Print the usage block from the header
             sed -n '/^# Usage:/,/^# ====/{ /^# ====/d; s/^# //; s/^#//; p; }' "$0"
+            _INSTALL_COMPLETE=true   # --help is a legitimate early exit
             exit 0
             ;;
         *) shift ;;
@@ -101,6 +170,8 @@ export INTERACTIVE FORCE_INSTALL GIT_NAME GIT_EMAIL GIT_WORK_EMAIL WORK_DIR SSH_
 
 # ── Setup ─────────────────────────────────────
 
+_CURRENT_STEP="loading helpers"
+
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Shared colors & print functions
@@ -109,7 +180,59 @@ source "$DOTFILES_DIR/scripts/_helpers.sh"
 # Check if running on macOS
 if [[ "$(uname)" != "Darwin" ]]; then
     print_error "This script is only for macOS"
+    _INSTALL_COMPLETE=true   # deliberate exit, not a crash
     exit 1
+fi
+
+# ── Sudo: ask once, hold for the whole run ────
+# Several casks run `sudo /usr/sbin/installer` internally. macOS expires the
+# sudo timestamp after ~5 minutes, so on a long install you get re-prompted
+# repeatedly — and worse, those prompts appear mid-`brew bundle` where output
+# is interleaved and it isn't obvious anything is waiting.
+#
+# So: prompt ONCE here, up front, where the ask is expected. Then refresh the
+# existing timestamp in the background so it never expires mid-run.
+#
+# The keep-alive re-runs `sudo -n true`, which only refreshes an ALREADY
+# valid timestamp and can never itself prompt. It exits when the parent does,
+# so no process is left holding root after the script ends. We deliberately
+# do NOT cache a password anywhere — the timestamp is the mechanism macOS
+# provides for exactly this, and stashing a password would be far worse.
+_CURRENT_STEP="requesting sudo access"
+
+_SUDO_KEEPALIVE_PID=""
+
+if sudo -n true 2>/dev/null; then
+    print_success "sudo already authenticated"
+    _SUDO_OK=true
+else
+    echo ""
+    print_step "Some casks need administrator rights to install."
+    print_step "Enter your macOS password once — it won't be asked again."
+    print_step "(Skip with Ctrl-C only if you don't want those casks; or set"
+    print_step " DOTFILES_NO_SUDO=1 to never be asked.)"
+    echo ""
+    if [[ -n "${DOTFILES_NO_SUDO:-}" ]]; then
+        _SUDO_OK=false
+        print_warning "DOTFILES_NO_SUDO set — skipping casks that need an installer"
+    elif sudo -v; then
+        _SUDO_OK=true
+    else
+        _SUDO_OK=false
+        print_warning "No sudo access — casks needing an installer will be skipped"
+    fi
+fi
+
+if [[ "${_SUDO_OK:-false}" == true ]]; then
+    # Refresh every 60s until the parent exits.
+    while true; do
+        sudo -n true 2>/dev/null || exit
+        sleep 60
+        kill -0 "$$" 2>/dev/null || exit
+    done &
+    _SUDO_KEEPALIVE_PID=$!
+    # Cleanup is handled inside _on_exit — installing a second EXIT trap here
+    # would REPLACE the existing one and silence the early-exit reporting.
 fi
 
 echo ""
@@ -119,7 +242,7 @@ echo "  =========================================="
 echo ""
 echo "  This will install:"
 echo "    - Homebrew packages"
-echo "    - Aerospace (window manager)"
+echo "    - Aerospace (window manager) + sketchybar + borders"
 echo "    - Ghostty terminal"
 echo "    - Neovim + AstroNvim"
 echo "    - Zellij (terminal multiplexer)"
@@ -137,6 +260,9 @@ echo ""
 echo "  Mac App Store apps are skipped unless you're signed in."
 echo "  Xcode (~15GB) is opt-in and never blocks the rest of the install."
 echo ""
+echo "  This takes a while. The two slow parts are the Homebrew download"
+echo "  phase and step 6, where Erlang and Rust compile from source."
+echo ""
 echo ""
 
 if [[ "$INTERACTIVE" == true ]]; then
@@ -144,6 +270,7 @@ if [[ "$INTERACTIVE" == true ]]; then
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
         print_warning "Installation cancelled"
+        _INSTALL_COMPLETE=true   # user cancelled deliberately
         exit 1
     fi
 fi
@@ -154,6 +281,8 @@ print_step "Dotfiles directory: $DOTFILES_DIR"
 # ============================================
 # THEME SELECTION
 # ============================================
+_CURRENT_STEP="theme selection"
+
 source "$DOTFILES_DIR/scripts/theme-utils.sh"
 
 if [[ -z "$SELECTED_THEME" ]]; then
@@ -180,6 +309,7 @@ print_success "Theme: $SELECTED_THEME"
 # ============================================
 # 1. INSTALL HOMEBREW
 # ============================================
+_CURRENT_STEP="Step 1: installing Homebrew"
 echo ""
 print_step "Step 1: Installing Homebrew..."
 
@@ -197,12 +327,39 @@ if ! command -v brew &> /dev/null; then
     fi
     print_success "Homebrew installed"
 else
-    print_success "Homebrew already installed"
+    print_success "Homebrew already installed ($(brew --version | head -1))"
+fi
+
+# ── Rosetta 2 (Apple Silicon only) ────────────
+# Some casks ship Intel-only installer packages — adobe-digital-editions is
+# one. Without Rosetta, `/usr/sbin/installer` fails with "This package
+# requires Rosetta 2", and because that failure happens INSIDE the cask's
+# sudo installer it looked like a password problem rather than an
+# architecture one.
+#
+# Installing it up front is cheap (~1s if already present) and turns an
+# unavoidable failure into a working install.
+_CURRENT_STEP="Step 1b: Rosetta 2"
+
+if [[ "$(uname -m)" == "arm64" ]]; then
+    # oahd is the Rosetta daemon — running means Rosetta is installed.
+    if /usr/bin/pgrep -q oahd; then
+        print_success "Rosetta 2 already installed"
+    else
+        echo ""
+        print_step "Step 1b: Installing Rosetta 2 (needed by Intel-only casks)..."
+        if sudo softwareupdate --install-rosetta --agree-to-license; then
+            print_success "Rosetta 2 installed"
+        else
+            print_warning "Rosetta 2 install failed — Intel-only casks will be skipped"
+        fi
+    fi
 fi
 
 # ============================================
 # 2. INSTALL PACKAGES FROM BREWFILE
 # ============================================
+_CURRENT_STEP="Step 2: installing Homebrew packages"
 echo ""
 print_step "Step 2: Installing packages from Brewfile..."
 
@@ -263,12 +420,47 @@ appstore_ready() {
     return 1
 }
 
+# mas ships in the core group, but appstore_ready() needs it to already
+# exist. On a freshly-wiped machine it doesn't — Homebrew itself was only
+# installed moments ago in step 1 — so the check below would report "not
+# signed in" and silently strip every App Store app on the first run.
+# This only ever reproduces on a genuinely fresh box, which is why it
+# survived so long. Install mas up front.
+if ! command -v mas &>/dev/null; then
+    print_step "Installing mas first (needed to detect App Store sign-in)..."
+    brew install mas || print_warning "Could not install mas — App Store apps will be skipped"
+fi
+
 APPSTORE_READY=false
 if appstore_ready; then
     APPSTORE_READY=true
 fi
 
+# ── Trust third-party taps ────────────────────
+# Homebrew 6 refuses to load formulae or casks from untrusted third-party
+# taps, and a single refusal aborts the ENTIRE fetch phase — so one
+# untrusted tap blocks all ~100 packages. Trusting them up front turns a
+# cascade of confusing failures into a no-op.
+#
+# Trust is not a formality: a tap is arbitrary Ruby that brew runs with
+# your privileges. Only taps declared in this repo's own Brewfile are
+# trusted here — review a tap before you add it, not after.
+_CURRENT_STEP="Step 2a: trusting third-party taps"
+echo ""
+print_step "Step 2a: Trusting third-party taps declared in the Brewfile..."
+
+while IFS= read -r _tap; do
+    [[ -z "$_tap" ]] && continue
+    if brew trust "$_tap" &>/dev/null; then
+        print_success "Trusted tap: $_tap"
+    else
+        print_warning "Could not trust tap: $_tap (its packages may be skipped)"
+    fi
+done < <(grep -E '^tap "' "$_INSTALL_BREWFILE" | sed 's/^tap "\([^"]*\)".*/\1/' || true)
+
 # Always drop Xcode from the bundle — it's handled separately.
+_CURRENT_STEP="Step 2: installing Homebrew packages"
+echo ""
 _stripped=$(mktemp "${TMPDIR:-/tmp}/Brewfile.XXXXXX")
 if [[ "$APPSTORE_READY" == true ]]; then
     grep -vE '^mas "Xcode"' "$_INSTALL_BREWFILE" > "$_stripped"
@@ -281,23 +473,87 @@ else
 fi
 mv "$_stripped" "$_INSTALL_BREWFILE"
 
-if brew bundle install --file="$_INSTALL_BREWFILE"; then
-    print_success "Packages installed"
-else
-    print_warning "Some packages failed — collecting the list..."
-    # `brew bundle check --verbose` reports what's still missing, one
-    # "→ Cask foo needs to be installed" line per item. Those lines go to
-    # STDERR, not stdout — redirect 2>&1 or the list comes back empty.
+_PKG_TOTAL=$(grep -cE '^(brew|cask|mas|vscode) ' "$_INSTALL_BREWFILE" || true)
+print_step "Installing $_PKG_TOTAL packages."
+print_warning "Homebrew downloads everything before installing anything, so the"
+print_warning "first several minutes are quiet. That is not a hang."
+echo ""
+
+# ── Per-entry fallback ────────────────────────
+# `brew bundle` fetches EVERYTHING before installing ANYTHING, and one bad
+# fetch aborts the whole phase. A single upstream checksum mismatch (a
+# vendor republishing a download without a version bump, say) therefore
+# blocks all ~100 packages — you end up with a fully configured machine
+# and no tools on it.
+#
+# So: try the fast bulk path first, and if it fails, install entry by entry
+# so one broken package costs exactly one package. Each entry is handed
+# back to `brew bundle` as a single-line Brewfile rather than parsed into
+# `brew install` — that preserves per-entry options like `link: false` and
+# `restart_service: :changed`, which a naive parser would drop.
+install_entries_individually() {
+    local brewfile="$1"
+    local line name kind tmp taps
+    local done_count=0
+
+    taps=$(grep -E '^tap "' "$brewfile" || true)
+
     while IFS= read -r line; do
-        [[ -z "$line" ]] && continue
-        FAILED_PACKAGES+=("$line")
-    done < <(brew bundle check --file="$_INSTALL_BREWFILE" --verbose 2>&1 \
-             | grep -E '^→' | sed 's/^→ //' || true)
+        [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
+        [[ "$line" =~ ^(brew|cask|mas|vscode)[[:space:]] ]] || continue
+
+        kind="${line%% *}"
+        name=$(echo "$line" | sed 's/^[a-z]* "\([^"]*\)".*/\1/')
+        done_count=$((done_count + 1))
+
+        printf "  [%d/%d] %-6s %-40s " "$done_count" "$_PKG_TOTAL" "$kind" "$name"
+
+        tmp=$(mktemp "${TMPDIR:-/tmp}/Brewfile.one.XXXXXX")
+        # Carry the taps over so tapped formulae still resolve.
+        printf '%s\n' "$taps" > "$tmp"
+        echo "$line" >> "$tmp"
+
+        # Keep the output so a failure can be classified rather than just
+        # counted — "why" is the thing that was missing when these failed.
+        local log
+        log=$(mktemp "${TMPDIR:-/tmp}/brew.one.log.XXXXXX")
+
+        if brew bundle install --file="$tmp" &>"$log"; then
+            echo "ok"
+        else
+            local reason=""
+            if grep -q "No apps found in the App Store" "$log"; then
+                reason=" — App Store ID is dead/region-locked; look it up with: mas search '$name'"
+            elif grep -qi "requires Rosetta" "$log"; then
+                reason=" — Intel-only package; run: sudo softwareupdate --install-rosetta"
+            elif grep -qi "SHA256 mismatch\|checksum" "$log"; then
+                reason=" — upstream checksum mismatch (vendor republished); retry later"
+            elif grep -qi "is already installed" "$log"; then
+                reason=" — already installed outside Homebrew"
+            fi
+            echo "FAILED${reason}"
+            FAILED_PACKAGES+=("$kind $name${reason}")
+        fi
+        rm -f "$tmp" "$log"
+    done < "$brewfile"
+}
+
+if brew bundle install --file="$_INSTALL_BREWFILE" --verbose; then
+    print_success "All $_PKG_TOTAL packages installed"
+else
+    echo ""
+    print_warning "Bulk install failed — in brew bundle, one bad package aborts"
+    print_warning "the whole batch. Retrying one at a time so a single failure"
+    print_warning "cannot block the other $((_PKG_TOTAL - 1)). Slower, but complete."
+    echo ""
+    install_entries_individually "$_INSTALL_BREWFILE"
 fi
 
 [[ "$_BREWFILE_IS_TEMP" == true ]] && rm -f "$_INSTALL_BREWFILE"
 
 # ── Xcode (opt-in, separate) ──────────────────
+_CURRENT_STEP="Step 2b: Xcode (optional)"
+
 if [[ -n "$XCODE_ENTRY" && "$APPSTORE_READY" == true ]]; then
     if [[ -d "/Applications/Xcode.app" ]]; then
         print_success "Xcode already installed"
@@ -325,10 +581,20 @@ fi
 # ============================================
 # 3. CREATE NECESSARY DIRECTORIES
 # ============================================
+# Only directories that are NOT themselves symlink targets.
+#
+# Pre-creating ~/.config/nvim et al. used to break step 4: `ln -sf` onto an
+# existing directory creates the link INSIDE it (~/.config/nvim/nvim ->
+# repo) instead of replacing it. Step 4 reported success, the health check
+# then reported "not a symlink", and those configs silently never applied.
+# create_symlink now also handles a pre-existing real directory, but not
+# creating them in the first place is the actual fix.
+# ============================================
+_CURRENT_STEP="Step 3: creating config directories"
 echo ""
 print_step "Step 3: Creating configuration directories..."
 
-mkdir -p ~/.config/{aerospace,ghostty,nvim,zellij,zed/snippets}
+mkdir -p ~/.config/zed/snippets
 mkdir -p ~/bin
 
 print_success "Directories created"
@@ -346,6 +612,7 @@ print_success "Directories created"
 # worst case is now "runtimes missing" (rerun `mise install`) instead of
 # "nothing configured".
 # ============================================
+_CURRENT_STEP="Step 4: creating symlinks"
 echo ""
 print_step "Step 4: Creating symlinks..."
 
@@ -357,12 +624,24 @@ create_symlink() {
 
     if [ -L "$target" ] && [ "$(readlink "$target")" = "$source" ] && [ "$FORCE_INSTALL" = false ]; then
         print_success "$name already linked"
-    else
-        backup_if_needed "$target"
-        mkdir -p "$(dirname "$target")"
-        ln -sf "$source" "$target"
-        print_success "$name linked"
+        return 0
     fi
+
+    backup_if_needed "$target"
+
+    # A real (non-symlink) directory at the target must be REMOVED, not
+    # linked over: `ln -sf dir existing_dir` silently nests the link inside
+    # it. backup_if_needed has already copied it to $BACKUP_DIR, so this is
+    # recoverable. This also repairs machines broken by the old step-3
+    # mkdir behaviour.
+    if [ -d "$target" ] && [ ! -L "$target" ]; then
+        rm -rf "$target"
+        print_warning "$name: replaced existing directory (backed up)"
+    fi
+
+    mkdir -p "$(dirname "$target")"
+    ln -sf "$source" "$target"
+    print_success "$name linked"
 }
 
 # The full list of managed links lives in scripts/symlink-map.sh —
@@ -375,6 +654,7 @@ print_success "All symlinks processed"
 # ============================================
 # 5. APPLY SELECTED THEME
 # ============================================
+_CURRENT_STEP="Step 5: applying $SELECTED_THEME theme"
 echo ""
 print_step "Step 5: Applying $SELECTED_THEME theme everywhere..."
 
@@ -386,24 +666,39 @@ apply_theme "$SELECTED_THEME"
 # ============================================
 # Runs AFTER symlinks + theme so a source-compile failure can't leave
 # the machine unconfigured. See the note on step 4.
+_CURRENT_STEP="Step 6: mise runtimes (Erlang/Rust compile from source)"
 echo ""
 print_step "Step 6: Setting up mise (version manager)..."
 
-# The mise config symlink itself is created in step 4 — it's declared in
-# scripts/symlink-map.sh like every other managed link. Only trust and
-# runtime installation happen here.
-if [[ ! -e "$HOME/.config/mise/config.toml" ]]; then
+# mise was installed by brew bundle moments ago, but this shell's PATH was
+# resolved before that. Re-evaluate brew's shellenv rather than reporting
+# "mise: command not found" and skipping every runtime.
+if ! command -v mise &>/dev/null && [[ -x /opt/homebrew/bin/brew ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+    hash -r
+fi
+
+if ! command -v mise &>/dev/null; then
+    print_warning "mise not on PATH — skipping runtime install"
+    print_warning "  Restart your shell, then run: mise install"
+    FAILED_PACKAGES+=("mise runtimes — mise itself was unavailable; run 'mise install' later")
+elif [[ ! -e "$HOME/.config/mise/config.toml" ]]; then
     print_warning "mise config not found — skipping runtime install"
 else
     # Trust the config file (mise refuses to read untrusted configs)
     mise trust "$HOME/.config/mise/config.toml" 2>/dev/null || true
 
-    print_step "Installing language runtimes (Erlang/Rust compile from source — this can take 30+ min)..."
+    print_step "Installing language runtimes..."
+    print_warning "Erlang and Rust compile from source. Expect 30+ minutes and"
+    print_warning "long silences between compiler output — that is not a hang."
+    echo ""
 
     # Deliberately NOT fatal: `set -e` would abort the entire install on a
     # single failed compile. Everything below this point still runs.
-    if mise install; then
+    if mise install --verbose; then
         print_success "Language runtimes installed"
+        echo ""
+        mise list 2>/dev/null || true
     else
         print_warning "Some runtimes failed to build. Everything else continues."
         print_warning "  Retry individually, e.g.: mise install erlang"
@@ -414,6 +709,7 @@ fi
 # ============================================
 # 7. SET UP NEOVIM
 # ============================================
+_CURRENT_STEP="Step 7: Neovim"
 echo ""
 print_step "Step 7: Setting up Neovim..."
 
@@ -427,11 +723,13 @@ print_success "Neovim configuration linked (plugins will install on first launch
 #   - Wire `llm` to talk to Ollama (one-time plugin install, fast)
 # We deliberately DO NOT pull models here (each is multi-GB) or set API
 # keys (private). Those are surfaced in "Next Steps" at end of install.
+_CURRENT_STEP="Step 7b: wiring llm <-> ollama"
 echo ""
 print_step "Step 7b: Wiring llm <-> ollama..."
 
 if command -v llm &>/dev/null; then
     if ! llm plugins 2>/dev/null | grep -q llm-ollama; then
+        print_step "Installing llm-ollama plugin..."
         llm install llm-ollama && print_success "llm-ollama plugin installed"
     else
         print_success "llm-ollama plugin already installed"
@@ -443,6 +741,7 @@ fi
 # ============================================
 # 8. SET UP SHELL
 # ============================================
+_CURRENT_STEP="Step 8: shell setup"
 echo ""
 print_step "Step 8: Setting up shell..."
 
@@ -466,18 +765,21 @@ fi
 # ============================================
 # 8b. GIT CONFIGURATION
 # ============================================
+_CURRENT_STEP="Step 8b: git configuration"
 source "$DOTFILES_DIR/scripts/setup-git.sh"
 setup_git
 
 # ============================================
 # 8c. SSH CONFIGURATION
 # ============================================
+_CURRENT_STEP="Step 8c: SSH configuration"
 source "$DOTFILES_DIR/scripts/setup-ssh.sh"
 setup_ssh
 
 # ============================================
 # 9. MACOS DEFAULTS
 # ============================================
+_CURRENT_STEP="Step 9: macOS defaults"
 echo ""
 if [[ "$INTERACTIVE" == true ]]; then
     read -r -p "Apply recommended macOS defaults? (y/n) " -n 1
@@ -548,13 +850,24 @@ fi
 # ============================================
 # 10. RUN HEALTH CHECK
 # ============================================
+# NON-FATAL by design. health-check.sh exits non-zero whenever anything is
+# missing, which under `set -e` killed the install immediately before the
+# summary — the diagnostic destroying the report it exists to inform. A
+# check that reports problems must never itself become one.
+# ============================================
+_CURRENT_STEP="Step 10: health check"
 echo ""
 print_step "Step 10: Running health check..."
-bash "$DOTFILES_DIR/scripts/health-check.sh"
+if bash "$DOTFILES_DIR/scripts/health-check.sh"; then
+    print_success "Health check passed"
+else
+    print_warning "Health check reported issues (listed above) — install continues"
+fi
 
 # ============================================
 # INSTALLATION COMPLETE
 # ============================================
+_CURRENT_STEP="printing summary"
 echo ""
 echo "  =========================================="
 echo "  Installation Complete!"
@@ -562,7 +875,7 @@ echo "  =========================================="
 echo ""
 echo "📋 Next Steps:"
 echo ""
-echo "1. Restart your terminal or run: source ~/.zshrc"
+echo "1. Restart your terminal or run: exec \$SHELL -l"
 echo ""
 echo "2. Open Neovim to install plugins:"
 echo "   nvim"
@@ -576,7 +889,13 @@ echo "   mise list"
 echo "   # Anything missing (Erlang/Rust compile from source and can fail):"
 echo "   mise install"
 echo ""
-echo "5. Sign in to 1Password (recommended for SSH + secrets):"
+echo "5. Android SDK (needed by Flutter):"
+echo "   sdkmanager --licenses"
+echo "   sdkmanager \"platform-tools\" \"platforms;android-35\""
+echo "   flutter config --jdk-dir \"\$(mise where java@temurin-17)\""
+echo "   flutter doctor -v"
+echo ""
+echo "6. Sign in to 1Password (recommended for SSH + secrets):"
 echo ""
 echo "   # a) Open 1Password.app → sign in to your account"
 echo "   #    (your vaults sync from cloud automatically)"
@@ -590,7 +909,7 @@ echo ""
 echo "   Note: SSH keys must already be in your 1Password vault (synced"
 echo "   from another machine, or add them via 1Password → New Item → SSH Key)."
 echo ""
-echo "6. Set up AI tooling (one-time, optional):"
+echo "7. Set up AI tooling (one-time, optional):"
 echo ""
 echo "   # Pull a local model (~5GB, ~5 min) — recommended default"
 echo "   ollama pull qwen2.5-coder:7b"
@@ -607,11 +926,14 @@ echo ""
 echo "   # Authenticate gh + GitHub Copilot CLI (for ghcs / ghce)"
 echo "   gh auth login"
 echo ""
-echo "7. Run health check anytime:"
-echo "   bash $DOTFILES_DIR/scripts/health-check.sh"
+echo "8. Regenerate the package catalog after Brewfile changes:"
+echo "   python3 $DOTFILES_DIR/scripts/catalog/build-catalog.py"
 echo ""
-echo "8. Update dotfiles in the future:"
-echo "   bash $DOTFILES_DIR/update.sh"
+echo "9. Run health check anytime:"
+echo "   dotfiles health"
+echo ""
+echo "10. Update dotfiles in the future:"
+echo "    bash $DOTFILES_DIR/update.sh"
 echo ""
 echo "🎨 Theme: $SELECTED_THEME (applied everywhere)"
 echo "   Switch anytime: dotfiles theme"
@@ -636,10 +958,17 @@ if [[ ${#FAILED_PACKAGES[@]} -gt 0 ]]; then
     echo "  Retry all of them with:"
     echo "    cd $DOTFILES_DIR && brew bundle install --file=Brewfile"
     echo ""
+    echo "  A cask that fails on a checksum mismatch is an upstream problem:"
+    echo "  the vendor republished the download without a version bump. Wait"
+    echo "  for the cask to be updated, or comment it out of the Brewfile."
+    echo ""
 else
     print_success "Every selected package installed cleanly"
     echo ""
 fi
+
+# Reached the end — tells the EXIT trap this was a normal finish.
+_INSTALL_COMPLETE=true
 
 echo "Enjoy your new setup! 🚀"
 echo ""

@@ -59,18 +59,38 @@ _pick_key() {
         return
     fi
 
-    echo ""
-    echo "  Available keys:"
+    # All human-facing output here goes to stderr. This function is called in
+    # a $(...) substitution, so anything on stdout becomes part of the
+    # returned key filename — the menu itself would be swallowed into it.
     local i=1
-    for k in "${keys[@]}"; do
-        local comment
-        comment=$(awk '{print $3}' "$dir/$k.pub" 2>/dev/null)
-        echo "    $i) $k ${comment:+— $comment}"
-        ((i++))
-    done
-    echo "    $i) None / Skip"
+    {
+        echo ""
+        echo "  Available keys:"
+        for k in "${keys[@]}"; do
+            local comment
+            comment=$(awk '{print $3}' "$dir/$k.pub" 2>/dev/null)
+            echo "    $i) $k ${comment:+— $comment}"
+            ((i++))
+        done
+        echo "    $i) None / Skip"
+    } >&2
 
-    read -r -p "  Which key for $purpose? (1-$i): " KEY_NUM
+    # This function returns its answer on stdout, so the prompt must go to
+    # stderr — otherwise the prompt text is captured as the key filename.
+    # A non-interactive run picks the sole key if there's exactly one, and
+    # otherwise declines to guess.
+    local KEY_NUM=""
+    if [[ "${INTERACTIVE:-false}" != true ]]; then
+        if [[ ${#keys[@]} -eq 1 ]]; then
+            KEY_NUM=1
+        else
+            echo ""
+            return
+        fi
+    else
+        read -r -t 60 -p "  Which key for $purpose? (1-$i): " KEY_NUM >&2 || KEY_NUM=""
+    fi
+
     if [[ "$KEY_NUM" -ge 1 && "$KEY_NUM" -lt "$i" ]] 2>/dev/null; then
         echo "${keys[$((KEY_NUM-1))]}"
     else
@@ -82,21 +102,46 @@ SSH_HOSTS=()
 
 _pick_services_and_keys() {
     local use_1password="$1"
-    echo ""
-    echo "  Which Git services do you use? (select all that apply)"
-    echo ""
 
-    local i=1
-    for svc in "${_GIT_SERVICES[@]}"; do
-        local display="${svc%%|*}"
-        echo "    $i) $display"
-        ((i++))
-    done
-    echo ""
-    echo "  Enter numbers separated by spaces (e.g., 1 2 5), or 'none' to skip:"
-    read -r -p "  > " SELECTED_SERVICES
+    # GitHub is entry 1 in _GIT_SERVICES and the overwhelmingly common case.
+    # Used both as the non-interactive default and as the timeout fallback.
+    local _default_services="1"
 
-    if [[ "$SELECTED_SERVICES" == "none" || -z "$SELECTED_SERVICES" ]]; then
+    # A non-interactive run must never block here. This function is called by
+    # EVERY handler including the 1password path, which the non-interactive
+    # auto-detect selects — so without this guard `install.sh` (which is
+    # non-interactive by default) sat forever on a prompt nobody was watching.
+    if [[ "${INTERACTIVE:-false}" != true ]]; then
+        SELECTED_SERVICES="${DOTFILES_GIT_SERVICES:-$_default_services}"
+        print_success "Git services: GitHub (default — set DOTFILES_GIT_SERVICES to override)"
+    else
+        echo ""
+        echo "  Which Git services do you use? (select all that apply)"
+        echo ""
+
+        local i=1
+        for svc in "${_GIT_SERVICES[@]}"; do
+            local display="${svc%%|*}"
+            echo "    $i) $display"
+            ((i++))
+        done
+        echo ""
+        echo "  Enter numbers separated by spaces (e.g., 1 2 5), or 'none' to skip."
+        echo "  Waiting 60s — defaults to GitHub if you don't answer."
+
+        # -t 60: an unattended-but-interactive run (piped from curl, left on a
+        # second monitor) should proceed rather than hang overnight. `read`
+        # returns non-zero on timeout, so guard it under `set -e`.
+        if ! read -r -t 60 -p "  > " SELECTED_SERVICES; then
+            SELECTED_SERVICES=""
+            echo ""
+            print_warning "No answer in 60s — defaulting to GitHub"
+        fi
+        # Bare Enter means "default", not "none".
+        SELECTED_SERVICES="${SELECTED_SERVICES:-$_default_services}"
+    fi
+
+    if [[ "$SELECTED_SERVICES" == "none" ]]; then
         return
     fi
 
@@ -133,7 +178,10 @@ _pick_services_and_keys() {
             port="${port:-22}"
         fi
 
-        read -r -p "  Alias for this connection? (e.g., 'work' for github.com-work, or Enter for default): " alias_suffix
+        local alias_suffix=""
+        if [[ "${INTERACTIVE:-false}" == true ]]; then
+            read -r -t 60 -p "  Alias for this connection? (e.g., 'work' for github.com-work, or Enter for default): " alias_suffix || alias_suffix=""
+        fi
         if [[ -n "$alias_suffix" ]]; then
             alias_name="${hostname}-${alias_suffix}"
         else
