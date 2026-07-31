@@ -503,7 +503,11 @@ install_entries_individually() {
         [[ "$line" =~ ^(brew|cask|mas|vscode)[[:space:]] ]] || continue
 
         kind="${line%% *}"
-        name=$(echo "$line" | sed 's/^[a-z]* "\([^"]*\)".*/\1/')
+        # Entries look like: kind "name"[, opts]. Strip up to the opening
+        # quote, then everything from the closing one — native expansions
+        # rather than a sed subprocess (and one less fork per package).
+        name="${line#*\"}"
+        name="${name%%\"*}"
         done_count=$((done_count + 1))
 
         printf "  [%d/%d] %-6s %-40s " "$done_count" "$_PKG_TOTAL" "$kind" "$name"

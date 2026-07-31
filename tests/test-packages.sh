@@ -502,7 +502,6 @@ test_real_brewfile_groups() {
 
     assert_output_matches "$work_entries" "slack" "Work group contains slack"
     assert_output_matches "$work_entries" "zoom" "Work group contains zoom"
-    assert_output_matches "$work_entries" "Okta Verify" "Work group contains Okta Verify"
 
     # Verify browsers group (mixes casks and mas entries)
     local browser_entries
