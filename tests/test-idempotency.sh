@@ -733,10 +733,16 @@ test_16_ssh_config_no_key_field() {
 
     _build_ssh_config "true" 2>/dev/null
 
-    # Should NOT have any IdentityFile lines
+    # Should NOT have any IdentityFile lines — 1Password serves keys from the
+    # vault, so nothing lands on disk to point at.
     assert_count "$TEST_HOME/.ssh/config" "IdentityFile" 0 "No IdentityFile in 1Password mode"
-    # But should still have IdentitiesOnly
-    assert_count "$TEST_HOME/.ssh/config" "IdentitiesOnly yes" 2 "IdentitiesOnly on each host"
+
+    # And therefore NO IdentitiesOnly either. It restricts ssh to keys named
+    # by IdentityFile, so without one it filters out everything the agent
+    # offers and authentication can never succeed. This assertion previously
+    # required the opposite and locked in a config that always failed with
+    # "Permission denied (publickey)".
+    assert_count "$TEST_HOME/.ssh/config" "IdentitiesOnly yes" 0 "No IdentitiesOnly without IdentityFile"
 
     teardown_sandbox
 }

@@ -224,12 +224,16 @@ Host *
 
 SSHEOF
     else
+        # No global IdentitiesOnly here either: _pick_key returns empty when
+        # no keys are found, when the user picks Skip, or non-interactively
+        # when the choice is ambiguous. A global IdentitiesOnly would then
+        # restrict ssh to keys nothing ever named. It is set per-host below,
+        # next to the IdentityFile that gives it meaning.
         cat >> "$config_file" <<'SSHEOF'
 # Global defaults
 Host *
     AddKeysToAgent yes
     UseKeychain yes
-    IdentitiesOnly yes
 
 SSHEOF
     fi
@@ -254,11 +258,18 @@ SSHEOF
 
         [[ "$port" != "22" ]] && echo "    Port $port" >> "$config_file"
 
+        # IdentitiesOnly ONLY makes sense alongside an IdentityFile: it tells
+        # ssh to offer nothing except the keys named here. Writing it without
+        # one — which is exactly what the 1Password path does, since those
+        # keys live in the vault and never touch disk — filters out every key
+        # the agent offers, so authentication can never succeed. It produced a
+        # config that looked correct and always failed with "Permission denied
+        # (publickey)".
         if [[ -n "$keyfile" ]]; then
             echo "    IdentityFile ~/.ssh/$keyfile" >> "$config_file"
+            echo "    IdentitiesOnly yes" >> "$config_file"
         fi
 
-        echo "    IdentitiesOnly yes" >> "$config_file"
         echo "" >> "$config_file"
 
         if [[ "$alias_name" != "$hostname" ]]; then
