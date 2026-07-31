@@ -1,7 +1,7 @@
 # ============================================
 # DHH-INSPIRED RAILS DEVELOPER CONFIGURATION
 # ============================================
-# Last Updated: 2025-11-23
+# Last Updated: 2026-07-31
 # Description: DHH-style Rails/Git workflow
 #              with productivity shortcuts
 #
@@ -18,17 +18,16 @@
 #  2. Bundle Shortcuts (b, be, bi, bu)
 #  3. Git Workflow (ga, gc, gp, etc.)
 #  4. Rails Functions (railsnew, cdroot, serve, dbreset)
-#  5. Development Services (devstart, devstop)
-#  6. Logging (logtail, logclear)
+#  5. Development Services (devstart, devstop, sq)
+#  6. Logging (logtail, logclear, logview, logspin)
 #  7. Code Quality (cop, brake, bestpractices)
-#  8. Docker Compose (dc, dcu, dcr, etc.)
-#  9. Heroku (h, hl, hc, hm)
-# 10. Environment Setup (RUBY_CONFIGURE_OPTS, DISABLE_SPRING)
-# 11. Shell Settings (history, AUTO_CD)
-# 12. Rails Environment (dev, railstest, prod)
-# 13. Database Helpers (psql-dev, pg-*, dbconsole)
-# 14. Rails Credentials (creds, creds-prod)
-# 15. Alias Discovery (alias-search, alias-rails, alias-git, etc.)
+#  8. Professional Rails Setup Tools (rails-setup-*)
+#  9. Docker Compose (dc, dcu, dcr, etc.)
+# 10. Shell Settings (history, AUTO_CD)
+# 11. Rails Environment (dev, railstest, prod)
+# 12. Database Helpers (psql-dev, pg-*, dbconsole)
+# 13. Rails Credentials (creds, creds-prod)
+# 14. Alias Discovery (alias-search, alias-rails, alias-git, etc.)
 #
 # ============================================
 
@@ -116,7 +115,9 @@ alias gp='git push'
 alias gl='git pull'
 alias gd='git diff'
 alias gdc='git diff --cached'
-alias gclean='git branch --merged | grep -v "\\*" | xargs -n 1 git branch -d'
+# /usr/bin/grep — `grep` is aliased to rg in terminal-enhancements, which
+# has different flag semantics and would break this pipeline.
+alias gclean='git branch --merged | /usr/bin/grep -v "\\*" | xargs -n 1 git branch -d'
 
 # ============================================
 # 4. RAILS FUNCTIONS
@@ -258,7 +259,7 @@ sq() {
 }
 
 # ============================================
-# 7. LOGGING
+# 6. LOGGING
 # ============================================
 
 alias logtail='tail -f log/development.log'
@@ -271,7 +272,7 @@ alias logview='lnav log/development.log'
 alias logspin='tailspin -f log/development.log'
 
 # ============================================
-# 8. CODE QUALITY
+# 7. CODE QUALITY
 # ============================================
 
 # Rubocop with auto-correct
@@ -285,11 +286,13 @@ alias brake='bundle exec brakeman'
 alias bestpractices='bundle exec rails_best_practices .'
 
 # ============================================
-# 9. PROFESSIONAL RAILS SETUP TOOLS
+# 8. PROFESSIONAL RAILS SETUP TOOLS
 # ============================================
 
-# Template directory location
-RAILS_TEMPLATES_DIR="${HOME}/code/Tutorials/workflow/rails-templates/templates"
+# Rails setup templates (.rubocop.yml, lefthook.yml, ci.yml, etc.).
+# Not shipped with this repo — point RAILS_TEMPLATES_DIR at your own
+# collection, or set it in ~/.zshrc.local.
+RAILS_TEMPLATES_DIR="${RAILS_TEMPLATES_DIR:-${HOME}/code/Tutorials/workflow/rails-templates/templates}"
 
 # Check if we're in a Rails project
 _check_rails_project() {
@@ -300,9 +303,23 @@ _check_rails_project() {
   return 0
 }
 
+# Templates live outside this repo — fail once with a useful message
+# rather than five separate "Template not found" errors.
+_check_rails_templates() {
+  if [[ ! -d "$RAILS_TEMPLATES_DIR" ]]; then
+    echo "❌ Rails templates not found at: $RAILS_TEMPLATES_DIR"
+    echo "💡 Set RAILS_TEMPLATES_DIR in ~/.zshrc.local to your templates directory."
+    echo "   Expected files: .rubocop.yml, lefthook.yml, ci.yml,"
+    echo "                   spec_helper_simplecov.rb, Gemfile.additions"
+    return 1
+  fi
+  return 0
+}
+
 # Setup Lefthook (Git hooks manager)
 rails-setup-lefthook() {
   _check_rails_project || return 1
+  _check_rails_templates || return 1
 
   echo "📋 Installing Lefthook..."
 
@@ -332,6 +349,7 @@ rails-setup-lefthook() {
 # Setup RuboCop with Airbnb style guide
 rails-setup-rubocop() {
   _check_rails_project || return 1
+  _check_rails_templates || return 1
 
   echo "📋 Installing RuboCop configuration..."
 
@@ -355,6 +373,7 @@ rails-setup-rubocop() {
 # Setup SimpleCov (test coverage)
 rails-setup-simplecov() {
   _check_rails_project || return 1
+  _check_rails_templates || return 1
 
   echo "📋 Installing SimpleCov configuration..."
 
@@ -389,6 +408,7 @@ rails-setup-simplecov() {
 # Setup GitHub Actions CI
 rails-setup-ci() {
   _check_rails_project || return 1
+  _check_rails_templates || return 1
 
   echo "📋 Installing GitHub Actions CI..."
 
@@ -414,6 +434,8 @@ rails-setup-ci() {
 
 # Show recommended gems to add
 rails-setup-gems() {
+  _check_rails_templates || return 1
+
   echo "📦 Recommended Professional Rails Gems:"
   echo ""
 
@@ -431,6 +453,7 @@ rails-setup-gems() {
 # Setup everything at once
 rails-setup-all() {
   _check_rails_project || return 1
+  _check_rails_templates || return 1
 
   echo "🚀 Setting up professional Rails development environment..."
   echo ""
@@ -487,33 +510,19 @@ rails-setup-all() {
 }
 
 # ============================================
-# 10. DOCKER COMPOSE
+# 9. DOCKER COMPOSE
 # ============================================
+# Compose v2 is a docker subcommand; the standalone `docker-compose`
+# binary was removed. `docker compose` is the supported form.
 
-alias dc='docker-compose'
-alias dcu='docker-compose up'
-alias dcd='docker-compose down'
-alias dcr='docker-compose run --rm'
-alias dcl='docker-compose logs -f'
-
-# ============================================
-# 10. HEROKU
-# ============================================
-
-alias h='heroku'
-alias hl='heroku logs --tail'
-alias hc='heroku run rails console'
-alias hm='heroku run rails db:migrate'
+alias dc='docker compose'
+alias dcu='docker compose up'
+alias dcd='docker compose down'
+alias dcr='docker compose run --rm'
+alias dcl='docker compose logs -f'
 
 # ============================================
-# 11. ENVIRONMENT SETUP
-# ============================================
-
-# Disable Spring (DHH recommends for simplicity)
-export DISABLE_SPRING=1
-
-# ============================================
-# 12. SHELL SETTINGS
+# 10. SHELL SETTINGS
 # ============================================
 
 # Better history
@@ -528,7 +537,7 @@ setopt SHARE_HISTORY
 setopt AUTO_CD
 
 # ============================================
-# 13. RAILS ENVIRONMENT
+# 11. RAILS ENVIRONMENT
 # ============================================
 
 alias dev='export RAILS_ENV=development'
@@ -541,7 +550,7 @@ railsenv() {
 }
 
 # ============================================
-# 14. DATABASE HELPERS
+# 12. DATABASE HELPERS
 # ============================================
 
 # PostgreSQL quick access (uses $DB_USER and $PG_VERSION from main config)
@@ -556,7 +565,7 @@ dbconsole() {
 }
 
 # ============================================
-# 15. RAILS CREDENTIALS
+# 13. RAILS CREDENTIALS
 # ============================================
 
 # Edit credentials (uses $EDITOR from main config)
@@ -564,7 +573,7 @@ alias creds='bin/rails credentials:edit'
 alias creds-prod='bin/rails credentials:edit --environment production'
 
 # ============================================
-# 16. ALIAS DISCOVERY FUNCTIONS
+# 14. ALIAS DISCOVERY FUNCTIONS
 # ============================================
 
 # Search aliases by keyword
@@ -577,7 +586,7 @@ alias-search() {
     return 1
   fi
   echo "🔍 Searching for aliases matching: $1"
-  alias | grep -i "$1" | sort
+  alias | /usr/bin/grep -i "$1" | sort
 }
 
 # Show all Rails-related aliases
@@ -585,7 +594,7 @@ alias-search() {
 alias-rails() {
   echo "🚂 Rails Aliases:"
   echo "──────────────────────────────────────────"
-  ( alias 2>&1 | grep -E "^(r|b|cop|brake)" | sort | sed 's/=/ → /' ) 2>/dev/null
+  ( alias 2>&1 | /usr/bin/grep -E "^(r|b|cop|brake)" | sort | sed 's/=/ → /' ) 2>/dev/null
   echo ""
   echo "💡 For Rails setup commands, run: alias-rails-setup"
 }
@@ -611,8 +620,9 @@ alias-rails-setup() {
   echo "  railsnew my_app          Create basic Rails app"
   echo "  railsnew my_app --pro    Create Rails app with professional setup"
   echo ""
-  echo "📚 Documentation:"
-  echo "  ~/code/Tutorials/workflow/RAILS_SETUP_USAGE.md"
+  echo "📚 Templates:"
+  echo "  \$RAILS_TEMPLATES_DIR → ${RAILS_TEMPLATES_DIR}"
+  echo "  Override in ~/.zshrc.local if yours live elsewhere."
   echo ""
 }
 
@@ -621,7 +631,7 @@ alias-rails-setup() {
 alias-git() {
   echo "📦 Git Aliases:"
   echo "──────────────────────────────────────────"
-  alias | grep -E "^g[a-z]*=" | sort
+  alias | /usr/bin/grep -E "^g[a-z]*=" | sort
 }
 
 # Show all custom aliases (overview)
@@ -631,13 +641,13 @@ alias-list() {
   echo "──────────────────────────────────────────"
   echo ""
   echo "Rails (r*):"
-  alias | grep -E "^r[a-z]*=" | wc -l | xargs echo "  Count:"
+  alias | /usr/bin/grep -E "^r[a-z]*=" | wc -l | xargs echo "  Count:"
   echo ""
   echo "Git (g*):"
-  alias | grep -E "^g[a-z]*=" | wc -l | xargs echo "  Count:"
+  alias | /usr/bin/grep -E "^g[a-z]*=" | wc -l | xargs echo "  Count:"
   echo ""
   echo "Bundle (b*):"
-  alias | grep -E "^b[a-z]*=" | wc -l | xargs echo "  Count:"
+  alias | /usr/bin/grep -E "^b[a-z]*=" | wc -l | xargs echo "  Count:"
   echo ""
   echo "Use: alias-rails, alias-git for details"
   echo "Use: alias-search <keyword> to search"
@@ -646,4 +656,5 @@ alias-list() {
 # ============================================
 # END OF DHH ADDITIONS
 # ============================================
-# Note: compinit is handled by Spaceship prompt in main ~/.zshrc
+# Note: compinit is invoked explicitly in ~/.zshrc, after this file is
+# sourced and before terminal-enhancements (fzf-tab depends on it).

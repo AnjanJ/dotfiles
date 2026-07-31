@@ -48,9 +48,8 @@ fi
 export VISUAL="$EDITOR"              # Visual editor (usually same)
 export GIT_EDITOR="$EDITOR"          # Git commit editor
 export BUNDLER_EDITOR="$EDITOR"      # Rails credentials editor
-if command -v bat &>/dev/null; then
-  export PAGER="bat"                   # File pager (bat with syntax highlighting)
-fi
+export PAGER="less"
+export LESS="-R"                     
 export BROWSER="open"                # Browser command (macOS)
 
 # === VERSIONS ===
@@ -76,6 +75,13 @@ export PROJECTS_DIR="$HOME/code"     # Personal projects directory
 # === OTHER ===
 export ERL_AFLAGS="-kernel shell_history enabled"  # Elixir history
 export RUBY_YJIT_ENABLE=1               # Enable YJIT JIT compiler (Ruby 3.1+)
+
+export PATH=$PATH:$HOME/.maestro/bin
+
+# Ollama settings (local AI for Rails dev)
+# MAX_LOADED_MODELS=1 — 36GB unified can't hold 7B + 30B together; explicit single-model swap is cleaner
+export OLLAMA_MAX_LOADED_MODELS=1
+export OLLAMA_KEEP_ALIVE=24h
 
 # ============================================
 # 3. TOOL INITIALIZATION
@@ -198,12 +204,12 @@ if [ -f ~/.zshrc.local ]; then
   source ~/.zshrc.local
 fi
 
+# zsh-syntax-highlighting MUST be the last thing sourced — it wraps the ZLE
+# widgets and only sees aliases/functions/completions defined before it.
+if [[ -f /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]]; then
+  source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+fi
+
 # ============================================
 # END OF CONFIGURATION
 # ============================================
-export PATH=$PATH:$HOME/.maestro/bin
-
-# Ollama settings (local AI for Rails dev)
-# MAX_LOADED_MODELS=1 — 36GB unified can't hold 7B + 30B together; explicit single-model swap is cleaner
-export OLLAMA_MAX_LOADED_MODELS=1
-export OLLAMA_KEEP_ALIVE=24h
