@@ -182,17 +182,25 @@
     "rails-ai-context": {
       "source": "custom",
       "command": "npx",
-      "args": ["-y", "@crisnahine/rails-ai-context"]
+      "args": [
+        "-y",
+        "@crisnahine/rails-ai-context"
+      ]
     },
     "git": {
       "source": "custom",
       "command": "uvx",
-      "args": ["mcp-server-git"]
+      "args": [
+        "mcp-server-git"
+      ]
     },
     "sequential-thinking": {
       "source": "custom",
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
     }
   },
   "languages": {
