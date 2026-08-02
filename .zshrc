@@ -213,3 +213,8 @@ fi
 # ============================================
 # END OF CONFIGURATION
 # ============================================
+
+# Android SDK (Homebrew android-commandlinetools) — added for karromkar Flutter dev
+export ANDROID_HOME="/opt/homebrew/share/android-commandlinetools"
+export ANDROID_SDK_ROOT="$ANDROID_HOME"
+export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"

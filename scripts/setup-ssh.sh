@@ -265,7 +265,13 @@ SSHEOF
         # the agent offers, so authentication can never succeed. It produced a
         # config that looked correct and always failed with "Permission denied
         # (publickey)".
+        # A host with its own on-disk key must also opt out of the global
+        # `Host * IdentityAgent` above, otherwise the 1Password agent still
+        # offers its vault keys first and the server can reject the connection
+        # before the IdentityFile below is ever tried. `IdentityAgent none`
+        # disables the agent for this host only.
         if [[ -n "$keyfile" ]]; then
+            echo "    IdentityAgent none" >> "$config_file"
             echo "    IdentityFile ~/.ssh/$keyfile" >> "$config_file"
             echo "    IdentitiesOnly yes" >> "$config_file"
         fi
