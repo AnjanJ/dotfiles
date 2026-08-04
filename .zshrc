@@ -83,6 +83,37 @@ export PATH=$PATH:$HOME/.maestro/bin
 export OLLAMA_MAX_LOADED_MODELS=1
 export OLLAMA_KEEP_ALIVE=24h
 
+# start claude code with ollama and default model as GLM 5.2
+oclaude() {
+  local model="glm-5.2:cloud"
+  local -a claude_args=(--dangerously-skip-permissions)
+
+  while (( $# )); do
+    case "$1" in
+      -m|--model)
+        if (( $# < 2 )); then
+          echo "Usage: oclaude [-m MODEL] [Claude Code arguments]"
+          return 2
+        fi
+        model="$2"
+        shift 2
+        ;;
+      --model=*)
+        model="${1#--model=}"
+        shift
+        ;;
+      *)
+        claude_args+=("$1")
+        shift
+        ;;
+    esac
+  done
+
+  ollama launch claude \
+    --model "$model" \
+    -- "${claude_args[@]}"
+}
+
 # ============================================
 # 3. TOOL INITIALIZATION
 # ============================================
