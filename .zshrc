@@ -85,21 +85,36 @@ export OLLAMA_KEEP_ALIVE=24h
 
 # start claude code with ollama and default model as GLM 5.2
 oclaude() {
-  local model="glm-5.2:cloud"
-  local -a claude_args=(--dangerously-skip-permissions)
+  emulate -L zsh
 
+  local model="glm-5.2:cloud"
+  local choose_model=0
+  local list_output name choice
+  local -a claude_args cloud_models local_models models labels
+  local -A seen
+  integer i
+
+  # Current preferred Ollama cloud models
+  cloud_models=(
+    "glm-5.2:cloud"
+    "kimi-k3:cloud"
+    "deepseek-v4-pro:cloud"
+  )
+
+  # Process arguments
   while (( $# )); do
     case "$1" in
       -m|--model)
-        if (( $# < 2 )); then
-          echo "Usage: oclaude [-m MODEL] [Claude Code arguments]"
-          return 2
+        if (( $# >= 2 )) && [[ "$2" != -* ]]; then
+          model="$2"
+          shift 2
+        else
+          choose_model=1
+          shift
         fi
-        model="$2"
-        shift 2
         ;;
-      --model=*)
-        model="${1#--model=}"
+      -m=*|--model=*)
+        model="${1#*=}"
         shift
         ;;
       *)
@@ -109,9 +124,73 @@ oclaude() {
     esac
   done
 
+  if (( choose_model )); then
+    # Read models currently downloaded or registered in Ollama
+    list_output="$(ollama list 2>/dev/null)"
+
+    if [[ -n "$list_output" ]]; then
+      local_models=(
+        "${(@f)$(print -r -- "$list_output" |
+          awk 'NR > 1 && NF { print $1 }')}"
+      )
+    fi
+
+    # Add recommended cloud models first
+    for name in "${cloud_models[@]}"; do
+      models+=("$name")
+      labels+=("$name  [cloud]")
+      seen[$name]=1
+    done
+
+    # Add locally available models, avoiding duplicates
+    for name in "${local_models[@]}"; do
+      [[ -z "$name" ]] && continue
+      [[ -n "${seen[$name]-}" ]] && continue
+
+      models+=("$name")
+
+      if [[ "$name" == *:cloud ]]; then
+        labels+=("$name  [cloud]")
+      else
+        labels+=("$name  [local]")
+      fi
+
+      seen[$name]=1
+    done
+
+    print
+    print -r -- "Choose the model for Claude Code:"
+    print
+
+    for (( i = 1; i <= ${#models[@]}; i++ )); do
+      printf '  %d) %s\n' "$i" "${labels[$i]}"
+    done
+
+    print
+    read "choice?Model number [1], or q to cancel: "
+
+    choice="${choice:-1}"
+
+    if [[ "$choice" == [qQ] ]]; then
+      return 0
+    fi
+
+    if [[ "$choice" != <-> ]] ||
+       (( choice < 1 || choice > ${#models[@]} )); then
+      print -u2 -- "Invalid model selection."
+      return 2
+    fi
+
+    model="${models[$choice]}"
+  fi
+
+  print -r -- "Launching Claude Code with: $model"
+
   ollama launch claude \
     --model "$model" \
-    -- "${claude_args[@]}"
+    -- \
+    --dangerously-skip-permissions \
+    "${claude_args[@]}"
 }
 
 # ============================================
