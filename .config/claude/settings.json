@@ -28,13 +28,13 @@
     "shipkit": {
       "source": {
         "source": "git",
-        "url": "https://codeberg.org/AnjanJ/shipkit.git"
+        "url": "git@github.com:AnjanJ/shipkit.git"
       }
     },
     "bodhikit": {
       "source": {
         "source": "git",
-        "url": "https://codeberg.org/AnjanJ/bodhikit.git"
+        "url": "git@github.com:AnjanJ/bodhikit.git"
       }
     }
   },
