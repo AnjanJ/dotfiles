@@ -1,12 +1,31 @@
 {
+  "session": {
+    "trust_all_worktrees": true
+  },
+  "minimap": {
+    "show": "never"
+  },
+  "current_line_highlight": "line",
+  "max_tabs": 10,
+  "colorize_brackets": true,
+  "show_completions_on_input": true,
+  "auto_indent_on_paste": false,
+  "linked_edits": true,
+  "use_on_type_format": false,
+  "agent_servers": {
+    "claude-acp": {
+      "type": "registry"
+    }
+  },
+  "icon_theme": "Zed (Default)",
   "cli_default_open_behavior": "existing_window",
   "theme": {
-    "mode": "system",
+    "mode": "dark",
     "light": "One Light",
     "dark": "Ayu Dark"
   },
   "ui_font_size": 16,
-  "buffer_font_size": 16,
+  "buffer_font_size": 18.0,
   "buffer_font_family": "Fira Code",
   "buffer_font_features": {
     "calt": true,
@@ -22,7 +41,7 @@
   "format_on_save": "on",
   "remove_trailing_whitespace_on_save": true,
   "ensure_final_newline_on_save": true,
-  "show_whitespaces": "selection",
+  "show_whitespaces": "none",
   "show_wrap_guides": true,
   "relative_line_numbers": false,
   "cursor_blink": true,
@@ -71,6 +90,7 @@
       "program": "zsh"
     },
     "env": {
+      "Q_NEW_SESSION": "\"1\"",
       "EDITOR": "zed --wait"
     },
     "copy_on_select": true,
@@ -97,7 +117,7 @@
     "file_icons": true,
     "folder_icons": true,
     "auto_reveal_entries": true,
-    "auto_fold_dirs": true
+    "auto_fold_dirs": false
   },
   "telemetry": {
     "diagnostics": false,
@@ -205,6 +225,12 @@
   },
   "languages": {
     "Ruby": {
+      "colorize_brackets": true,
+      "show_completions_on_input": true,
+      "auto_indent_on_paste": false,
+      "linked_edits": true,
+      "use_on_type_format": false,
+      "show_whitespaces": "none",
       "tab_size": 2,
       "hard_tabs": false,
       "preferred_line_length": 120,
@@ -228,6 +254,13 @@
       }
     },
     "ERB": {
+      "colorize_brackets": true,
+      "show_completions_on_input": true,
+      "auto_indent_on_paste": false,
+      "linked_edits": true,
+      "use_on_type_format": false,
+      "show_whitespaces": "none",
+      "hard_tabs": false,
       "tab_size": 2,
       "format_on_save": "on",
       "formatter": [
@@ -253,6 +286,12 @@
       ]
     },
     "JavaScript": {
+      "colorize_brackets": true,
+      "show_completions_on_input": true,
+      "auto_indent_on_paste": false,
+      "linked_edits": true,
+      "use_on_type_format": false,
+      "show_whitespaces": "none",
       "tab_size": 2,
       "hard_tabs": false,
       "preferred_line_length": 100,
@@ -272,6 +311,12 @@
       }
     },
     "TypeScript": {
+      "colorize_brackets": true,
+      "show_completions_on_input": true,
+      "auto_indent_on_paste": false,
+      "linked_edits": true,
+      "use_on_type_format": false,
+      "show_whitespaces": "none",
       "tab_size": 2,
       "hard_tabs": false,
       "preferred_line_length": 100,
@@ -297,6 +342,12 @@
       }
     },
     "TSX": {
+      "colorize_brackets": true,
+      "show_completions_on_input": true,
+      "auto_indent_on_paste": false,
+      "linked_edits": true,
+      "use_on_type_format": false,
+      "show_whitespaces": "none",
       "tab_size": 2,
       "hard_tabs": false,
       "preferred_line_length": 100,
@@ -317,6 +368,12 @@
       }
     },
     "JSX": {
+      "colorize_brackets": true,
+      "show_completions_on_input": true,
+      "auto_indent_on_paste": false,
+      "linked_edits": true,
+      "use_on_type_format": false,
+      "show_whitespaces": "none",
       "tab_size": 2,
       "hard_tabs": false,
       "preferred_line_length": 100,
@@ -336,6 +393,12 @@
       }
     },
     "Elixir": {
+      "colorize_brackets": true,
+      "show_completions_on_input": true,
+      "auto_indent_on_paste": false,
+      "linked_edits": true,
+      "use_on_type_format": false,
+      "show_whitespaces": "none",
       "tab_size": 2,
       "hard_tabs": false,
       "preferred_line_length": 98,
@@ -358,6 +421,13 @@
       ]
     },
     "HEEx": {
+      "colorize_brackets": true,
+      "show_completions_on_input": true,
+      "auto_indent_on_paste": false,
+      "linked_edits": true,
+      "use_on_type_format": false,
+      "show_whitespaces": "none",
+      "hard_tabs": false,
       "tab_size": 2,
       "format_on_save": "on",
       "formatter": {
@@ -378,6 +448,13 @@
       ]
     },
     "JSON": {
+      "colorize_brackets": true,
+      "show_completions_on_input": true,
+      "auto_indent_on_paste": false,
+      "linked_edits": true,
+      "use_on_type_format": false,
+      "show_whitespaces": "none",
+      "hard_tabs": false,
       "tab_size": 2,
       "format_on_save": "on",
       "formatter": {
@@ -391,15 +468,36 @@
       }
     },
     "YAML": {
+      "colorize_brackets": true,
+      "show_completions_on_input": true,
+      "auto_indent_on_paste": false,
+      "linked_edits": true,
+      "use_on_type_format": false,
+      "show_whitespaces": "none",
+      "hard_tabs": false,
       "tab_size": 2,
       "format_on_save": "on"
     },
     "Markdown": {
+      "colorize_brackets": true,
+      "show_completions_on_input": true,
+      "auto_indent_on_paste": false,
+      "linked_edits": true,
+      "use_on_type_format": false,
+      "show_whitespaces": "none",
+      "hard_tabs": false,
       "tab_size": 2,
-      "format_on_save": "off",
+      "format_on_save": "on",
       "soft_wrap": "editor_width"
     },
     "HTML": {
+      "colorize_brackets": true,
+      "show_completions_on_input": true,
+      "auto_indent_on_paste": false,
+      "linked_edits": true,
+      "use_on_type_format": false,
+      "show_whitespaces": "none",
+      "hard_tabs": false,
       "tab_size": 2,
       "format_on_save": "on",
       "formatter": {
@@ -413,6 +511,13 @@
       }
     },
     "CSS": {
+      "colorize_brackets": true,
+      "show_completions_on_input": true,
+      "auto_indent_on_paste": false,
+      "linked_edits": true,
+      "use_on_type_format": false,
+      "show_whitespaces": "none",
+      "hard_tabs": false,
       "tab_size": 2,
       "format_on_save": "on",
       "formatter": {
@@ -426,6 +531,13 @@
       }
     },
     "SCSS": {
+      "colorize_brackets": true,
+      "show_completions_on_input": true,
+      "auto_indent_on_paste": false,
+      "linked_edits": true,
+      "use_on_type_format": false,
+      "show_whitespaces": "none",
+      "hard_tabs": false,
       "tab_size": 2,
       "format_on_save": "on",
       "formatter": {
@@ -439,7 +551,13 @@
       }
     },
     "Zig": {
-      "tab_size": 4,
+      "colorize_brackets": true,
+      "show_completions_on_input": true,
+      "auto_indent_on_paste": false,
+      "linked_edits": true,
+      "use_on_type_format": false,
+      "show_whitespaces": "none",
+      "tab_size": 2,
       "hard_tabs": false,
       "formatter": "language_server",
       "format_on_save": "on",
@@ -584,6 +702,34 @@
   },
   "auto_update": true,
   "file_types": {
+    "elixir": [
+      "*.exs",
+      "*.ex"
+    ],
+    "phoenix-heex": [
+      "*.heex",
+      "*.leex"
+    ],
+    "erb": [
+      "*.erb",
+      "*.html.erb"
+    ],
+    "ruby": [
+      "Gemfile",
+      "Guardfile",
+      "Rakefile",
+      "*.rake",
+      "*.gemspec",
+      "*.ru",
+      "*.arb",
+      "*.jbuilder",
+      "*.thor",
+      "Thorfile",
+      "Fastfile",
+      "Podfile",
+      "Vagrantfile",
+      "Brewfile"
+    ],
     "Gemfile": [
       "Ruby"
     ],
