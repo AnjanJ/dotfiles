@@ -100,7 +100,31 @@ end)
 config.send_composed_key_when_left_alt_is_pressed = false
 config.send_composed_key_when_right_alt_is_pressed = true
 
+-- ── Clipboard ────────────────────────────────────────────
+-- Selecting with the mouse copies to the system clipboard immediately.
+-- WezTerm's default is PrimarySelection only, which macOS apps cannot
+-- read -- the same trap Ghostty has.
+config.mouse_bindings = {
+  {
+    event = { Up = { streak = 1, button = 'Left' } },
+    mods = 'NONE',
+    action = act.CompleteSelection 'Clipboard',
+  },
+  -- Cmd-click opens a link instead of selecting.
+  {
+    event = { Up = { streak = 1, button = 'Left' } },
+    mods = 'CMD',
+    action = act.OpenLinkAtMouseCursor,
+  },
+}
+
 config.keys = {
+  -- Clipboard. CopyTo 'Clipboard' always copies the selection; the default
+  -- cmd+c is already this, but it is stated here so it cannot be shadowed
+  -- by a later binding.
+  { key = 'c', mods = 'CMD',       action = act.CopyTo 'Clipboard' },
+  { key = 'v', mods = 'CMD',       action = act.PasteFrom 'Clipboard' },
+
   -- Tabs
   { key = 't', mods = 'CMD',       action = act.SpawnTab 'CurrentPaneDomain' },
   { key = 'w', mods = 'CMD',       action = act.CloseCurrentPane { confirm = true } },

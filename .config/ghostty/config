@@ -35,3 +35,36 @@ mouse-hide-while-typing = true
 # The THEME_START/THEME_END markers control the theme line.
 # For more themes, see: https://ghostty.org/docs/features/theme
 # ============================================
+
+# ── Clipboard ──────────────────────────────────────────────
+# cmd+c keeps Ghostty's default `copy_to_clipboard:mixed` binding. Worth
+# knowing why cmd+c can look broken: that action only consumes the key
+# WHEN THERE IS A SELECTION. With nothing selected it falls through to the
+# shell as SIGINT, which is correct but reads as "cmd+c did nothing".
+#
+# So the fix is to make selections survive rather than to rebind the key.
+
+# Selecting text copies it to the system clipboard immediately, so cmd+c
+# becomes a fallback rather than the only route. The default copies to the
+# selection clipboard only, which macOS apps do not read.
+copy-on-select = clipboard
+
+# Do not drop the selection when output arrives or you start typing. On a
+# busy terminal the default clears it out from under you mid-drag.
+selection-clear-on-typing = false
+
+# Strip trailing whitespace when copying, so pasted commands do not carry
+# stray spaces from the terminal's line padding.
+clipboard-trim-trailing-spaces = true
+
+# Programs in the terminal may write the clipboard without prompting; reads
+# still ask. Paste protection stays on: it warns before pasting text that
+# contains newlines, which is what stops a pasted blob executing itself.
+clipboard-write = allow
+clipboard-read = ask
+clipboard-paste-protection = true
+
+# Hold shift to select with the mouse even when a full-screen program
+# (vim, tmux, htop) has grabbed mouse reporting. Without this, selection is
+# impossible inside those programs.
+mouse-shift-capture = true

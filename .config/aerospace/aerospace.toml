@@ -376,11 +376,9 @@ run = 'layout floating'
 # if.app-id = 'com.apple.finder'
 # run = 'layout floating'
 
-# 1Password mini window
-[[on-window-detected]]
-if.app-id = 'com.1password.1password'
-if.window-title-regex-substring = 'Quick Access'
-run = 'layout floating'
+# NOTE: 1Password is handled by the workspace rule above, which floats it.
+# A second rule here would never fire -- only the FIRST matching
+# [[on-window-detected]] block runs.
 
 # Raycast
 [[on-window-detected]]
@@ -426,5 +424,46 @@ run = 'layout floating'
 # Zoom
 [[on-window-detected]]
 if.app-id = 'us.zoom.xos'
+run = 'layout floating'
+
+# ── Chat and media: float wherever they are opened ──────────
+# These are all "glance at it, then go back to what you were doing" apps.
+# Tiling them re-flows the whole workspace for a window you will close in
+# thirty seconds. No workspace is set, so they open on whichever one you
+# are currently viewing.
+
+[[on-window-detected]]
+if.app-id = 'ru.keepcoder.Telegram'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'net.whatsapp.WhatsApp'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.hnc.Discord'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'org.whispersystems.signal-desktop'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.MobileSMS'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.Music'
+run = 'layout floating'
+
+# LocalSend is a transient transfer popup -- tiling it is never useful.
+[[on-window-detected]]
+if.app-id = 'org.localsend.localsendApp'
+run = 'layout floating'
+
+# Finder windows are usually "grab a file and close". Floating keeps them
+# from re-flowing a tiled workspace each time one opens.
+[[on-window-detected]]
+if.app-id = 'com.apple.finder'
 run = 'layout floating'
 
