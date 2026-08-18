@@ -133,9 +133,12 @@ automatically-unhide-macos-hidden-apps = false
     # shortcuts only need to launch -- no need to switch workspace first.
     #
     #   ws 1  Warp          ws 5  Proton Mail
-    #   ws 2  Zen           ws 6  Obsidian + Slack/1Password/Ente (floating)
+    #   ws 2  Zen           ws 6  Obsidian + Slack/Ente (floating)
     #   ws 3  Chrome        ws 7  Claude + ChatGPT (floating)
     #   ws 4  Zed / VSCode  ws 8  (free)   ws 9  (free)
+    #
+    # 1Password has no home workspace: it floats where you open it, so its
+    # Touch ID prompt appears on the workspace you are actually looking at.
 
     ctrl-shift-w = '''exec-and-forget open -a "Warp"'''
     ctrl-shift-x = '''exec-and-forget open -a "Zen"'''
@@ -306,12 +309,24 @@ run = 'move-node-to-workspace 4'
 if.app-id = 'ch.protonmail.desktop'
 run = 'move-node-to-workspace 5'
 
-# 1Password main window: floats on 6. Scoped by title so the Quick Access
-# popup is untouched and stays wherever it was invoked.
+# 1Password floats on whichever workspace it is opened from -- deliberately
+# NO workspace assignment, unlike Obsidian/Slack/Ente below.
+#
+# The SSH agent's Touch ID prompt ("1Password Access Requested") is a sheet
+# owned by the 1Password process, so macOS puts it wherever 1Password's main
+# window already is. Pinning that window to workspace 6 therefore sent every
+# auth prompt to 6 as well -- it appeared on a workspace you were not looking
+# at and read as a window that flashed and vanished.
+#
+# The prompt's position cannot be set on its own: it is not a managed window
+# and AeroSpace never sees it (`aerospace list-windows --all` does not list
+# it). Controlling the app is the only lever, so the app follows you instead.
+#
+# Title scoping stays: it keeps the Quick Access popup out of scope.
 [[on-window-detected]]
 if.app-id = 'com.1password.1password'
 if.window-title-regex-substring = '1Password'
-run = ['layout floating', 'move-node-to-workspace 6']
+run = 'layout floating'
 
 # --- Workspace 6: Notes, chat, and floating utilities ---
 [[on-window-detected]]

@@ -31,7 +31,8 @@ APPS=(
   "Proton Mail"   # ws 5 — mail
   "Obsidian"      # ws 6 — notes
   "Slack"         # ws 6 — chat (floating)
-  "1Password"     # ws 6 — passwords (floating)
+  "1Password"     # no home ws — floats where opened, so its Touch ID
+                  # prompt follows you (see aerospace.toml)
   "Ente Auth"     # ws 6 — 2FA (floating)
   "Claude"        # ws 7 — AI (floating)
   "ChatGPT"       # ws 7 — AI (floating)
