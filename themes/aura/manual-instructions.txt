@@ -31,12 +31,32 @@ ZEN BROWSER
 ──────────────────────────────────────────────────────
 TELEGRAM
 ──────────────────────────────────────────────────────
-  The theme file already ships in this repo -- no download needed.
+  IMPORTANT: there are two different Telegram apps on macOS and they use
+  different, incompatible theme formats.
 
-  1. Open Telegram → Settings → Chat Settings
-  2. Under "Chat background", click "Choose from file"
-  3. Select:
-     ~/code/dotfiles/themes/aura/telegram/aura.tdesktop-theme
+  You have "Telegram for macOS" (ru.keepcoder.Telegram) -- the native
+  Swift client. It CANNOT read .tdesktop-theme files; those belong to
+  Telegram Desktop (org.telegram.desktop), a separate app. That is why
+  "Choose from file" would not accept the upstream Aura theme.
+
+  Two options:
+
+  A. Use the built-in dark theme with an Aura accent (quickest):
+     Settings → Appearance → choose the Night/Dark theme, then set the
+     accent colour to #a277ff via the custom colour picker.
+
+  B. Try the macOS palette shipped here:
+     Settings → Appearance → drag aura-dark.palette onto the window, or
+     look for an import/"New theme" option in that panel.
+     File: ~/code/dotfiles/themes/aura/telegram/aura-dark.palette
+
+     This client's import UI has changed across versions and it mainly
+     uses *cloud* themes (shared via t.me links) rather than local files,
+     so B may simply not be offered in your build. If it is not, use A --
+     the accent colour is what carries the Aura look.
+
+  The .tdesktop-theme file is kept alongside it for the day you install
+  Telegram Desktop, where it works as-is.
 
 ──────────────────────────────────────────────────────
 XCODE  (installed automatically)
