@@ -294,12 +294,27 @@ apply_theme() {
     # ── 5. VS Code ──────────────────────────────────────
     _theme_step "VS Code..."
     local vscode_settings="$HOME/Library/Application Support/Code/User/settings.json"
+    # VS Code's settings.json is a symlink into this repo, and BSD `sed -i`
+    # refuses to edit symlinks ("in-place editing only works for regular
+    # files"). Resolve to the real path first, or every edit below fails.
+    if [[ -L "$vscode_settings" ]]; then
+        vscode_settings=$(readlink "$vscode_settings")
+    fi
     if [[ -f "$vscode_settings" ]]; then
-        # VS Code uses JSONC (JSON with Comments), so use sed instead of jq
-        if sed -i '' 's/"workbench\.colorTheme": *"[^"]*"/"workbench.colorTheme": "'"$vscode_theme"'"/' "$vscode_settings" 2>/dev/null; then
+        # VS Code uses JSONC (JSON with Comments), so use sed rather than jq.
+        if grep -q '"workbench\.colorTheme"' "$vscode_settings"; then
+            sed -i '' 's/"workbench\.colorTheme": *"[^"]*"/"workbench.colorTheme": "'"$vscode_theme"'"/' "$vscode_settings"
             _theme_success "VS Code → $vscode_theme"
+        elif head -1 "$vscode_settings" | grep -q '^{'; then
+            # The key is absent. A bare `sed` substitution matches nothing and
+            # still exits 0, so the old code reported success while changing
+            # nothing -- VS Code kept whatever theme it had. Insert it instead.
+            sed -i '' '1a\
+\  "workbench.colorTheme": "'"$vscode_theme"'",
+' "$vscode_settings"
+            _theme_success "VS Code → $vscode_theme (key added)"
         else
-            _theme_warning "VS Code: Could not update settings.json"
+            _theme_warning "VS Code: settings.json does not start with '{', not editing"
         fi
     else
         _theme_warning "VS Code: settings.json not found (VS Code may not be installed yet)"

@@ -1,4 +1,5 @@
 {
+  "workbench.colorTheme": "Aura Dark",
   "editor.fontSize": 18,
   "editor.formatOnSave": true,
   "files.watcherExclude": {
