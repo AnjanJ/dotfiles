@@ -68,3 +68,50 @@ clipboard-paste-protection = true
 # (vim, tmux, htop) has grabbed mouse reporting. Without this, selection is
 # impossible inside those programs.
 mouse-shift-capture = true
+
+# ── Appearance ─────────────────────────────────────────────
+# Match WezTerm, which already runs blurred and slightly transparent.
+background-opacity = 0.96
+background-blur = 20
+
+# Hide the title bar chrome. AeroSpace manages window position and the
+# sketchybar shows workspace state, so the macOS titlebar is dead space.
+macos-titlebar-style = hidden
+
+# Dim the inactive pane so the focused one is obvious at a glance.
+unfocused-split-opacity = 0.85
+
+# ── Behaviour ──────────────────────────────────────────────
+# A new window/tab starts in the same directory as the current one --
+# `cd` is by far the most-run command here, so not re-navigating helps.
+window-inherit-working-directory = true
+window-inherit-font-size = true
+
+# Do not prompt when closing a surface that has no running process.
+confirm-close-surface = false
+
+# Quick terminal: a drop-down scratch terminal over whatever is on screen,
+# the closest Ghostty gets to Warp's always-there feel. Toggle with
+# cmd+`. It is a separate surface from normal windows, so AeroSpace's
+# tiling rules do not apply to it.
+keybind = global:super+grave_accent=toggle_quick_terminal
+quick-terminal-position = top
+quick-terminal-animation-duration = 0.12
+
+# ── Keybindings ────────────────────────────────────────────
+# Splits, matching the vim-style motions used everywhere else here.
+keybind = super+d=new_split:right
+keybind = super+shift+d=new_split:down
+keybind = super+shift+h=goto_split:left
+keybind = super+shift+j=goto_split:bottom
+keybind = super+shift+k=goto_split:top
+keybind = super+shift+l=goto_split:right
+
+# Jump to the previous prompt instead of scrolling by eye -- this is the
+# single most useful thing shell integration buys you.
+keybind = super+up=jump_to_prompt:-1
+keybind = super+down=jump_to_prompt:1
+
+# Dump the whole scrollback into $EDITOR. The nearest thing to selecting a
+# long output block, which is the Warp feature with no direct equivalent.
+keybind = super+shift+e=write_scrollback_file:open

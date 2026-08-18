@@ -100,6 +100,18 @@ end)
 config.send_composed_key_when_left_alt_is_pressed = false
 config.send_composed_key_when_right_alt_is_pressed = true
 
+-- ── Behaviour ────────────────────────────────────────────
+-- Dim inactive panes so the focused one is obvious without hunting for
+-- the cursor. Mirrors unfocused-split-opacity in the Ghostty config.
+config.inactive_pane_hsb = { saturation = 0.9, brightness = 0.7 }
+
+-- No prompt when closing a window whose panes have nothing running.
+config.window_close_confirmation = 'NeverPrompt'
+
+-- Changing font size should not resize the window: AeroSpace tiles these,
+-- so a self-resizing window fights the window manager.
+config.adjust_window_size_when_changing_font_size = false
+
 -- ── Clipboard ────────────────────────────────────────────
 -- Selecting with the mouse copies to the system clipboard immediately.
 -- WezTerm's default is PrimarySelection only, which macOS apps cannot
@@ -124,6 +136,19 @@ config.keys = {
   -- by a later binding.
   { key = 'c', mods = 'CMD',       action = act.CopyTo 'Clipboard' },
   { key = 'v', mods = 'CMD',       action = act.PasteFrom 'Clipboard' },
+
+  -- Scrollback. ScrollToPrompt needs shell integration (OSC 133), which
+  -- zsh sets up via starship; it jumps between commands instead of
+  -- scrolling by eye -- the nearest thing to Warp's command blocks.
+  { key = 'UpArrow',   mods = 'CMD', action = act.ScrollToPrompt(-1) },
+  { key = 'DownArrow', mods = 'CMD', action = act.ScrollToPrompt(1) },
+
+  -- Dump the scrollback to $EDITOR: how you grab a long output block.
+  { key = 'e', mods = 'CMD|SHIFT',
+    action = act.EmitEvent 'open-scrollback-in-editor' },
+
+  -- Command palette: every action by name, no keybinding to memorise.
+  { key = 'p', mods = 'CMD|SHIFT', action = act.ActivateCommandPalette },
 
   -- Tabs
   { key = 't', mods = 'CMD',       action = act.SpawnTab 'CurrentPaneDomain' },
@@ -200,5 +225,26 @@ table.insert(config.hyperlink_rules, {
   format = 'file://$1#L$3',
   highlight = 1,
 })
+
+-- Write the pane's whole scrollback to a temp file and open it in the
+-- editor. Bound to cmd+shift+e above. This is how you grab a long block of
+-- output when selecting it by hand would be painful.
+wezterm.on('open-scrollback-in-editor', function(window, pane)
+  local text = pane:get_lines_as_text(config.scrollback_lines)
+  local path = os.tmpname()
+  local f = io.open(path, 'w+')
+  if not f then
+    return
+  end
+  f:write(text)
+  f:close()
+
+  window:perform_action(
+    act.SpawnCommandInNewTab {
+      args = { os.getenv('EDITOR') or 'vim', path },
+    },
+    pane
+  )
+end)
 
 return config
