@@ -365,6 +365,17 @@ apply_theme() {
     if command -v bat &>/dev/null; then
         _theme_step "bat..."
         mkdir -p "$HOME/.config/bat"
+
+        # Some themes ship a custom .tmTheme (bat has no built-in Aura).
+        # Install it and rebuild the cache, or --theme names a theme bat
+        # does not know and it silently falls back to the default.
+        local bat_theme_src="$THEMES_DIR/bat"
+        if [[ -d "$bat_theme_src" ]] && compgen -G "$bat_theme_src/*.tmTheme" >/dev/null; then
+            mkdir -p "$HOME/.config/bat/themes"
+            cp "$bat_theme_src"/*.tmTheme "$HOME/.config/bat/themes/"
+            bat cache --build &>/dev/null
+        fi
+
         echo "--theme=\"${bat_theme}\"" > "$HOME/.config/bat/config"
         _theme_success "bat → $bat_theme"
     fi

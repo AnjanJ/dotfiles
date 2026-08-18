@@ -24,7 +24,7 @@
 	diffFilter = delta --color-only
 
 [delta]
-	syntax-theme = Dracula
+	syntax-theme = aura
 	navigate = true          # n / N jump between files in a diff
 	line-numbers = true
 	hyperlinks = true        # clickable file:line in supporting terminals
