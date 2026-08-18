@@ -31,29 +31,22 @@ ZEN BROWSER
 ──────────────────────────────────────────────────────
 TELEGRAM
 ──────────────────────────────────────────────────────
-  IMPORTANT: there are two different Telegram apps on macOS and they use
-  different, incompatible theme formats.
+  NOTE: two different Telegram apps exist on macOS with incompatible
+  theme formats. You have "Telegram for macOS" (ru.keepcoder.Telegram),
+  which CANNOT read .tdesktop-theme files -- those belong to Telegram
+  Desktop (org.telegram.desktop). That is why the upstream Aura theme
+  would not load.
 
-  You have "Telegram for macOS" (ru.keepcoder.Telegram) -- the native
-  Swift client. It CANNOT read .tdesktop-theme files; those belong to
-  Telegram Desktop (org.telegram.desktop), a separate app. That is why
-  "Choose from file" would not accept the upstream Aura theme.
+  Use the .palette file instead:
 
-  Two options:
+  1. Telegram → Settings → Appearance
+  2. Drag this file onto the Telegram window:
+     ~/code/dotfiles/themes/aura/telegram/Aura Dark.palette
+     (or use the theme import option in that panel)
 
-  A. Use the built-in dark theme with an Aura accent (quickest):
-     Settings → Appearance → choose the Night/Dark theme, then set the
-     accent colour to #a277ff via the custom colour picker.
-
-  B. Try the macOS palette shipped here:
-     Settings → Appearance → drag aura-dark.palette onto the window, or
-     look for an import/"New theme" option in that panel.
-     File: ~/code/dotfiles/themes/aura/telegram/aura-dark.palette
-
-     This client's import UI has changed across versions and it mainly
-     uses *cloud* themes (shared via t.me links) rather than local files,
-     so B may simply not be offered in your build. If it is not, use A --
-     the accent colour is what carries the Aura look.
+  The palette was produced by exporting this client's own theme and
+  replacing every colour with the Aura equivalent, so the key names are
+  guaranteed to match what this version expects.
 
   The .tdesktop-theme file is kept alongside it for the day you install
   Telegram Desktop, where it works as-is.
