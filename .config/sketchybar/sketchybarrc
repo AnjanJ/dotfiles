@@ -67,6 +67,28 @@ sketchybar --add item clock right \
                  background.corner_radius=5 \
                  background.height=24
 
+# Memory pressure (+ swap once it appears). Placed left of the clock so the
+# two system-load items sit together. update_freq is 15s: pressure moves on
+# the scale of loading a model or starting a service, not second to second.
+sketchybar --add item memory right \
+           --set memory \
+                 update_freq=15 \
+                 icon= \
+                 script="$HOME/.config/sketchybar/plugins/memory.sh" \
+                 background.color=$ITEM_BG_COLOR \
+                 background.corner_radius=5 \
+                 background.height=24
+
+# CPU
+sketchybar --add item cpu right \
+           --set cpu \
+                 update_freq=5 \
+                 icon= \
+                 script="$HOME/.config/sketchybar/plugins/cpu.sh" \
+                 background.color=$ITEM_BG_COLOR \
+                 background.corner_radius=5 \
+                 background.height=24
+
 # Battery
 sketchybar --add item battery right \
            --set battery \
