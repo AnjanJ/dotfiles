@@ -14,25 +14,24 @@ WORKSPACES=$(aerospace list-workspaces --monitor all --empty no)
 
 # The focused workspace must always be shown, even when empty -- otherwise
 # switching to an empty scratch workspace makes the indicator vanish.
-WORKSPACES=$(printf '%s\n%s\n' "$WORKSPACES" "$FOCUSED_WORKSPACE" | sort -u)
+# -V (version sort) not -u alone: a plain lexical sort orders these as
+# 1, 10, 11, 2 once workspaces above 9 exist.
+WORKSPACES=$(printf '%s\n%s\n' "$WORKSPACES" "$FOCUSED_WORKSPACE" | sort -V -u)
 
-# Build the label showing all workspaces with the focused one highlighted
+# Build the label from the workspace list itself rather than a hardcoded
+# 1..9 range -- overflow workspaces (10, 11, ...) exist and a fixed range
+# silently drops them, leaving no highlight at all while focused there.
 LABEL=""
-for ws in 1 2 3 4 5 6 7 8 9; do
-    # Check if workspace has windows
-    if echo "$WORKSPACES" | grep -q "^$ws$"; then
-        # Workspace has windows
-        if [ "$ws" = "$FOCUSED_WORKSPACE" ]; then
-            # Focused workspace. Sketchybar labels are PLAIN TEXT -- markup
-            # like <b> renders literally as "<b>[1]</b>", so the brackets do
-            # the emphasising on their own.
-            LABEL="$LABEL [$ws]"
-        else
-            # Non-focused workspace with windows
-            LABEL="$LABEL $ws"
-        fi
+while IFS= read -r ws; do
+    [ -z "$ws" ] && continue
+    if [ "$ws" = "$FOCUSED_WORKSPACE" ]; then
+        # Sketchybar labels are PLAIN TEXT -- markup like <b> renders
+        # literally as "<b>[1]</b>", so the brackets do the emphasising.
+        LABEL="$LABEL [$ws]"
+    else
+        LABEL="$LABEL $ws"
     fi
-done
+done <<< "$WORKSPACES"
 
 # Update sketchybar
 sketchybar --set "$NAME" label="$LABEL"

@@ -11,7 +11,10 @@ config-version = 2
 # Keep all nine workspaces alive even when empty. 8 and 9 are deliberately
 # unassigned scratch space, so they are usually empty and would otherwise
 # disappear.
-persistent-workspaces = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
+# 1-9 are reachable directly from the number row. 10-12 are overflow,
+# reached with ctrl-shift-0 / ctrl-alt-0 -- see scripts/cycle-extra-workspaces.sh,
+# whose EXTRA_WORKSPACES list must match the tail of this one.
+persistent-workspaces = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
 
 # You can use it to add commands that run after AeroSpace startup.
 # Available commands : https://nikitabobko.github.io/AeroSpace/commands
@@ -198,6 +201,12 @@ automatically-unhide-macos-hidden-apps = false
     ctrl-shift-7 = 'workspace 7'
     ctrl-shift-8 = 'workspace 8'
     ctrl-shift-9 = 'workspace 9'
+
+    # Workspaces beyond 9 have no number key of their own. ctrl-shift-0
+    # cycles forward through them, ctrl-alt-0 backward. From anywhere in
+    # 1-9, the first press lands on the first extra workspace.
+    ctrl-shift-0 = 'exec-and-forget ~/.config/aerospace/scripts/cycle-extra-workspaces.sh next'
+    ctrl-alt-0 = 'exec-and-forget ~/.config/aerospace/scripts/cycle-extra-workspaces.sh prev'
 
     # See: https://nikitabobko.github.io/AeroSpace/commands#move-node-to-workspace
     # Move windows to workspaces (using ctrl-alt to differentiate from ctrl-shift)
