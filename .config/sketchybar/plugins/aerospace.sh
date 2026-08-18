@@ -8,8 +8,14 @@ if [ -z "$FOCUSED_WORKSPACE" ]; then
     FOCUSED_WORKSPACE=$(aerospace list-workspaces --focused)
 fi
 
-# Get list of all workspaces with windows
-WORKSPACES=$(aerospace list-workspaces --all)
+# Workspaces that actually contain windows. `--all` returns all nine
+# regardless of contents, which defeats the emptiness check below and
+# permanently shows the unassigned scratch workspaces.
+WORKSPACES=$(aerospace list-workspaces --monitor all --empty no)
+
+# The focused workspace must always be shown, even when empty -- otherwise
+# switching to an empty scratch workspace makes the indicator vanish.
+WORKSPACES=$(printf '%s\n%s\n' "$WORKSPACES" "$FOCUSED_WORKSPACE" | sort -u)
 
 # Build the label showing all workspaces with the focused one highlighted
 LABEL=""

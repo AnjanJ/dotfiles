@@ -5,6 +5,10 @@
 # Available commands : https://nikitabobko.github.io/AeroSpace/commands
 after-startup-command = [
     'exec-and-forget borders',  # Start JankyBorders for visual window focus
+    # Restore the standard session: launch every app in the daily layout.
+    # Placement is handled by the [[on-window-detected]] rules at the
+    # bottom of this file, so this only has to start things.
+    'exec-and-forget ~/.config/aerospace/scripts/startup-apps.sh',
 ]
 
 # Start AeroSpace at login
@@ -33,6 +37,14 @@ default-root-container-orientation = 'auto'
 # See https://nikitabobko.github.io/AeroSpace/commands#move-mouse
 # Fallback value (if you omit the key): on-focused-monitor-changed = []
 on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
+
+# Notify SketchyBar when the workspace changes so the bar's workspace
+# indicator stays in sync. sketchybarrc subscribes to this exact event
+# name; without this line the bar renders once and never updates.
+exec-on-workspace-change = [
+    '/bin/bash', '-c',
+    'sketchybar --trigger aerospace_workspace_change FOCUSED_WORKSPACE=$AEROSPACE_FOCUSED_WORKSPACE',
+]
 
 # Mouse follows window focus (NEW: 2025-11-23)
 # Automatically moves mouse to center of focused window
@@ -99,38 +111,37 @@ automatically-unhide-macos-hidden-apps = false
     # '''
 
     # ============================================
-    # YOUR CUSTOM APP LAUNCHERS
-    # Work/Personal Split Organization
+    # APP LAUNCHERS
     # ============================================
+    # Each app lands on its home workspace automatically via the
+    # [[on-window-detected]] rules at the bottom of this file, so these
+    # shortcuts only need to launch -- no need to switch workspace first.
+    #
+    #   ws 1  Warp          ws 5  Proton Mail
+    #   ws 2  Zen           ws 6  Obsidian + Slack/1Password/Ente (floating)
+    #   ws 3  Chrome        ws 7  Claude + ChatGPT (floating)
+    #   ws 4  Zed / VSCode  ws 8  (free)   ws 9  (free)
 
-    # WORK APPS (Workspaces 1-4)
-    # Workspace 1: Work Browser (forces NEW window)
+    ctrl-shift-w = '''exec-and-forget open -a "Warp"'''
+    ctrl-shift-x = '''exec-and-forget open -a "Zen"'''
     ctrl-shift-c = '''exec-and-forget open -na "Google Chrome" --args --new-window'''
-
-    # Workspace 2: Code Editors (both)
-    ctrl-shift-v = '''exec-and-forget open -a "Visual Studio Code"'''
     ctrl-shift-z = '''exec-and-forget open -a "Zed"'''
-
-    # Workspace 3: Work Terminal
-    ctrl-shift-w = '''exec-and-forget open -a "Ghostty"'''
-
-    # PERSONAL APPS (Workspaces 5-8)
-    # Workspace 5: Personal Browser & Email (forces NEW window)
-    ctrl-shift-f = '''exec-and-forget open -na "Firefox" --args --new-window'''
+    ctrl-shift-v = '''exec-and-forget open -a "Visual Studio Code"'''
     ctrl-shift-m = '''exec-and-forget open -a "Proton Mail"'''
-
-    # Workspace 7: Personal Terminal
-    ctrl-shift-g = '''exec-and-forget open -a "Ghostty"'''
-
-    # Workspace 8: PKM
-    ctrl-shift-o = '''exec-and-forget open -a "Obsidian"'''
-
-    # UTILITIES
-    # Workspace 9: Password Manager
     ctrl-shift-p = '''exec-and-forget open -a "1Password"'''
+    ctrl-shift-o = '''exec-and-forget open -a "Obsidian"'''
+    ctrl-shift-s = '''exec-and-forget open -a "Slack"'''
+    ctrl-shift-a = '''exec-and-forget open -a "Claude"'''
+    ctrl-shift-t = '''exec-and-forget open -a "ChatGPT"'''
+    ctrl-shift-e = '''exec-and-forget open -a "Ente Auth"'''
+
+    # Re-launch the whole session on demand (also runs at AeroSpace startup).
+    ctrl-shift-r = '''exec-and-forget ~/.config/aerospace/scripts/startup-apps.sh'''
 
     # OTHER USEFUL APPS
-    ctrl-shift-space = '''exec-and-forget open -a "Raycast"'''
+    # Raycast is not installed; left commented rather than bound to a
+    # missing app, which would make the key silently do nothing.
+    # ctrl-shift-space = '''exec-and-forget open -a "Raycast"'''
     ctrl-shift-enter = '''exec-and-forget open -a "Finder"'''
 
     # See: https://nikitabobko.github.io/AeroSpace/commands#layout
@@ -149,9 +160,9 @@ automatically-unhide-macos-hidden-apps = false
     ctrl-shift-n = 'exec-and-forget ~/.config/aerospace/scripts/cycle-app-windows.sh chrome next'
     ctrl-shift-b = 'exec-and-forget ~/.config/aerospace/scripts/cycle-app-windows.sh chrome prev'
 
-    # Firefox windows (cycle through all Firefox windows across workspaces)
-    alt-shift-n = 'exec-and-forget ~/.config/aerospace/scripts/cycle-app-windows.sh firefox next'
-    alt-shift-b = 'exec-and-forget ~/.config/aerospace/scripts/cycle-app-windows.sh firefox prev'
+    # Zen windows (cycle through all Zen windows across workspaces)
+    alt-shift-n = 'exec-and-forget ~/.config/aerospace/scripts/cycle-app-windows.sh zen next'
+    alt-shift-b = 'exec-and-forget ~/.config/aerospace/scripts/cycle-app-windows.sh zen prev'
 
     # See: https://nikitabobko.github.io/AeroSpace/commands#move
     # Using ctrl-alt for moving windows to avoid 3-key combo
@@ -238,9 +249,79 @@ automatically-unhide-macos-hidden-apps = false
 # Automatically assign apps to specific workspaces
 # To find app-id: aerospace list-windows --all
 
+# Every app has a home workspace. These rules fire the moment a window
+# appears, so a window lands correctly whether it was opened at boot by
+# scripts/startup-apps.sh or by hand hours later. This is what makes the
+# layout survive a restart -- launch order does not matter.
+#
+# To find an app-id for a new app:  aerospace list-windows --all --format '%{app-bundle-id}|%{app-name}'
+
+# --- Workspace 1: Terminal ---
+[[on-window-detected]]
+if.app-id = 'dev.warp.Warp-Stable'
+run = 'move-node-to-workspace 1'
+
+# --- Workspace 2: Personal browser ---
+[[on-window-detected]]
+if.app-id = 'app.zen-browser.zen'
+run = 'move-node-to-workspace 2'
+
+# --- Workspace 3: Work browser ---
+[[on-window-detected]]
+if.app-id = 'com.google.Chrome'
+run = 'move-node-to-workspace 3'
+
+# --- Workspace 4: Editors ---
+[[on-window-detected]]
+if.app-id = 'dev.zed.Zed'
+run = 'move-node-to-workspace 4'
+
+[[on-window-detected]]
+if.app-id = 'com.microsoft.VSCode'
+run = 'move-node-to-workspace 4'
+
+# --- Workspace 5: Mail + passwords ---
 [[on-window-detected]]
 if.app-id = 'ch.protonmail.desktop'
 run = 'move-node-to-workspace 5'
+
+# 1Password main window: floats on 6. Scoped by title so the Quick Access
+# popup is untouched and stays wherever it was invoked.
+[[on-window-detected]]
+if.app-id = 'com.1password.1password'
+if.window-title-regex-substring = '1Password'
+run = ['layout floating', 'move-node-to-workspace 6']
+
+# --- Workspace 6: Notes, chat, and floating utilities ---
+[[on-window-detected]]
+if.app-id = 'md.obsidian'
+run = 'move-node-to-workspace 6'
+
+# Slack floats AND lives on 6. Both commands must be in ONE rule: AeroSpace
+# applies only the FIRST matching [[on-window-detected]] block, so a separate
+# 'layout floating' rule further down would never fire.
+[[on-window-detected]]
+if.app-id = 'com.tinyspeck.slackmacgap'
+run = ['layout floating', 'move-node-to-workspace 6']
+
+# Ente Auth (2FA codes): floats on 6 so it can be summoned without
+# disturbing a tiled layout.
+[[on-window-detected]]
+if.app-id = 'io.ente.auth.mac'
+run = ['layout floating', 'move-node-to-workspace 6']
+
+# --- Workspace 7: AI assistants (both float, stacked) ---
+[[on-window-detected]]
+if.app-id = 'com.anthropic.claudefordesktop'
+run = ['layout floating', 'move-node-to-workspace 7']
+
+[[on-window-detected]]
+if.app-id = 'com.openai.codex'
+run = ['layout floating', 'move-node-to-workspace 7']
+
+# Workspaces 8 and 9 are deliberately unassigned: free scratch space for
+# whatever a given day needs. Anything without a rule above opens on the
+# workspace you are currently viewing.
 
 # ============================================
 # AUTO-FLOAT RULES
@@ -326,7 +407,3 @@ run = 'layout floating'
 if.app-id = 'us.zoom.xos'
 run = 'layout floating'
 
-# Slack
-[[on-window-detected]]
-if.app-id = 'com.tinyspeck.slackmacgap'
-run = 'layout floating'

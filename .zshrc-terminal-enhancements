@@ -236,7 +236,11 @@ fi
 #           gh copilot explain "git log --since=7.days"
 #         Aliases below shorten the common cases.
 
-if command -v gh > /dev/null && gh copilot --help >/dev/null 2>&1; then
+# Defined unconditionally: probing with `gh copilot --help` at startup cost
+# ~115ms on every shell (it loads the full gh binary and its extensions).
+# If the extension is absent the alias simply errors when used, which is a
+# far better trade than paying the probe on every single prompt.
+if command -v gh > /dev/null; then
     alias ghcs='gh copilot suggest'
     alias ghce='gh copilot explain'
 fi

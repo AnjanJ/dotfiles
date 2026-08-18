@@ -269,7 +269,7 @@ alias logclear='truncate -s 0 log/*.log'
 alias logview='lnav log/development.log'
 
 # Highlighted log tailing (tailspin — auto-highlights dates, UUIDs, IPs, JSON)
-alias logspin='tailspin -f log/development.log'
+alias logspin='tspin -f log/development.log'
 
 # ============================================
 # 7. CODE QUALITY
@@ -292,7 +292,7 @@ alias bestpractices='bundle exec rails_best_practices .'
 # Rails setup templates (.rubocop.yml, lefthook.yml, ci.yml, etc.).
 # Not shipped with this repo — point RAILS_TEMPLATES_DIR at your own
 # collection, or set it in ~/.zshrc.local.
-RAILS_TEMPLATES_DIR="${RAILS_TEMPLATES_DIR:-${HOME}/code/Tutorials/workflow/rails-templates/templates}"
+RAILS_TEMPLATES_DIR="${RAILS_TEMPLATES_DIR:-${HOME}/code/Tutorials/Dev Workflow/workflow/rails-templates/templates}"
 
 # Check if we're in a Rails project
 _check_rails_project() {

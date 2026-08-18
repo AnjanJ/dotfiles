@@ -69,14 +69,18 @@ export DEFAULT_DB="postgresql"       # Default database for new Rails apps
 export DB_USER="postgres"            # Default database user
 
 # === PATHS ===
-export WORK_DIR="$HOME/work/code"    # Work projects directory
+# Work projects directory. Currently unused (no job) and the directory
+# does not exist -- the work-* helpers in ~/bin will report that clearly
+# rather than misbehaving. Recreate ~/work/code to reactivate them.
+export WORK_DIR="$HOME/work/code"
 export PROJECTS_DIR="$HOME/code"     # Personal projects directory
 
 # === OTHER ===
 export ERL_AFLAGS="-kernel shell_history enabled"  # Elixir history
 export RUBY_YJIT_ENABLE=1               # Enable YJIT JIT compiler (Ruby 3.1+)
 
-export PATH=$PATH:$HOME/.maestro/bin
+# Maestro (mobile UI testing) -- only added when actually installed.
+[[ -d "$HOME/.maestro/bin" ]] && export PATH="$PATH:$HOME/.maestro/bin"
 
 # Ollama settings (local AI for Rails dev)
 # MAX_LOADED_MODELS=1 — 36GB unified can't hold 7B + 30B together; explicit single-model swap is cleaner
@@ -328,3 +332,17 @@ fi
 export ANDROID_HOME="/opt/homebrew/share/android-commandlinetools"
 export ANDROID_SDK_ROOT="$ANDROID_HOME"
 export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
+
+# ============================================
+# AEROSPACE SESSION
+# ============================================
+# Re-launch the standard workspace layout at any time. Safe to re-run:
+# already-running apps are focused, not duplicated. Placement is handled
+# by the on-window-detected rules in .config/aerospace/aerospace.toml.
+alias restore-session='~/.config/aerospace/scripts/startup-apps.sh'
+
+# Show what is open where -- handy when adding a new app to the layout.
+alias ws='aerospace list-windows --all --format "%{workspace}  %{app-name}" | sort -n'
+
+# Print the bundle id of every open window, to paste into aerospace.toml.
+alias ws-ids='aerospace list-windows --all --format "%{workspace}  %{app-bundle-id}  %{app-name}" | sort -n'

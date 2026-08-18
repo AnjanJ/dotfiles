@@ -27,6 +27,9 @@ DOTFILES_LINKS=(
     ".zshrc-work-completions:$HOME/.zshrc-work-completions"
 
     # Loose home-directory dotfiles
+    # .gitconfig carries identity, delta pager wiring, rerere and the gh
+    # credential helpers -- worth versioning so a rebuilt machine keeps them.
+    ".gitconfig:$HOME/.gitconfig"
     ".gitignore_global:$HOME/.gitignore_global"
     ".rubocop.yml:$HOME/.rubocop.yml"
     # wezterm lives under .config/wezterm/ but wezterm reads ~/.wezterm.lua first

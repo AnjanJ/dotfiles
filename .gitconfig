@@ -1,0 +1,37 @@
+[core]
+	editor = vim
+	excludesfile = ~/.gitignore_global
+	pager = delta
+[pull]
+	rebase = false
+[diff]
+	algorithm = histogram
+[rerere]
+	enabled = true
+[push]
+	autoSetupRemote = true
+[branch]
+	sort = -committerdate
+[commit]
+	verbose = true
+[merge]
+	tool = nvimdiff
+	conflictstyle = diff3
+[user]
+	name = Anjan Jagirdar
+	email = anjan.jagirdar@gmail.com
+[interactive]
+	diffFilter = delta --color-only
+
+[delta]
+	syntax-theme = Dracula
+	navigate = true          # n / N jump between files in a diff
+	line-numbers = true
+	hyperlinks = true        # clickable file:line in supporting terminals
+	side-by-side = false     # flip to true if you prefer split view
+[credential "https://github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential

@@ -288,7 +288,7 @@ phoenixnew-live() {
 alias-phoenix() {
   echo "🔥 Phoenix Aliases:"
   echo "──────────────────────────────────────────"
-  ( alias 2>&1 | grep -E "^ph[a-z]*=" | sort ) 2>/dev/null
+  ( alias 2>&1 | /usr/bin/grep -E "^ph[a-z]*=" | sort ) 2>/dev/null
   echo ""
   echo "Functions: pht, phta, phtf, phts, phtc, phtw, phcheck"
 }
@@ -299,10 +299,10 @@ alias-elixir() {
   echo "──────────────────────────────────────────"
   echo ""
   echo "Phoenix (ph*):"
-  ( alias 2>&1 | grep -E "^ph[a-z]*=" | wc -l | xargs echo "  Count:" ) 2>/dev/null
+  ( alias 2>&1 | /usr/bin/grep -E "^ph[a-z]*=" | wc -l | xargs echo "  Count:" ) 2>/dev/null
   echo ""
   echo "Mix (m*):"
-  ( alias 2>&1 | grep -E "^m[a-z]*=" | wc -l | xargs echo "  Count:" ) 2>/dev/null
+  ( alias 2>&1 | /usr/bin/grep -E "^m[a-z]*=" | wc -l | xargs echo "  Count:" ) 2>/dev/null
   echo ""
   echo "Use: alias-phoenix for full list"
   echo "Use: alias-search <keyword> to search"
@@ -316,7 +316,7 @@ alias-search-elixir() {
     return 1
   fi
   echo "🔍 Searching Elixir aliases for: $1"
-  ( alias 2>&1 | grep -E "^(p|m|e)[a-z]*=" | grep -i "$1" | sort ) 2>/dev/null
+  ( alias 2>&1 | /usr/bin/grep -E "^(p|m|e)[a-z]*=" | /usr/bin/grep -i "$1" | sort ) 2>/dev/null
 }
 
 # ============================================

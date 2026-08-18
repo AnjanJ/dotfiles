@@ -15,6 +15,9 @@ case "$APP" in
     firefox)
         APP_ID="org.mozilla.firefox"
         ;;
+    zen)
+        APP_ID="app.zen-browser.zen"
+        ;;
     safari)
         APP_ID="com.apple.Safari"
         ;;
@@ -25,12 +28,11 @@ case "$APP" in
 esac
 
 # Get all windows of the app (window IDs)
-ALL_WINDOWS=$(aerospace list-windows --all --format "%{window-id}" | while read -r window_id; do
-    app_id=$(aerospace list-windows --all --format "%{app-bundle-id}" --window-id "$window_id" 2>/dev/null)
-    if [[ "$app_id" == "$APP_ID" ]]; then
-        echo "$window_id"
-    fi
-done)
+# One aerospace call, filtered locally. The previous version spawned an
+# extra `aerospace` process per open window to look up its bundle id,
+# which made the keybinding noticeably laggy with many windows open.
+ALL_WINDOWS=$(aerospace list-windows --all --format "%{window-id}|%{app-bundle-id}" \
+    | awk -F'|' -v id="$APP_ID" '$2 == id { print $1 }')
 
 # If no windows found, exit
 if [[ -z "$ALL_WINDOWS" ]]; then
