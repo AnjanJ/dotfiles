@@ -271,9 +271,11 @@ SSHEOF
         # before the IdentityFile below is ever tried. `IdentityAgent none`
         # disables the agent for this host only.
         if [[ -n "$keyfile" ]]; then
-            echo "    IdentityAgent none" >> "$config_file"
-            echo "    IdentityFile ~/.ssh/$keyfile" >> "$config_file"
-            echo "    IdentitiesOnly yes" >> "$config_file"
+            cat >> "$config_file" <<SSHKEYEOF
+    IdentityAgent none
+    IdentityFile ~/.ssh/$keyfile
+    IdentitiesOnly yes
+SSHKEYEOF
         fi
 
         echo "" >> "$config_file"
