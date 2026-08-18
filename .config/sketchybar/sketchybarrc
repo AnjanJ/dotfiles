@@ -31,11 +31,11 @@ sketchybar --bar \
 
 ##### Changing Defaults #####
 sketchybar --default \
-    icon.font="Hack Nerd Font:Bold:14.0" \
+    icon.font="FiraCode Nerd Font:Bold:14.0" \
     icon.color=$WHITE \
     icon.padding_left=4 \
     icon.padding_right=4 \
-    label.font="Hack Nerd Font:Bold:13.0" \
+    label.font="FiraCode Nerd Font:Bold:13.0" \
     label.color=$WHITE \
     label.padding_left=4 \
     label.padding_right=4 \
@@ -50,6 +50,7 @@ sketchybar --add event aerospace_workspace_change \
            --set aerospace.workspaces \
                  icon= \
                  script="$HOME/.config/sketchybar/plugins/aerospace.sh" \
+                 label.padding_right=10 \
                  background.color=$ITEM_BG_COLOR \
                  background.corner_radius=5 \
                  background.height=24 \
@@ -61,7 +62,7 @@ sketchybar --add event aerospace_workspace_change \
 sketchybar --add item clock right \
            --set clock \
                  update_freq=10 \
-                 icon= \
+                 icon= \
                  script="$HOME/.config/sketchybar/plugins/clock.sh" \
                  background.color=$ITEM_BG_COLOR \
                  background.corner_radius=5 \
@@ -73,7 +74,7 @@ sketchybar --add item clock right \
 sketchybar --add item memory right \
            --set memory \
                  update_freq=15 \
-                 icon= \
+                 icon=󰍛 \
                  script="$HOME/.config/sketchybar/plugins/memory.sh" \
                  background.color=$ITEM_BG_COLOR \
                  background.corner_radius=5 \
@@ -83,7 +84,7 @@ sketchybar --add item memory right \
 sketchybar --add item cpu right \
            --set cpu \
                  update_freq=5 \
-                 icon= \
+                 icon= \
                  script="$HOME/.config/sketchybar/plugins/cpu.sh" \
                  background.color=$ITEM_BG_COLOR \
                  background.corner_radius=5 \
@@ -93,7 +94,7 @@ sketchybar --add item cpu right \
 sketchybar --add item battery right \
            --set battery \
                  update_freq=120 \
-                 icon= \
+                 icon= \
                  script="$HOME/.config/sketchybar/plugins/battery.sh" \
                  background.color=$ITEM_BG_COLOR \
                  background.corner_radius=5 \

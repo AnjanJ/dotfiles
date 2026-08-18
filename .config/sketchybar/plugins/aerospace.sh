@@ -1,9 +1,8 @@
 #!/bin/bash
 
-# Get focused workspace from environment variable
-FOCUSED_WORKSPACE=$FOCUSED_WORKSPACE
-
-# If not set, query aerospace directly
+# FOCUSED_WORKSPACE is exported by the trigger in aerospace.toml.
+# If it is absent -- e.g. the item's own periodic refresh rather than a
+# workspace-change event -- fall back to asking aerospace directly.
 if [ -z "$FOCUSED_WORKSPACE" ]; then
     FOCUSED_WORKSPACE=$(aerospace list-workspaces --focused)
 fi
@@ -24,8 +23,10 @@ for ws in 1 2 3 4 5 6 7 8 9; do
     if echo "$WORKSPACES" | grep -q "^$ws$"; then
         # Workspace has windows
         if [ "$ws" = "$FOCUSED_WORKSPACE" ]; then
-            # Focused workspace with windows - highlighted
-            LABEL="$LABEL <b>[$ws]</b>"
+            # Focused workspace. Sketchybar labels are PLAIN TEXT -- markup
+            # like <b> renders literally as "<b>[1]</b>", so the brackets do
+            # the emphasising on their own.
+            LABEL="$LABEL [$ws]"
         else
             # Non-focused workspace with windows
             LABEL="$LABEL $ws"
@@ -34,4 +35,4 @@ for ws in 1 2 3 4 5 6 7 8 9; do
 done
 
 # Update sketchybar
-sketchybar --set $NAME label="$LABEL"
+sketchybar --set "$NAME" label="$LABEL"
