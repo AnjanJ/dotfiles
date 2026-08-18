@@ -188,8 +188,6 @@ apply_theme() {
     _backup_for_rollback "$DOTFILES_DIR/.config/lazygit/config.yml"
     _backup_for_rollback "$DOTFILES_DIR/.config/borders/bordersrc"
     _backup_for_rollback "$DOTFILES_DIR/.config/sketchybar/sketchybarrc"
-    _backup_for_rollback "$HOME/.config/yazi/theme.toml"
-    _backup_for_rollback "$HOME/.config/gitui/theme.ron"
     _backup_for_rollback "$HOME/.config/lsd/colors.yaml"
 
     # Set ERR trap for automatic rollback (requires errtrace for functions)
@@ -323,6 +321,15 @@ apply_theme() {
     # ── 6. Zed ──────────────────────────────────────────
     _theme_step "Zed..."
     local zed_settings="$DOTFILES_DIR/.config/zed/settings.json"
+
+    # Zed's registry has no Aura extension, but it loads theme JSON dropped
+    # into ~/.config/zed/themes. Install whatever the theme ships so the
+    # name set below actually resolves -- Zed falls back silently otherwise.
+    if [[ -d "$THEMES_DIR/zed" ]] && compgen -G "$THEMES_DIR/zed/*.json" >/dev/null; then
+        mkdir -p "$HOME/.config/zed/themes"
+        cp "$THEMES_DIR/zed"/*.json "$HOME/.config/zed/themes/"
+    fi
+
     if [[ -f "$zed_settings" ]] && command -v jq &>/dev/null; then
         local tmpfile
         tmpfile=$(mktemp)
@@ -484,29 +491,27 @@ FZFEOF
         fi
     fi
 
-    # ── 14. yazi ────────────────────────────────────────────
-    if command -v yazi &>/dev/null; then
-        _theme_step "yazi..."
-        local yazi_theme="$THEMES_DIR/yazi/theme.toml"
-        if [[ -f "$yazi_theme" ]]; then
-            mkdir -p "$HOME/.config/yazi"
-            cp "$yazi_theme" "$HOME/.config/yazi/theme.toml"
-            _theme_success "yazi → $THEME"
-        else
-            _theme_warning "yazi: theme file not found at $yazi_theme"
-        fi
+    # ── 14. Xcode ───────────────────────────────────────────
+    # Xcode reads .xccolortheme files dropped into its UserData dir. The
+    # theme still has to be picked once in Settings -> Themes; this only
+    # makes it available there.
+    if [[ -d "/Applications/Xcode.app" ]] && compgen -G "$THEMES_DIR/xcode/*.xccolortheme" >/dev/null; then
+        _theme_step "Xcode..."
+        local xcode_themes="$HOME/Library/Developer/Xcode/UserData/FontAndColorThemes"
+        mkdir -p "$xcode_themes"
+        cp "$THEMES_DIR/xcode"/*.xccolortheme "$xcode_themes/"
+        _theme_success "Xcode → $THEME (select it in Settings → Themes)"
     fi
 
-    # ── 15. gitui ───────────────────────────────────────────
-    if command -v gitui &>/dev/null; then
-        _theme_step "gitui..."
-        local gitui_theme="$THEMES_DIR/gitui/theme.ron"
-        if [[ -f "$gitui_theme" ]]; then
-            mkdir -p "$HOME/.config/gitui"
-            cp "$gitui_theme" "$HOME/.config/gitui/theme.ron"
-            _theme_success "gitui → $THEME"
+    # ── 15. Sublime Text ────────────────────────────────────
+    if [[ -d "/Applications/Sublime Text.app" ]] && compgen -G "$THEMES_DIR/sublime-text/*.tmTheme" >/dev/null; then
+        _theme_step "Sublime Text..."
+        local st_user="$HOME/Library/Application Support/Sublime Text/Packages/User"
+        if [[ -d "$st_user" ]]; then
+            cp "$THEMES_DIR/sublime-text"/*.tmTheme "$st_user/"
+            _theme_success "Sublime Text → $THEME"
         else
-            _theme_warning "gitui: theme file not found at $gitui_theme"
+            _theme_warning "Sublime Text: Packages/User not found"
         fi
     fi
 

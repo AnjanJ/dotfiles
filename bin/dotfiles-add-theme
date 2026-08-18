@@ -39,7 +39,7 @@ print_step "Scaffolding theme: $THEME_NAME"
 echo ""
 
 # Create directory structure
-mkdir -p "$THEME_DIR"/{ghostty,nvim,starship,zellij/themes,lazygit,sketchybar,yazi,gitui,lsd}
+mkdir -p "$THEME_DIR"/{ghostty,nvim,starship,zellij/themes,lazygit,sketchybar,lsd}
 
 # theme.conf — template with all required variables
 cat > "$THEME_DIR/theme.conf" << EOF
@@ -145,20 +145,6 @@ export ITEM_BG_COLOR=0xff333333
 export ACCENT_COLOR=\$BLUE
 EOF
 
-# yazi theme
-cat > "$THEME_DIR/yazi/theme.toml" << EOF
-# TODO: Fill in yazi theme for $THEME_NAME
-# See: https://yazi-rs.github.io/docs/configuration/theme
-EOF
-
-# gitui theme
-cat > "$THEME_DIR/gitui/theme.ron" << EOF
-// TODO: Fill in gitui theme for $THEME_NAME
-// See: https://github.com/extrawurst/gitui/blob/master/THEMES.md
-(
-)
-EOF
-
 # lsd colors
 cat > "$THEME_DIR/lsd/colors.yaml" << EOF
 # TODO: Fill in lsd colors for $THEME_NAME
@@ -187,6 +173,6 @@ echo "  1. Fill in theme.conf with all color values"
 echo "  2. Add nvim plugin spec to nvim/${THEME_NAME}-theme.lua"
 echo "  3. Add starship palette to starship/palette.toml"
 echo "  4. Add zellij colors to zellij/themes/${THEME_NAME}.kdl"
-echo "  5. Fill in lazygit, sketchybar, yazi, gitui, lsd theme files"
+echo "  5. Fill in lazygit, sketchybar, lsd theme files"
 echo "  6. Test: dotfiles theme $THEME_NAME"
 echo ""

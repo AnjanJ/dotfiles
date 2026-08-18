@@ -21,24 +21,37 @@ GOOGLE CHROME
   https://chromewebstore.google.com/detail/aura-theme/ddipnaombfnagpagnpdkdinoekfhfjoh
 
 ──────────────────────────────────────────────────────
-FIREFOX
+ZEN BROWSER
 ──────────────────────────────────────────────────────
-  Install from Firefox Add-ons:
+  Zen is a Firefox fork, so the Firefox add-on installs directly:
   https://addons.mozilla.org/en-US/firefox/addon/aura-theme-v2/
+
+  Then: Zen menu -> Add-ons and Themes -> Themes -> Enable "Aura"
 
 ──────────────────────────────────────────────────────
 TELEGRAM
 ──────────────────────────────────────────────────────
-  1. Download the theme file from:
-     https://github.com/daltonmenezes/aura-theme/tree/main/packages/telegram
-  2. Open Telegram → Settings → Chat Settings
-  3. Under "Chat background", click "Choose from file"
-  4. Select the downloaded .tdesktop-theme file
+  The theme file already ships in this repo -- no download needed.
+
+  1. Open Telegram → Settings → Chat Settings
+  2. Under "Chat background", click "Choose from file"
+  3. Select:
+     ~/code/dotfiles/themes/aura/telegram/aura.tdesktop-theme
 
 ──────────────────────────────────────────────────────
-RAYCAST
+XCODE  (installed automatically)
 ──────────────────────────────────────────────────────
-  Search "Aura" at https://ray.so/themes/ and click "Add to Raycast"
-  Note: Custom themes require Raycast Pro subscription.
+  The theme is copied to ~/Library/Developer/Xcode/UserData/
+  FontAndColorThemes/ by apply-theme.sh. To activate it:
+
+  Xcode → Settings → Themes → select "Aura Dark"
+
+──────────────────────────────────────────────────────
+OBSIDIAN
+──────────────────────────────────────────────────────
+  No official Aura port exists. Closest match:
+  Settings → Appearance → Themes → Browse → search a dark theme
+  (e.g. "Obsidianite" or "Primary"), then set Base color scheme: Dark
+
 
 ══════════════════════════════════════════════════════
