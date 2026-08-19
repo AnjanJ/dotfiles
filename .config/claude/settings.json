@@ -23,7 +23,8 @@
     "shipkit@shipkit": true,
     "ruby-lsp@claude-plugins-official": false,
     "frontend-design@claude-plugins-official": true,
-    "bodhikit@bodhikit": true
+    "bodhikit@bodhikit": true,
+    "warp@claude-code-warp": true
   },
   "extraKnownMarketplaces": {
     "shipkit": {
@@ -36,6 +37,12 @@
       "source": {
         "source": "git",
         "url": "git@github.com:AnjanJ/bodhikit.git"
+      }
+    },
+    "claude-code-warp": {
+      "source": {
+        "source": "github",
+        "repo": "warpdotdev/claude-code-warp"
       }
     }
   },

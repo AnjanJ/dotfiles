@@ -94,15 +94,21 @@ oclaude() {
   local model="glm-5.2:cloud"
   local choose_model=0
   local list_output name choice
-  local -a claude_args cloud_models local_models models labels
+  local -a claude_args cloud_models local_preferred local_models models labels
   local -A seen
   integer i
 
   # Current preferred Ollama cloud models
   cloud_models=(
+    "glm-5.3:cloud"
     "glm-5.2:cloud"
     "kimi-k3:cloud"
     "deepseek-v4-pro:cloud"
+  )
+
+  # Local models to surface above the rest of `ollama list`
+  local_preferred=(
+    "qwen3.8:27b"
   )
 
   # Process arguments
@@ -144,6 +150,18 @@ oclaude() {
       models+=("$name")
       labels+=("$name  [cloud]")
       seen[$name]=1
+    done
+
+    # Add preferred local models next
+    for name in "${local_preferred[@]}"; do
+      [[ -n "${seen[$name]-}" ]] && continue
+      # only offer it if it is actually installed
+      if print -r -- "$list_output" | awk 'NR > 1 && NF { print $1 }' |
+         grep -qxF -- "$name"; then
+        models+=("$name")
+        labels+=("$name  [local]")
+        seen[$name]=1
+      fi
     done
 
     # Add locally available models, avoiding duplicates
@@ -195,6 +213,14 @@ oclaude() {
     -- \
     --dangerously-skip-permissions \
     "${claude_args[@]}"
+}
+
+# Local Qwen3.8-27B for quick coding queries, thinking off for speed.
+# (Claude Code via `ollama launch` has no way to pass Ollama's per-request
+# `think` field, so thinking-off only applies to this direct path.)
+oq() {
+  emulate -L zsh
+  ollama run qwen3.8:27b --think=false "$@"
 }
 
 # ============================================
