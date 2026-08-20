@@ -108,6 +108,7 @@ oclaude() {
 
   # Local models to surface above the rest of `ollama list`
   local_preferred=(
+    "qwen3.8-cc:27b"
     "qwen3.8:27b"
   )
 
