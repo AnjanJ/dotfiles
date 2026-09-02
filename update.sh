@@ -219,6 +219,9 @@ create_symlink() {
 source "$DOTFILES_DIR/scripts/symlink-map.sh"
 dotfiles_for_each_link create_symlink
 
+# One-off repairs a relink cannot express (see bin/dotfiles-migrate)
+bash "$DOTFILES_DIR/bin/dotfiles-migrate" || print_warning "Some migrations failed; they will retry next update"
+
 print_success "Symlinks refreshed"
 
 # ============================================
@@ -253,6 +256,8 @@ if pgrep -x "Aerospace" > /dev/null; then
 else
     print_warning "Aerospace not running"
 fi
+
+bash "$DOTFILES_DIR/bin/dotfiles-hook" post-update
 
 # ============================================
 # 6. COMMIT & PUSH CHANGES

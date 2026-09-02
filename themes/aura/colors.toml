@@ -1,0 +1,35 @@
+# Aura Dark — https://github.com/daltonmenezes/aura-theme
+# ANSI slots follow the official Alacritty palette (blue/magenta both purple).
+mode = "dark"
+
+accent = "#a277ff"
+selection = "#29263c"
+muted = "#6d6d6d"
+
+background = "#15141b"
+dark_background = "#110f18"
+darker_background = "#0d0c12"
+lighter_background = "#1c1b22"
+
+foreground = "#edecee"
+dark_foreground = "#6d6d6d"
+light_foreground = "#edecee"
+bright_foreground = "#edecee"
+
+black = "#110f18"
+red = "#ff6767"
+green = "#61ffca"
+yellow = "#ffca85"
+blue = "#a277ff"
+magenta = "#a277ff"
+cyan = "#61ffca"
+orange = "#ffca85"
+purple = "#a277ff"
+
+bright_black = "#4d4d4d"
+bright_red = "#ff6767"
+bright_green = "#61ffca"
+bright_yellow = "#ffca85"
+bright_blue = "#82e2ff"
+bright_magenta = "#f694ff"
+bright_cyan = "#82e2ff"

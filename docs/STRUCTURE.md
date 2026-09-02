@@ -30,8 +30,8 @@ dotfiles/
 │   ├── lazygit/                # Git UI: config + theme
 │   ├── borders/                # JankyBorders: active window highlighting
 │   ├── sketchybar/             # Menu bar: config + plugins
-│   └── starship.toml           # Prompt: git, languages, colors
-├── themes/                     # Theme assets — see docs/THEMES.md
+├── themes/                     # One colors.toml per theme + _templates/ — see docs/THEMES.md
+├── migrations/                 # One-off per-machine repairs, run by sync/update (bin/dotfiles-migrate)
 │   ├── tokyo-night/
 │   ├── aura/
 │   └── catppuccin/
@@ -50,8 +50,9 @@ dotfiles/
 │   ├── setup-ssh.sh            # SSH key & config setup
 │   ├── health-check.sh         # Verify installation (sweeps the symlink map)
 │   ├── theme-utils.sh          # Theme utility functions
-│   └── apply-theme.sh          # Apply theme across all apps
-├── tests/                      # 13 suites, run via GitHub Actions CI
+│   ├── theme-render.sh         # {{ token }} renderer (bash + awk)
+│   └── apply-theme.sh          # Render colors.toml through templates, swap into ~/.local/state, install
+├── tests/                      # 14 suites, run via GitHub Actions CI
 ├── .github/workflows/test.yml  # CI: shellcheck + all test suites
 └── docs/                       # This documentation
 ```

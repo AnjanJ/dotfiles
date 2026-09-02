@@ -44,8 +44,8 @@ DOTFILES_LINKS=(
     ".config/borders:$HOME/.config/borders"
     ".config/sketchybar:$HOME/.config/sketchybar"
 
-    # Single config files
-    ".config/starship.toml:$HOME/.config/starship.toml"
+    # Single config files (starship.toml is not here: it is rendered per
+    # theme from themes/_templates/starship.toml.tpl and read via $STARSHIP_CONFIG)
     ".config/mise/config.toml:$HOME/.config/mise/config.toml"
     ".config/zed/settings.json:$HOME/.config/zed/settings.json"
     ".config/zed/tasks.json:$HOME/.config/zed/tasks.json"

@@ -17,6 +17,10 @@ _dotfiles() {
         'doctor:Auto-fix common issues'
         'profile:Measure shell startup time'
         'export:Export setup snapshot'
+        'add-theme:Scaffold a new theme directory'
+        'cleanup:Remove Homebrew packages not in Brewfile'
+        'migrate:Run pending one-off migrations'
+        'hook:Run user hooks for an event'
         'edit:Open dotfiles in your editor'
         'dir:Print dotfiles directory path'
     )
@@ -26,8 +30,18 @@ _dotfiles() {
     else
         case "${words[2]}" in
             theme)
-                local -a themes=(tokyo-night aura catppuccin)
+                local -a themes=($(_dotfiles_theme_names))
                 _describe 'theme' themes
+                ;;
+            migrate)
+                _arguments \
+                    '--pending[List pending migrations]' \
+                    '--dry-run[Show what would run]' \
+                    '--new[Create a migration]:slug'
+                ;;
+            hook)
+                local -a events=(theme-set post-sync post-update)
+                _describe 'event' events
                 ;;
             backup)
                 _arguments \
@@ -50,7 +64,7 @@ _dotfiles() {
                     '--email[Git personal email]:email' \
                     '--work-email[Git work email]:email' \
                     '--work-dir[Work directory]:directory:_directories' \
-                    '--theme[Theme]:theme:(tokyo-night aura catppuccin)' \
+                    '--theme[Theme]:theme:($(_dotfiles_theme_names))' \
                     '--ssh[SSH mode]:mode:(1password existing generate skip)' \
                     '--groups[Package groups to install]:groups' \
                     '--no-macos-defaults[Skip macOS defaults]' \
@@ -76,8 +90,19 @@ _dotfiles() {
 }
 compdef _dotfiles dotfiles
 
+# Theme names come from themes/*/theme.conf, so a new theme completes
+# without touching this file
+_dotfiles_theme_names() {
+    local dir="${DOTFILES_DIR:-$HOME/code/dotfiles}"
+    [[ -d "$dir/themes" ]] || dir="$HOME/dotfiles"
+    local conf
+    for conf in "$dir"/themes/*/theme.conf(N); do
+        echo "${conf:h:t}"
+    done
+}
+
 _dotfiles_theme() {
-    local -a themes=(tokyo-night aura catppuccin)
+    local -a themes=($(_dotfiles_theme_names))
     _describe 'theme' themes
 }
 compdef _dotfiles_theme dotfiles-theme

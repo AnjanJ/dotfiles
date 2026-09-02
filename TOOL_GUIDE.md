@@ -64,7 +64,7 @@ Everything installed by your dotfiles — what it does, when to use it, and how 
 - Git status indicators (branch, ahead/behind, dirty)
 - Custom symbols for vim mode
 
-**Tips**: Config at `.config/starship.toml`. The palette section auto-switches with themes.
+**Tips**: Config is a template at `themes/_templates/starship.toml.tpl`; the palette is rendered per theme and read via `$STARSHIP_CONFIG`.
 
 ### Zsh Configuration
 **What**: Your shell is zsh with 150+ aliases across 4 config files.

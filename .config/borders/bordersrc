@@ -4,13 +4,17 @@
 # Highlights the active window with a colored border
 # Colors use ARGB format: 0xAARRGGBB
 
+# Colours are rendered by `dotfiles theme` into colors.sh next to this
+# file (gitignored). Fallbacks cover a fresh clone before the first apply.
+[ -f "$HOME/.config/borders/colors.sh" ] && . "$HOME/.config/borders/colors.sh"
+
 options=(
     style=round
     width=6.0
     hidpi=on
-    active_color=0xffa277ff      # Light gray/white for active window
-    inactive_color=0xff6d6d6d    # Dark gray for inactive windows
-    background_color=0x3015141b  # Subtle background
+    active_color="${BORDERS_ACTIVE_COLOR:-0xff7aa2f7}"
+    inactive_color="${BORDERS_INACTIVE_COLOR:-0xff565f89}"
+    background_color="${BORDERS_BACKGROUND_COLOR:-0x301a1b26}"
 )
 
 borders "${options[@]}"

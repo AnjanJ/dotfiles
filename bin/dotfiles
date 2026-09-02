@@ -19,6 +19,8 @@ case "${1:-}" in
     profile)   shift; exec bash "$DOTFILES_DIR/bin/dotfiles-profile" "$@" ;;
     sync)      shift; exec bash "$DOTFILES_DIR/bin/dotfiles-sync" "$@" ;;
     export)    shift; exec bash "$DOTFILES_DIR/bin/dotfiles-export" "$@" ;;
+    hook)      shift; exec bash "$DOTFILES_DIR/bin/dotfiles-hook" "$@" ;;
+    migrate)   shift; exec bash "$DOTFILES_DIR/bin/dotfiles-migrate" "$@" ;;
     edit)      cd "$DOTFILES_DIR" && exec "${EDITOR:-vim}" . ;;
     dir)       echo "$DOTFILES_DIR" ;;
     *)
@@ -39,6 +41,8 @@ case "${1:-}" in
         echo "  doctor      Auto-fix common issues"
         echo "  profile     Measure shell startup time"
         echo "  export      Export setup snapshot (--json for machine-readable)"
+        echo "  migrate     Run pending one-off migrations (--pending, --new <slug>)"
+        echo "  hook        Run user hooks for an event (~/.config/dotfiles/hooks/)"
         echo "  edit        Open dotfiles in your editor"
         echo "  dir         Print dotfiles directory path"
         echo ""

@@ -25,38 +25,25 @@ config.font_size = 16.0
 config.freetype_load_target = 'Light'
 config.freetype_render_target = 'HorizontalLcd'
 
--- ── Aura theme (ported from daltonmenezes/aura-theme Alacritty palette) ───────
-config.colors = {
-  foreground = '#edecee',
-  background = '#15141b',
-  cursor_bg = '#a277ff',
-  cursor_fg = '#15141b',
-  cursor_border = '#a277ff',
-  selection_fg = '#edecee',
-  selection_bg = '#29263c',
-  ansi = {
-    '#110f18', -- black
-    '#ff6767', -- red
-    '#61ffca', -- green
-    '#ffca85', -- yellow
-    '#a277ff', -- blue (Aura purple)
-    '#a277ff', -- magenta
-    '#61ffca', -- cyan
-    '#edecee', -- white
-  },
-  brights = {
-    '#4d4d4d', '#ff6767', '#61ffca', '#ffca85',
-    '#a277ff', '#a277ff', '#61ffca', '#edecee',
-  },
-  tab_bar = {
-    background = '#110f18',
-    active_tab = { bg_color = '#a277ff', fg_color = '#15141b' },
-    inactive_tab = { bg_color = '#15141b', fg_color = '#6d6d6d' },
-    inactive_tab_hover = { bg_color = '#29263c', fg_color = '#edecee' },
-    new_tab = { bg_color = '#15141b', fg_color = '#a277ff' },
-    new_tab_hover = { bg_color = '#29263c', fg_color = '#a277ff' },
-  },
-}
+-- ── Colours ───────────────────────────────────────────────────────────────────
+-- Rendered by `dotfiles theme` from themes/<name>/colors.toml. The fallback
+-- palette (Tokyo Night) only shows on a fresh clone before the first apply.
+local theme_ok, theme_colors = pcall(dofile, os.getenv('HOME') .. '/.local/state/dotfiles/current/theme/wezterm.lua')
+if theme_ok and type(theme_colors) == 'table' then
+  config.colors = theme_colors
+else
+  config.colors = {
+    foreground = '#c0caf5',
+    background = '#1a1b26',
+    cursor_bg = '#7aa2f7',
+    cursor_fg = '#1a1b26',
+    cursor_border = '#7aa2f7',
+    selection_fg = '#c0caf5',
+    selection_bg = '#292e42',
+    ansi = { '#15161e', '#f7768e', '#9ece6a', '#e0af68', '#7aa2f7', '#bb9af7', '#7dcfff', '#c0caf5' },
+    brights = { '#414868', '#f7768e', '#9ece6a', '#e0af68', '#7aa2f7', '#bb9af7', '#7dcfff', '#c0caf5' },
+  }
+end
 
 -- ── Tab bar ───────────────────────────────────────────────────────────────────
 config.enable_tab_bar = true

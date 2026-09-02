@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
-# Scaffold a new theme directory with all required files
+# Scaffold a new theme directory
 # Usage: dotfiles add-theme <name>
+#
+# A theme is one palette file (colors.toml) plus a small registry of the
+# settings templates cannot derive from colours (theme.conf) and a Neovim
+# plugin spec. Every other app config is rendered from the palette by
+# `dotfiles theme <name>` via themes/_templates/*.tpl. Drop a hand-written
+# file into overrides/ to replace a template's output for this theme only.
 
 set -euo pipefail
 
@@ -10,7 +16,7 @@ source "$DOTFILES_DIR/scripts/_helpers.sh"
 if [[ -z "${1:-}" || "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
     echo "Usage: dotfiles add-theme <name>"
     echo ""
-    echo "Scaffold a new theme directory with all required files."
+    echo "Scaffold themes/<name>/ with colors.toml, theme.conf and a Neovim plugin stub."
     echo "Theme name must be lowercase letters, numbers, and hyphens only."
     echo ""
     echo "Example: dotfiles add-theme dracula"
@@ -19,7 +25,6 @@ fi
 
 THEME_NAME="$1"
 
-# Validate name: lowercase, numbers, hyphens only
 if [[ ! "$THEME_NAME" =~ ^[a-z0-9][a-z0-9-]*[a-z0-9]$ ]] && [[ ! "$THEME_NAME" =~ ^[a-z0-9]$ ]]; then
     echo "Error: Theme name must be lowercase letters, numbers, and hyphens only."
     echo "  Got: '$THEME_NAME'"
@@ -28,7 +33,6 @@ fi
 
 THEME_DIR="$DOTFILES_DIR/themes/$THEME_NAME"
 
-# Check if theme already exists
 if [[ -d "$THEME_DIR" ]]; then
     echo "Error: Theme '$THEME_NAME' already exists at $THEME_DIR"
     exit 1
@@ -38,121 +42,95 @@ echo ""
 print_step "Scaffolding theme: $THEME_NAME"
 echo ""
 
-# Create directory structure
-mkdir -p "$THEME_DIR"/{ghostty,nvim,starship,zellij/themes,lazygit,sketchybar,lsd}
+mkdir -p "$THEME_DIR"/{nvim,overrides}
 
-# theme.conf — template with all required variables
-cat > "$THEME_DIR/theme.conf" << EOF
+# colors.toml — the palette. Same keys as Omarchy themes, so a palette
+# from github.com/basecamp/omarchy/themes/<name>/colors.toml drops in as-is.
+cat > "$THEME_DIR/colors.toml" << COLORS
+# $THEME_NAME palette — every app config is rendered from this file.
+# Keys match Omarchy's colors.toml, so palettes can be copied between the two.
+# Only background/foreground/red..magenta are required; the renderer derives
+# the rest (accent=blue, muted, selection, bright_*, dark/lighter_background)
+# when a key is left out. Fill in what you know, delete what you don't.
+mode = "dark"
+
+accent = "#7aa2f7"
+selection = "#292e42"
+muted = "#565f89"
+
+background = "#1a1b26"
+dark_background = "#16161e"
+darker_background = "#0e0e14"
+lighter_background = "#24283b"
+
+foreground = "#c0caf5"
+dark_foreground = "#565f89"
+light_foreground = "#a9b1d6"
+bright_foreground = "#c0caf5"
+
+black = "#15161e"
+red = "#f7768e"
+green = "#9ece6a"
+yellow = "#e0af68"
+blue = "#7aa2f7"
+magenta = "#bb9af7"
+cyan = "#7dcfff"
+orange = "#ff9e64"
+purple = "#bb9af7"
+
+bright_black = "#414868"
+bright_red = "#f7768e"
+bright_green = "#9ece6a"
+bright_yellow = "#e0af68"
+bright_blue = "#7aa2f7"
+bright_magenta = "#bb9af7"
+bright_cyan = "#7dcfff"
+COLORS
+
+# theme.conf — settings templates cannot derive from a palette
+cat > "$THEME_DIR/theme.conf" << CONF
 # Theme registry for $THEME_NAME
-# Used by apply-theme.sh — fill in all values below
+# Colours live in colors.toml; this file holds the settings templates
+# cannot derive from a palette (editor theme names, custom files).
 
-# Ghostty (built-in theme name, or set ghostty_custom_file for a custom theme)
-ghostty_theme=""
-ghostty_custom_file=""
-
-# Neovim (plugin filename and colorscheme name)
+# Neovim: plugin spec in nvim/<file>, and the colorscheme it provides
 nvim_plugin_file="${THEME_NAME}-theme.lua"
 nvim_colorscheme=""
 
-# Zellij (theme KDL filename and theme name)
-zellij_theme_file="${THEME_NAME}.kdl"
-zellij_theme_name="$THEME_NAME"
-
-# Starship (palette name — must match [palettes.NAME] in starship/palette.toml)
-starship_palette=""
-
-# VS Code (workbench.colorTheme value)
+# Editors (theme names as the apps know them)
 vscode_theme=""
-
-# Zed (theme.dark value)
 zed_theme=""
 
-# bat / delta (syntax highlighting theme)
+# bat / delta syntax theme (a bat theme name, or a .tmTheme shipped in bat/)
 bat_theme=""
 delta_theme=""
 
-# fzf (color string for --color flag)
-fzf_colors=""
-
-# borders (JankyBorders) — ARGB format 0xAARRGGBB
-borders_active=""
-borders_inactive=""
-borders_background=""
-
-# Warp (built-in theme name, or custom YAML filename)
+# Warp (built-in theme name, or a custom YAML shipped in warp/)
 warp_theme=""
 warp_custom_file=""
-EOF
+CONF
 
-# Neovim plugin template
-cat > "$THEME_DIR/nvim/${THEME_NAME}-theme.lua" << 'EOF'
--- TODO: Replace with the actual theme plugin spec
+cat > "$THEME_DIR/nvim/${THEME_NAME}-theme.lua" << 'NVIM'
+-- TODO: Replace with the actual theme plugin spec (loaded by
+-- .config/nvim/lua/plugins/theme.lua when this theme is active)
 return {
   "author/theme-plugin",
   lazy = false,
   priority = 1000,
 }
-EOF
+NVIM
 
-# Starship palette
-cat > "$THEME_DIR/starship/palette.toml" << EOF
-# TODO: Fill in starship palette colors for $THEME_NAME
-[palettes.$THEME_NAME]
-# background = "#000000"
-# foreground = "#ffffff"
-EOF
+rendered_names=$(cd "$DOTFILES_DIR/themes/_templates" 2>/dev/null && for t in ./*.tpl; do [[ -f "$t" ]] && printf '%s ' "$(basename "$t" .tpl)"; done)
+cat > "$THEME_DIR/overrides/README.md" << OVERRIDES
+# overrides/
 
-# Zellij theme
-cat > "$THEME_DIR/zellij/themes/${THEME_NAME}.kdl" << EOF
-// TODO: Fill in zellij theme colors for $THEME_NAME
-themes {
-    $THEME_NAME {
-        fg "#ffffff"
-        bg "#000000"
-        // Add more colors...
-    }
-}
-EOF
+Any file here replaces the template output of the same name for **$THEME_NAME**
+only, e.g. \`overrides/ghostty\` instead of \`themes/_templates/ghostty.tpl\`.
 
-# lazygit theme
-cat > "$THEME_DIR/lazygit/theme.yml" << EOF
-# TODO: Fill in lazygit theme colors for $THEME_NAME
-    lightTheme: false
-    activeBorderColor:
-      - '#ffffff'
-      - bold
-    inactiveBorderColor:
-      - '#555555'
-    selectedLineBgColor:
-      - '#333333'
-EOF
+Rendered names: ${rendered_names:-(see themes/_templates/)}
+OVERRIDES
 
-# sketchybar colors
-cat > "$THEME_DIR/sketchybar/colors.sh" << EOF
-# TODO: Fill in sketchybar colors for $THEME_NAME
-export BLACK=0xff000000
-export WHITE=0xffffffff
-export RED=0xffff0000
-export GREEN=0xff00ff00
-export BLUE=0xff0000ff
-export YELLOW=0xffffff00
-export ORANGE=0xffff8800
-export MAGENTA=0xffff00ff
-export GREY=0xff555555
-export TRANSPARENT=0x00000000
-export BAR_COLOR=\$BLACK
-export ITEM_BG_COLOR=0xff333333
-export ACCENT_COLOR=\$BLUE
-EOF
-
-# lsd colors
-cat > "$THEME_DIR/lsd/colors.yaml" << EOF
-# TODO: Fill in lsd colors for $THEME_NAME
-# See: https://github.com/lsd-rs/lsd#color-theme
-EOF
-
-# Manual instructions
-cat > "$THEME_DIR/manual-instructions.txt" << EOF
+cat > "$THEME_DIR/manual-instructions.txt" << MANUAL
 
 ╔═══════════════════════════════════════════════════════════╗
 ║   Manual Steps — $THEME_NAME
@@ -161,18 +139,16 @@ cat > "$THEME_DIR/manual-instructions.txt" << EOF
   Apps that need manual theme changes:
   • macOS:     System Settings → Appearance
   • Slack:     Preferences → Themes
-  • Spotify:   (use Spicetify if desired)
   • Firefox:   about:addons → Themes
 
-EOF
+MANUAL
 
 print_success "Created theme scaffold at themes/$THEME_NAME/"
 echo ""
 echo "  Next steps:"
-echo "  1. Fill in theme.conf with all color values"
-echo "  2. Add nvim plugin spec to nvim/${THEME_NAME}-theme.lua"
-echo "  3. Add starship palette to starship/palette.toml"
-echo "  4. Add zellij colors to zellij/themes/${THEME_NAME}.kdl"
-echo "  5. Fill in lazygit, sketchybar, lsd theme files"
-echo "  6. Test: dotfiles theme $THEME_NAME"
+echo "  1. Put the palette in colors.toml (or paste an Omarchy colors.toml)"
+echo "  2. Fill in theme.conf: nvim_colorscheme, vscode_theme, zed_theme, bat_theme, delta_theme"
+echo "  3. Add the nvim plugin spec to nvim/${THEME_NAME}-theme.lua"
+echo "  4. Optional: hand-tune any rendered file via overrides/"
+echo "  5. Test: dotfiles theme $THEME_NAME"
 echo ""

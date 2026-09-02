@@ -3,12 +3,13 @@
 # ============================================
 # Author: AJ
 # Description: Ghostty terminal configuration
-#              Theme managed by `dotfiles theme`
+#              Palette managed by `dotfiles theme` (see theme.generated)
 # ============================================
 
-# THEME_START
-theme = Aura
-# THEME_END
+# Theme: `dotfiles theme` renders themes/<name>/colors.toml into
+# theme.generated next to this file (gitignored). `?` makes it optional so
+# a fresh clone before the first apply still starts.
+config-file = ?theme.generated
 
 # Font configuration
 font-family = "Fira Code"
@@ -28,13 +29,7 @@ shell-integration = detect
 # Mouse
 mouse-hide-while-typing = true
 
-# ============================================
-# NOTES
-# ============================================
-# Theme is switched automatically by `dotfiles theme`
-# The THEME_START/THEME_END markers control the theme line.
-# For more themes, see: https://ghostty.org/docs/features/theme
-# ============================================
+# Reload after a theme switch with cmd+shift+, (reload_config).
 
 # ── Clipboard ──────────────────────────────────────────────
 # cmd+c keeps Ghostty's default `copy_to_clipboard:mixed` binding. Worth

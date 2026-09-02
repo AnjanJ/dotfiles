@@ -24,8 +24,15 @@
 # ============================================
 #
 
+# Rendered theme files (see docs/THEMES.md). `dotfiles theme` writes
+# ~/.local/state/dotfiles/current/theme/*; apps read from there.
+export DOTFILES_THEME_DIR="$HOME/.local/state/dotfiles/current/theme"
+
 # Prompt (Starship - blazing-fast, cross-shell, written in Rust)
+# The config is a template rendered per theme; fall back to the default
+# search path if no theme has been applied yet.
 if command -v starship &>/dev/null; then
+  [[ -f "$DOTFILES_THEME_DIR/starship.toml" ]] && export STARSHIP_CONFIG="$DOTFILES_THEME_DIR/starship.toml"
   eval "$(starship init zsh)"
 fi
 

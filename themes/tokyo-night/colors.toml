@@ -1,0 +1,35 @@
+# Tokyo Night (night variant) — https://github.com/folke/tokyonight.nvim
+# Same key schema as Omarchy themes, so palettes can be swapped between the two.
+mode = "dark"
+
+accent = "#7aa2f7"
+selection = "#292e42"
+muted = "#565f89"
+
+background = "#1a1b26"
+dark_background = "#16161e"
+darker_background = "#0e0e14"
+lighter_background = "#24283b"
+
+foreground = "#c0caf5"
+dark_foreground = "#565f89"
+light_foreground = "#a9b1d6"
+bright_foreground = "#c0caf5"
+
+black = "#15161e"
+red = "#f7768e"
+green = "#9ece6a"
+yellow = "#e0af68"
+blue = "#7aa2f7"
+magenta = "#bb9af7"
+cyan = "#7dcfff"
+orange = "#ff9e64"
+purple = "#bb9af7"
+
+bright_black = "#414868"
+bright_red = "#f7768e"
+bright_green = "#9ece6a"
+bright_yellow = "#e0af68"
+bright_blue = "#7aa2f7"
+bright_magenta = "#bb9af7"
+bright_cyan = "#7dcfff"

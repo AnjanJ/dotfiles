@@ -1,6 +1,6 @@
 #!/bin/bash
 # Claude Code status line
-# Theme: Aura (matches ~/.config/starship.toml)
+# Theme: Aura (matches the Aura starship palette)
 #   purple #a277ff | cyan #82e2ff | yellow #ffca85 | green #61ffca
 # Colors are dimmed since the status line is rendered dim by the terminal.
 

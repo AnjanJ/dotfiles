@@ -15,6 +15,8 @@ dotfiles doctor       # Auto-fix common issues (symlinks, permissions, SSH keys)
 dotfiles backup       # Snapshot dotfiles state (--list, --restore <name>)
 dotfiles profile      # Measure shell startup time (--detailed for per-component)
 dotfiles export       # Export setup snapshot (--json for machine-readable)
+dotfiles migrate      # Run pending one-off migrations (--pending, --dry-run, --new <slug>)
+dotfiles hook <event> # Run ~/.config/dotfiles/hooks/<event>{,.d/*} (theme-set, post-sync, post-update)
 dotfiles install      # Re-run full installer (idempotent)
 dotfiles uninstall    # Remove all dotfiles symlinks
 dotfiles edit         # Open dotfiles in your editor
@@ -84,9 +86,15 @@ dotfiles install --interactive      # Prompt for every choice
 dotfiles install --force            # Force reinstall everything
 ```
 
+## Migrations and hooks
+
+**Migrations** are one-off, idempotent repairs for changes a relink cannot express: a symlink that moved, a generated file that changed location, a stale config to remove. They live in `migrations/<unix-ts>-<slug>.sh`, run in order during `dotfiles sync` and `dotfiles update` with `DOTFILES_DIR` exported, and are marked done per machine in `~/.local/state/dotfiles/migrations/`. A failing migration stays pending and is retried next time; `dotfiles health` warns when any are pending. Create one with `dotfiles migrate --new <slug>`.
+
+**Hooks** let you attach your own scripts to events without editing the repo. Put executable scripts in `~/.config/dotfiles/hooks/<event>.d/` (or a single `~/.config/dotfiles/hooks/<event>` file). Events: `theme-set <theme>` after a theme switch, `post-sync`, `post-update`. A failing hook is reported and never stops the caller.
+
 ## Testing
 
-Every push and PR runs 13 test suites plus shellcheck via GitHub Actions:
+Every push and PR runs 14 test suites plus shellcheck via GitHub Actions:
 
 - **Shellcheck** — lints all shell scripts
 - **Idempotency** — install/setup can run repeatedly with identical results (sandboxed)
@@ -94,7 +102,8 @@ Every push and PR runs 13 test suites plus shellcheck via GitHub Actions:
 - **SSH config** — adversarial inputs and edge cases
 - **Repo cloner** — SSH alias detection and URL rewriting
 - **Update flow** — symlink creation and refresh
-- **Theme system** — apply, rollback, idempotency, scaffolding
+- **Theme system** — render, overrides, atomic swap, failure leaves previous theme, scaffolding
+- **Theme renderer** — token forms, colour maths, derived keys, error exits
 - **Doctor** — auto-fix symlinks, permissions, dry-run mode
 - **Git setup** — identity configuration, work/personal split, smart defaults
 - **Backup** — create, list, restore, prune cycle

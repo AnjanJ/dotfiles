@@ -1,9 +1,0 @@
-  theme:
-    lightTheme: false
-    activeBorderColor:
-      - '#7aa2f7'  # Blue
-      - bold
-    inactiveBorderColor:
-      - '#565f89'  # Gray
-    selectedLineBgColor:
-      - '#24283b'  # Dark

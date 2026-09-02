@@ -3,26 +3,20 @@
 # SketchyBar Configuration
 # Minimal, beautiful menu bar with Aerospace integration
 
-# THEME_COLORS_START
-export BLACK=0xff15141b
-export WHITE=0xffedecee
-export RED=0xffff6767
-export GREEN=0xff61ffca
-export BLUE=0xff82e2ff
-export YELLOW=0xffffca85
-export ORANGE=0xffffca85
-export MAGENTA=0xffa277ff
-export GREY=0xff6d6d6d
-export TRANSPARENT=0x00000000
-export BAR_COLOR=0xff15141b
-export ITEM_BG_COLOR=0xff1c1b22
-export ACCENT_COLOR=$MAGENTA
-# THEME_COLORS_END
+# Colours are rendered by `dotfiles theme` into colors.sh next to this
+# file (gitignored); plugins source the same file. Fallbacks keep the bar
+# readable on a fresh clone before the first theme apply.
+[ -f "$HOME/.config/sketchybar/colors.sh" ] && . "$HOME/.config/sketchybar/colors.sh"
+export BLACK="${BLACK:-0xff1a1b26}"
+export WHITE="${WHITE:-0xffc0caf5}"
+export BAR_COLOR="${BAR_COLOR:-$BLACK}"
+export ITEM_BG_COLOR="${ITEM_BG_COLOR:-0xff24283b}"
+export ACCENT_COLOR="${ACCENT_COLOR:-0xff7aa2f7}"
 
 ##### Bar Appearance #####
 sketchybar --bar \
     height=32 \
-    color=$BAR_COLOR \
+    color="$BAR_COLOR" \
     border_width=0 \
     shadow=on \
     sticky=on \
@@ -32,11 +26,11 @@ sketchybar --bar \
 ##### Changing Defaults #####
 sketchybar --default \
     icon.font="FiraCode Nerd Font:Bold:14.0" \
-    icon.color=$WHITE \
+    icon.color="$WHITE" \
     icon.padding_left=4 \
     icon.padding_right=4 \
     label.font="FiraCode Nerd Font:Bold:13.0" \
-    label.color=$WHITE \
+    label.color="$WHITE" \
     label.padding_left=4 \
     label.padding_right=4 \
     background.padding_left=4 \
@@ -51,7 +45,7 @@ sketchybar --add event aerospace_workspace_change \
                  icon= \
                  script="$HOME/.config/sketchybar/plugins/aerospace.sh" \
                  label.padding_right=10 \
-                 background.color=$ITEM_BG_COLOR \
+                 background.color="$ITEM_BG_COLOR" \
                  background.corner_radius=5 \
                  background.height=24 \
            --subscribe aerospace.workspaces aerospace_workspace_change
@@ -64,7 +58,7 @@ sketchybar --add item clock right \
                  update_freq=10 \
                  icon= \
                  script="$HOME/.config/sketchybar/plugins/clock.sh" \
-                 background.color=$ITEM_BG_COLOR \
+                 background.color="$ITEM_BG_COLOR" \
                  background.corner_radius=5 \
                  background.height=24
 
@@ -76,7 +70,7 @@ sketchybar --add item memory right \
                  update_freq=15 \
                  icon=󰍛 \
                  script="$HOME/.config/sketchybar/plugins/memory.sh" \
-                 background.color=$ITEM_BG_COLOR \
+                 background.color="$ITEM_BG_COLOR" \
                  background.corner_radius=5 \
                  background.height=24
 
@@ -86,7 +80,7 @@ sketchybar --add item cpu right \
                  update_freq=5 \
                  icon= \
                  script="$HOME/.config/sketchybar/plugins/cpu.sh" \
-                 background.color=$ITEM_BG_COLOR \
+                 background.color="$ITEM_BG_COLOR" \
                  background.corner_radius=5 \
                  background.height=24
 
@@ -96,7 +90,7 @@ sketchybar --add item battery right \
                  update_freq=120 \
                  icon= \
                  script="$HOME/.config/sketchybar/plugins/battery.sh" \
-                 background.color=$ITEM_BG_COLOR \
+                 background.color="$ITEM_BG_COLOR" \
                  background.corner_radius=5 \
                  background.height=24
 

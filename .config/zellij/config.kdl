@@ -24,10 +24,10 @@
 // GENERAL SETTINGS
 // ============================================
 
-// Theme (Tokyo Night - matching Neovim and tmux)
-// Custom theme located at: ~/.config/zellij/themes/tokyo-night.kdl
-// Based on folke/tokyonight.nvim color palette
-theme "aura"
+// Theme: always "dotfiles". `dotfiles theme` renders the active palette
+// into ~/.config/zellij/themes/dotfiles.kdl (gitignored), so this line
+// never changes.
+theme "dotfiles"
 
 // Default shell
 default_shell "zsh"

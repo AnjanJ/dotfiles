@@ -222,18 +222,35 @@ dotfiles_for_each_link _check_managed_link
 # ============================================
 # 5b. THEME ASSETS
 # ============================================
-# apply-theme installs some files outside the repo (bat and Zed themes,
-# the fzf colour env file, lsd colours). A theme applied on another
-# machine and then synced here leaves those missing, which shows up as
-# an unthemed bat/Zed rather than an error — so check them explicitly.
+# `dotfiles theme` renders themes/<name>/colors.toml into
+# ~/.local/state/dotfiles/current/theme/ and copies a few files to apps
+# that cannot read from there. A theme applied on another machine and
+# then synced here leaves those missing, which shows up as an unthemed
+# app rather than an error — so check them explicitly.
 print_header "5b. Theme Assets"
 
+theme_state="$HOME/.local/state/dotfiles/current"
 if [[ -f "$HOME/.dotfiles-theme" ]]; then
     active_theme=$(cat "$HOME/.dotfiles-theme")
     theme_dir="$DOTFILES_DIR/themes/$active_theme"
-    if [[ -f "$theme_dir/theme.conf" ]]; then
+    if [[ -f "$theme_dir/theme.conf" && -f "$theme_dir/colors.toml" ]]; then
         echo -e "${GREEN}✓${NC} Active theme: ${GREEN}$active_theme${NC}"
         ((PASSED++))
+        if [[ "$(cat "$theme_state/theme.name" 2>/dev/null)" == "$active_theme" ]]; then
+            echo -e "${GREEN}✓${NC} Rendered theme matches: $theme_state/theme"
+            ((PASSED++))
+        else
+            echo -e "${RED}✗${NC} Rendered theme is not '$active_theme' (run: dotfiles theme $active_theme)"
+            ((FAILED++))
+        fi
+        for tpl in "$DOTFILES_DIR"/themes/_templates/*.tpl; do
+            [[ -f "$tpl" ]] || continue
+            check_file "$theme_state/theme/$(basename "$tpl" .tpl)" "rendered $(basename "$tpl" .tpl)"
+        done
+        check_file "$DOTFILES_DIR/.config/ghostty/theme.generated" "Ghostty theme.generated"
+        check_file "$DOTFILES_DIR/.config/zellij/themes/dotfiles.kdl" "Zellij themes/dotfiles.kdl"
+        check_file "$DOTFILES_DIR/.config/sketchybar/colors.sh" "sketchybar colors.sh"
+        check_file "$DOTFILES_DIR/.config/borders/colors.sh" "borders colors.sh"
         check_file "$HOME/.zshrc-theme-env" "fzf colours (~/.zshrc-theme-env)"
         for asset in "$theme_dir"/bat/*.tmTheme; do
             [[ -f "$asset" ]] || continue
@@ -243,16 +260,22 @@ if [[ -f "$HOME/.dotfiles-theme" ]]; then
             [[ -f "$asset" ]] || continue
             check_file "$HOME/.config/zed/themes/$(basename "$asset")" "Zed theme $(basename "$asset")"
         done
-        if [[ -f "$theme_dir/lsd/colors.yaml" ]]; then
-            check_file "$HOME/.config/lsd/colors.yaml" "lsd colours"
-        fi
     else
-        echo -e "${RED}✗${NC} Active theme '$active_theme' has no themes/$active_theme/theme.conf"
+        echo -e "${RED}✗${NC} Active theme '$active_theme' is missing themes/$active_theme/theme.conf or colors.toml"
         ((FAILED++))
     fi
 else
     echo -e "${YELLOW}⚠${NC} No theme applied yet (run: dotfiles theme <name>)"
     ((WARNINGS++))
+fi
+
+# Pending migrations mean a repo change has not been applied on this machine
+if bash "$DOTFILES_DIR/bin/dotfiles-migrate" --pending >/dev/null 2>&1; then
+    echo -e "${YELLOW}⚠${NC} Pending migrations (run: dotfiles migrate)"
+    ((WARNINGS++))
+else
+    echo -e "${GREEN}✓${NC} Migrations: up to date"
+    ((PASSED++))
 fi
 
 # ============================================

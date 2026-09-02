@@ -25,8 +25,10 @@
 [interactive]
 	diffFilter = delta --color-only
 
+[include]
+	# delta.syntax-theme, rendered per theme by `dotfiles theme`
+	path = ~/.local/state/dotfiles/current/theme/delta.gitconfig
 [delta]
-	syntax-theme = aura
 	navigate = true          # n / N jump between files in a diff
 	line-numbers = true
 	hyperlinks = true        # clickable file:line in supporting terminals

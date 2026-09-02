@@ -3,12 +3,17 @@
 -- NOTE: We highly recommend setting up the Lua Language Server (`:LspInstall lua_ls`)
 --       as this provides autocomplete and documentation while editing
 
+-- The colorscheme name comes from the rendered theme state written by
+-- `dotfiles theme` (see lua/plugins/theme.lua for the plugin side).
+local theme_ok, theme = pcall(dofile, os.getenv("HOME") .. "/.local/state/dotfiles/current/theme/nvim.lua")
+local colorscheme = (theme_ok and type(theme) == "table" and theme.colorscheme) or "astrodark"
+
 ---@type LazySpec
 return {
   "AstroNvim/astroui",
   ---@type AstroUIOpts
   opts = {
-    colorscheme = "aura-dark",
+    colorscheme = colorscheme,
     -- AstroUI allows you to easily modify highlight groups easily for any and all colorschemes
     highlights = {
       init = { -- this table overrides highlights in all themes

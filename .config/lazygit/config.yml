@@ -2,17 +2,8 @@
 # Beautiful Terminal UI for Git
 
 gui:
-  # THEME_START
-  theme:
-    lightTheme: false
-    activeBorderColor:
-      - '#a277ff'  # Purple
-      - bold
-    inactiveBorderColor:
-      - '#6d6d6d'  # Gray
-    selectedLineBgColor:
-      - '#1c1b22'  # Dark
-  # THEME_END
+  # Colours: rendered per theme into $DOTFILES_THEME_DIR/lazygit.yml and
+  # merged via LG_CONFIG_FILE (set in .zshrc-terminal-enhancements).
 
   # Window size
   windowSize: 'normal'

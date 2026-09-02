@@ -70,7 +70,8 @@ setup_backup_sandbox() {
     echo "nvim config" > "$MOCK_DOTFILES/.config/nvim/init.lua"
     mkdir -p "$MOCK_DOTFILES/.config/ghostty"
     echo "ghostty config" > "$MOCK_DOTFILES/.config/ghostty/config"
-    echo "starship" > "$MOCK_DOTFILES/.config/starship.toml"
+    mkdir -p "$MOCK_DOTFILES/.config/mise"
+    echo "mise" > "$MOCK_DOTFILES/.config/mise/config.toml"
     echo "brewfile" > "$MOCK_DOTFILES/Brewfile"
 
     # Patch the backup script to use our mock DOTFILES_DIR
@@ -173,10 +174,10 @@ else
     fail "Backup missing ghostty config"
 fi
 
-if [[ -f "$backup_dir/.config/starship.toml" ]]; then
-    pass "Backup includes starship.toml"
+if [[ -f "$backup_dir/.config/mise/config.toml" ]]; then
+    pass "Backup includes nested single file .config/mise/config.toml"
 else
-    fail "Backup missing starship.toml"
+    fail "Backup missing .config/mise/config.toml"
 fi
 
 if [[ -f "$backup_dir/Brewfile" ]]; then

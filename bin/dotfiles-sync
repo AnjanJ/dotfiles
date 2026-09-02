@@ -89,6 +89,17 @@ if [[ "$CHANGES" -eq 0 ]]; then
     print_success "All symlinks up to date"
 fi
 
+# ── 2b. Migrations ──────────────────────────
+# One-off repairs that a relink cannot express (see bin/dotfiles-migrate)
+
+echo ""
+print_step "Checking migrations..."
+if [[ "$DRY_RUN" == true ]]; then
+    bash "$DOTFILES_DIR/bin/dotfiles-migrate" --dry-run
+else
+    bash "$DOTFILES_DIR/bin/dotfiles-migrate" || print_warning "Some migrations failed; they will retry next sync"
+fi
+
 # ── 3. Reapply Theme ────────────────────────
 
 echo ""
@@ -104,6 +115,8 @@ else
     apply_theme "$CURRENT_THEME" "true"  # quiet mode
     print_success "Theme: $CURRENT_THEME"
 fi
+
+[[ "$DRY_RUN" == true ]] || bash "$DOTFILES_DIR/bin/dotfiles-hook" post-sync
 
 # ── Summary ──────────────────────────────────
 
