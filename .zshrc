@@ -216,11 +216,22 @@ oclaude() {
 
   print -r -- "Launching Claude Code with: $model"
 
+  # --permission-mode auto matches ~/.claude/settings.json (defaultMode: auto):
+  # project edits are auto-approved, destructive actions still prompt. Pass
+  # --dangerously-skip-permissions yourself when a run really needs it.
   ollama launch claude \
     --model "$model" \
     -- \
-    --dangerously-skip-permissions \
+    --permission-mode auto \
     "${claude_args[@]}"
+}
+
+# `a` launches whichever agent `dotfiles default-agent` names (claude by
+# default). Change it with: dotfiles default-agent gemini
+a() {
+  local cmd
+  cmd="$(dotfiles-default-agent --command 2>/dev/null)" || cmd="claude --permission-mode auto"
+  eval "$cmd" '"$@"'
 }
 
 # Local Qwen3.8-27B for quick coding queries, thinking off for speed.

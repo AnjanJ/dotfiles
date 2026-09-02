@@ -32,6 +32,8 @@ dotfiles/
 │   ├── sketchybar/             # Menu bar: config + plugins
 ├── themes/                     # One colors.toml per theme + _templates/ — see docs/THEMES.md
 ├── migrations/                 # One-off per-machine repairs, run by sync/update (bin/dotfiles-migrate)
+├── agents/skills/dotfiles/     # Claude Code skill for managing this machine (linked to ~/.claude/skills)
+├── AGENTS.md                   # Conventions for changing this repo (CLAUDE.md points here)
 │   ├── tokyo-night/
 │   ├── aura/
 │   └── catppuccin/
@@ -52,7 +54,7 @@ dotfiles/
 │   ├── theme-utils.sh          # Theme utility functions
 │   ├── theme-render.sh         # {{ token }} renderer (bash + awk)
 │   └── apply-theme.sh          # Render colors.toml through templates, swap into ~/.local/state, install
-├── tests/                      # 17 suites, run via GitHub Actions CI
+├── tests/                      # 18 suites, run via GitHub Actions CI
 ├── .github/workflows/test.yml  # CI: shellcheck + all test suites
 └── docs/                       # This documentation
 ```

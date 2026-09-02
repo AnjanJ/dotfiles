@@ -64,6 +64,8 @@ DOTFILES_LINKS=(
     # file is linked, not the directory.
     ".config/claude/settings.json:$HOME/.claude/settings.json"
     ".config/claude/statusline-command.sh:$HOME/.claude/statusline-command.sh"
+    # The end-user skill: how to manage this machine, for Claude Code (agents/skills/dotfiles/SKILL.md)
+    "agents/skills/dotfiles:$HOME/.claude/skills/dotfiles"
     ".config/llm/default_model.txt:$HOME/Library/Application Support/io.datasette.llm/default_model.txt"
 )
 

@@ -98,7 +98,7 @@ Full CLI reference, Brewfile recovery stories, and troubleshooting: [docs/MAINTE
 1. **One command, idempotent** — from zero to productive in minutes; safe to re-run forever
 2. **Single source of truth** — every managed symlink is declared once ([scripts/symlink-map.sh](scripts/symlink-map.sh)); install, update, sync, doctor, and health all read the same map, so nothing drifts silently
 3. **Recovery stories everywhere** — Brewfile backups, themes staged then swapped atomically, migrations for cross-machine repairs, git-history restore paths
-4. **Tested like software** — 17 CI suites + shellcheck on every push, because 8k lines of shell deserves tests
+4. **Tested like software** — 18 CI suites + shellcheck on every push, because 8k lines of shell deserves tests
 5. **Keyboard-first, unified aesthetics** — vim motions, tiling windows, one palette across every tool
 
 ## Credits

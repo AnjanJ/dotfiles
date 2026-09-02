@@ -20,6 +20,7 @@ dotfiles hook <event> # Run ~/.config/dotfiles/hooks/<event>{,.d/*} (theme-set, 
 dotfiles toggle <f>   # Flip a feature flag: startup-apps, borders, auto-commit (--list)
 dotfiles keys         # AeroSpace keybinding cheatsheet (fzf; --markdown, --update, --check)
 dotfiles commands     # List every command from its metadata (--json, --plain, --check)
+dotfiles default-agent # Which agent the `a` shell function launches (claude|oclaude|gemini|copilot|llm)
 dotfiles work setup   # work-* and repos-clone route here too: work status, work nuke, repos clone
 dotfiles install      # Re-run full installer (idempotent)
 dotfiles uninstall    # Remove all dotfiles symlinks
@@ -98,7 +99,7 @@ dotfiles install --force            # Force reinstall everything
 
 ## Testing
 
-Every push and PR runs 17 test suites plus shellcheck, `dotfiles commands --check` and `dotfiles keys --check` via GitHub Actions:
+Every push and PR runs 18 test suites plus shellcheck, `dotfiles commands --check` and `dotfiles keys --check` via GitHub Actions:
 
 - **Shellcheck** — lints all shell scripts
 - **Idempotency** — install/setup can run repeatedly with identical results (sandboxed)
@@ -111,6 +112,7 @@ Every push and PR runs 17 test suites plus shellcheck, `dotfiles commands --chec
 - **CLI router** — route resolution, `--help` never executes, required-arg guard, metadata lint, JSON
 - **Toggles** — flag files, `--enabled` exit codes, listing
 - **Keys** — aerospace.toml parsing, `# desc:` overrides, markdown, `--update`/`--check`
+- **Agent** — default-agent state, launch commands, skill files present
 - **Doctor** — auto-fix symlinks, permissions, dry-run mode
 - **Git setup** — identity configuration, work/personal split, smart defaults
 - **Backup** — create, list, restore, prune cycle

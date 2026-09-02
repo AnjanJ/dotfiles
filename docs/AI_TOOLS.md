@@ -173,6 +173,12 @@ $ explain-last
 - **"I'm offline / this is sensitive."** → ollama via `llm` (default), or `ollama run` directly
 - **"I want a chat-style interface."** → Claude Code app, Perplexity, or `llm chat`
 
+## Agents know this setup
+
+`agents/skills/dotfiles/` is a skill for Claude Code (symlinked to `~/.claude/skills/dotfiles`) that explains where every config lives, how theming works, what is generated and must not be edited, and which `dotfiles` commands are safe to run. Ask Claude to "make the accent colour purple" or "add a shortcut for Finder" and it will edit the right source file, re-render, and validate. Contributor conventions for the repo itself are in `AGENTS.md` (loaded by `CLAUDE.md`).
+
+`dotfiles default-agent [claude|oclaude|gemini|copilot|llm]` picks which agent the `a` shell function launches; each runs with a scoped permission mode (`--permission-mode auto` for Claude Code, matching `~/.claude/settings.json`). `oclaude` (Claude Code through Ollama) uses the same mode; add `--dangerously-skip-permissions` yourself for a run that needs it.
+
 ## Which model where
 
 Each tool picks its own model, on purpose: small and fast for one-shot shell use, larger for editor agents.

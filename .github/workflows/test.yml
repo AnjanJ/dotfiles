@@ -65,6 +65,7 @@ jobs:
           - cli
           - toggle
           - keys
+          - agent
     steps:
       - uses: actions/checkout@v4
       - name: Install bash 5.x
