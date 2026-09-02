@@ -63,6 +63,7 @@ DOTFILES_LINKS=(
     # lives beside llm's machine state (logs.db etc.), so only the one
     # file is linked, not the directory.
     ".config/claude/settings.json:$HOME/.claude/settings.json"
+    ".config/claude/statusline-command.sh:$HOME/.claude/statusline-command.sh"
     ".config/llm/default_model.txt:$HOME/Library/Application Support/io.datasette.llm/default_model.txt"
 )
 

@@ -43,11 +43,13 @@ dotfiles dir          # Print dotfiles directory path
 | `Ctrl+Shift+-/=` | Resize window |
 | `Ctrl+Shift+Tab` | Toggle last workspaces |
 
-**App Launchers**:
-| `Ctrl+Shift+C` | Chrome (workspace 1) |
-| `Ctrl+Shift+Z` | Zed (workspace 2) |
-| `Ctrl+Shift+G` | Ghostty (workspace 7) |
-| `Ctrl+Shift+O` | Obsidian (workspace 8) |
+**App Launchers** (full list in [docs/KEYBINDINGS.md](docs/KEYBINDINGS.md)):
+| `Ctrl+Shift+W` | Warp (workspace 1) |
+| `Ctrl+Shift+X` | Zen (workspace 2) |
+| `Ctrl+Shift+C` | Chrome (workspace 3) |
+| `Ctrl+Shift+Z` | Zed (workspace 4) |
+| `Ctrl+Shift+O` | Obsidian (workspace 6) |
+| `Ctrl+Shift+;` | Service mode (reload, float, join) |
 
 ### Neovim (Leader: `Space`)
 | Key | Action |

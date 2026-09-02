@@ -177,9 +177,12 @@ apply_theme() {
     # Back up all configs that will be modified
     _backup_for_rollback "$DOTFILES_DIR/.config/ghostty/config"
     _backup_for_rollback "$DOTFILES_DIR/.config/nvim/lua/plugins/astroui.lua"
-    _backup_for_rollback "$DOTFILES_DIR/.config/nvim/lua/plugins/tokyo-night-theme.lua"
-    _backup_for_rollback "$DOTFILES_DIR/.config/nvim/lua/plugins/aura-theme.lua"
-    _backup_for_rollback "$DOTFILES_DIR/.config/nvim/lua/plugins/catppuccin-theme.lua"
+    # Every installed theme plugin, whatever theme it belongs to — the
+    # convention is themes/<name>/nvim/<name>-theme.lua, so a theme added
+    # with `dotfiles add-theme` is covered without editing this list.
+    for _theme_plugin in "$DOTFILES_DIR"/.config/nvim/lua/plugins/*-theme.lua; do
+        [[ -f "$_theme_plugin" ]] && _backup_for_rollback "$_theme_plugin"
+    done
     _backup_for_rollback "$DOTFILES_DIR/.config/zellij/config.kdl"
     _backup_for_rollback "$DOTFILES_DIR/.config/starship.toml"
     _backup_for_rollback "$DOTFILES_DIR/.config/zed/settings.json"
@@ -234,8 +237,9 @@ apply_theme() {
     local nvim_plugins="$DOTFILES_DIR/.config/nvim/lua/plugins"
     local astroui="$nvim_plugins/astroui.lua"
 
-    # Remove any existing theme plugin files, then install the right one
-    rm -f "$nvim_plugins/tokyo-night-theme.lua" "$nvim_plugins/aura-theme.lua" "$nvim_plugins/catppuccin-theme.lua"
+    # Remove any existing theme plugin files (all follow *-theme.lua),
+    # then install the right one
+    rm -f "$nvim_plugins"/*-theme.lua
     cp "$THEMES_DIR/nvim/$nvim_plugin_file" "$nvim_plugins/$nvim_plugin_file"
 
     # Update colorscheme in astroui.lua

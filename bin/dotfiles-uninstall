@@ -21,6 +21,7 @@ set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
 source "$DOTFILES_DIR/scripts/_helpers.sh"
+source "$DOTFILES_DIR/scripts/symlink-map.sh"
 
 FORCE=false
 [[ "${1:-}" == "--yes" ]] && FORCE=true
@@ -49,10 +50,10 @@ remove_symlink() {
         if [[ "$link_target" == "$DOTFILES_DIR"* ]]; then
             rm "$target"
             echo -e "${GREEN}✓${NC} Removed $name → $link_target"
-            ((REMOVED++))
+            REMOVED=$((REMOVED + 1))
         else
             echo -e "${YELLOW}⚠${NC} Skipped $name (points to $link_target, not our dotfiles)"
-            ((SKIPPED++))
+            SKIPPED=$((SKIPPED + 1))
         fi
     fi
 }
@@ -61,45 +62,20 @@ if [[ "$FORCE" != true ]]; then
     echo "The following symlinks will be removed:"
     echo ""
 
-    # Preview what would be removed
+    # Preview what would be removed — every link in scripts/symlink-map.sh
     PREVIEW_COUNT=0
-    for target in \
-        ~/.zshrc ~/.zshrc-terminal-enhancements \
-        ~/.zshrc-dhh-additions ~/.zshrc-elixir-additions ~/.zshrc-work-completions \
-        ~/.gitignore_global \
-        ~/.config/aerospace ~/.config/ghostty ~/.config/nvim ~/.config/zellij \
-        ~/.config/starship.toml ~/.config/mise/config.toml \
-        ~/.config/zed/settings.json ~/.config/zed/tasks.json; do
+    _preview_managed_link() {
+        local target="$2"
         if [ -L "$target" ]; then
+            local link_target
             link_target=$(readlink "$target")
             if [[ "$link_target" == "$DOTFILES_DIR"* ]]; then
                 echo "  $target → $link_target"
-                ((PREVIEW_COUNT++))
+                PREVIEW_COUNT=$((PREVIEW_COUNT + 1))
             fi
         fi
-    done
-
-    # Check zed snippets
-    for snippet in ~/.config/zed/snippets/*.json; do
-        if [ -L "$snippet" ]; then
-            link_target=$(readlink "$snippet")
-            if [[ "$link_target" == "$DOTFILES_DIR"* ]]; then
-                echo "  $snippet → $link_target"
-                ((PREVIEW_COUNT++))
-            fi
-        fi
-    done
-
-    # Check ~/bin scripts
-    for script in ~/bin/*; do
-        if [ -L "$script" ]; then
-            link_target=$(readlink "$script")
-            if [[ "$link_target" == "$DOTFILES_DIR"* ]]; then
-                echo "  $script → $link_target"
-                ((PREVIEW_COUNT++))
-            fi
-        fi
-    done
+    }
+    dotfiles_for_each_link _preview_managed_link
 
     echo ""
     echo "$PREVIEW_COUNT symlinks will be removed."
@@ -115,35 +91,12 @@ fi
 echo ""
 print_step "Removing symlinks..."
 
-# Shell configuration
-remove_symlink ~/.zshrc ".zshrc"
-remove_symlink ~/.zshrc-terminal-enhancements ".zshrc-terminal-enhancements"
-remove_symlink ~/.zshrc-dhh-additions ".zshrc-dhh-additions"
-remove_symlink ~/.zshrc-elixir-additions ".zshrc-elixir-additions"
-remove_symlink ~/.zshrc-work-completions ".zshrc-work-completions"
-
-# Git
-remove_symlink ~/.gitignore_global ".gitignore_global"
-
-# Config directories
-remove_symlink ~/.config/aerospace "aerospace config"
-remove_symlink ~/.config/ghostty "ghostty config"
-remove_symlink ~/.config/nvim "nvim config"
-remove_symlink ~/.config/zellij "zellij config"
-remove_symlink ~/.config/starship.toml "starship config"
-remove_symlink ~/.config/mise/config.toml "mise config"
-
-# Zed editor
-remove_symlink ~/.config/zed/settings.json "zed settings"
-remove_symlink ~/.config/zed/tasks.json "zed tasks"
-for snippet in ~/.config/zed/snippets/*.json; do
-    [ -L "$snippet" ] && remove_symlink "$snippet" "zed snippet: $(basename "$snippet")"
-done
-
-# ~/bin scripts
-for script in ~/bin/*; do
-    [ -L "$script" ] && remove_symlink "$script" "bin/$(basename "$script")"
-done
+# Walk the same map install/update/sync/doctor/health use, so a link
+# added to the repo can never be left behind by uninstall.
+_remove_managed_link() {
+    remove_symlink "$2" "$3"
+}
+dotfiles_for_each_link _remove_managed_link
 
 # Summary
 echo ""

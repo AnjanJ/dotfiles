@@ -132,29 +132,22 @@ echo ""
 
 BACKED_UP=0
 
-# Shell configs
-for f in .zshrc .zshrc-dhh-additions .zshrc-elixir-additions .zshrc-terminal-enhancements .zshrc-work-completions .gitignore_global; do
-    if [[ -f "$DOTFILES_DIR/$f" ]]; then
-        cp "$DOTFILES_DIR/$f" "$BACKUP_DIR/$f"
-        BACKED_UP=$((BACKED_UP + 1))
+# Every managed source in scripts/symlink-map.sh, preserving its
+# repo-relative path so --restore can copy it straight back.
+source "$DOTFILES_DIR/scripts/symlink-map.sh"
+_backup_managed_source() {
+    local src="$1" name="$3"
+    local dest="$BACKUP_DIR/$name"
+    mkdir -p "$(dirname "$dest")"
+    if [[ -d "$src" ]]; then
+        mkdir -p "$dest"
+        cp -R "$src/." "$dest/"
+    else
+        cp "$src" "$dest"
     fi
-done
-
-# Config directories (copy actual files, not symlinks)
-for dir in aerospace ghostty mise nvim zed zellij lazygit borders sketchybar; do
-    if [[ -d "$DOTFILES_DIR/.config/$dir" ]]; then
-        mkdir -p "$BACKUP_DIR/.config/$dir"
-        cp -R "$DOTFILES_DIR/.config/$dir/." "$BACKUP_DIR/.config/$dir/"
-        BACKED_UP=$((BACKED_UP + 1))
-    fi
-done
-
-# Starship (single file)
-if [[ -f "$DOTFILES_DIR/.config/starship.toml" ]]; then
-    mkdir -p "$BACKUP_DIR/.config"
-    cp "$DOTFILES_DIR/.config/starship.toml" "$BACKUP_DIR/.config/starship.toml"
     BACKED_UP=$((BACKED_UP + 1))
-fi
+}
+dotfiles_for_each_link _backup_managed_source
 
 # Brewfile
 if [[ -f "$DOTFILES_DIR/Brewfile" ]]; then

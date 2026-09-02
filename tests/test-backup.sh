@@ -65,6 +65,7 @@ setup_backup_sandbox() {
     # Create mock dotfiles that backup will look for
     echo "zshrc content" > "$MOCK_DOTFILES/.zshrc"
     echo "gitignore content" > "$MOCK_DOTFILES/.gitignore_global"
+    echo "rubocop" > "$MOCK_DOTFILES/.rubocop.yml"
     mkdir -p "$MOCK_DOTFILES/.config/nvim"
     echo "nvim config" > "$MOCK_DOTFILES/.config/nvim/init.lua"
     mkdir -p "$MOCK_DOTFILES/.config/ghostty"
@@ -140,6 +141,14 @@ if [[ -f "$backup_dir/.gitignore_global" ]]; then
     pass "Backup includes .gitignore_global"
 else
     fail "Backup missing .gitignore_global"
+fi
+
+# .rubocop.yml is only known via scripts/symlink-map.sh — proves backup
+# walks the map rather than a private list
+if [[ -f "$backup_dir/.rubocop.yml" ]]; then
+    pass "Backup includes map-only entry .rubocop.yml"
+else
+    fail "Backup missing .rubocop.yml (backup not reading symlink map?)"
 fi
 
 teardown_backup_sandbox

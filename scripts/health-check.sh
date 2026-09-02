@@ -220,6 +220,42 @@ source "$DOTFILES_DIR/scripts/symlink-map.sh"
 dotfiles_for_each_link _check_managed_link
 
 # ============================================
+# 5b. THEME ASSETS
+# ============================================
+# apply-theme installs some files outside the repo (bat and Zed themes,
+# the fzf colour env file, lsd colours). A theme applied on another
+# machine and then synced here leaves those missing, which shows up as
+# an unthemed bat/Zed rather than an error — so check them explicitly.
+print_header "5b. Theme Assets"
+
+if [[ -f "$HOME/.dotfiles-theme" ]]; then
+    active_theme=$(cat "$HOME/.dotfiles-theme")
+    theme_dir="$DOTFILES_DIR/themes/$active_theme"
+    if [[ -f "$theme_dir/theme.conf" ]]; then
+        echo -e "${GREEN}✓${NC} Active theme: ${GREEN}$active_theme${NC}"
+        ((PASSED++))
+        check_file "$HOME/.zshrc-theme-env" "fzf colours (~/.zshrc-theme-env)"
+        for asset in "$theme_dir"/bat/*.tmTheme; do
+            [[ -f "$asset" ]] || continue
+            check_file "$HOME/.config/bat/themes/$(basename "$asset")" "bat theme $(basename "$asset")"
+        done
+        for asset in "$theme_dir"/zed/*.json; do
+            [[ -f "$asset" ]] || continue
+            check_file "$HOME/.config/zed/themes/$(basename "$asset")" "Zed theme $(basename "$asset")"
+        done
+        if [[ -f "$theme_dir/lsd/colors.yaml" ]]; then
+            check_file "$HOME/.config/lsd/colors.yaml" "lsd colours"
+        fi
+    else
+        echo -e "${RED}✗${NC} Active theme '$active_theme' has no themes/$active_theme/theme.conf"
+        ((FAILED++))
+    fi
+else
+    echo -e "${YELLOW}⚠${NC} No theme applied yet (run: dotfiles theme <name>)"
+    ((WARNINGS++))
+fi
+
+# ============================================
 # 6. LANGUAGE RUNTIMES (mise)
 # ============================================
 print_header "6. Language Runtimes (mise)"
@@ -231,9 +267,12 @@ if command -v mise &> /dev/null; then
     check_mise_tool python "Python"
     check_mise_tool go "Go"
     check_mise_tool rust "Rust"
+    check_mise_tool erlang "Erlang/OTP"
+    check_mise_tool yarn "Yarn"
+    check_mise_tool java "Java"
 else
     echo -e "${RED}✗${NC} mise not found, skipping language runtime checks"
-    ((FAILED+=6))
+    ((FAILED+=9))
 fi
 
 # Zig (installed via Homebrew, not mise)
@@ -311,7 +350,13 @@ check_command eza "eza"
 check_command tree "tree"
 check_command lazygit "lazygit"
 check_command direnv "direnv"
+check_command zoxide "zoxide"
+check_command starship "Starship"
+check_command atuin "atuin" false
 check_command gh "GitHub CLI" false
+check_command sketchybar "SketchyBar" false
+check_command borders "JankyBorders" false
+check_command wezterm "WezTerm" false
 
 # ============================================
 # 8. DATABASES

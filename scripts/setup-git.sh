@@ -86,12 +86,12 @@ setup_git() {
         echo
         if [[ $REPLY =~ ^[Yy]$ ]]; then
             read -r -p "Work email: " work_email
-            read -r -p "Work directory [~/work]: " work_dir
+            read -r -p "Work directory [~/work/code]: " work_dir
         fi
     fi
 
     if [[ -n "$work_email" ]]; then
-        work_dir="${work_dir:-$HOME/work}"
+        work_dir="${work_dir:-$HOME/work/code}"
         work_dir="${work_dir/#\~/$HOME}"
 
         mkdir -p "$work_dir"

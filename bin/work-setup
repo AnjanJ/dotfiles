@@ -66,7 +66,7 @@ echo ""
 print_step "Step 2: Work directory"
 
 EXISTING_DIR=$(get_work_dir)
-DEFAULT_DIR="${EXISTING_DIR:-$HOME/work}"
+DEFAULT_DIR="${EXISTING_DIR:-$HOME/work/code}"
 
 read -r -p "  Work directory [$DEFAULT_DIR]: " WORK_DIR_INPUT
 WORK_DIR="${WORK_DIR_INPUT:-$DEFAULT_DIR}"
@@ -172,12 +172,17 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
 
         if [[ "$SELECTED_SERVICES" != "none" && -n "$SELECTED_SERVICES" ]]; then
             # Known services
-            declare -A SVC_HOSTS=(
-                [1]="github.com"
-                [2]="gitlab.com"
-                [3]="bitbucket.org"
-                [4]="codeberg.org"
-            )
+            # (a case statement rather than an associative array: macOS
+            # /bin/bash is 3.2 and has no declare -A)
+            _svc_host() {
+                case "$1" in
+                    1) echo "github.com" ;;
+                    2) echo "gitlab.com" ;;
+                    3) echo "bitbucket.org" ;;
+                    4) echo "codeberg.org" ;;
+                    *) echo "" ;;
+                esac
+            }
 
 
             # Remove existing work section from SSH config
@@ -208,8 +213,9 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
                 user="git"
                 port="22"
 
-                if [[ -n "${SVC_HOSTS[$num]:-}" ]]; then
-                    hostname="${SVC_HOSTS[$num]}"
+                svc_host=$(_svc_host "$num")
+                if [[ -n "$svc_host" ]]; then
+                    hostname="$svc_host"
                 elif [[ "$num" == "5" || "$num" == "6" ]]; then
                     read -r -p "  Hostname (e.g., gerrit.example.com): " hostname
                     [[ -z "$hostname" ]] && continue

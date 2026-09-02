@@ -39,8 +39,11 @@ if [[ -z "$ALL_WINDOWS" ]]; then
     exit 0
 fi
 
-# Convert to array
-WINDOWS=($ALL_WINDOWS)
+# Convert to array (one window id per line; bash 3.2 has no mapfile)
+WINDOWS=()
+while IFS= read -r _wid; do
+    [[ -n "$_wid" ]] && WINDOWS+=("$_wid")
+done <<< "$ALL_WINDOWS"
 WINDOW_COUNT=${#WINDOWS[@]}
 
 # If only one window, just focus it

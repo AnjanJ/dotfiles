@@ -29,6 +29,13 @@ jobs:
             bin/repos-clone \
             bin/_work-helpers \
             bin/erb-lint-formatter \
+            bin/rubocop-auto \
+            .config/aerospace/scripts/*.sh \
+            .config/sketchybar/sketchybarrc \
+            .config/sketchybar/colors.sh \
+            .config/sketchybar/plugins/*.sh \
+            .config/borders/bordersrc \
+            .config/claude/statusline-command.sh \
             tests/test-*.sh
 
   tests:
@@ -49,12 +56,14 @@ jobs:
           - backup
           - sync
           - packages
+          - uninstall
     steps:
       - uses: actions/checkout@v4
       - name: Install bash 5.x
-        # macOS /bin/bash is 3.2 (Apple licensing) and lacks `declare -A`,
-        # which scripts/package-utils.sh requires. Brew installs bash 5+ at
-        # /opt/homebrew/bin which we then call explicitly below.
+        # macOS /bin/bash is 3.2 (Apple licensing). The install path itself
+        # stays 3.2-compatible (no `declare -A`), but the test harnesses use
+        # bash 4+ features. Brew installs bash 5+ at /opt/homebrew/bin which
+        # we then call explicitly below.
         run: brew install bash
       - name: Run ${{ matrix.suite }} tests
         run: /opt/homebrew/bin/bash tests/test-${{ matrix.suite }}.sh

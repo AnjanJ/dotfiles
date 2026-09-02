@@ -20,7 +20,7 @@ dotfiles/
 │   ├── aerospace/              # Window manager: layouts, keybindings
 │   ├── ghostty/                # Terminal: theme, fonts
 │   ├── wezterm/                # Alternate terminal (linked as ~/.wezterm.lua)
-│   ├── mise/                   # Version manager (Ruby pinned; Node/Elixir/Go/etc. latest)
+│   ├── mise/                   # Version manager (all runtimes track latest; projects pin their own)
 │   ├── nvim/                   # Neovim config (AstroNvim)
 │   ├── zed/                    # Zed: settings.json, tasks.json, snippets/
 │   ├── vscode/                 # VS Code: settings.json, keybindings.json (linked into ~/Library/Application Support/Code/User/)
@@ -51,7 +51,7 @@ dotfiles/
 │   ├── health-check.sh         # Verify installation (sweeps the symlink map)
 │   ├── theme-utils.sh          # Theme utility functions
 │   └── apply-theme.sh          # Apply theme across all apps
-├── tests/                      # 11 suites, run via GitHub Actions CI
+├── tests/                      # 13 suites, run via GitHub Actions CI
 ├── .github/workflows/test.yml  # CI: shellcheck + all test suites
 └── docs/                       # This documentation
 ```
@@ -76,7 +76,7 @@ The `.zshrc` is organized into focused, modular files:
 
 ## Language versions (mise)
 
-`mise` replaces rbenv/nvm/asdf. The global tool list lives in `.config/mise/config.toml` — Ruby is pinned to a specific version, the rest track `latest`. Idiomatic version files (`.ruby-version`, `.nvmrc`) are honored for **node and ruby** via `idiomatic_version_file_enable_tools`; projects can also pin any tool with their own `mise.toml`, which always takes precedence.
+`mise` replaces rbenv/nvm/asdf. The global tool list lives in `.config/mise/config.toml` — every runtime tracks `latest` globally (Java is the exception, pinned to Temurin 17). Idiomatic version files (`.ruby-version`, `.nvmrc`) are honored for **node and ruby** via `idiomatic_version_file_enable_tools`; projects can also pin any tool with their own `mise.toml`, which always takes precedence.
 
 ## Ruby formatting everywhere
 

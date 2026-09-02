@@ -86,7 +86,7 @@ dotfiles install --force            # Force reinstall everything
 
 ## Testing
 
-Every push and PR runs 11 test suites plus shellcheck via GitHub Actions:
+Every push and PR runs 13 test suites plus shellcheck via GitHub Actions:
 
 - **Shellcheck** — lints all shell scripts
 - **Idempotency** — install/setup can run repeatedly with identical results (sandboxed)
@@ -99,6 +99,8 @@ Every push and PR runs 11 test suites plus shellcheck via GitHub Actions:
 - **Git setup** — identity configuration, work/personal split, smart defaults
 - **Backup** — create, list, restore, prune cycle
 - **Sync** — symlink refresh, broken link repair, dry-run mode
+- **Packages** — Brewfile group parsing, filtering, saved selections
+- **Uninstall** — removes every mapped symlink, leaves foreign links alone
 
 Run locally (needs bash 4+, i.e. `brew install bash` — macOS ships 3.2):
 

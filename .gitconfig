@@ -1,5 +1,7 @@
 [core]
-	editor = vim
+	# Fallback when $GIT_EDITOR is unset (GUI apps); the shell exports
+	# GIT_EDITOR from .zshrc, which wins in a terminal.
+	editor = nvim
 	excludesfile = ~/.gitignore_global
 	pager = delta
 [pull]

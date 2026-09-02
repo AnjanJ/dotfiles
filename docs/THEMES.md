@@ -6,9 +6,9 @@ The theme is applied across **21 apps**: 16 configured automatically, 5 with man
 
 | Auto-configured (16) | Manual — links provided (5) |
 |----------------------|------------------------------|
-| Neovim, Ghostty, Zellij, Starship, Zed, VS Code, Warp, bat, git-delta, fzf, lazygit, borders, sketchybar, yazi, gitui, lsd | Slack, Chrome, Firefox, Telegram, Raycast |
+| Neovim, Ghostty, Zellij, Starship, Zed, VS Code, Warp, bat, git-delta, fzf, lazygit, borders, sketchybar, Xcode, Sublime Text, lsd | Slack, Chrome, Firefox, Telegram, Raycast |
 
-If the apply fails partway through, all configs are automatically rolled back.
+If any of the four core steps (Ghostty, Neovim, Zellij, Starship) fails, every config is rolled back. The remaining apps are applied best-effort afterwards and report individually.
 
 > Browse the full galleries: [Tokyo Night](https://github.com/folke/tokyonight.nvim#readme) | [Aura Dark](https://github.com/daltonmenezes/aura-theme#readme) | [Catppuccin](https://github.com/catppuccin/catppuccin#-showcase)
 

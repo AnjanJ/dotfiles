@@ -16,7 +16,7 @@
 #   --name "Name"       Git user.name
 #   --email "a@b.com"   Git personal email
 #   --work-email "x@y"  Git work email (enables work identity)
-#   --work-dir "~/work" Work directory (default: ~/work)
+#   --work-dir "~/work/code" Work directory (default: ~/work/code)
 #   --theme <name>      Theme: tokyo-night, aura, or catppuccin
 #                       (default: tokyo-night)
 #   --ssh <mode>        SSH: 1password, existing, generate, skip
@@ -161,7 +161,10 @@ while [[ $# -gt 0 ]]; do
             _INSTALL_COMPLETE=true   # --help is a legitimate early exit
             exit 0
             ;;
-        *) shift ;;
+        *)
+            echo "Warning: unknown option '$1' ignored (see --help)" >&2
+            shift
+            ;;
     esac
 done
 
@@ -293,8 +296,10 @@ if [[ -z "$SELECTED_THEME" ]]; then
         # Re-run without --interactive: keep previous choice
         SELECTED_THEME=$(get_current_theme)
     else
-        # Fresh install without --interactive: prompt anyway
-        SELECTED_THEME=$(prompt_theme_choice)
+        # Fresh install without --interactive: take the documented default
+        # so `bash <(curl ...)` really is non-interactive. Change later with
+        # `dotfiles theme <name>` or pass --theme / DOTFILES_THEME.
+        SELECTED_THEME="tokyo-night"
     fi
 fi
 

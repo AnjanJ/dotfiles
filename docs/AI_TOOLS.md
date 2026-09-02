@@ -48,6 +48,7 @@ llm install llm-ollama
 llm install llm-anthropic llm-gemini
 
 # Set a default model — qwen2.5-coder:7b is local, fast, private
+# (Each tool has its own model setting; see "Which model where" below.)
 llm models default qwen2.5-coder:7b
 
 # Set API keys when you want hosted models
@@ -171,3 +172,16 @@ $ explain-last
 - **"Process this stdin and give me text back."** → `llm`
 - **"I'm offline / this is sensitive."** → ollama via `llm` (default), or `ollama run` directly
 - **"I want a chat-style interface."** → Claude Code app, Perplexity, or `llm chat`
+
+## Which model where
+
+Each tool picks its own model, on purpose: small and fast for one-shot shell use, larger for editor agents.
+
+| Tool | Setting | Model |
+|------|---------|-------|
+| `llm` (shell, `explain-last`) | `.config/llm/default_model.txt` | `qwen2.5-coder:7b` |
+| `oq` (quick chat, no thinking) | `.zshrc` | `qwen3.8:27b` |
+| `oclaude` (Claude Code via Ollama) | `.zshrc` picker | cloud models or any installed local model |
+| Zed inline / commit / summaries | `.config/zed/settings.json` | `qwen2.5-coder:7b-base` |
+| Zed agent panel | `.config/zed/settings.json` | `qwen3-coder:30b` (local) or DeepSeek / Claude (cloud) |
+| Claude Code | `.config/claude/settings.json` | Claude Fable 5.1 |

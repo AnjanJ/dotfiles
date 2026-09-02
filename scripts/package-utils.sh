@@ -38,6 +38,33 @@ _get_group_description() {
     esac
 }
 
+# ── Tiny set helpers ─────────────────────────
+# macOS ships bash 3.2, which has no associative arrays, and the curl
+# bootstrap runs install.sh under /bin/bash before Homebrew bash exists.
+# A "set" here is a newline-delimited string with a leading and trailing
+# newline, so members may contain spaces (mas names like "GIPHY CAPTURE").
+_set_has() {
+    # Args: varname, member
+    local _s="${!1}"
+    [[ "$_s" == *$'\n'"$2"$'\n'* ]]
+}
+_set_add() {
+    # Args: varname, member — assigns in place (printf -v) rather than via
+    # $(...), which would strip the trailing newline the format relies on.
+    local _s="${!1}"
+    [[ -z "$_s" ]] && _s=$'\n'
+    if ! _set_has 1 "$2"; then
+        printf -v "$1" '%s%s\n' "$_s" "$2"
+    fi
+}
+_set_del() {
+    # Args: varname, member — assigns in place
+    local _s="${!1}"
+    if _set_has 1 "$2"; then
+        printf -v "$1" '%s' "${_s/$'\n'$2$'\n'/$'\n'}"
+    fi
+}
+
 # ── Brewfile Parsing ─────────────────────────
 
 # Parse group names from Brewfile (in order)
@@ -126,20 +153,18 @@ prompt_package_selection() {
         fi
     done <<< "$(_parse_brewfile_groups "$brewfile")"
 
-    # Start with all selected
-    declare -A group_selected
-    for g in "${selectable_groups[@]}"; do
-        group_selected["$g"]=1
-    done
+    # Start with all selected; `deselected` holds the groups turned off
+    # shellcheck disable=SC2034  # read indirectly by _set_has/_set_add
+    local deselected=$'\n'
 
     # Load previous selections if they exist
     if [[ -f "$PACKAGES_STATE_FILE" ]]; then
         while IFS= read -r line; do
             [[ -z "$line" ]] && continue
             if [[ "$line" =~ ^-([^:]+)$ ]]; then
-                group_selected["${BASH_REMATCH[1]}"]=0
+                _set_add deselected "${BASH_REMATCH[1]}"
             elif [[ "$line" =~ ^\+(.+)$ ]]; then
-                group_selected["${BASH_REMATCH[1]}"]=1
+                _set_del deselected "${BASH_REMATCH[1]}"
             fi
         done <<< "$(get_saved_groups)"
     fi
@@ -158,7 +183,7 @@ prompt_package_selection() {
             local count
             count=$(_get_group_package_count "$brewfile" "$g")
             local marker="x"
-            [[ "${group_selected[$g]}" -eq 0 ]] && marker=" "
+            _set_has deselected "$g" && marker=" "
             printf "  %2d) [%s] %-16s — %s (%s packages)\n" "$i" "$marker" "$g" "$desc" "$count" >&2
             ((i++))
         done
@@ -177,13 +202,13 @@ prompt_package_selection() {
             # Confirm current selection
             break
         elif [[ "$toggle_input" == "all" ]]; then
-            for g in "${selectable_groups[@]}"; do
-                group_selected["$g"]=1
-            done
+            deselected=$'\n'
             echo "" >&2
         elif [[ "$toggle_input" == "none" ]]; then
+            # shellcheck disable=SC2034
+            deselected=$'\n'
             for g in "${selectable_groups[@]}"; do
-                group_selected["$g"]=0
+                _set_add deselected "$g"
             done
             echo "" >&2
         else
@@ -193,10 +218,10 @@ prompt_package_selection() {
                     continue
                 fi
                 local g="${selectable_groups[$((num-1))]}"
-                if [[ "${group_selected[$g]}" -eq 1 ]]; then
-                    group_selected["$g"]=0
+                if _set_has deselected "$g"; then
+                    _set_del deselected "$g"
                 else
-                    group_selected["$g"]=1
+                    _set_add deselected "$g"
                 fi
             done
             echo "" >&2
@@ -204,9 +229,9 @@ prompt_package_selection() {
     done
 
     # For selected groups, offer individual app deselection
-    declare -A excluded_packages
+    local excluded_keys=$'\n'
     for g in "${selectable_groups[@]}"; do
-        [[ "${group_selected[$g]}" -eq 0 ]] && continue
+        _set_has deselected "$g" && continue
 
         local entries=()
         while IFS= read -r entry; do
@@ -247,7 +272,7 @@ prompt_package_selection() {
                 local pkg_name
                 # shellcheck disable=SC2001  # sed needed for regex group extraction
                 pkg_name=$(echo "$entry" | sed 's/.*"\([^"]*\)".*/\1/')
-                excluded_packages["$g:$pkg_name"]=1
+                _set_add excluded_keys "$g:$pkg_name"
             done
         fi
     done
@@ -255,18 +280,20 @@ prompt_package_selection() {
     # Build selections output
     local selections=""
     for g in "${selectable_groups[@]}"; do
-        if [[ "${group_selected[$g]}" -eq 1 ]]; then
-            selections+="+"
-        else
+        if _set_has deselected "$g"; then
             selections+="-"
+        else
+            selections+="+"
         fi
         selections+="$g"$'\n'
     done
 
     # Add individual exclusions
-    for key in "${!excluded_packages[@]}"; do
+    local key
+    while IFS= read -r key; do
+        [[ -z "$key" ]] && continue
         selections+="-$key"$'\n'
-    done
+    done <<< "$excluded_keys"
 
     # Remove trailing newline
     selections="${selections%$'\n'}"
@@ -289,21 +316,23 @@ generate_filtered_brewfile() {
     tmp_brewfile=$(mktemp "${TMPDIR:-/tmp}/Brewfile.XXXXXX")
 
     # Parse selections into include/exclude sets
-    declare -A included_groups
-    declare -A excluded_packages
+    # shellcheck disable=SC2034  # read indirectly by _set_has/_set_add
+    local included_groups=$'\n'
+    # shellcheck disable=SC2034
+    local excluded_packages=$'\n'
 
     # Required groups always included
     for g in "${_REQUIRED_GROUPS[@]}"; do
-        included_groups["$g"]=1
+        _set_add included_groups "$g"
     done
 
     while IFS= read -r line; do
         [[ -z "$line" ]] && continue
         if [[ "$line" =~ ^\+(.+)$ ]]; then
-            included_groups["${BASH_REMATCH[1]}"]=1
+            _set_add included_groups "${BASH_REMATCH[1]}"
         elif [[ "$line" =~ ^-([^:]+):(.+)$ ]]; then
             # Individual package exclusion
-            excluded_packages["${BASH_REMATCH[2]}"]=1
+            _set_add excluded_packages "${BASH_REMATCH[2]}"
         elif [[ "$line" =~ ^-(.+)$ ]]; then
             # Group exclusion (don't add to included)
             true
@@ -317,7 +346,7 @@ generate_filtered_brewfile() {
     while IFS= read -r line; do
         if [[ "$line" =~ ^#\ @group\ ([^ ]+) ]]; then
             current_group="${BASH_REMATCH[1]}"
-            if [[ -n "${included_groups[$current_group]+x}" ]]; then
+            if _set_has included_groups "$current_group"; then
                 in_included_group=true
                 echo "$line" >> "$tmp_brewfile"
             else
@@ -330,7 +359,7 @@ generate_filtered_brewfile() {
             # Check individual exclusions
             if [[ "$line" =~ \"([^\"]+)\" ]]; then
                 local pkg_name="${BASH_REMATCH[1]}"
-                if [[ -n "${excluded_packages[$pkg_name]+x}" ]]; then
+                if _set_has excluded_packages "$pkg_name"; then
                     continue
                 fi
             fi

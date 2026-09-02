@@ -39,7 +39,7 @@
 | **Terminal** | Ghostty (GPU-accelerated), Zellij multiplexer with Rails/Phoenix layouts |
 | **Editors** | Neovim (AstroNvim) + Zed, both with full LSP, format-on-save everywhere |
 | **Shell** | zsh (modular configs) + Starship prompt + fzf-tab, autosuggestions, syntax highlighting |
-| **Languages** | mise-managed: Ruby (pinned), Node, Elixir/Erlang, Python, Go, Rust + Zig via zls |
+| **Languages** | mise-managed: Ruby, Node, Elixir/Erlang, Python, Go, Rust + Zig via zls |
 | **Databases** | PostgreSQL, MySQL, Redis, SQLite |
 | **Git** | lazygit, GitHub CLI, per-directory work/personal identity, 1Password SSH agent |
 | **AI tooling** | Claude Code, `llm` + Ollama (local models), Copilot CLI — see [docs/AI_TOOLS.md](docs/AI_TOOLS.md) |
@@ -97,7 +97,7 @@ Full CLI reference, Brewfile recovery stories, and troubleshooting: [docs/MAINTE
 1. **One command, idempotent** — from zero to productive in minutes; safe to re-run forever
 2. **Single source of truth** — every managed symlink is declared once ([scripts/symlink-map.sh](scripts/symlink-map.sh)); install, update, sync, doctor, and health all read the same map, so nothing drifts silently
 3. **Recovery stories everywhere** — Brewfile backups, theme rollback on partial failure, git-history restore paths
-4. **Tested like software** — 11 CI suites + shellcheck on every push, because 8k lines of shell deserves tests
+4. **Tested like software** — 13 CI suites + shellcheck on every push, because 8k lines of shell deserves tests
 5. **Keyboard-first, unified aesthetics** — vim motions, tiling windows, one palette across every tool
 
 ## Credits

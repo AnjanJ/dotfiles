@@ -179,13 +179,13 @@ if [[ "$INTERACTIVE" == true ]]; then
             _saved_selections=$(get_saved_groups)
             if [[ -n "$_saved_selections" ]]; then
                 _filtered=$(generate_filtered_brewfile "$DOTFILES_DIR/Brewfile" "$_saved_selections")
-                brew bundle install --no-lock --file="$_filtered"
+                brew bundle install --file="$_filtered"
                 rm -f "$_filtered"
             else
-                brew bundle install --no-lock --file="$DOTFILES_DIR/Brewfile"
+                brew bundle install --file="$DOTFILES_DIR/Brewfile"
             fi
         else
-            brew bundle install --no-lock --file="$DOTFILES_DIR/Brewfile"
+            brew bundle install --file="$DOTFILES_DIR/Brewfile"
         fi
         print_success "Brewfile synced to system"
     else
