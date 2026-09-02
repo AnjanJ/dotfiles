@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# dotfiles:summary=Remove every managed symlink (keeps repo and packages)
+# dotfiles:args=[--yes]
 # Remove all dotfiles symlinks — can be run from anywhere
 # Usage: dotfiles-uninstall [--yes]
 #

@@ -269,7 +269,9 @@ cd "$DOTFILES_DIR"
 
 CURRENT_BRANCH=$(git branch --show-current)
 
-if [[ "$CURRENT_BRANCH" != "main" ]]; then
+if ! bash "$DOTFILES_DIR/bin/dotfiles-toggle" --enabled auto-commit; then
+    print_warning "auto-commit is toggled off (dotfiles toggle auto-commit) — leaving changes uncommitted"
+elif [[ "$CURRENT_BRANCH" != "main" ]]; then
     print_warning "On branch '$CURRENT_BRANCH' — skipping auto-commit/push (only runs on main)"
 elif [[ -n $(git status -s) ]]; then
     # Stage tracked changes only (Brewfile.backup is gitignored — local safety net only)

@@ -19,7 +19,8 @@ persistent-workspaces = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'
 # You can use it to add commands that run after AeroSpace startup.
 # Available commands : https://nikitabobko.github.io/AeroSpace/commands
 after-startup-command = [
-    'exec-and-forget borders',  # Start JankyBorders for visual window focus
+    # Start JankyBorders for visual window focus (skip if `dotfiles toggle borders` is off)
+    'exec-and-forget ~/bin/dotfiles-toggle --enabled borders && borders',
     # Restore the standard session: launch every app in the daily layout.
     # Placement is handled by the [[on-window-detected]] rules at the
     # bottom of this file, so this only has to start things.
@@ -140,30 +141,46 @@ automatically-unhide-macos-hidden-apps = false
     # 1Password has no home workspace: it floats where you open it, so its
     # Touch ID prompt appears on the workspace you are actually looking at.
 
+    # desc: Launch Warp (workspace 1)
     ctrl-shift-w = '''exec-and-forget open -a "Warp"'''
+    # desc: Launch Zen browser (workspace 2)
     ctrl-shift-x = '''exec-and-forget open -a "Zen"'''
+    # desc: Launch Chrome, new window (workspace 3)
     ctrl-shift-c = '''exec-and-forget open -na "Google Chrome" --args --new-window'''
+    # desc: Launch Zed (workspace 4)
     ctrl-shift-z = '''exec-and-forget open -a "Zed"'''
+    # desc: Launch VS Code (workspace 4)
     ctrl-shift-v = '''exec-and-forget open -a "Visual Studio Code"'''
+    # desc: Launch Proton Mail (workspace 5)
     ctrl-shift-m = '''exec-and-forget open -a "Proton Mail"'''
+    # desc: Launch 1Password (floats on the current workspace)
     ctrl-shift-p = '''exec-and-forget open -a "1Password"'''
+    # desc: Launch Obsidian (workspace 6)
     ctrl-shift-o = '''exec-and-forget open -a "Obsidian"'''
+    # desc: Launch Slack (workspace 6, floating)
     ctrl-shift-s = '''exec-and-forget open -a "Slack"'''
+    # desc: Launch Claude (workspace 7, floating)
     ctrl-shift-a = '''exec-and-forget open -a "Claude"'''
+    # desc: Launch ChatGPT (workspace 7, floating)
     ctrl-shift-t = '''exec-and-forget open -a "ChatGPT"'''
+    # desc: Launch Ente Auth (workspace 6, floating)
     ctrl-shift-e = '''exec-and-forget open -a "Ente Auth"'''
 
     # Re-launch the whole session on demand (also runs at AeroSpace startup).
+    # desc: Re-launch the whole startup session (restore-session)
     ctrl-shift-r = '''exec-and-forget ~/.config/aerospace/scripts/startup-apps.sh'''
 
     # OTHER USEFUL APPS
     # Raycast is not installed; left commented rather than bound to a
     # missing app, which would make the key silently do nothing.
     # ctrl-shift-space = '''exec-and-forget open -a "Raycast"'''
+    # desc: Launch Finder
     ctrl-shift-enter = '''exec-and-forget open -a "Finder"'''
 
     # See: https://nikitabobko.github.io/AeroSpace/commands#layout
+    # desc: Tiles layout
     ctrl-shift-slash = 'layout tiles horizontal vertical'
+    # desc: Accordion layout
     ctrl-shift-comma = 'layout accordion horizontal vertical'
 
     # See: https://nikitabobko.github.io/AeroSpace/commands#focus
@@ -175,11 +192,15 @@ automatically-unhide-macos-hidden-apps = false
 
     # Cycle through browser windows across ALL workspaces
     # Chrome windows (cycle through all Chrome windows across workspaces)
+    # desc: Next Chrome window (across all workspaces)
     ctrl-shift-n = 'exec-and-forget ~/.config/aerospace/scripts/cycle-app-windows.sh chrome next'
+    # desc: Previous Chrome window
     ctrl-shift-b = 'exec-and-forget ~/.config/aerospace/scripts/cycle-app-windows.sh chrome prev'
 
     # Zen windows (cycle through all Zen windows across workspaces)
+    # desc: Next Zen window (across all workspaces)
     alt-shift-n = 'exec-and-forget ~/.config/aerospace/scripts/cycle-app-windows.sh zen next'
+    # desc: Previous Zen window
     alt-shift-b = 'exec-and-forget ~/.config/aerospace/scripts/cycle-app-windows.sh zen prev'
 
     # See: https://nikitabobko.github.io/AeroSpace/commands#move
@@ -190,7 +211,9 @@ automatically-unhide-macos-hidden-apps = false
     ctrl-alt-l = 'move right'
 
     # See: https://nikitabobko.github.io/AeroSpace/commands#resize
+    # desc: Shrink window
     ctrl-shift-minus = 'resize smart -50'
+    # desc: Grow window
     ctrl-shift-equal = 'resize smart +50'
 
     # See: https://nikitabobko.github.io/AeroSpace/commands#workspace
@@ -208,7 +231,9 @@ automatically-unhide-macos-hidden-apps = false
     # Workspaces beyond 9 have no number key of their own. ctrl-shift-0
     # cycles forward through them, ctrl-alt-0 backward. From anywhere in
     # 1-9, the first press lands on the first extra workspace.
+    # desc: Cycle forward through overflow workspaces 10-12
     ctrl-shift-0 = 'exec-and-forget ~/.config/aerospace/scripts/cycle-extra-workspaces.sh next'
+    # desc: Cycle backward through overflow workspaces 10-12
     ctrl-alt-0 = 'exec-and-forget ~/.config/aerospace/scripts/cycle-extra-workspaces.sh prev'
 
     # See: https://nikitabobko.github.io/AeroSpace/commands#move-node-to-workspace
@@ -245,15 +270,21 @@ automatically-unhide-macos-hidden-apps = false
     alt-shift-l = 'focus-monitor right'
 
     # See: https://nikitabobko.github.io/AeroSpace/commands#mode
+    # desc: Enter service mode (reload, float, join, volume, cheatsheet)
     ctrl-shift-semicolon = 'mode service'
 
 # 'service' binding mode declaration.
 # See: https://nikitabobko.github.io/AeroSpace/guide#binding-modes
 [mode.service.binding]
+    # desc: Reload config and return to main mode
     esc = ['reload-config', 'mode main']
+    # desc: Flatten workspace tree (reset layout)
     r = ['flatten-workspace-tree', 'mode main'] # reset layout
+    # desc: Toggle floating / tiling for the focused window
     f = ['layout floating tiling', 'mode main'] # Toggle between floating and tiling layout
     backspace = ['close-all-windows-but-current', 'mode main']
+    # desc: Open this keybinding cheatsheet in Ghostty
+    k = ['exec-and-forget open -na Ghostty --args -e ~/bin/dotfiles-keys', 'mode main']
 
     # sticky is not yet supported https://github.com/nikitabobko/AeroSpace/issues/2
     #s = ['layout sticky tiling', 'mode main']

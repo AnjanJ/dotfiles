@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# dotfiles:summary=Clone repos from GitHub, GitLab, Bitbucket or Codeberg
+# dotfiles:args=[--dir <d>] [--org <o>] [--all]
 
 # ============================================
 # REPOS CLONE — Interactive repo cloner

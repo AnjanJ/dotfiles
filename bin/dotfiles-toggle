@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+# dotfiles:summary=Turn a feature on or off with a flag file (startup-apps, borders, auto-commit)
+# dotfiles:args=<flag> [on|off|toggle|status] | --list | --enabled <flag>
+#
+# Toggle features without editing a config file — can be run from anywhere
+# Usage: dotfiles toggle <flag> [on|off|toggle|status]
+#        dotfiles toggle --list
+#        dotfiles toggle --enabled <flag>      # exit 0 if on (for scripts)
+#
+# A flag is "on" unless ~/.local/state/dotfiles/toggles/<flag>.off exists,
+# so a fresh machine has everything enabled and the state survives
+# updates. Scripts consult it with `dotfiles-toggle --enabled <flag>`:
+#
+#   startup-apps   .config/aerospace/scripts/startup-apps.sh session restore
+#   borders        JankyBorders launch from aerospace after-startup-command
+#   auto-commit    update.sh committing and pushing "snapshot: system state"
+#
+# Any other name works too; consumers just have to ask.
+
+set -euo pipefail
+
+TOGGLES_DIR="${DOTFILES_STATE_DIR:-$HOME/.local/state/dotfiles}/toggles"
+KNOWN_FLAGS=(startup-apps borders auto-commit)
+
+usage() {
+    echo "Usage: dotfiles toggle <flag> [on|off|toggle|status]"
+    echo "       dotfiles toggle --list"
+    echo "       dotfiles toggle --enabled <flag>   (exit 0 if on, 1 if off)"
+    echo ""
+    echo "Known flags: ${KNOWN_FLAGS[*]}"
+}
+
+flag_file() { printf '%s/%s.off' "$TOGGLES_DIR" "$1"; }
+is_enabled() { [[ ! -f "$(flag_file "$1")" ]]; }
+
+validate_flag() {
+    if [[ ! "$1" =~ ^[a-z0-9][a-z0-9-]*$ ]]; then
+        echo "Error: flag names are lowercase letters, digits and hyphens (got '$1')" >&2
+        exit 1
+    fi
+}
+
+case "${1:-}" in
+    ""|--help|-h)
+        usage
+        [[ -z "${1:-}" ]] && exit 1
+        exit 0
+        ;;
+    --list)
+        # Known flags plus anything that has ever been switched off
+        {
+            printf '%s\n' "${KNOWN_FLAGS[@]}"
+            [[ -d "$TOGGLES_DIR" ]] && for f in "$TOGGLES_DIR"/*.off; do
+                [[ -f "$f" ]] && basename "$f" .off
+            done
+        } | sort -u | while IFS= read -r flag; do
+            if is_enabled "$flag"; then
+                printf '  %-16s on\n' "$flag"
+            else
+                printf '  %-16s off\n' "$flag"
+            fi
+        done
+        exit 0
+        ;;
+    --enabled)
+        [[ -n "${2:-}" ]] || { usage >&2; exit 1; }
+        validate_flag "$2"
+        is_enabled "$2"
+        exit $?
+        ;;
+esac
+
+FLAG="$1"
+ACTION="${2:-toggle}"
+validate_flag "$FLAG"
+
+case "$ACTION" in
+    on)
+        rm -f "$(flag_file "$FLAG")"
+        ;;
+    off)
+        mkdir -p "$TOGGLES_DIR"
+        touch "$(flag_file "$FLAG")"
+        ;;
+    toggle)
+        if is_enabled "$FLAG"; then
+            mkdir -p "$TOGGLES_DIR"
+            touch "$(flag_file "$FLAG")"
+        else
+            rm -f "$(flag_file "$FLAG")"
+        fi
+        ;;
+    status)
+        ;;
+    *)
+        usage >&2
+        exit 1
+        ;;
+esac
+
+if is_enabled "$FLAG"; then
+    echo "$FLAG: on"
+else
+    echo "$FLAG: off"
+fi

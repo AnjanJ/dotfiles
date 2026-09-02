@@ -23,6 +23,9 @@ dotfiles doctor       # Auto-fix common issues
 dotfiles backup       # Snapshot dotfiles state (--list, --restore)
 dotfiles profile      # Measure shell startup time (--detailed)
 dotfiles export       # Export setup snapshot (--json)
+dotfiles toggle <f>   # Flip startup-apps / borders / auto-commit
+dotfiles keys         # AeroSpace keybinding cheatsheet (fzf)
+dotfiles commands     # List every command
 dotfiles install      # Re-run full installer
 dotfiles edit         # Open dotfiles in your editor
 dotfiles dir          # Print dotfiles directory path

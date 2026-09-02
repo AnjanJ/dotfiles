@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# dotfiles:summary=Run pending one-off migrations
+# dotfiles:args=[--pending] [--dry-run] [--new <slug>]
 # Run pending migrations — can be run from anywhere
 # Usage: dotfiles-migrate [--pending] [--dry-run]
 #

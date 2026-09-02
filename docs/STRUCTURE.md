@@ -36,7 +36,7 @@ dotfiles/
 │   ├── aura/
 │   └── catppuccin/
 ├── bin/                        # CLI commands, linked file-by-file into ~/bin
-│   ├── dotfiles                # Main CLI dispatcher (update, sync, health, theme, ...)
+│   ├── dotfiles                # CLI router: bin/dotfiles-<a>-<b> answers `dotfiles a b`; help from # dotfiles:summary= headers
 │   ├── dotfiles-*              # Subcommand implementations
 │   ├── work-setup / work-nuke / work-switch / work-status
 │   ├── repos-clone             # Clone from GitHub/GitLab/Bitbucket/Codeberg
@@ -52,7 +52,7 @@ dotfiles/
 │   ├── theme-utils.sh          # Theme utility functions
 │   ├── theme-render.sh         # {{ token }} renderer (bash + awk)
 │   └── apply-theme.sh          # Render colors.toml through templates, swap into ~/.local/state, install
-├── tests/                      # 14 suites, run via GitHub Actions CI
+├── tests/                      # 17 suites, run via GitHub Actions CI
 ├── .github/workflows/test.yml  # CI: shellcheck + all test suites
 └── docs/                       # This documentation
 ```

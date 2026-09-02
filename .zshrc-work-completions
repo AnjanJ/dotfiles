@@ -5,88 +5,60 @@
 # ── Dotfiles CLI ──────────────────────────────
 
 _dotfiles() {
+    # Commands and their summaries come from the scripts' own metadata
+    # headers via `dotfiles commands --plain` (route<TAB>summary<TAB>args),
+    # so a new bin/dotfiles-* script completes without touching this file.
     local -a subcommands
-    subcommands=(
-        'update:Update system & sync dotfiles repo'
-        'sync:Quick refresh — pull, relink, reapply theme'
-        'health:Run health check on all tools'
-        'theme:Switch theme (tokyo-night|aura|catppuccin)'
-        'install:Run full installer'
-        'uninstall:Remove all symlinks'
-        'backup:Snapshot dotfiles state'
-        'doctor:Auto-fix common issues'
-        'profile:Measure shell startup time'
-        'export:Export setup snapshot'
-        'add-theme:Scaffold a new theme directory'
-        'cleanup:Remove Homebrew packages not in Brewfile'
-        'migrate:Run pending one-off migrations'
-        'hook:Run user hooks for an event'
-        'edit:Open dotfiles in your editor'
-        'dir:Print dotfiles directory path'
-    )
+    local line route summary
+    while IFS=$'\t' read -r route summary _; do
+        subcommands+=("${route// /-}:${summary}")
+    done < <(dotfiles commands --plain 2>/dev/null)
+    subcommands+=('commands:List commands (--json, --plain, --check)' 'edit:Open dotfiles in your editor' 'dir:Print dotfiles directory path')
 
     if (( CURRENT == 2 )); then
         _describe 'command' subcommands
-    else
-        case "${words[2]}" in
-            theme)
-                local -a themes=($(_dotfiles_theme_names))
-                _describe 'theme' themes
-                ;;
-            migrate)
-                _arguments \
-                    '--pending[List pending migrations]' \
-                    '--dry-run[Show what would run]' \
-                    '--new[Create a migration]:slug'
-                ;;
-            hook)
-                local -a events=(theme-set post-sync post-update)
-                _describe 'event' events
-                ;;
-            backup)
-                _arguments \
-                    '--list[List available backups]' \
-                    '--restore[Restore a backup]:backup name'
-                ;;
-            doctor)
-                _arguments \
-                    '--dry-run[Preview what would be fixed]'
-                ;;
-            profile)
-                _arguments \
-                    '--detailed[Show per-component timing]'
-                ;;
-            install)
-                _arguments \
-                    '--interactive[Prompt for every choice]' \
-                    '--force[Force reinstall]' \
-                    '--name[Git user.name]:name' \
-                    '--email[Git personal email]:email' \
-                    '--work-email[Git work email]:email' \
-                    '--work-dir[Work directory]:directory:_directories' \
-                    '--theme[Theme]:theme:($(_dotfiles_theme_names))' \
-                    '--ssh[SSH mode]:mode:(1password existing generate skip)' \
-                    '--groups[Package groups to install]:groups' \
-                    '--no-macos-defaults[Skip macOS defaults]' \
-                    '--help[Show help]'
-                ;;
-            update)
-                _arguments \
-                    '--interactive[Prompt before each step]' \
-                    '--help[Show help]'
-                ;;
-            sync)
-                _arguments \
-                    '--dry-run[Show what would change]' \
-                    '--help[Show help]'
-                ;;
-            export)
-                _arguments \
-                    '--json[Output as JSON]' \
-                    '--help[Show help]'
-                ;;
-        esac
+        return
     fi
+
+    case "${words[2]}" in
+        theme)
+            local -a themes=($(_dotfiles_theme_names))
+            _describe 'theme' themes
+            ;;
+        hook)
+            local -a events=(theme-set post-sync post-update)
+            _describe 'event' events
+            ;;
+        toggle)
+            local -a flags=(startup-apps borders auto-commit)
+            _describe 'flag' flags
+            ;;
+        install)
+            _arguments \
+                '--interactive[Prompt for every choice]' \
+                '--force[Force reinstall]' \
+                '--name[Git user.name]:name' \
+                '--email[Git personal email]:email' \
+                '--work-email[Git work email]:email' \
+                '--work-dir[Work directory]:directory:_directories' \
+                '--theme[Theme]:theme:($(_dotfiles_theme_names))' \
+                '--ssh[SSH mode]:mode:(1password existing generate skip)' \
+                '--groups[Package groups to install]:groups' \
+                '--no-macos-defaults[Skip macOS defaults]' \
+                '--help[Show help]'
+            ;;
+        *)
+            # Generic: offer every --flag named in the command's args metadata
+            local -a flags
+            local args
+            args=$(dotfiles commands --plain 2>/dev/null | awk -F'\t' -v r="${words[2]// /-}" '{ gsub(/ /, "-", $1); if ($1 == r) print $3 }')
+            for flag in ${(s: :)args}; do
+                [[ "$flag" == --* ]] && flags+=("${flag//[\[\]]/}")
+            done
+            flags+=('--help')
+            _describe 'option' flags
+            ;;
+    esac
 }
 compdef _dotfiles dotfiles
 

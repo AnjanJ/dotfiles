@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# dotfiles:summary=Measure zsh startup time
+# dotfiles:args=[--detailed]
 # Profile zsh startup time and identify slow sections
 # Usage: dotfiles-profile [--detailed]
 

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# dotfiles:summary=Quick refresh: pull, relink, migrate, reapply theme
+# dotfiles:args=[--dry-run]
 
 # ============================================
 # DOTFILES SYNC — Quick refresh without upgrade

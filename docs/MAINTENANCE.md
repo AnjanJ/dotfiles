@@ -17,13 +17,17 @@ dotfiles profile      # Measure shell startup time (--detailed for per-component
 dotfiles export       # Export setup snapshot (--json for machine-readable)
 dotfiles migrate      # Run pending one-off migrations (--pending, --dry-run, --new <slug>)
 dotfiles hook <event> # Run ~/.config/dotfiles/hooks/<event>{,.d/*} (theme-set, post-sync, post-update)
+dotfiles toggle <f>   # Flip a feature flag: startup-apps, borders, auto-commit (--list)
+dotfiles keys         # AeroSpace keybinding cheatsheet (fzf; --markdown, --update, --check)
+dotfiles commands     # List every command from its metadata (--json, --plain, --check)
+dotfiles work setup   # work-* and repos-clone route here too: work status, work nuke, repos clone
 dotfiles install      # Re-run full installer (idempotent)
 dotfiles uninstall    # Remove all dotfiles symlinks
 dotfiles edit         # Open dotfiles in your editor
 dotfiles dir          # Print dotfiles directory path
 ```
 
-All commands support tab-completion. Shorthand also works: `dotfiles-update`, `dotfiles-sync`, etc.
+There is no command table to maintain: every executable `bin/dotfiles-*` is a command and its filename is its route (`dotfiles add theme x` → `bin/dotfiles-add-theme x`). Each script declares `# dotfiles:summary=` and `# dotfiles:args=` in its header; `dotfiles <cmd> --help` prints them, a command with required args prints usage when called bare, and `dotfiles commands --check` fails CI if a script has no summary. Tab-completion reads the same metadata. Shorthand also works: `dotfiles-update`, `dotfiles-sync`, etc.
 
 ## What `dotfiles update` does
 
@@ -94,7 +98,7 @@ dotfiles install --force            # Force reinstall everything
 
 ## Testing
 
-Every push and PR runs 14 test suites plus shellcheck via GitHub Actions:
+Every push and PR runs 17 test suites plus shellcheck, `dotfiles commands --check` and `dotfiles keys --check` via GitHub Actions:
 
 - **Shellcheck** — lints all shell scripts
 - **Idempotency** — install/setup can run repeatedly with identical results (sandboxed)
@@ -104,6 +108,9 @@ Every push and PR runs 14 test suites plus shellcheck via GitHub Actions:
 - **Update flow** — symlink creation and refresh
 - **Theme system** — render, overrides, atomic swap, failure leaves previous theme, scaffolding
 - **Theme renderer** — token forms, colour maths, derived keys, error exits
+- **CLI router** — route resolution, `--help` never executes, required-arg guard, metadata lint, JSON
+- **Toggles** — flag files, `--enabled` exit codes, listing
+- **Keys** — aerospace.toml parsing, `# desc:` overrides, markdown, `--update`/`--check`
 - **Doctor** — auto-fix symlinks, permissions, dry-run mode
 - **Git setup** — identity configuration, work/personal split, smart defaults
 - **Backup** — create, list, restore, prune cycle

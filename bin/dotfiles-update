@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# dotfiles:summary=Upgrade everything and sync the repo
+# dotfiles:args=[--interactive]
 # Update dotfiles — can be run from anywhere
 # Usage: dotfiles-update [--interactive]
 

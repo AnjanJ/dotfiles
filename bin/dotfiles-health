@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# dotfiles:summary=Verify tools, symlinks, runtimes, services and theme assets
 # Run dotfiles health check — can be run from anywhere
 # Usage: dotfiles-health
 

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# dotfiles:summary=Remove all work-related config
+# dotfiles:args=[--dry-run] [--yes]
 
 # ============================================
 # WORK NUKE — Remove all work-related config

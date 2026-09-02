@@ -106,7 +106,7 @@ Not directly transferable, but the posture is worth noting: user not in the dock
 
 ### Tier 2: adopt the Quattro architecture (weeks, the real payoff)
 
-> **Status (2026-09-03):** items 1, 2, 3 and 4 are done — `colors.toml` + `themes/_templates/*.tpl` rendered by `scripts/theme-render.sh` into `~/.local/state/dotfiles/current/theme/` with an atomic swap; every app reads from there or gets a gitignored generated copy; `bin/dotfiles-hook` fires `theme-set`/`post-sync`/`post-update`; `bin/dotfiles-migrate` runs `migrations/*.sh` once per machine. Items 5 to 12 remain.
+> **Status (2026-09-03):** items 1, 2, 3 and 4 are done — `colors.toml` + `themes/_templates/*.tpl` rendered by `scripts/theme-render.sh` into `~/.local/state/dotfiles/current/theme/` with an atomic swap; every app reads from there or gets a gitignored generated copy; `bin/dotfiles-hook` fires `theme-set`/`post-sync`/`post-update`; `bin/dotfiles-migrate` runs `migrations/*.sh` once per machine. Items 5, 6 and 7 followed: `bin/dotfiles` routes by filename with `# dotfiles:summary=` headers and `commands --check`; `bin/dotfiles-toggle` flag files gate startup-apps, borders and auto-commit; `bin/dotfiles-keys` generates `docs/KEYBINDINGS.md` from `aerospace.toml` with a CI drift check. Items 8 to 12 remain.
 
 **1. Palette-first theming with templates.**
 

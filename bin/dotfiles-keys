@@ -1,0 +1,232 @@
+#!/usr/bin/env bash
+# dotfiles:summary=Keybinding cheatsheet generated from aerospace.toml (fzf, --markdown, --update, --check)
+# dotfiles:args=[--markdown | --tsv | --update | --check] [--config <aerospace.toml>] [--doc <KEYBINDINGS.md>]
+#
+# Show or regenerate the AeroSpace keybinding cheatsheet — can be run from anywhere
+# Usage: dotfiles keys              # interactive list (fzf when available)
+#        dotfiles keys --markdown   # print the markdown tables
+#        dotfiles keys --update     # rewrite the block in docs/KEYBINDINGS.md
+#        dotfiles keys --check      # exit 1 if the doc is out of date (CI)
+#
+# The config file is the source of truth. Every `key = 'command'` in
+# [mode.main.binding] and [mode.service.binding] becomes a row; the
+# description is a `# desc: …` comment on the line above the binding,
+# or, failing that, a readable rendering of the command itself. The
+# markdown lives between <!-- AEROSPACE_KEYS_START/END --> markers so the
+# rest of the doc stays hand-written.
+
+set -euo pipefail
+
+DOTFILES_DIR="${DOTFILES_DIR:-$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)}"
+CONFIG="$DOTFILES_DIR/.config/aerospace/aerospace.toml"
+DOC="$DOTFILES_DIR/docs/KEYBINDINGS.md"
+MODE="list"
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --markdown) MODE="markdown"; shift ;;
+        --tsv) MODE="tsv"; shift ;;
+        --update) MODE="update"; shift ;;
+        --check) MODE="check"; shift ;;
+        --config) CONFIG="$2"; shift 2 ;;
+        --doc) DOC="$2"; shift 2 ;;
+        --help|-h)
+            sed -n '5,10s/^# //p' "$0"
+            exit 0
+            ;;
+        *) echo "Unknown option: $1" >&2; exit 1 ;;
+    esac
+done
+
+[[ -f "$CONFIG" ]] || { echo "Config not found: $CONFIG" >&2; exit 1; }
+
+# ── Parse: mode<TAB>key<TAB>description<TAB>command ──
+# shellcheck disable=SC2016  # awk program
+parse_bindings() {
+    awk '
+    function cap(s) { return toupper(substr(s, 1, 1)) substr(s, 2) }
+
+    function pretty_key(k,    n, parts, i, out, p) {
+        n = split(k, parts, "-")
+        out = ""
+        for (i = 1; i <= n; i++) {
+            p = parts[i]
+            if (p == "ctrl") p = "Ctrl"
+            else if (p == "alt") p = "Alt"
+            else if (p == "shift") p = "Shift"
+            else if (p == "cmd") p = "Cmd"
+            else if (p == "slash") p = "/"
+            else if (p == "comma") p = ","
+            else if (p == "semicolon") p = ";"
+            else if (p == "minus") p = "-"
+            else if (p == "equal") p = "="
+            else if (p == "period") p = "."
+            else if (p == "quote") p = "\047"
+            else if (p == "backslash") p = "\\"
+            else if (p == "leftSquareBracket") p = "["
+            else if (p == "rightSquareBracket") p = "]"
+            else if (p == "grave_accent" || p == "backtick") p = "`"
+            else if (length(p) == 1) p = toupper(p)
+            else p = cap(p)
+            out = out (i > 1 ? "+" : "") p
+        }
+        return out
+    }
+
+    function strip_quotes(v) {
+        sub(/^[[:space:]]+/, "", v); sub(/[[:space:]]+$/, "", v)
+        if (substr(v, 1, 3) == "\047\047\047") { v = substr(v, 4); sub(/\047\047\047[[:space:]]*$/, "", v) }
+        else if (substr(v, 1, 1) == "\047") { v = substr(v, 2); sub(/\047[[:space:]]*$/, "", v) }
+        else if (substr(v, 1, 1) == "\"") { v = substr(v, 2); sub(/"[[:space:]]*$/, "", v) }
+        return v
+    }
+
+    # Turn an aerospace command into a sentence
+    function describe(c,    w, n, app, script, rest) {
+        if (c ~ /^exec-and-forget open -na "[^"]+" --args --new-window/) {
+            match(c, /"[^"]+"/); app = substr(c, RSTART + 1, RLENGTH - 2)
+            return "Launch " app " (new window)"
+        }
+        if (c ~ /^exec-and-forget open -n?a "[^"]+"/) {
+            match(c, /"[^"]+"/); app = substr(c, RSTART + 1, RLENGTH - 2)
+            return "Launch " app
+        }
+        if (c ~ /^exec-and-forget [^ ]*\//) {
+            rest = substr(c, length("exec-and-forget ") + 1)
+            n = split(rest, w, " ")
+            script = w[1]; sub(/^.*\//, "", script)
+            rest = script
+            for (n = 2; n <= length(w) && w[n] != ""; n++) rest = rest " " w[n]
+            return "Run " rest
+        }
+        if (c ~ /^exec-and-forget /) return "Run: " substr(c, length("exec-and-forget ") + 1)
+        if (c ~ /^focus-monitor /)     { sub(/^focus-monitor /, "", c); sub(/--wrap-around /, "", c); return "Focus monitor " c }
+        if (c ~ /^move-node-to-monitor /) { sub(/^move-node-to-monitor /, "", c); sub(/--wrap-around /, "", c); return "Move window to monitor " c }
+        if (c ~ /^move-workspace-to-monitor /) { sub(/^move-workspace-to-monitor /, "", c); sub(/--wrap-around /, "", c); return "Move workspace to monitor " c }
+        if (c ~ /^move-node-to-workspace /) { sub(/^move-node-to-workspace /, "", c); return "Move window to workspace " c }
+        if (c == "workspace-back-and-forth") return "Toggle last two workspaces"
+        if (c ~ /^workspace /) { sub(/^workspace /, "", c); return "Switch to workspace " c }
+        if (c ~ /^focus /)  { sub(/^focus /, "", c); return "Focus window " c }
+        if (c ~ /^move /)   { sub(/^move /, "", c); return "Move window " c }
+        if (c ~ /^join-with /) { sub(/^join-with /, "", c); return "Join with window " c }
+        if (c == "layout floating tiling") return "Toggle floating / tiling"
+        if (c ~ /^layout /) { split(c, w, " "); return "Layout: " w[2] }
+        if (c ~ /^resize /) { sub(/^resize (smart )?/, "", c); return "Resize " c }
+        if (c ~ /^mode /)   { sub(/^mode /, "", c); return (c == "main") ? "Back to main mode" : "Enter " c " mode" }
+        if (c == "reload-config") return "Reload config"
+        if (c == "flatten-workspace-tree") return "Flatten workspace tree (reset layout)"
+        if (c == "close-all-windows-but-current") return "Close all windows but current"
+        if (c == "volume set 0") return "Mute"
+        if (c ~ /^volume /) { sub(/^volume /, "", c); return "Volume " c }
+        if (c ~ /^fullscreen/) return "Toggle fullscreen"
+        gsub(/-/, " ", c)
+        return cap(c)
+    }
+
+    /^[[:space:]]*\[mode\.[a-z]+\.binding\]/ {
+        mode = $0; sub(/^[[:space:]]*\[mode\./, "", mode); sub(/\.binding\].*$/, "", mode)
+        desc = ""; next
+    }
+    /^[[:space:]]*\[/ { mode = ""; desc = ""; next }
+    mode == "" { next }
+
+    /^[[:space:]]*# desc:/ { desc = $0; sub(/^[[:space:]]*# desc:[[:space:]]*/, "", desc); next }
+    /^[[:space:]]*#/ { next }
+    /^[[:space:]]*$/ { desc = ""; next }
+
+    /^[[:space:]]*[a-zA-Z0-9_-]+[[:space:]]*=/ {
+        key = $0; sub(/^[[:space:]]*/, "", key); sub(/[[:space:]]*=.*$/, "", key)
+        val = $0; sub(/^[^=]*=[[:space:]]*/, "", val)
+        sub(/[[:space:]]+#[^\047"]*$/, "", val)   # trailing comment
+        if (val ~ /^\[/) {
+            # array: describe the first element, show them all
+            inner = val; sub(/^\[[[:space:]]*/, "", inner); sub(/[[:space:]]*\][[:space:]]*$/, "", inner)
+            n = split(inner, parts, /,[[:space:]]*/)
+            cmd = ""
+            for (i = 1; i <= n; i++) { parts[i] = strip_quotes(parts[i]); cmd = cmd (i > 1 ? ", " : "") parts[i] }
+            d = (desc != "") ? desc : describe(parts[1])
+        } else {
+            cmd = strip_quotes(val)
+            d = (desc != "") ? desc : describe(cmd)
+        }
+        printf "%s\t%s\t%s\t%s\n", mode, pretty_key(key), d, cmd
+        desc = ""
+    }
+    ' "$CONFIG"
+}
+
+markdown() {
+    local current=""
+    while IFS=$'\t' read -r mode key desc cmd; do
+        if [[ "$mode" != "$current" ]]; then
+            [[ -n "$current" ]] && echo ""
+            if [[ "$mode" == "main" ]]; then
+                echo "### Main mode"
+            else
+                echo "### ${mode^} mode (\`Ctrl+Shift+;\` first)"
+            fi
+            echo ""
+            echo "| Key | Action | AeroSpace command |"
+            echo "|-----|--------|-------------------|"
+            current="$mode"
+        fi
+        # shellcheck disable=SC2016  # backticks are markdown, not command substitution
+        printf '| `%s` | %s | `%s` |\n' "$key" "$desc" "${cmd//|/\\|}"
+    done < <(parse_bindings)
+}
+
+render_block() {
+    echo "<!-- AEROSPACE_KEYS_START -->"
+    echo "<!-- Generated by \`dotfiles keys --update\` from .config/aerospace/aerospace.toml. Do not edit by hand. -->"
+    markdown
+    echo "<!-- AEROSPACE_KEYS_END -->"
+}
+
+doc_block() {
+    awk '/<!-- AEROSPACE_KEYS_START -->/{p=1} p{print} /<!-- AEROSPACE_KEYS_END -->/{p=0}' "$DOC"
+}
+
+case "$MODE" in
+    tsv)
+        parse_bindings
+        ;;
+    markdown)
+        markdown
+        ;;
+    update)
+        [[ -f "$DOC" ]] || { echo "Doc not found: $DOC" >&2; exit 1; }
+        if ! grep -q 'AEROSPACE_KEYS_START' "$DOC"; then
+            echo "Markers <!-- AEROSPACE_KEYS_START/END --> not found in $DOC" >&2
+            exit 1
+        fi
+        tmp=$(mktemp)
+        block=$(mktemp)
+        render_block > "$block"
+        awk -v block="$block" '
+            /<!-- AEROSPACE_KEYS_START -->/ { while ((getline line < block) > 0) print line; skip = 1; next }
+            /<!-- AEROSPACE_KEYS_END -->/ { skip = 0; next }
+            !skip { print }
+        ' "$DOC" > "$tmp"
+        mv "$tmp" "$DOC"
+        rm -f "$block"
+        echo "Updated $DOC ($(parse_bindings | wc -l | tr -d ' ') bindings)"
+        ;;
+    check)
+        [[ -f "$DOC" ]] || { echo "Doc not found: $DOC" >&2; exit 1; }
+        if diff -q <(render_block) <(doc_block) >/dev/null; then
+            echo "docs/KEYBINDINGS.md matches aerospace.toml"
+        else
+            echo "docs/KEYBINDINGS.md is out of date — run: dotfiles keys --update" >&2
+            diff <(doc_block) <(render_block) | head -20 >&2 || true
+            exit 1
+        fi
+        ;;
+    list)
+        if command -v fzf &>/dev/null && [[ -t 1 ]]; then
+            parse_bindings | awk -F'\t' '{ printf "%-8s %-22s %-45s %s\n", "[" $1 "]", $2, $3, $4 }' \
+                | fzf --header="AeroSpace keybindings — Esc to close" --no-sort --layout=reverse
+        else
+            parse_bindings | awk -F'\t' '{ printf "%-8s %-22s %s\n", "[" $1 "]", $2, $3 }'
+        fi
+        ;;
+esac

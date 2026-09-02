@@ -14,6 +14,13 @@
 
 set -uo pipefail
 
+# `dotfiles toggle startup-apps` turns the session restore off without
+# editing this file or aerospace.toml.
+if ! "$HOME/bin/dotfiles-toggle" --enabled startup-apps 2>/dev/null; then
+  echo "startup-apps is toggled off (dotfiles toggle startup-apps)"
+  exit 0
+fi
+
 # Seconds to wait between launches. Cold boot needs breathing room —
 # ten apps starting at once makes AeroSpace miss window-detected events.
 STAGGER="${AEROSPACE_STARTUP_STAGGER:-1.5}"

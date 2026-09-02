@@ -37,6 +37,10 @@ jobs:
             .config/borders/bordersrc \
             .config/claude/statusline-command.sh \
             tests/test-*.sh
+      - name: Command metadata headers
+        run: bin/dotfiles commands --check
+      - name: Keybinding cheatsheet is current
+        run: bin/dotfiles keys --check
 
   tests:
     runs-on: macos-latest
@@ -58,6 +62,9 @@ jobs:
           - packages
           - uninstall
           - theme-render
+          - cli
+          - toggle
+          - keys
     steps:
       - uses: actions/checkout@v4
       - name: Install bash 5.x

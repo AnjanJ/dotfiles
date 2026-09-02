@@ -1,52 +1,230 @@
 #!/usr/bin/env bash
+# dotfiles:summary=Dotfiles management CLI (this router)
+# dotfiles:hidden=true
+#
 # Dotfiles management — can be run from anywhere
-# Usage: dotfiles <command> [options]
+# Usage: dotfiles <command> [args...]
+#
+# There is no command table to maintain. Every executable bin/dotfiles-*
+# is a command and its filename is its route: `dotfiles add theme x`
+# resolves to bin/dotfiles-add-theme (longest prefix wins, the rest are
+# passed through as arguments). Scripts in bin/ without the dotfiles-
+# prefix (work-setup, repos-clone) route under their own name:
+# `dotfiles work setup` → bin/work-setup.
+#
+# Each command describes itself in a comment header near the top:
+#   # dotfiles:summary=One line shown in listings          (required)
+#   # dotfiles:args=<theme> [--quiet]                       (optional)
+#   # dotfiles:hidden=true                                  (optional)
+# `dotfiles commands --check` fails CI when a bin/dotfiles-* script has
+# no summary. `--help` anywhere in the arguments prints the header
+# instead of running the command; a command whose args metadata has a
+# required (unbracketed) part prints its usage when called bare.
 
 set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+BIN_DIR="$DOTFILES_DIR/bin"
+SELF="$(basename "$0")"
 
-case "${1:-}" in
-    update)   shift; exec bash "$DOTFILES_DIR/update.sh" "$@" ;;
-    health)   shift; exec bash "$DOTFILES_DIR/scripts/health-check.sh" "$@" ;;
-    theme)    shift; exec bash "$DOTFILES_DIR/scripts/apply-theme.sh" "$@" ;;
-    add-theme) shift; exec bash "$DOTFILES_DIR/bin/dotfiles-add-theme" "$@" ;;
-    cleanup)   shift; exec bash "$DOTFILES_DIR/bin/dotfiles-cleanup" "$@" ;;
-    install)   shift; exec bash "$DOTFILES_DIR/install.sh" "$@" ;;
-    uninstall) shift; exec bash "$DOTFILES_DIR/bin/dotfiles-uninstall" "$@" ;;
-    backup)    shift; exec bash "$DOTFILES_DIR/bin/dotfiles-backup" "$@" ;;
-    doctor)    shift; exec bash "$DOTFILES_DIR/bin/dotfiles-doctor" "$@" ;;
-    profile)   shift; exec bash "$DOTFILES_DIR/bin/dotfiles-profile" "$@" ;;
-    sync)      shift; exec bash "$DOTFILES_DIR/bin/dotfiles-sync" "$@" ;;
-    export)    shift; exec bash "$DOTFILES_DIR/bin/dotfiles-export" "$@" ;;
-    hook)      shift; exec bash "$DOTFILES_DIR/bin/dotfiles-hook" "$@" ;;
-    migrate)   shift; exec bash "$DOTFILES_DIR/bin/dotfiles-migrate" "$@" ;;
-    edit)      cd "$DOTFILES_DIR" && exec "${EDITOR:-vim}" . ;;
-    dir)       echo "$DOTFILES_DIR" ;;
-    *)
-        echo "AJ's Dotfiles — manage your dev environment"
-        echo ""
-        echo "Usage: dotfiles <command> [options]"
-        echo ""
-        echo "Commands:"
-        echo "  update      Update system & sync dotfiles repo"
-        echo "  sync        Quick refresh: pull, relink, reapply theme"
-        echo "  health      Run health check on all tools"
-        echo "  theme       Switch theme (tokyo-night|aura|catppuccin)"
-        echo "  add-theme   Scaffold a new theme directory"
-        echo "  cleanup     Remove Homebrew packages not in Brewfile"
-        echo "  install     Run full installer"
-        echo "  uninstall   Remove all symlinks (keeps repo & packages)"
-        echo "  backup      Snapshot dotfiles state (--list, --restore <name>)"
-        echo "  doctor      Auto-fix common issues"
-        echo "  profile     Measure shell startup time"
-        echo "  export      Export setup snapshot (--json for machine-readable)"
-        echo "  migrate     Run pending one-off migrations (--pending, --new <slug>)"
-        echo "  hook        Run user hooks for an event (~/.config/dotfiles/hooks/)"
-        echo "  edit        Open dotfiles in your editor"
-        echo "  dir         Print dotfiles directory path"
-        echo ""
-        echo "Shorthand commands also available:"
-        echo "  dotfiles-update, dotfiles-health, dotfiles-theme, dotfiles-install"
-        ;;
+# ── Metadata ─────────────────────────────────
+
+# meta_get <file> <key> — value of `# dotfiles:<key>=…` in the first 40 lines
+meta_get() {
+    sed -n "1,40s/^# dotfiles:$2=//p" "$1" | head -n 1
+}
+
+# route_of <file> — the spaced route for a bin/ script
+#   bin/dotfiles-add-theme → "add theme", bin/work-setup → "work setup"
+route_of() {
+    local name
+    name="$(basename "$1")"
+    name="${name#dotfiles-}"
+    printf '%s' "${name//-/ }"
+}
+
+# is_command <file> — executable with a summary header
+is_command() {
+    [[ -f "$1" && -x "$1" ]] || return 1
+    [[ -n "$(meta_get "$1" summary)" ]]
+}
+
+# all_commands — every routable bin/ script, one path per line, sorted
+all_commands() {
+    local f
+    for f in "$BIN_DIR"/*; do
+        [[ "$(basename "$f")" == "$SELF" ]] && continue
+        [[ "$(basename "$f")" == _* ]] && continue
+        is_command "$f" && echo "$f"
+    done | sort
+}
+
+# ── Listings ─────────────────────────────────
+
+print_usage() {
+    echo "AJ's Dotfiles — manage your dev environment"
+    echo ""
+    echo "Usage: dotfiles <command> [args...]"
+    echo ""
+    echo "Commands:"
+    local f route summary
+    while IFS= read -r f; do
+        [[ "$(meta_get "$f" hidden)" == "true" ]] && continue
+        route="$(route_of "$f")"
+        summary="$(meta_get "$f" summary)"
+        printf '  %-16s %s\n' "$route" "$summary"
+    done < <(all_commands)
+    printf '  %-16s %s\n' "commands" "List commands (--json, --plain, --all, --check)"
+    printf '  %-16s %s\n' "edit" "Open dotfiles in your editor"
+    printf '  %-16s %s\n' "dir" "Print dotfiles directory path"
+    echo ""
+    echo "Help for one command:  dotfiles <command> --help"
+    echo "Shorthand also works:  dotfiles-<command>, e.g. dotfiles-sync"
+}
+
+print_command_help() {
+    local f="$1" route args summary
+    route="$(route_of "$f")"
+    args="$(meta_get "$f" args)"
+    summary="$(meta_get "$f" summary)"
+    echo "Usage: dotfiles $route${args:+ $args}"
+    echo ""
+    echo "  $summary"
+    echo ""
+    echo "  Source: bin/$(basename "$f")"
+}
+
+json_escape() {
+    local s="$1"
+    s="${s//\\/\\\\}"
+    s="${s//\"/\\\"}"
+    printf '%s' "$s"
+}
+
+cmd_commands() {
+    local mode="list" show_all=false arg
+    for arg in "$@"; do
+        case "$arg" in
+            --json) mode="json" ;;
+            --plain) mode="plain" ;;
+            --check) mode="check" ;;
+            --all) show_all=true ;;
+            --help|-h)
+                echo "Usage: dotfiles commands [--plain|--json] [--all] [--check]"
+                echo ""
+                echo "  --plain  route<TAB>summary<TAB>args (for completions)"
+                echo "  --json   machine-readable listing"
+                echo "  --all    include hidden commands"
+                echo "  --check  exit 1 if any bin/dotfiles-* lacks a summary header"
+                return 0
+                ;;
+            *) echo "Unknown option: $arg" >&2; return 1 ;;
+        esac
+    done
+
+    if [[ "$mode" == "check" ]]; then
+        local f missing=0
+        for f in "$BIN_DIR"/dotfiles-*; do
+            [[ -f "$f" ]] || continue
+            if [[ ! -x "$f" ]]; then
+                echo "not executable: bin/$(basename "$f")" >&2
+                missing=$((missing + 1))
+            elif [[ -z "$(meta_get "$f" summary)" ]]; then
+                echo "missing '# dotfiles:summary=' header: bin/$(basename "$f")" >&2
+                missing=$((missing + 1))
+            fi
+        done
+        if [[ $missing -gt 0 ]]; then
+            echo "$missing command(s) without metadata" >&2
+            return 1
+        fi
+        echo "All $(all_commands | wc -l | tr -d ' ') commands carry metadata"
+        return 0
+    fi
+
+    local f route summary args hidden first=true
+    [[ "$mode" == "json" ]] && echo "["
+    while IFS= read -r f; do
+        hidden="$(meta_get "$f" hidden)"
+        [[ "$hidden" == "true" && "$show_all" != true ]] && continue
+        route="$(route_of "$f")"
+        summary="$(meta_get "$f" summary)"
+        args="$(meta_get "$f" args)"
+        case "$mode" in
+            plain) printf '%s\t%s\t%s\n' "$route" "$summary" "$args" ;;
+            json)
+                [[ "$first" == true ]] || echo ","
+                first=false
+                printf '  {"route": "%s", "binary": "%s", "summary": "%s", "args": "%s", "hidden": %s}' \
+                    "$(json_escape "$route")" "$(basename "$f")" "$(json_escape "$summary")" \
+                    "$(json_escape "$args")" "${hidden:-false}"
+                ;;
+            *) printf '%-16s %s\n' "$route" "$summary" ;;
+        esac
+    done < <(all_commands)
+    [[ "$mode" == "json" ]] && { echo ""; echo "]"; }
+    return 0
+}
+
+# ── Dispatch ─────────────────────────────────
+
+if [[ $# -eq 0 ]]; then
+    print_usage
+    exit 0
+fi
+
+case "$1" in
+    help|--help|-h) print_usage; exit 0 ;;
+    commands) shift; cmd_commands "$@"; exit $? ;;
+    edit) cd "$DOTFILES_DIR" && exec "${EDITOR:-vim}" . ;;
+    dir) echo "$DOTFILES_DIR"; exit 0 ;;
 esac
+
+# Longest-prefix resolution: try dotfiles-a-b-c, then dotfiles-a-b, then
+# dotfiles-a (and the same without the dotfiles- prefix for work-*,
+# repos-clone). Whatever is dropped becomes the command's arguments.
+words=("$@")
+resolved=""
+leftover=()
+n=${#words[@]}
+while [[ $n -gt 0 ]]; do
+    joined=""
+    for ((i = 0; i < n; i++)); do
+        joined="${joined:+$joined-}${words[$i]}"
+    done
+    for candidate in "$BIN_DIR/dotfiles-$joined" "$BIN_DIR/$joined"; do
+        if is_command "$candidate"; then
+            resolved="$candidate"
+            break 2
+        fi
+    done
+    n=$((n - 1))
+done
+
+if [[ -z "$resolved" ]]; then
+    echo "dotfiles: unknown command '$1'" >&2
+    suggestion="$(all_commands | while IFS= read -r f; do route_of "$f"; echo; done | grep -m1 "^${1}" || true)"
+    [[ -n "$suggestion" ]] && echo "Did you mean: dotfiles $suggestion" >&2
+    echo "Run 'dotfiles commands' to list every command." >&2
+    exit 127
+fi
+
+leftover=("${words[@]:$n}")
+
+# `--help` anywhere before a `--` prints the header instead of running.
+for arg in ${leftover[@]+"${leftover[@]}"}; do
+    [[ "$arg" == "--" ]] && break
+    if [[ "$arg" == "--help" || "$arg" == "-h" ]]; then
+        print_command_help "$resolved"
+        exit 0
+    fi
+done
+
+# A command with required arguments, called bare, shows its usage.
+required="$(meta_get "$resolved" args | sed -E 's/\[[^]]*\]//g' | tr -d ' ')"
+if [[ -n "$required" && ${#leftover[@]} -eq 0 ]]; then
+    print_command_help "$resolved"
+    exit 1
+fi
+
+exec "$resolved" ${leftover[@]+"${leftover[@]}"}
