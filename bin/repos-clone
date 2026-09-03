@@ -115,7 +115,7 @@ if [[ -f ~/.ssh/config ]]; then
         local_i=1
         for a in "${aliases[@]}"; do
             echo "    $local_i) $a"
-            ((local_i++))
+            local_i=$((local_i + 1))
         done
         read -r -p "  Which to use for clone URLs? (0-$((local_i-1))): " ALIAS_CHOICE
         if [[ "$ALIAS_CHOICE" -ge 1 && "$ALIAS_CHOICE" -le ${#aliases[@]} ]] 2>/dev/null; then
@@ -359,7 +359,7 @@ echo ""
 i=1
 for idx in "${!REPO_NAMES[@]}"; do
     printf "    %3d) %-30s %s\n" "$i" "${REPO_NAMES[$idx]}" "${REPO_DESCS[$idx]}"
-    ((i++))
+    i=$((i + 1))
 done
 
 # ── Select Repos ───────────────────────────────
@@ -422,17 +422,17 @@ for num in $SELECTED; do
 
     if [[ -d "$dest" ]]; then
         print_warning "Skipped: $name (already exists)"
-        ((SKIPPED++))
+        SKIPPED=$((SKIPPED + 1))
         continue
     fi
 
     if git clone "$url" "$dest" 2>/dev/null; then
         print_success "Cloned: $name"
-        ((CLONED++))
+        CLONED=$((CLONED + 1))
     else
         print_fail "Failed: $name"
         FAILURES+=("$name")
-        ((FAILED++))
+        FAILED=$((FAILED + 1))
     fi
 done
 

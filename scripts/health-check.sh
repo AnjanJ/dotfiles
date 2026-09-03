@@ -31,15 +31,15 @@ check_command() {
         local version
         version=$($cmd --version 2>&1 | head -n 1)
         echo -e "${GREEN}✓${NC} $name: ${GREEN}installed${NC} ($version)"
-        ((PASSED++))
+        PASSED=$((PASSED + 1))
         return 0
     else
         if [[ "$required" == "true" ]]; then
             echo -e "${RED}✗${NC} $name: ${RED}NOT FOUND${NC}"
-            ((FAILED++))
+            FAILED=$((FAILED + 1))
         else
             echo -e "${YELLOW}⚠${NC} $name: ${YELLOW}not installed (optional)${NC}"
-            ((WARNINGS++))
+            WARNINGS=$((WARNINGS + 1))
         fi
         return 1
     fi
@@ -57,35 +57,35 @@ check_file() {
             target=$(readlink "$file")
             if [[ -n "$expected_target" && "$target" != "$expected_target" ]]; then
                 echo -e "${RED}✗${NC} $name: ${RED}wrong target${NC} → $target (expected $expected_target)"
-                ((FAILED++))
+                FAILED=$((FAILED + 1))
                 return 1
             fi
             echo -e "${GREEN}✓${NC} $name: ${GREEN}linked${NC} → $target"
-            ((PASSED++))
+            PASSED=$((PASSED + 1))
             return 0
         else
             echo -e "${RED}✗${NC} $name: ${RED}not a symlink${NC}"
-            ((FAILED++))
+            FAILED=$((FAILED + 1))
             return 1
         fi
     elif [[ "$type" == "dir" ]]; then
         if [ -d "$file" ]; then
             echo -e "${GREEN}✓${NC} $name: ${GREEN}exists${NC}"
-            ((PASSED++))
+            PASSED=$((PASSED + 1))
             return 0
         else
             echo -e "${RED}✗${NC} $name: ${RED}not found${NC}"
-            ((FAILED++))
+            FAILED=$((FAILED + 1))
             return 1
         fi
     else
         if [ -f "$file" ]; then
             echo -e "${GREEN}✓${NC} $name: ${GREEN}exists${NC}"
-            ((PASSED++))
+            PASSED=$((PASSED + 1))
             return 0
         else
             echo -e "${RED}✗${NC} $name: ${RED}not found${NC}"
-            ((FAILED++))
+            FAILED=$((FAILED + 1))
             return 1
         fi
     fi
@@ -99,11 +99,11 @@ check_mise_tool() {
         local version
         version=$(mise current "$tool" 2>/dev/null)
         echo -e "${GREEN}✓${NC} $name: ${GREEN}installed${NC} (${version})"
-        ((PASSED++))
+        PASSED=$((PASSED + 1))
         return 0
     else
         echo -e "${RED}✗${NC} $name: ${RED}not installed${NC}"
-        ((FAILED++))
+        FAILED=$((FAILED + 1))
         return 1
     fi
 }
@@ -128,11 +128,11 @@ check_brew_package() {
         else
             echo -e "${GREEN}✓${NC} $name: ${GREEN}installed${NC}"
         fi
-        ((PASSED++))
+        PASSED=$((PASSED + 1))
         return 0
     else
         echo -e "${RED}✗${NC} $name: ${RED}not installed${NC}"
-        ((FAILED++))
+        FAILED=$((FAILED + 1))
         return 1
     fi
 }
@@ -176,10 +176,10 @@ check_file ~/.config/aerospace/aerospace.toml "Aerospace config"
 # Check if Aerospace is running
 if pgrep -x "Aerospace" > /dev/null; then
     echo -e "${GREEN}✓${NC} Aerospace: ${GREEN}running${NC}"
-    ((PASSED++))
+    PASSED=$((PASSED + 1))
 else
     echo -e "${YELLOW}⚠${NC} Aerospace: ${YELLOW}not running${NC}"
-    ((WARNINGS++))
+    WARNINGS=$((WARNINGS + 1))
 fi
 
 # ============================================
@@ -196,10 +196,10 @@ check_file ~/.config/nvim/init.lua "Neovim config"
 # Check if lazy.nvim is installed
 if [ -d ~/.local/share/nvim/lazy ]; then
     echo -e "${GREEN}✓${NC} Lazy.nvim: ${GREEN}installed${NC}"
-    ((PASSED++))
+    PASSED=$((PASSED + 1))
 else
     echo -e "${YELLOW}⚠${NC} Lazy.nvim: ${YELLOW}not installed (will install on first nvim launch)${NC}"
-    ((WARNINGS++))
+    WARNINGS=$((WARNINGS + 1))
 fi
 
 # Zed config links are covered by the managed-symlink sweep in section 5.
@@ -235,13 +235,13 @@ if [[ -f "$HOME/.dotfiles-theme" ]]; then
     theme_dir="$DOTFILES_DIR/themes/$active_theme"
     if [[ -f "$theme_dir/theme.conf" && -f "$theme_dir/colors.toml" ]]; then
         echo -e "${GREEN}✓${NC} Active theme: ${GREEN}$active_theme${NC}"
-        ((PASSED++))
+        PASSED=$((PASSED + 1))
         if [[ "$(cat "$theme_state/theme.name" 2>/dev/null)" == "$active_theme" ]]; then
             echo -e "${GREEN}✓${NC} Rendered theme matches: $theme_state/theme"
-            ((PASSED++))
+            PASSED=$((PASSED + 1))
         else
             echo -e "${RED}✗${NC} Rendered theme is not '$active_theme' (run: dotfiles theme $active_theme)"
-            ((FAILED++))
+            FAILED=$((FAILED + 1))
         fi
         for tpl in "$DOTFILES_DIR"/themes/_templates/*.tpl; do
             [[ -f "$tpl" ]] || continue
@@ -263,30 +263,30 @@ if [[ -f "$HOME/.dotfiles-theme" ]]; then
         done
     else
         echo -e "${RED}✗${NC} Active theme '$active_theme' is missing themes/$active_theme/theme.conf or colors.toml"
-        ((FAILED++))
+        FAILED=$((FAILED + 1))
     fi
 else
     echo -e "${YELLOW}⚠${NC} No theme applied yet (run: dotfiles theme <name>)"
-    ((WARNINGS++))
+    WARNINGS=$((WARNINGS + 1))
 fi
 
 # Pending migrations mean a repo change has not been applied on this machine
 if bash "$DOTFILES_DIR/bin/dotfiles-migrate" --pending >/dev/null 2>&1; then
     echo -e "${YELLOW}⚠${NC} Pending migrations (run: dotfiles migrate)"
-    ((WARNINGS++))
+    WARNINGS=$((WARNINGS + 1))
 else
     echo -e "${GREEN}✓${NC} Migrations: up to date"
-    ((PASSED++))
+    PASSED=$((PASSED + 1))
 fi
 
 # A restart marker left behind means an update or sync was interrupted
 # before step 5, or a migration asked and nothing has consumed it yet
 if _pending_restarts=$(bash "$DOTFILES_DIR/bin/dotfiles-restart" --list 2>/dev/null); then
     echo -e "${YELLOW}⚠${NC} Pending restarts: $(echo "$_pending_restarts" | tr '\n' ' ')(run: dotfiles restart --pending)"
-    ((WARNINGS++))
+    WARNINGS=$((WARNINGS + 1))
 else
     echo -e "${GREEN}✓${NC} Restarts: nothing pending"
-    ((PASSED++))
+    PASSED=$((PASSED + 1))
 fi
 
 # ============================================
@@ -353,7 +353,7 @@ if command -v mise &> /dev/null; then
                 echo -e "${YELLOW}⚠${NC} $(basename "$proj"): ${YELLOW}pinned tool not installed${NC}"
                 # Indent each missing tool line for readability.
                 echo "$missing" | awk '{printf "     %s %s\n", $1, $2}'
-                ((WARNINGS++))
+                WARNINGS=$((WARNINGS + 1))
             fi
         done
     done
@@ -362,13 +362,13 @@ if command -v mise &> /dev/null; then
         echo -e "${GREEN}✓${NC} No pinned projects found under: $code_dirs"
     elif [[ "$drift_found" -eq 0 ]]; then
         echo -e "${GREEN}✓${NC} All $scanned pinned project(s) resolve to installed versions"
-        ((PASSED++))
+        PASSED=$((PASSED + 1))
     else
         echo -e "     ${YELLOW}Fix: cd into the project and run 'mise install'${NC}"
     fi
 else
     echo -e "${YELLOW}⚠${NC} mise not found — skipping toolchain drift scan"
-    ((WARNINGS++))
+    WARNINGS=$((WARNINGS + 1))
 fi
 
 # ============================================
@@ -405,28 +405,28 @@ check_command litecli "litecli (SQLite)" false
 # Check if PostgreSQL is running
 if pg_isready &> /dev/null; then
     echo -e "${GREEN}✓${NC} PostgreSQL: ${GREEN}running${NC}"
-    ((PASSED++))
+    PASSED=$((PASSED + 1))
 else
     echo -e "${YELLOW}⚠${NC} PostgreSQL: ${YELLOW}not running${NC}"
-    ((WARNINGS++))
+    WARNINGS=$((WARNINGS + 1))
 fi
 
 # Check if MySQL is running
 if mysqladmin ping &> /dev/null 2>&1; then
     echo -e "${GREEN}✓${NC} MySQL: ${GREEN}running${NC}"
-    ((PASSED++))
+    PASSED=$((PASSED + 1))
 else
     echo -e "${YELLOW}⚠${NC} MySQL: ${YELLOW}not running${NC}"
-    ((WARNINGS++))
+    WARNINGS=$((WARNINGS + 1))
 fi
 
 # Check if Redis is running
 if redis-cli ping &> /dev/null; then
     echo -e "${GREEN}✓${NC} Redis: ${GREEN}running${NC}"
-    ((PASSED++))
+    PASSED=$((PASSED + 1))
 else
     echo -e "${YELLOW}⚠${NC} Redis: ${YELLOW}not running${NC}"
-    ((WARNINGS++))
+    WARNINGS=$((WARNINGS + 1))
 fi
 
 # ============================================
@@ -438,10 +438,10 @@ if command -v mise &> /dev/null && mise current ruby &> /dev/null; then
     # Check Ruby tools
     if command -v bundle &> /dev/null; then
         echo -e "${GREEN}✓${NC} Bundler: ${GREEN}installed${NC} ($(bundle --version))"
-        ((PASSED++))
+        PASSED=$((PASSED + 1))
     else
         echo -e "${RED}✗${NC} Bundler: ${RED}not found${NC}"
-        ((FAILED++))
+        FAILED=$((FAILED + 1))
     fi
 
     # macOS ships a /usr/bin/rails STUB that exists, is executable, and exits
@@ -453,13 +453,13 @@ if command -v mise &> /dev/null && mise current ruby &> /dev/null; then
 
     if [[ -n "$_rails_version" ]]; then
         echo -e "${GREEN}✓${NC} Rails: ${GREEN}installed${NC} ($_rails_version)"
-        ((PASSED++))
+        PASSED=$((PASSED + 1))
     elif [[ "$(command -v rails)" == "/usr/bin/rails" ]]; then
         echo -e "${YELLOW}⚠${NC} Rails: ${YELLOW}not installed (only the macOS system stub) — 'gem install rails'${NC}"
-        ((WARNINGS++))
+        WARNINGS=$((WARNINGS + 1))
     else
         echo -e "${YELLOW}⚠${NC} Rails: ${YELLOW}not installed (optional) — 'gem install rails'${NC}"
-        ((WARNINGS++))
+        WARNINGS=$((WARNINGS + 1))
     fi
 fi
 
@@ -467,18 +467,18 @@ if command -v mise &> /dev/null && mise current elixir &> /dev/null; then
     # Check Elixir tools
     if command -v mix &> /dev/null; then
         echo -e "${GREEN}✓${NC} Mix: ${GREEN}installed${NC} (Elixir $(elixir --version | grep Elixir | awk '{print $2}'))"
-        ((PASSED++))
+        PASSED=$((PASSED + 1))
     else
         echo -e "${RED}✗${NC} Mix: ${RED}not found${NC}"
-        ((FAILED++))
+        FAILED=$((FAILED + 1))
     fi
 
     if mix phx.new --version &> /dev/null; then
         echo -e "${GREEN}✓${NC} Phoenix: ${GREEN}installed${NC}"
-        ((PASSED++))
+        PASSED=$((PASSED + 1))
     else
         echo -e "${YELLOW}⚠${NC} Phoenix: ${YELLOW}not installed (optional)${NC}"
-        ((WARNINGS++))
+        WARNINGS=$((WARNINGS + 1))
     fi
 fi
 
@@ -494,10 +494,10 @@ print_header "10. Custom Scripts (~/bin)"
 # Check ~/bin is in PATH
 if echo "$PATH" | tr ':' '\n' | grep -q "$HOME/bin"; then
     echo -e "${GREEN}✓${NC} ~/bin in PATH: ${GREEN}yes${NC}"
-    ((PASSED++))
+    PASSED=$((PASSED + 1))
 else
     echo -e "${YELLOW}⚠${NC} ~/bin in PATH: ${YELLOW}not found (add to .zshrc)${NC}"
-    ((WARNINGS++))
+    WARNINGS=$((WARNINGS + 1))
 fi
 
 # ============================================
@@ -508,28 +508,28 @@ print_header "11. Shell Integration"
 # Check if mise is activated in shell
 if grep -q "mise activate" ~/.zshrc; then
     echo -e "${GREEN}✓${NC} mise activation: ${GREEN}configured${NC}"
-    ((PASSED++))
+    PASSED=$((PASSED + 1))
 else
     echo -e "${RED}✗${NC} mise activation: ${RED}not found in .zshrc${NC}"
-    ((FAILED++))
+    FAILED=$((FAILED + 1))
 fi
 
 # Check if starship is initialized
 if grep -q "starship init" ~/.zshrc; then
     echo -e "${GREEN}✓${NC} Starship init: ${GREEN}configured${NC}"
-    ((PASSED++))
+    PASSED=$((PASSED + 1))
 else
     echo -e "${RED}✗${NC} Starship init: ${RED}not found in .zshrc${NC}"
-    ((FAILED++))
+    FAILED=$((FAILED + 1))
 fi
 
 # Check default shell
 if [[ "$SHELL" == *"zsh"* ]]; then
     echo -e "${GREEN}✓${NC} Default shell: ${GREEN}zsh${NC}"
-    ((PASSED++))
+    PASSED=$((PASSED + 1))
 else
     echo -e "${YELLOW}⚠${NC} Default shell: ${YELLOW}not zsh (current: $SHELL)${NC}"
-    ((WARNINGS++))
+    WARNINGS=$((WARNINGS + 1))
 fi
 
 # ============================================
@@ -544,14 +544,14 @@ if is_work_configured 2>/dev/null; then
     local_work_email=$(get_work_email)
     local_work_dir=$(get_work_dir)
     echo -e "${GREEN}✓${NC} Work identity: ${GREEN}configured${NC} ($local_work_email)"
-    ((PASSED++))
+    PASSED=$((PASSED + 1))
 
     if [[ -n "$local_work_dir" && -d "$local_work_dir" ]]; then
         echo -e "${GREEN}✓${NC} Work directory: ${GREEN}$local_work_dir${NC}"
-        ((PASSED++))
+        PASSED=$((PASSED + 1))
     elif [[ -n "$local_work_dir" ]]; then
         echo -e "${YELLOW}⚠${NC} Work directory: ${YELLOW}$local_work_dir (not found)${NC}"
-        ((WARNINGS++))
+        WARNINGS=$((WARNINGS + 1))
     fi
 
     # Check work SSH hosts
@@ -559,14 +559,14 @@ if is_work_configured 2>/dev/null; then
     if [[ -n "$local_work_hosts" ]]; then
         while IFS= read -r host; do
             echo -e "${GREEN}✓${NC} SSH host: ${GREEN}$host${NC}"
-            ((PASSED++))
+            PASSED=$((PASSED + 1))
         done <<< "$local_work_hosts"
     fi
 
     check_file ~/.zshrc-work ".zshrc-work" file
 else
     echo -e "${YELLOW}⚠${NC} Work identity: ${YELLOW}not configured (optional — run work-setup)${NC}"
-    ((WARNINGS++))
+    WARNINGS=$((WARNINGS + 1))
 fi
 
 # ============================================

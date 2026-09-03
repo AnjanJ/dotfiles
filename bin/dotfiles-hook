@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # dotfiles:summary=Run user hooks for an event (~/.config/dotfiles/hooks/)
 # dotfiles:args=<event> [args...]
+set -euo pipefail
 # Run user hooks for an event — can be run from anywhere
 # Usage: dotfiles-hook <event> [args...]
 #

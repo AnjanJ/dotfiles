@@ -70,7 +70,7 @@ _pick_key() {
             local comment
             comment=$(awk '{print $3}' "$dir/$k.pub" 2>/dev/null)
             echo "    $i) $k ${comment:+— $comment}"
-            ((i++))
+            i=$((i + 1))
         done
         echo "    $i) None / Skip"
     } >&2
@@ -123,7 +123,7 @@ _pick_services_and_keys() {
         for svc in "${_GIT_SERVICES[@]}"; do
             local display="${svc%%|*}"
             echo "    $i) $display"
-            ((i++))
+            i=$((i + 1))
         done
         echo ""
         echo "  Enter numbers separated by spaces (e.g., 1 2 5), or 'none' to skip."

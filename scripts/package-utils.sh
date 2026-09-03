@@ -185,7 +185,7 @@ prompt_package_selection() {
             local marker="x"
             _set_has deselected "$g" && marker=" "
             printf "  %2d) [%s] %-16s — %s (%s packages)\n" "$i" "$marker" "$g" "$desc" "$count" >&2
-            ((i++))
+            i=$((i + 1))
         done
 
         echo "" >&2
@@ -256,7 +256,7 @@ prompt_package_selection() {
             # shellcheck disable=SC2001  # sed needed for regex group extraction
             display_name=$(echo "$entry" | sed 's/.*"\([^"]*\)".*/\1/')
             printf "  %2d) %s\n" "$i" "$display_name" >&2
-            ((i++))
+            i=$((i + 1))
         done
 
         echo "" >&2

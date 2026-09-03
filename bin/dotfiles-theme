@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # dotfiles:summary=Switch theme: render colors.toml into every app
 # dotfiles:args=<name>
+set -euo pipefail
 # Switch dotfiles theme — can be run from anywhere
 # Usage: dotfiles-theme <tokyo-night|aura>
 

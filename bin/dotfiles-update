@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # dotfiles:summary=Upgrade everything and sync the repo
 # dotfiles:args=[--interactive] [--yes] [--no-snapshot]
+set -euo pipefail
 # Update dotfiles — can be run from anywhere
 # Usage: dotfiles-update [--interactive] [--yes] [--no-snapshot]
 

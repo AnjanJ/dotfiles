@@ -125,7 +125,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
                 comment=$(awk '{print $3}' "$pub" 2>/dev/null)
                 echo "    $i) $name ${comment:+— $comment}"
                 keys+=("$name")
-                ((i++))
+                i=$((i + 1))
             done
 
             if [[ ${#keys[@]} -eq 0 ]]; then
