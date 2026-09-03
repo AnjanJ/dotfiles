@@ -167,12 +167,53 @@ Effects: theme switches no longer dirty the repo, `snapshot: system state` noise
 - **A `dotfiles menu`** built on `gum` or fzf mirroring Omarchy's Style / Setup / Install / Update tree, so every CLI verb has a discoverable entry point. Raycast script commands are the macOS-native alternative.
 - **Unattended answers file.** You are close already via `DOTFILES_*` env vars; a `~/.dotfiles.json` read by `install.sh` would mirror `user_configuration.json`.
 
+### Tier 4: proposed after the 2026-09-03 re-audit
+
+> **Status: proposed, not started.** Section 2 was re-read against Omarchy `quattro` at `f99d33a` (2026-09-02) once Tiers 1 to 3 were closed. The table lists what each subsection still lacks; the items below are the ones worth doing, ranked by value against cost. Nothing here changes architecture: every item slots into the pipeline, router, hook, toggle and test contract that Tier 2 built.
+
+| Section | Covered by Tiers 1 to 3 | Still open |
+|---|---|---|
+| 2.1 Theming | palette, templates, atomic swap, light modes, backgrounds, git install with denylist | Zed and VS Code are still retinted in place (loose end 4); no `theme update` for git-installed themes; no terminal palette preview; no lock around `apply-theme.sh`; fonts are hard-coded in four configs |
+| 2.2 CLI | filename routing, headers, `commands --check/--json/--plain`, generated completions | no `# dotfiles:examples=` header; no style lint over `bin/` (`test/shell.d/bin-style-test.sh` is the model) |
+| 2.3 Layering and migrations | migrations, `migrate --pending`, update lock and transcript, restart markers | nothing surfaces pending migrations or a repo that is behind `origin/main`; `update.sh` does not hold the Mac awake |
+| 2.4 Hooks and toggles | `dotfiles hook`, `theme-set`/`post-sync`/`post-update`, five toggles | no shipped `.sample` hooks, no `hook install`, `post-install` was proposed but never fired |
+| 2.5 Tests and docs | contract, 26 suites, e2e install, `keys --check`, `commands --check` | suite counts in three docs and the MAINTENANCE list are maintained by hand; no keybinding conflict test; THEMES.md app list can drift again |
+| 2.6 AI | `AGENTS.md`, skill, `default-agent`, `--permission-mode auto`, Claude theme | no `debug` bundle for agents (Omarchy's skill leads with `omarchy debug --print`); skill only linked into `~/.claude`; no usage widget; no crash-to-agent hand-off |
+| 2.7 Desktop UX | menu, generated cheatsheet, launchers, reminders | menu has no user extension point; none of Omarchy's shell functions (worktrees, port forwards, compress) were ported |
+| 2.8 Security | theme denylist | nothing transferable remains |
+
+**1. Drift tests for docs and style.** Two suites. `tests/docs-test.sh` asserts that the suite count in `README.md` and `docs/STRUCTURE.md` equals the `tests/*-test.sh` glob, that `docs/MAINTENANCE.md` names every suite, that the auto-configured app count in `docs/THEMES.md` equals the template count plus the retint list, and that `agents/skills/dotfiles/commands.md` mentions every non-hidden route from `dotfiles commands --plain`. `tests/style-test.sh` encodes `AGENTS.md` and the gotcha list: every `bin/dotfiles-*` starts with `set -euo pipefail`, no `((VAR++))`, no `declare -A` or `mapfile` in files on the install path, and no `osascript` that targets an application outside the watchdogged helper in `scripts/apply-theme.sh`. Both run in CI through the existing glob. Removes three manual edits per new suite. Small.
+
+**2. Render Zed and VS Code settings instead of retinting them.** Closes loose end 4. Move the tracked files to `.config/zed/settings.base.json` and `.config/vscode/settings.base.json`, add `zed.settings.json.tpl` and `vscode.settings.json.tpl` that splice `{{ zed_theme }}`, `{{ mode }}` and the VS Code theme name into the base, install the output as gitignored `settings.json` through `_install_rendered`, and delete the in-place `sed` steps. A migration removes the old tracked copies from working trees. After this no theme switch touches a tracked file, which was the whole point of Tier 2 item 2. Medium.
+
+**3. Update awareness.** Port `omarchy-update-available` and `omarchy-migrate-notify` as `dotfiles update --available`: a `timeout 10 git fetch` against `origin/main`, the commit count behind, `brew outdated --quiet | wc -l`, and `dotfiles migrate --pending`, written to `~/.local/state/dotfiles/update-available` with a timestamp. `.zshrc` prints one line from that file when it is older than a day and non-empty, never fetching in the shell. `scripts/health-check.sh` gains a section for the same three facts. Wrap `update.sh` in `caffeinate -i` (Omarchy's `omarchy-update-stay-awake`) and, on failure, print "run `dotfiles debug` and hand the output to `a`". Small.
+
+**4. `dotfiles debug [--print]`.** The agent-facing bundle Omarchy's skill opens with. Contents: `git describe --always --dirty` and the last commit date, macOS and chip, Homebrew and bash versions, `dotfiles health` output, pending migrations and restart markers, active theme and mode from the rendered state dir, symlink map status, and the last 50 lines of `update.log`. `--print` writes to stdout; the default writes `~/.local/state/dotfiles/debug.log` and copies it with `pbcopy`. Add it to the skill's first paragraph and to `AGENTS.md`. Also link `agents/skills/dotfiles` into `~/.codex/skills` and `~/.gemini/config/skills` from the map (only when those directories exist), mirroring `omarchy-provision-user`. Small.
+
+**5. Fonts as a setting.** `dotfiles font list|current|set <name>`. The chosen family lives in `~/.local/state/dotfiles/font`; `apply-theme.sh` exposes it as a `{{ font }}` token with `Fira Code` as the default; `ghostty.tpl` and `wezterm.lua.tpl` use it, and the Zed and VS Code templates from item 2 use it too. `set` verifies the family with `fc-list` when fontconfig is installed and fires a `font-set` hook. Medium.
+
+**6. Hooks polish.** Ship `config/dotfiles/hooks/<event>.d/*.sample` for `theme-set` (retint an app the pipeline does not know), `post-update` (notification) and `post-sync`, copied, not symlinked, into `~/.config/dotfiles/hooks/` by install and doctor since the directory is user-owned. Add `dotfiles hook install <event> <file>` (port of `omarchy-hook-install`, 25 lines). Fire `post-install` at the end of `install.sh` as Tier 2 item 3 intended, and `font-set` from item 5. Small.
+
+**7. Theme polish.** `dotfiles theme update` fast-forwards every theme under `~/.config/dotfiles/themes/` (port of `omarchy-theme-update`, then re-applies if the active theme changed). `dotfiles theme preview [name]` prints the palette as swatches in the terminal (port of `omarchy-dev-theme-preview` without the OSC step), and the menu's Theme rows preview on hover through fzf's `--preview`. Give `apply-theme.sh` the same `mkdir` lock `update.sh` uses so `dotfiles menu`, `sync` and `update` cannot render concurrently. Small.
+
+**8. Keybinding conflict test.** Extend `tests/keys-test.sh` with the check `test/shell.d/hyprland-binding-conflicts-test.sh` does for Hyprland: no key bound twice within a mode of `aerospace.toml`, every launcher rule references a bundle that the map or `dotfiles webapp`/`tui install` can produce, and every binding whose command is not self-explanatory carries a `# desc:` line. Small.
+
+**9. Menu extensions.** `~/.config/dotfiles/menu.d/*.tsv` with `label<TAB>command` rows, a slash in the label nesting under a submenu, merged into `dotfiles menu --list` after the built-in tree; reusing a built-in label overrides that row, as `omarchy-menu.jsonc` does. Small.
+
+**10. Shell functions worth porting.** From `default/bash/fns/`: `ga <branch>` and `gd` for git worktrees next to the repo with `mise trust` (this repo's Rails and Phoenix work is where worktrees pay off), `compress`/`decompress`, and `fip`/`dip`/`lip` SSH port forwards. Into `.zshrc-terminal-enhancements` with a mention in `docs/DAILY_WORKFLOWS.md`. Skip the tmux dev layouts (Zellij layouts exist) and the rsync watchers. Small.
+
+**11. Ambitious, only with appetite.** An `agents` sketchybar item fed by a port of `bin/omarchy-agent-usage-claude` (python3, reads `~/.claude/projects/*.jsonl` and the OAuth usage endpoint, caches JSON under `~/.cache/dotfiles`). A crash watcher as a launchd agent with `WatchPaths` on `~/Library/Logs/DiagnosticReports`, posting a notification whose click runs `a` with a diagnose prompt, behind `dotfiles toggle crash-capture`. Each is medium to large.
+
+Suggested order: 1, 3, 2, 7, 4, 6, 8, 5, 9, 10, then 11 if wanted. Items 1 and 3 first because they remove recurring manual work and make every later item cheaper to verify.
+
 ## 4. What not to copy
 
 - **Package-backed distribution.** Homebrew and `brew bundle` are your pacman; there is nothing to gain from building packages.
 - **Copy-into-home instead of symlinks.** Omarchy needs copies because it is multi-user and package-owned. For a personal repo symlinks are better, provided tooling stops writing into tracked files (Tier 2, item 2).
 - **Bash as the interactive shell.** Keep zsh; the Omarchy style guide's bash 5 rules still apply to your scripts.
 - **Quickshell, Hyprland Lua config, uwsm, snapper, SDDM, Plymouth.** Linux desktop plumbing with no macOS analogue. AeroSpace + sketchybar + borders is the right stack.
+- **The `dots` and `backup` plans (`plans/dots.md`, `plans/backup.md`).** A bare git repo over `$HOME` and a restic pipeline solve problems this repo does not have: the configs already live in git, and off-site file backup is Time Machine's job, not the dotfiles'.
+- **Shell plugins, notices, capture, clipboard history, update channels.** Quickshell plugins have no sketchybar analogue worth building; date, weather and battery notices are sketchybar items; screenshots, recording and OCR are Cmd+Shift+5 and Live Text; clipboard history is Raycast; a single `main` branch has no need for stable/RC/edge/dev channels.
 - **Docker-hosted databases by default.** Your native PostgreSQL 16 / MySQL / Redis via Homebrew plus `pg_isready` health checks is a better developer experience on macOS.
 
 ## 5. Suggested sequencing
