@@ -121,15 +121,27 @@ section "The shell that results"
 _zsh_err="$( (cd "$HOME" && zsh -i -c 'exit 0' </dev/null 2>&1 >/dev/null || echo "zsh exited $?") | /usr/bin/grep -v "can't change option: zle" || true)"
 assert_eq "$_zsh_err" "" "interactive zsh starts without errors"
 
-section "Second run is idempotent"
+section "Second run is idempotent, driven by an answers file"
 
-if /bin/bash "$E2E_ROOT/install.sh" \
-    --groups core --name "CI Tester" --email "ci@example.com" \
-    --ssh skip --no-macos-defaults --no-runtimes >"$LOG.2" 2>&1; then
+# The same choices as the flags above, from a JSON answers file this time
+ANSWERS="$TEST_TMP/answers.json"
+cat > "$ANSWERS" <<EOF_ANSWERS
+{
+  "name": "CI Tester",
+  "email": "ci@example.com",
+  "groups": ["core"],
+  "ssh": "skip",
+  "macos_defaults": false,
+  "runtimes": false
+}
+EOF_ANSWERS
+if /bin/bash "$E2E_ROOT/install.sh" --answers "$ANSWERS" >"$LOG.2" 2>&1; then
     pass "install.sh exits 0 on a re-run"
 else
     fail "install.sh exits 0 on a re-run" "$(tail -60 "$LOG.2")"
 fi
+assert_file_contains "$LOG.2" "Answers from $ANSWERS: name, email, ssh, groups, macos_defaults=false, runtimes=false" "answers file read and applied"
+assert_file_contains "$LOG.2" "Every selected package installed cleanly" "groups from the answers file honoured"
 assert_file_not_contains "$LOG.2" "replaced existing directory" "re-run replaced nothing"
 assert_file_contains "$LOG.2" "Personal Git identity: CI Tester <ci@example.com>" "re-run keeps the git identity"
 assert_eq "$(git config --file "$E2E_ROOT/.gitconfig" user.name)" "CI Tester" "identity written through ~/.gitconfig"

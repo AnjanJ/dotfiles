@@ -1,0 +1,11 @@
+{
+  "name": "AJ",
+  "email": "aj@example.com",
+  "work_email": "",
+  "work_dir": "~/work/code",
+  "theme": "tokyo-night",
+  "ssh": "1password",
+  "groups": ["core", "editors", "window-mgmt", "terminal-tools"],
+  "macos_defaults": true,
+  "runtimes": true
+}

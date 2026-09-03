@@ -59,6 +59,7 @@ Fully non-interactive with sensible defaults, and **idempotent** — run it 10 t
 
 ```bash
 bash install.sh --name "AJ" --email "aj@example.com" --theme aura
+bash install.sh --answers ~/.dotfiles-answers.json   # or just create that file: docs/dotfiles-answers.example.json
 bash install.sh --interactive            # Prompt for every choice
 bash install.sh --groups "core,editors"  # Install only specific Brewfile groups
 bash install.sh --help                   # All options
@@ -98,7 +99,7 @@ Full CLI reference, Brewfile recovery stories, and troubleshooting: [docs/MAINTE
 1. **One command, idempotent** — from zero to productive in minutes; safe to re-run forever
 2. **Single source of truth** — every managed symlink is declared once ([scripts/symlink-map.sh](scripts/symlink-map.sh)); install, update, sync, doctor, and health all read the same map, so nothing drifts silently
 3. **Recovery stories everywhere** — Brewfile backups, themes staged then swapped atomically, migrations for cross-machine repairs, git-history restore paths
-4. **Tested like software** — 25 CI suites, a real end-to-end install, and shellcheck on every push, because 8k lines of shell deserves tests
+4. **Tested like software** — 26 CI suites, a real end-to-end install, and shellcheck on every push, because 8k lines of shell deserves tests
 5. **Keyboard-first, unified aesthetics** — vim motions, tiling windows, one palette across every tool
 
 ## Credits

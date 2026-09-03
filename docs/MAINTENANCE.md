@@ -101,9 +101,13 @@ dotfiles install --force            # Force reinstall everything
 
 **Hooks** let you attach your own scripts to events without editing the repo. Put executable scripts in `~/.config/dotfiles/hooks/<event>.d/` (or a single `~/.config/dotfiles/hooks/<event>` file). Events: `theme-set <theme>` after a theme switch, `post-sync`, `post-update`. A failing hook is reported and never stops the caller.
 
+## Unattended installs
+
+`install.sh` never has to prompt. Flags cover every choice, `DOTFILES_*` environment variables mirror them, and a JSON answers file mirrors both: `install.sh --answers <file>`, `DOTFILES_ANSWERS=<file>`, or simply `~/.dotfiles-answers.json` when it exists. Keys are `name`, `email`, `work_email`, `work_dir`, `theme`, `ssh`, `groups` (an array or a comma string), `macos_defaults` and `runtimes` (booleans); `docs/dotfiles-answers.example.json` is a template. Precedence is flags, then environment, then the file, then defaults, so a file can hold the machine's standing choices while a flag overrides one of them for a run. A named file that is missing or invalid stops the install rather than falling back to prompts or defaults, and unknown keys are warned about (typos). The file is read with `plutil` (python3 when plutil cannot), so nothing has to be installed first.
+
 ## Testing
 
-Every push and PR runs 25 test suites, an end-to-end install, shellcheck, `dotfiles commands --check` and `dotfiles keys --check` via GitHub Actions. The suites are discovered from `tests/*-test.sh`, so a new file is in CI the moment it exists:
+Every push and PR runs 26 test suites, an end-to-end install, shellcheck, `dotfiles commands --check` and `dotfiles keys --check` via GitHub Actions. The suites are discovered from `tests/*-test.sh`, so a new file is in CI the moment it exists:
 
 - **Shellcheck** — lints all shell scripts
 - **Idempotency** — install/setup can run repeatedly with identical results (sandboxed)
@@ -118,6 +122,7 @@ Every push and PR runs 25 test suites, an end-to-end install, shellcheck, `dotfi
 - **Theme backgrounds** — generated palette gradient, candidate order and cycling, `dotfiles theme bg` verbs, desktoppr/osascript setters, the toggle, set-on-switch-only from apply-theme
 - **Reminder** — `dotfiles reminder`: the launchd agent plist, scheduling via a launchctl stub, show/clear, the `--fire` path (notification, self-removal, unload), validation
 - **Menu** — `dotfiles menu`: rows per route, active theme and toggle state, launcher rows from installed bundles, the commands route, `--run`, prompt rows, the numbered fallback picker
+- **Install answers** — `scripts/install-answers.sh`: every key, flag/env precedence, arrays and booleans, unknown-key warnings, missing and invalid files, install.sh's `--answers` / `DOTFILES_ANSWERS` / `~/.dotfiles-answers.json` handling
 - **Theme install** — `dotfiles theme install/remove` against a local git "remote": URL and name validation, the user themes dir, staging only colour data from a cloned theme (dropped code and symlinks named, theme.conf parsed not sourced, nvim fallback), hand-written user themes trusted, reinstall, palette-only repos
 - **Theme renderer** — token forms, colour maths, derived keys, error exits
 - **CLI router** — route resolution, `--help` never executes, required-arg guard, metadata lint, JSON

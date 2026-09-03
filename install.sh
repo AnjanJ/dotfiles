@@ -26,6 +26,9 @@
 #   --no-macos-defaults Skip macOS defaults
 #   --no-runtimes       Skip `mise install` (Erlang and Rust compile from
 #                       source; run `mise install` later)
+#   --answers <file>    JSON answers file for unattended installs (see
+#                       docs/dotfiles-answers.example.json); also read from
+#                       DOTFILES_ANSWERS or ~/.dotfiles-answers.json
 #   --force             Force reinstall even if already configured
 #   --help              Show this help
 #
@@ -33,6 +36,9 @@
 #   DOTFILES_GIT_NAME, DOTFILES_GIT_EMAIL, DOTFILES_WORK_EMAIL
 #   DOTFILES_WORK_DIR, DOTFILES_THEME, DOTFILES_SSH_MODE, DOTFILES_GROUPS
 #   DOTFILES_NO_SUDO=1 (never ask for a password), DOTFILES_NO_RUNTIMES=1
+#   DOTFILES_ANSWERS=<file>
+#
+# Precedence: flags, then environment, then the answers file, then defaults.
 # ============================================
 
 # ── Bootstrap: handle curl-pipe-bash ──────────
@@ -145,6 +151,7 @@ WORK_DIR="${DOTFILES_WORK_DIR:-}"
 SELECTED_THEME="${DOTFILES_THEME:-}"
 SSH_MODE="${DOTFILES_SSH_MODE:-}"
 SELECTED_GROUPS="${DOTFILES_GROUPS:-}"
+ANSWERS_FILE="${DOTFILES_ANSWERS:-}"
 
 _CURRENT_STEP="parsing arguments"
 
@@ -161,6 +168,7 @@ while [[ $# -gt 0 ]]; do
         --groups) SELECTED_GROUPS="$2"; shift 2 ;;
         --no-macos-defaults) APPLY_MACOS_DEFAULTS=false; shift ;;
         --no-runtimes) INSTALL_RUNTIMES=false; shift ;;
+        --answers) ANSWERS_FILE="$2"; shift 2 ;;
         --help)
             # Print the usage block from the header
             sed -n '/^# Usage:/,/^# ====/{ /^# ====/d; s/^# //; s/^#//; p; }' "$0"
@@ -173,6 +181,19 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+# ── Answers file (below flags and environment) ──
+# Named explicitly, or ~/.dotfiles-answers.json when that exists. A
+# named file that is missing or invalid stops the run: an unattended
+# install that silently fell back to prompts or defaults is worse.
+_CURRENT_STEP="reading the answers file"
+if [[ -z "$ANSWERS_FILE" && -f "$HOME/.dotfiles-answers.json" ]]; then
+    ANSWERS_FILE="$HOME/.dotfiles-answers.json"
+fi
+if [[ -n "$ANSWERS_FILE" ]]; then
+    source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/scripts/install-answers.sh"
+    install_answers_load "$ANSWERS_FILE" || exit 1
+fi
 
 # Export for sub-scripts
 export INTERACTIVE FORCE_INSTALL GIT_NAME GIT_EMAIL GIT_WORK_EMAIL WORK_DIR SSH_MODE SELECTED_GROUPS
