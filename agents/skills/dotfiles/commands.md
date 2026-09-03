@@ -20,6 +20,10 @@
 | `dotfiles webapp install <name> <url> [--workspace N] [--float]` | Chrome `--app` launcher in `~/Applications` plus an AeroSpace rule between the `DOTFILES_LAUNCHERS` markers in `aerospace.toml`; `dotfiles webapp remove <name>` undoes it | safe |
 | `dotfiles tui install <name> <cmd> [--workspace N] [--tile]` | Ghostty launcher for a terminal program, floats by default; `dotfiles tui remove <name>` undoes it | safe |
 | `dotfiles restart <aerospace\|sketchybar\|borders>` | reload/relaunch one component now; `--later <c>` marks it for the end of the next update or sync; `--pending` consumes markers | safe |
+| `dotfiles export [--json]` | portable summary of this machine's setup (tools, runtimes, theme) for reproducing it elsewhere | yes |
+| `dotfiles default agent [name] [--command]` | show or set which CLI the `a` shell function launches | showing: yes; setting: when asked |
+| `dotfiles hook <event> [args]` | run the user's hooks for an event by hand (see Hooks below) | yes |
+| `dotfiles cleanup [--force]` | remove Homebrew packages that are not in the Brewfile | **ask first** |
 | `dotfiles install` | full installer (idempotent, but slow and sudo) | **ask first** |
 | `dotfiles uninstall` | remove every managed symlink | **ask first** |
 | `dotfiles work setup\|status\|nuke\|switch` | work git identity, SSH hosts, repos | `status` yes; others ask |

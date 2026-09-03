@@ -58,7 +58,7 @@ Colours belong in `themes/<name>/colors.toml`; app configs reference the rendere
 - Text assertions are substring matches (`assert_contains`); use `assert_matches` for a regex and `assert_file_contains` for a file. Labels read as claims, `assert_eq "$rc" 0 "--help exits 0"`.
 - Run one suite with `tests/run <area>` (or `/opt/homebrew/bin/bash tests/<area>-test.sh`), all of them with `/opt/homebrew/bin/bash tests/run`. CI discovers `tests/*-test.sh` and runs each in its own job; nothing to register.
 - Scripts on the install path must also pass `/bin/bash -n` and, where a suite covers them, run under `/bin/bash` 3.2 (`packages`, `theme-render`, `cli`, `toggle`, `keys` do this). `tests/e2e/install-e2e.sh` runs the real `install.sh` under `/bin/bash` with `--groups core` from a copy of the checkout into a fresh `HOME`; CI runs it as its own job, and it is safe to run locally (it installs the core formulae if missing).
-- A new suite only needs the file; update the suite count in `README.md`, `docs/STRUCTURE.md` and the list in `docs/MAINTENANCE.md`.
+- A new suite only needs the file; update the suite count in `README.md`, `docs/STRUCTURE.md` and `docs/MAINTENANCE.md`, and add a `- **Name** (`<area>`) — …` bullet to the Testing list there. `tests/docs-test.sh` fails CI when any of those drift, and `tests/style-test.sh` enforces the Style rules above (strict mode, increments, bash 3.2 builtins on the install path, osascript only inside the watchdogged theme helpers).
 
 ## Commits
 

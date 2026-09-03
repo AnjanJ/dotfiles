@@ -107,34 +107,37 @@ dotfiles install --force            # Force reinstall everything
 
 ## Testing
 
-Every push and PR runs 26 test suites, an end-to-end install, shellcheck, `dotfiles commands --check` and `dotfiles keys --check` via GitHub Actions. The suites are discovered from `tests/*-test.sh`, so a new file is in CI the moment it exists:
+Every push and PR runs 28 test suites, an end-to-end install, shellcheck, `dotfiles commands --check` and `dotfiles keys --check` via GitHub Actions. The suites are discovered from `tests/*-test.sh`, so a new file is in CI the moment it exists:
 
 - **Shellcheck** — lints all shell scripts
-- **Idempotency** — install/setup can run repeatedly with identical results (sandboxed)
-- **Work identity** — setup, nuke, switch lifecycle, and status diagnostics
-- **SSH config** — adversarial inputs and edge cases
-- **Repo cloner** — SSH alias detection and URL rewriting
-- **Update flow** — symlink creation and refresh, plus the whole pipeline against stubs: lock, transcript, snapshot before upgrade, restart markers, `--yes`
-- **Restart** — `dotfiles restart` now/later/pending/list, the AeroSpace process-name case, borders relaunch honouring its toggle
-- **Web apps** — `dotfiles webapp install/remove`: bundle, plist, icon conversion, AeroSpace rule placement and removal, URL and name validation
-- **TUIs** — `dotfiles tui install/remove`: Ghostty launch line, default float, Ghostty icon fallback, rule lifecycle
-- **Theme system** — render, overrides, atomic swap, failure leaves previous theme, scaffolding, light-theme mode outputs and the macOS appearance switch
-- **Theme backgrounds** — generated palette gradient, candidate order and cycling, `dotfiles theme bg` verbs, desktoppr/osascript setters, the toggle, set-on-switch-only from apply-theme
-- **Reminder** — `dotfiles reminder`: the launchd agent plist, scheduling via a launchctl stub, show/clear, the `--fire` path (notification, self-removal, unload), validation
-- **Menu** — `dotfiles menu`: rows per route, active theme and toggle state, launcher rows from installed bundles, the commands route, `--run`, prompt rows, the numbered fallback picker
-- **Install answers** — `scripts/install-answers.sh`: every key, flag/env precedence, arrays and booleans, unknown-key warnings, missing and invalid files, install.sh's `--answers` / `DOTFILES_ANSWERS` / `~/.dotfiles-answers.json` handling
-- **Theme install** — `dotfiles theme install/remove` against a local git "remote": URL and name validation, the user themes dir, staging only colour data from a cloned theme (dropped code and symlinks named, theme.conf parsed not sourced, nvim fallback), hand-written user themes trusted, reinstall, palette-only repos
-- **Theme renderer** — token forms, colour maths, derived keys, error exits
-- **CLI router** — route resolution, `--help` never executes, required-arg guard, metadata lint, JSON
-- **Toggles** — flag files, `--enabled` exit codes, listing
-- **Keys** — aerospace.toml parsing, `# desc:` overrides, markdown, `--update`/`--check`
-- **Agent** — default-agent state, launch commands, skill files present
-- **Doctor** — auto-fix symlinks, permissions, dry-run mode
-- **Git setup** — identity configuration, work/personal split, smart defaults
-- **Backup** — create, list, restore, prune cycle
-- **Sync** — symlink refresh, broken link repair, dry-run mode
-- **Packages** — Brewfile group parsing, filtering, saved selections
-- **Uninstall** — removes every mapped symlink, leaves foreign links alone
+- **Idempotency** (`idempotency`) — install/setup can run repeatedly with identical results (sandboxed)
+- **Work identity** (`work-nuke`) — setup, nuke and switch lifecycle
+- **Work status** (`work-status`) — status diagnostics for the work identity
+- **SSH config** (`ssh-adversarial`) — adversarial inputs and edge cases
+- **Repo cloner** (`repos-clone`) — SSH alias detection and URL rewriting
+- **Update flow** (`update`) — symlink creation and refresh, plus the whole pipeline against stubs: lock, transcript, snapshot before upgrade, restart markers, `--yes`
+- **Restart** (`restart`) — `dotfiles restart` now/later/pending/list, the AeroSpace process-name case, borders relaunch honouring its toggle
+- **Web apps** (`webapp`) — `dotfiles webapp install/remove`: bundle, plist, icon conversion, AeroSpace rule placement and removal, URL and name validation
+- **TUIs** (`tui`) — `dotfiles tui install/remove`: Ghostty launch line, default float, Ghostty icon fallback, rule lifecycle
+- **Theme system** (`theme`) — render, overrides, atomic swap, failure leaves previous theme, scaffolding, light-theme mode outputs and the macOS appearance switch
+- **Theme backgrounds** (`theme-bg`) — generated palette gradient, candidate order and cycling, `dotfiles theme bg` verbs, desktoppr/osascript setters, the toggle, set-on-switch-only from apply-theme
+- **Reminder** (`reminder`) — `dotfiles reminder`: the launchd agent plist, scheduling via a launchctl stub, show/clear, the `--fire` path (notification, self-removal, unload), validation
+- **Menu** (`menu`) — `dotfiles menu`: rows per route, active theme and toggle state, launcher rows from installed bundles, the commands route, `--run`, prompt rows, the numbered fallback picker
+- **Install answers** (`install-answers`) — `scripts/install-answers.sh`: every key, flag/env precedence, arrays and booleans, unknown-key warnings, missing and invalid files, install.sh's `--answers` / `DOTFILES_ANSWERS` / `~/.dotfiles-answers.json` handling
+- **Theme install** (`theme-install`) — `dotfiles theme install/remove` against a local git "remote": URL and name validation, the user themes dir, staging only colour data from a cloned theme (dropped code and symlinks named, theme.conf parsed not sourced, nvim fallback), hand-written user themes trusted, reinstall, palette-only repos
+- **Theme renderer** (`theme-render`) — token forms, colour maths, derived keys, error exits
+- **CLI router** (`cli`) — route resolution, `--help` never executes, required-arg guard, metadata lint, JSON
+- **Toggles** (`toggle`) — flag files, `--enabled` exit codes, listing
+- **Keys** (`keys`) — aerospace.toml parsing, `# desc:` overrides, markdown, `--update`/`--check`
+- **Agent** (`agent`) — default-agent state, launch commands, skill files present
+- **Doctor** (`doctor`) — auto-fix symlinks, permissions, dry-run mode
+- **Git setup** (`setup-git`) — identity configuration, work/personal split, smart defaults
+- **Backup** (`backup`) — create, list, restore, prune cycle
+- **Sync** (`sync`) — symlink refresh, broken link repair, dry-run mode
+- **Packages** (`packages`) — Brewfile group parsing, filtering, saved selections
+- **Uninstall** (`uninstall`) — removes every mapped symlink, leaves foreign links alone
+- **Style** (`style`) — the AGENTS.md rules shellcheck cannot express: shebang and strict mode, no `((VAR++))`, bash 3.2 builtins only on the install path, osascript never aimed at an app outside the watchdogged helpers
+- **Docs** (`docs`) — suite counts in README/STRUCTURE/MAINTENANCE, this list, the THEMES.md app table, the skill's command table, toggles and hook events, all derived from the code
 - **End-to-end install** (`tests/e2e/install-e2e.sh`) — the real `install.sh` under `/bin/bash` 3.2 into a fresh `HOME` with `--groups core`: every mapped symlink, rendered theme, core formulae, a clean interactive zsh, and an idempotent second run
 
 Every suite sources `tests/base-test.sh`: it gets a fresh temporary `HOME`, TAP `ok`/`not ok` output, and `fail` ends the file at the first broken assertion while `tests/run` continues with the next file. Run locally (needs bash 4+, i.e. `brew install bash` — macOS ships 3.2):
