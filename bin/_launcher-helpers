@@ -50,11 +50,10 @@ launcher_bundle_path() {
 
 # ── Bundle ────────────────────────────────────
 
-# Escape for a plist <string>
+# Escape for a plist <string>. sed rather than ${v//&/&amp;}: since bash
+# 5.2 an & in a pattern substitution's replacement stands for the match.
 _launcher_xml_escape() {
-    local v="$1"
-    v="${v//&/&amp;}"; v="${v//</&lt;}"; v="${v//>/&gt;}"; v="${v//\"/&quot;}"
-    printf '%s' "$v"
+    printf '%s' "$1" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g; s/"/\&quot;/g'
 }
 
 # launcher_write_bundle <name> <kind: webapp|tui> <payload> <launch script body> [icon.icns]

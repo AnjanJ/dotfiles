@@ -1,0 +1,171 @@
+#!/usr/bin/env bash
+# dotfiles:summary=Notify yourself in N minutes (launchd timer + macOS notification)
+# dotfiles:args=<minutes> [message] | show | clear
+#
+#   dotfiles reminder 15 "Tea"     # notification in 15 minutes
+#   dotfiles reminder 25           # "Your 25 minutes are up"
+#   dotfiles reminder show         # what is pending, and when
+#   dotfiles reminder clear        # cancel everything
+#
+# Each reminder is a launchd agent in ~/Library/LaunchAgents (label
+# com.dotfiles.reminder.<set-at>-<minutes>m) with a StartInterval, so it
+# survives the terminal closing and fires after the Mac wakes from sleep
+# where a backgrounded `sleep` would drift. When it fires it removes its
+# own plist, posts the notification (terminal-notifier if installed, else
+# `osascript display notification`, which needs no Automation grant) and
+# unloads itself. Ported from Omarchy's omarchy-reminder (systemd-run).
+
+set -euo pipefail
+
+SELF="$(readlink -f "$0")"
+AGENTS_DIR="${DOTFILES_LAUNCH_AGENTS_DIR:-$HOME/Library/LaunchAgents}"
+PREFIX="com.dotfiles.reminder."
+UID_NUM="$(id -u)"
+
+usage() {
+    echo "Usage: dotfiles reminder <minutes> [message]"
+    echo "       dotfiles reminder show"
+    echo "       dotfiles reminder clear"
+}
+
+format_remaining() {
+    local s=$1 m
+    m=$((s / 60)); s=$((s % 60))
+    if [[ $m -gt 0 && $s -gt 0 ]]; then echo "${m}m ${s}s"
+    elif [[ $m -gt 0 ]]; then echo "${m}m"
+    else echo "${s}s"; fi
+}
+
+plist_get() { /usr/libexec/PlistBuddy -c "Print $2" "$1" 2>/dev/null || true; }
+
+# Every pending reminder as "<plist>\t<at epoch>\t<message>"
+pending() {
+    local p at msg now
+    now=$(date +%s)
+    for p in "$AGENTS_DIR"/"$PREFIX"*.plist; do
+        [[ -f "$p" ]] || continue
+        at="$(plist_get "$p" DotfilesAt)"
+        msg="$(plist_get "$p" DotfilesMessage)"
+        [[ "$at" =~ ^[0-9]+$ ]] || continue
+        # A plist whose time has passed is a fire that never happened
+        # (the agent was not loaded); it is stale, not pending.
+        [[ $at -gt $now ]] || continue
+        printf '%s\t%s\t%s\n' "$p" "$at" "$msg"
+    done
+}
+
+notify() {
+    local msg="$1"
+    export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+    if command -v terminal-notifier >/dev/null 2>&1; then
+        terminal-notifier -title "Reminder" -message "$msg" -sound default >/dev/null 2>&1 && return 0
+    fi
+    # The message travels in the environment so no quoting is needed
+    DOTFILES_REMINDER_MSG="$msg" osascript -e 'display notification (system attribute "DOTFILES_REMINDER_MSG") with title "Reminder" sound name "Glass"' >/dev/null 2>&1
+}
+
+unload() {
+    local label="$1"
+    launchctl bootout "gui/$UID_NUM/$label" >/dev/null 2>&1 \
+        || launchctl remove "$label" >/dev/null 2>&1 \
+        || true
+}
+
+# sed rather than ${v//&/&amp;}: since bash 5.2 an & in a pattern
+# substitution's replacement stands for the matched text
+xml_escape() {
+    printf '%s' "$1" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g; s/"/\&quot;/g'
+}
+
+case "${1:-}" in
+    --fire)
+        # Run by launchd: --fire <message> <plist> <label>
+        msg="${2:-Reminder}"; plist="${3:-}"; label="${4:-}"
+        [[ -n "$plist" ]] && rm -f "$plist"
+        notify "$msg" || true
+        [[ -n "$label" ]] && unload "$label"
+        exit 0
+        ;;
+    show|list)
+        found=false
+        now=$(date +%s)
+        while IFS=$'\t' read -r p at msg; do
+            [[ -n "$p" ]] || continue
+            found=true
+            printf '  %-40s in %s (%s)\n' "$msg" "$(format_remaining $((at - now)))" "$(date -r "$at" +%H:%M)"
+        done <<EOF_PENDING
+$(pending)
+EOF_PENDING
+        [[ "$found" == true ]] || echo "No reminders pending"
+        exit 0
+        ;;
+    clear)
+        n=0
+        for p in "$AGENTS_DIR"/"$PREFIX"*.plist; do
+            [[ -f "$p" ]] || continue
+            label="$(basename "$p" .plist)"
+            unload "$label"
+            rm -f "$p"
+            n=$((n + 1))
+        done
+        echo "Cleared $n reminder(s)"
+        exit 0
+        ;;
+    ""|-h|--help)
+        usage
+        exit 1
+        ;;
+esac
+
+minutes="$1"
+shift
+message="$*"
+if ! [[ "$minutes" =~ ^[0-9]+$ ]] || [[ "$minutes" -eq 0 ]]; then
+    usage >&2
+    exit 1
+fi
+[[ -n "$message" ]] || message="Your $minutes minutes are up"
+
+now=$(date +%s)
+at=$((now + minutes * 60))
+label="${PREFIX}${now}-${minutes}m"
+plist="$AGENTS_DIR/$label.plist"
+mkdir -p "$AGENTS_DIR"
+
+# shellcheck disable=SC2094  # $plist is embedded as text, not read
+cat > "$plist" <<EOF_PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>$label</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>$(xml_escape "$SELF")</string>
+        <string>--fire</string>
+        <string>$(xml_escape "$message")</string>
+        <string>$(xml_escape "$plist")</string>
+        <string>$label</string>
+    </array>
+    <key>StartInterval</key>
+    <integer>$((minutes * 60))</integer>
+    <key>RunAtLoad</key>
+    <false/>
+    <key>DotfilesAt</key>
+    <integer>$at</integer>
+    <key>DotfilesMessage</key>
+    <string>$(xml_escape "$message")</string>
+</dict>
+</plist>
+EOF_PLIST
+
+if ! launchctl bootstrap "gui/$UID_NUM" "$plist" >/dev/null 2>&1 \
+    && ! launchctl load "$plist" >/dev/null 2>&1; then
+    rm -f "$plist"
+    echo "Could not schedule the reminder with launchd" >&2
+    exit 1
+fi
+
+echo "Reminder set: $message in $minutes minute(s) (at $(date -r "$at" +%H:%M))"

@@ -123,6 +123,13 @@ assert_contains "$(rule_block Example)" "run = ['layout floating']" "float-only 
 assert_file_not_contains "$CALLS" "curl" "--no-icon never calls curl"
 echo ""
 
+section "Test 3b: An ampersand in the name survives the plist"
+set +e; "$INSTALL" "Tom & Jerry" example.com --no-icon >/dev/null 2>&1; rc=$?; set -e
+assert_eq "$rc" "0" "install exits 0"
+assert_succeeds "plist with & is valid" plutil -lint -s "$APPS/Tom & Jerry.app/Contents/Info.plist"
+assert_eq "$(plist 'Tom & Jerry' CFBundleName)" "Tom & Jerry" "name round-trips through XML escaping"
+echo ""
+
 section "Test 4: No placement, no rule"
 set +e; out=$("$INSTALL" Plain example.com --no-icon 2>&1); rc=$?; set -e
 assert_eq "$rc" "0" "install without --workspace/--float exits 0"

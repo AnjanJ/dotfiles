@@ -8,8 +8,10 @@
 | `dotfiles sync` | `git pull`, relink from the symlink map, run pending migrations, re-render the theme, fire `post-sync` hooks | yes |
 | `dotfiles doctor [--dry-run]` | fix broken symlinks, `~/.ssh` permissions, missing mise runtimes | `--dry-run` yes; fixing: ask |
 | `dotfiles theme <name>` | switch theme (see `theming.md`) | yes, when asked to change the theme |
+| `dotfiles theme bg next\|set <img>\|list\|current` | desktop picture for the active theme: cycles `themes/<name>/backgrounds/`, `~/.config/dotfiles/backgrounds/<name>/`, then the gradient generated from the palette | yes, when asked |
+| `dotfiles reminder <min> [msg]\|show\|clear` | macOS notification in N minutes via a self-removing launchd agent | yes |
 | `dotfiles keys [--update]` | keybinding cheatsheet; `--update` regenerates the doc | yes |
-| `dotfiles toggle <flag> [on\|off]` | flip `startup-apps`, `borders`, `auto-commit` (or any name) | yes, when asked |
+| `dotfiles toggle <flag> [on\|off]` | flip `startup-apps`, `borders`, `auto-commit`, `appearance`, `background` (or any name) | yes, when asked |
 | `dotfiles migrate [--pending]` | run one-off repairs shipped with the repo | yes |
 | `dotfiles backup [--list\|--restore <n>]` | snapshot every managed file to `~/.dotfiles-backups` | creating: yes; restoring: ask |
 | `dotfiles update` | upgrade Homebrew, mise, relink, **commit and push** Brewfile changes to GitHub; `--yes` never prompts; transcript in `~/.local/state/dotfiles/update.log` | **ask first** |
