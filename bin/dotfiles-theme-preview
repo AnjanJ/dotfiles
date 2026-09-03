@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+# dotfiles:summary=Show a theme's palette as colour swatches in the terminal
+# dotfiles:args=[<name>|<colors.toml>] [--no-color]
+#
+#   dotfiles theme preview                # the active theme
+#   dotfiles theme preview flexoki-light  # a repo or installed theme by name
+#   dotfiles theme preview ./colors.toml  # any palette file, before installing it
+#   dotfiles theme preview aura --no-color   # plain "key #hex" lines (scripts, tests)
+#
+# Renders the palette through the same renderer the templates use, so
+# derived keys (bright_*, white, dark_background, ...) show what the apps
+# will get. The menu uses it as the fzf preview for theme rows. Ported
+# from omarchy-dev-theme-preview, without the OSC step.
+set -euo pipefail
+
+DOTFILES_DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+source "$DOTFILES_DIR/scripts/theme-utils.sh"
+source "$DOTFILES_DIR/scripts/theme-render.sh"
+
+COLOR=true
+TARGET=""
+for arg in "$@"; do
+    case "$arg" in
+        --no-color|--plain) COLOR=false ;;
+        -h|--help)
+            sed -n '4,13p' "$0" | sed 's/^# \{0,1\}//'
+            exit 0
+            ;;
+        -*)
+            echo "Unknown option: $arg (see --help)" >&2
+            exit 2
+            ;;
+        *) TARGET="$arg" ;;
+    esac
+done
+[[ -t 1 ]] || [[ -n "${DOTFILES_PREVIEW_FORCE_COLOR:-}" ]] || COLOR=false
+
+if [[ -z "$TARGET" ]]; then
+    TARGET="$(get_current_theme)"
+    [[ -n "$TARGET" ]] || { echo "No theme applied yet; name one: dotfiles theme preview tokyo-night" >&2; exit 1; }
+fi
+
+if [[ -f "$TARGET" ]]; then
+    COLORS="$TARGET"
+    LABEL="$TARGET"
+else
+    dir="$DOTFILES_DIR/themes/$TARGET"
+    [[ -d "$dir" ]] || dir="$(theme_dir_of "$TARGET" 2>/dev/null || true)"
+    if [[ -z "$dir" || ! -f "$dir/colors.toml" ]]; then
+        echo "No theme '$TARGET' (valid: ${VALID_THEMES[*]}) and no such file" >&2
+        exit 1
+    fi
+    COLORS="$dir/colors.toml"
+    LABEL="$TARGET"
+fi
+
+tpl="$(mktemp)"
+out="$(mktemp)"
+trap 'rm -f "$tpl" "$out"' EXIT
+{
+    echo 'mode {{ mode }}'
+    for k in background foreground accent selection muted \
+             black red green yellow blue magenta cyan white \
+             bright_black bright_red bright_green bright_yellow bright_blue bright_magenta bright_cyan bright_white; do
+        echo "$k {{ $k }} {{ ${k}_rgb }}"
+    done
+} > "$tpl"
+theme_render "$COLORS" "" "$tpl" "$out" >/dev/null 2>&1 || true
+[[ -s "$out" ]] || { echo "Could not read a palette from $COLORS" >&2; exit 1; }
+
+echo "$LABEL ($(sed -n 's/^mode //p' "$out"))"
+while read -r key hex rgb; do
+    [[ "$key" == "mode" ]] && continue
+    [[ "$hex" == *"{{"* ]] && continue   # key the palette neither sets nor derives
+    if [[ "$COLOR" == true ]]; then
+        printf '\033[48;2;%sm      \033[0m %-15s %s\n' "${rgb//,/;}" "$key" "$hex"
+    else
+        printf '%-15s %s\n' "$key" "$hex"
+    fi
+done < "$out"

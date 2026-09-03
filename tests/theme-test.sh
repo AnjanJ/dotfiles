@@ -445,3 +445,37 @@ assert_file_contains "$RENDERED/sketchybar-colors.sh" "ACCENT_COLOR=0xff0000ff" 
 assert_file_contains "$RENDERED/lazygit.yml" "lightTheme: false" "mode derived from background luminance"
 
 teardown_theme_sandbox
+
+# ── Test 10: One render at a time ──
+section "Test 10: apply_theme takes a lock"
+setup_theme_sandbox
+load_theme_functions
+mkdir -p "$TEST_HOME/.local/state/dotfiles/theme.lock"
+echo "$$" > "$TEST_HOME/.local/state/dotfiles/theme.lock/pid"   # this test process is alive
+set +e; out=$(apply_theme "tokyo-night" "true" 2>&1); rc=$?; set -e
+assert_eq "$rc" "1" "a live lock stops the render"
+assert_contains "$out" "another theme render is running (pid $$)" "and names the holder"
+assert_file_not_exists "$RENDERED/ghostty" "nothing rendered under a live lock"
+echo "2147483000" > "$TEST_HOME/.local/state/dotfiles/theme.lock/pid"   # nobody has this pid
+set +e; out=$(apply_theme "tokyo-night" "true" 2>&1); rc=$?; set -e
+assert_eq "$rc" "0" "a stale lock is removed and the render proceeds"
+assert_contains "$out" "stale theme lock" "stale lock reported"
+assert_dir_not_exists "$TEST_HOME/.local/state/dotfiles/theme.lock" "lock released afterwards"
+teardown_theme_sandbox
+echo ""
+
+# ── Test 11: Palette preview ──
+section "Test 11: dotfiles theme preview"
+PREVIEW="$REAL_DOTFILES_DIR/bin/dotfiles-theme-preview"
+out=$("$PREVIEW" tokyo-night --no-color)
+assert_contains "$out" "tokyo-night (dark)" "names the theme and its mode"
+assert_matches "$out" "^background *#1a1b26$" "lists background"
+assert_matches "$out" "^bright_red *#" "derived bright colours included"
+assert_not_contains "$out" "{{" "no unresolved tokens"
+out=$("$PREVIEW" "$REAL_DOTFILES_DIR/themes/catppuccin-latte/colors.toml" --no-color)
+assert_contains "$out" "(light)" "a palette file can be previewed by path"
+out=$(DOTFILES_PREVIEW_FORCE_COLOR=1 "$PREVIEW" aura)
+assert_contains "$out" "$(printf '\033[48;2;21;20;27m')" "colour output paints the background swatch"
+set +e; out=$("$PREVIEW" nope 2>&1); rc=$?; set -e
+assert_eq "$rc" "1" "unknown theme exits 1"
+assert_contains "$out" "No theme 'nope'" "and says so"

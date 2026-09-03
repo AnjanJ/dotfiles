@@ -120,12 +120,12 @@ Every push and PR runs 29 test suites, an end-to-end install, shellcheck, `dotfi
 - **Restart** (`restart`) — `dotfiles restart` now/later/pending/list, the AeroSpace process-name case, borders relaunch honouring its toggle
 - **Web apps** (`webapp`) — `dotfiles webapp install/remove`: bundle, plist, icon conversion, AeroSpace rule placement and removal, URL and name validation
 - **TUIs** (`tui`) — `dotfiles tui install/remove`: Ghostty launch line, default float, Ghostty icon fallback, rule lifecycle
-- **Theme system** (`theme`) — render, overrides, atomic swap, failure leaves previous theme, editor settings generated from `settings.base.json` with in-app edits adopted, scaffolding, light-theme mode outputs and the macOS appearance switch
+- **Theme system** (`theme`) — render, overrides, atomic swap, render lock, palette preview, failure leaves previous theme, editor settings generated from `settings.base.json` with in-app edits adopted, scaffolding, light-theme mode outputs and the macOS appearance switch
 - **Theme backgrounds** (`theme-bg`) — generated palette gradient, candidate order and cycling, `dotfiles theme bg` verbs, desktoppr/osascript setters, the toggle, set-on-switch-only from apply-theme
 - **Reminder** (`reminder`) — `dotfiles reminder`: the launchd agent plist, scheduling via a launchctl stub, show/clear, the `--fire` path (notification, self-removal, unload), validation
 - **Menu** (`menu`) — `dotfiles menu`: rows per route, active theme and toggle state, launcher rows from installed bundles, the commands route, `--run`, prompt rows, the numbered fallback picker
 - **Install answers** (`install-answers`) — `scripts/install-answers.sh`: every key, flag/env precedence, arrays and booleans, unknown-key warnings, missing and invalid files, install.sh's `--answers` / `DOTFILES_ANSWERS` / `~/.dotfiles-answers.json` handling
-- **Theme install** (`theme-install`) — `dotfiles theme install/remove` against a local git "remote": URL and name validation, the user themes dir, staging only colour data from a cloned theme (dropped code and symlinks named, theme.conf parsed not sourced, nvim fallback), hand-written user themes trusted, reinstall, palette-only repos
+- **Theme install** (`theme-install`) — `dotfiles theme install/remove/update` against a local git "remote": URL and name validation, the user themes dir, staging only colour data from a cloned theme (dropped code and symlinks named, theme.conf parsed not sourced, nvim fallback), hand-written user themes trusted, reinstall, palette-only repos
 - **Theme renderer** (`theme-render`) — token forms, colour maths, derived keys, error exits
 - **CLI router** (`cli`) — route resolution, `--help` never executes, required-arg guard, metadata lint, JSON
 - **Toggles** (`toggle`) — flag files, `--enabled` exit codes, listing

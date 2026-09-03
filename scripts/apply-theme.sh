@@ -265,8 +265,32 @@ _theme_conf_load() {
     done < "$conf"
 }
 
-# shellcheck disable=SC2154  # theme.conf variables loaded dynamically
+# One render at a time: the menu, `dotfiles sync` and `dotfiles update`
+# can all call this, and two staging dirs racing for the atomic swap
+# would leave the rendered state half from each. Same mkdir lock as
+# update.sh (atomic, no flock on stock bash), with stale-pid detection.
 apply_theme() {
+    local lock="$DOTFILES_STATE_DIR/theme.lock" holder rc
+    mkdir -p "$DOTFILES_STATE_DIR"
+    if ! mkdir "$lock" 2>/dev/null; then
+        holder=$(cat "$lock/pid" 2>/dev/null || true)
+        if [[ -n "$holder" ]] && kill -0 "$holder" 2>/dev/null; then
+            echo "Error: another theme render is running (pid $holder); try again when it finishes" >&2
+            return 1
+        fi
+        _theme_warning "Removing stale theme lock (pid ${holder:-unknown} is gone)"
+        rm -rf "$lock"
+        mkdir "$lock"
+    fi
+    echo $$ > "$lock/pid"
+    rc=0
+    _apply_theme_locked "$@" || rc=$?
+    rm -rf "$lock"
+    return "$rc"
+}
+
+# shellcheck disable=SC2154  # theme.conf variables loaded dynamically
+_apply_theme_locked() {
     local THEME="$1"
     local QUIET="${2:-false}"  # pass "true" to suppress manual instructions
     local THEMES_DIR="$DOTFILES_DIR/themes/$THEME"

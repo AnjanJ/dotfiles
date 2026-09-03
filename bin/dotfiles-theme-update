@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+# dotfiles:summary=Pull the latest commits into themes installed with `dotfiles theme install`
+# dotfiles:args=[<name>] [--no-apply]
+#
+#   dotfiles theme update              # every cloned theme under ~/.config/dotfiles/themes/
+#   dotfiles theme update nord         # just one
+#   dotfiles theme update --no-apply   # pull, but do not re-render the active theme
+#
+# Fast-forward only: a theme you have edited locally is reported and left
+# alone (commit or discard your edits, then run again). When the active
+# theme moved, it is re-applied so the new colours reach every app; the
+# usual colour-data-only staging applies. Ported from omarchy-theme-update.
+set -euo pipefail
+
+DOTFILES_DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+source "$DOTFILES_DIR/scripts/_helpers.sh"
+source "$DOTFILES_DIR/scripts/theme-utils.sh"
+
+APPLY=true
+ONLY=""
+for arg in "$@"; do
+    case "$arg" in
+        --no-apply) APPLY=false ;;
+        -h|--help)
+            sed -n '4,12p' "$0" | sed 's/^# \{0,1\}//'
+            exit 0
+            ;;
+        -*)
+            echo "Unknown option: $arg (see --help)" >&2
+            exit 2
+            ;;
+        *) ONLY="$arg" ;;
+    esac
+done
+
+dirs=()
+if [[ -n "$ONLY" ]]; then
+    if [[ ! -e "$DOTFILES_USER_THEMES_DIR/$ONLY/.git" ]]; then
+        if [[ -f "$DOTFILES_DIR/themes/$ONLY/theme.conf" ]]; then
+            print_error "'$ONLY' ships with the repo; dotfiles update brings its changes"
+        else
+            print_error "No cloned theme '$ONLY' (dotfiles theme remove --list shows what is installed)"
+        fi
+        exit 1
+    fi
+    dirs+=("$DOTFILES_USER_THEMES_DIR/$ONLY")
+else
+    for d in "$DOTFILES_USER_THEMES_DIR"/*/; do
+        [[ -e "$d/.git" ]] || continue
+        dirs+=("${d%/}")
+    done
+fi
+
+if [[ ${#dirs[@]} -eq 0 ]]; then
+    echo "No cloned themes to update (dotfiles theme install <git-url> adds one)"
+    exit 0
+fi
+
+changed_active=false
+failed=0
+current="$(get_current_theme)"
+for dir in "${dirs[@]}"; do
+    name="$(basename "$dir")"
+    before="$(git -C "$dir" rev-parse --short HEAD 2>/dev/null || echo '?')"
+    if ! GIT_TERMINAL_PROMPT=0 git -C "$dir" pull --quiet --ff-only 2>"$TMPDIR/theme-update.err"; then
+        print_error "$name: not updated ($(tr '\n' ' ' < "$TMPDIR/theme-update.err" | sed 's/ *$//'))"
+        failed=$((failed + 1))
+        continue
+    fi
+    after="$(git -C "$dir" rev-parse --short HEAD 2>/dev/null || echo '?')"
+    if [[ "$before" == "$after" ]]; then
+        print_success "$name: up to date ($after)"
+    else
+        print_success "$name: $before → $after"
+        [[ "$name" == "$current" ]] && changed_active=true
+    fi
+done
+rm -f "$TMPDIR/theme-update.err"
+
+if [[ "$changed_active" == true ]]; then
+    if [[ "$APPLY" == true ]]; then
+        print_step "Active theme '$current' changed; re-applying"
+        bash "$DOTFILES_DIR/scripts/apply-theme.sh" "$current"
+    else
+        echo "Active theme '$current' changed; apply with: dotfiles theme $current"
+    fi
+fi
+[[ $failed -eq 0 ]]

@@ -173,7 +173,14 @@ pick() {
     labels="$(rows_for "$route" | cut -f1)"
     [[ -n "$labels" ]] || return 1
     if command -v fzf >/dev/null 2>&1 && [[ -z "${DOTFILES_MENU_NO_FZF:-}" ]]; then
-        printf '%s\n' "$labels" | fzf --prompt "dotfiles $SUB ${route} > " --height 40% --reverse --no-info || true
+        local preview=()
+        if [[ "$route" == "theme" ]]; then
+            # Swatches for the highlighted theme row; other rows show nothing
+            # shellcheck disable=SC2054  # the comma is inside the preview command string
+            preview=(--preview "case {} in *'Switch to '*) DOTFILES_PREVIEW_FORCE_COLOR=1 '$DOTFILES_DIR/bin/dotfiles-theme-preview' \"\$(printf %s {} | sed -E 's/^\* //; s/^Switch to ([^ ]+).*/\\1/')\";; esac"
+                     --preview-window right,45%)
+        fi
+        printf '%s\n' "$labels" | fzf --prompt "dotfiles $SUB ${route} > " --height 40% --reverse --no-info ${preview[@]+"${preview[@]}"} || true
     else
         local i=1 choice
         echo "dotfiles $SUB $route" >&2

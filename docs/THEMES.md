@@ -98,6 +98,8 @@ The choice is a symlink at `~/.local/state/dotfiles/current/background`. A theme
 dotfiles theme install https://github.com/someone/omarchy-nord-theme   # clone, then apply
 dotfiles theme remove nord                                             # undo (switch away first)
 dotfiles theme remove --list
+dotfiles theme update                                                  # fast-forward every cloned theme, re-apply if the active one moved
+dotfiles theme preview nord                                            # palette swatches (also the preview pane in `dotfiles menu theme`)
 ```
 
 The repo lands in `~/.config/dotfiles/themes/<name>/` (the name is the repo's, minus an `omarchy-`/`dotfiles-` prefix and a `-theme` suffix) and must carry a `colors.toml`; an Omarchy theme without a `theme.conf` gets a minimal one (editors keep their current theme, bat uses `ansi`). Themes you write by hand can live in the same directory and are treated exactly like the repo's own.

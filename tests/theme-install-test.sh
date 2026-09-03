@@ -26,7 +26,7 @@ cp -r "$ROOT/themes" "$MOCK/themes"
 for f in theme-utils.sh theme-render.sh theme-background.sh apply-theme.sh _helpers.sh; do
     cp "$ROOT/scripts/$f" "$MOCK/scripts/"
 done
-for b in dotfiles-theme-install dotfiles-theme-remove dotfiles-theme dotfiles-toggle dotfiles-hook; do
+for b in dotfiles-theme-install dotfiles-theme-remove dotfiles-theme-update dotfiles-theme dotfiles-toggle dotfiles-hook; do
     cp "$ROOT/bin/$b" "$MOCK/bin/"
 done
 mkdir -p "$MOCK/.config/ghostty" "$MOCK/.config/zellij" "$MOCK/.config/sketchybar" "$MOCK/.config/borders" "$MOCK/.config/zed"
@@ -202,4 +202,34 @@ assert_eq "$rc" "0" "remove --list under /bin/bash"
 set +e; DOTFILES_NO_APPEARANCE=1 DOTFILES_NO_BACKGROUND=1 /bin/bash "$MOCK/scripts/apply-theme.sh" inky >/dev/null 2>&1; rc=$?; set -e
 assert_eq "$rc" "0" "cloned theme applies under /bin/bash"
 assert_file_not_exists "$MARKER" "still nothing ran"
+echo ""
+
+section "Test 9: Update pulls cloned themes and re-applies the active one"
+UPDATE="$MOCK/bin/dotfiles-theme-update"
+echo "inky" > "$HOME/.dotfiles-theme"
+set +e; out=$("$UPDATE" 2>&1); rc=$?; set -e
+assert_eq "$rc" "0" "update with nothing new succeeds"
+assert_contains "$out" "inky: up to date" "reports an unchanged theme"
+before="$(git -C "$DOTFILES_USER_THEMES_DIR/inky" rev-parse --short HEAD)"
+sed -i '' 's/^background = .*/background = "#000011"/' "$REMOTE/colors.toml"
+git -C "$REMOTE" -c user.name=t -c user.email=t@t commit -qam "darker"
+set +e; out=$(DOTFILES_NO_APPEARANCE=1 DOTFILES_NO_BACKGROUND=1 "$UPDATE" 2>&1); rc=$?; set -e
+assert_eq "$rc" "0" "update pulls the new commit"
+assert_contains "$out" "inky: $before → " "reports old and new revision"
+assert_eq "$(git -C "$DOTFILES_USER_THEMES_DIR/inky" rev-parse --short HEAD)" "$(git -C "$REMOTE" rev-parse --short HEAD)" "clone is at the remote head"
+assert_contains "$out" "re-applying" "active theme is re-applied"
+assert_file_contains "$RENDERED/ghostty" "background = #000011" "new colours reached the rendered state"
+assert_file_not_exists "$MARKER" "still nothing ran"
+echo "local edit" >> "$DOTFILES_USER_THEMES_DIR/inky/theme.conf"
+git -C "$DOTFILES_USER_THEMES_DIR/inky" -c user.name=t -c user.email=t@t commit -qam "mine"
+sed -i '' 's/^background = .*/background = "#000022"/' "$REMOTE/colors.toml"
+git -C "$REMOTE" -c user.name=t -c user.email=t@t commit -qam "darker still"
+set +e; out=$("$UPDATE" --no-apply 2>&1); rc=$?; set -e
+assert_eq "$rc" "1" "a diverged clone fails the update"
+assert_contains "$out" "inky: not updated" "and is reported, not clobbered"
+set +e; out=$("$UPDATE" nope 2>&1); rc=$?; set -e
+assert_eq "$rc" "1" "unknown theme refused"
+set +e; out=$("$UPDATE" tokyo-night 2>&1); rc=$?; set -e
+assert_eq "$rc" "1" "repo theme refused"
+assert_contains "$out" "ships with the repo" "…pointing at dotfiles update"
 echo ""
