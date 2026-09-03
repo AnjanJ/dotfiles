@@ -93,6 +93,11 @@ else
     fail "launcher rule sits above the app-wide rules"
 fi
 assert_contains "$out" "workspace 5" "reports the placement"
+assert_contains "$(launch Gmail)" "list-windows --monitor all --app-bundle-id 'com.google.Chrome'" "launch script watches for the new Chrome window"
+assert_contains "$(launch Gmail)" "grep -E -- 'Gmail'" "launch script picks the window by title"
+assert_contains "$(launch Gmail)" "move-node-to-workspace --window-id \"\$win\" '5'" "launch script moves the window to workspace 5 by id"
+assert_not_contains "$(launch Gmail)" "layout floating" "no float without --float"
+assert_succeeds "launch script parses under /bin/bash 3.2" /bin/bash -n "$APPS/Gmail.app/Contents/MacOS/launch"
 echo ""
 
 section "Test 2: Reinstall replaces, never duplicates"
@@ -102,6 +107,8 @@ block=$(rule_block Gmail)
 assert_contains "$block" "run = ['layout floating', 'move-node-to-workspace 5']" "float and workspace in one rule"
 assert_contains "$block" "regex-substring = 'Inbox'" "--title-regex honoured"
 assert_contains "$(launch Gmail)" "--app='https://mail.google.com'" "schemeless URL got https"
+assert_contains "$(launch Gmail)" "layout floating --window-id \"\$win\"" "launch script floats the window by id"
+assert_contains "$(launch Gmail)" "grep -E -- 'Inbox'" "launch script uses the --title-regex"
 echo ""
 
 section "Test 3: No icon available is a warning, not a failure"
@@ -121,6 +128,7 @@ set +e; out=$("$INSTALL" Plain example.com --no-icon 2>&1); rc=$?; set -e
 assert_eq "$rc" "0" "install without --workspace/--float exits 0"
 assert_contains "$out" "No AeroSpace rule" "says no rule was written"
 assert_file_not_contains "$TOML" "dotfiles-webapp: Plain" "no rule block"
+assert_not_contains "$(launch Plain)" "AEROSPACE" "launch script has no placement step"
 echo ""
 
 section "Test 5: Validation"

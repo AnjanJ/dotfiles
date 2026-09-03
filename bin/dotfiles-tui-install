@@ -84,7 +84,8 @@ fi
 cmd_q="'${CMD//\'/\'\\\'\'}'"
 name_q="'${NAME//\'/\'\\\'\'}'"
 launcher_write_bundle "$NAME" tui "$CMD" \
-    "exec open -na Ghostty --args --title=$name_q -e /bin/zsh -lic $cmd_q" "$ICNS"
+    "open -na Ghostty --args --title=$name_q -e /bin/zsh -lic $cmd_q
+$(launcher_place_script com.mitchellh.ghostty "$TITLE_REGEX" "$FLOAT" "$WORKSPACE")" "$ICNS"
 [[ -n "$ICNS" ]] && rm -f "$ICNS" "${ICNS%.icns}"
 print_success "Launcher: $(launcher_bundle_path "$NAME")"
 
@@ -95,7 +96,7 @@ if [[ "$FLOAT" == true || -n "$WORKSPACE" ]]; then
     placement="tile"
     [[ "$FLOAT" == true ]] && placement="float"
     [[ -n "$WORKSPACE" ]] && placement="$placement → workspace $WORKSPACE"
-    print_success "AeroSpace rule: Ghostty windows titled /$TITLE_REGEX/ $placement"
+    print_success "Placement: Ghostty window titled /$TITLE_REGEX/ $placement (by the launcher, plus an AeroSpace rule)"
 else
     launcher_rule_remove tui "$NAME"
     print_success "No AeroSpace rule: tiles on the current workspace like any window"

@@ -280,6 +280,49 @@ launcher_rule_add() {
     ' "$AEROSPACE_CONFIG" > "$tmp" && mv "$tmp" "$AEROSPACE_CONFIG"
 }
 
+# launcher_place_script <app-bundle-id> <title regex> <float> <workspace>
+# Prints the shell that a launch script runs after `open` to place the
+# window it just created. AeroSpace evaluates [[on-window-detected]]
+# before Chrome or Ghostty has set the window title, so the title rule in
+# aerospace.toml usually misses a fresh --app window (checked live: the
+# GitHub launcher landed tiled under the app-wide Chrome rule). The
+# script instead waits for a window the app did not have before the
+# launch, prefers the one whose title matches, and places it by id.
+# Runs under /bin/bash 3.2 with the sparse LaunchServices PATH.
+launcher_place_script() {
+    local app_id="$1" regex="$2" float="$3" workspace="$4"
+    local re_q actions=""
+    re_q="'${regex//\'/\'\\\'\'}'"
+    [[ "$float" == true ]] && actions="$actions
+    \"\$AEROSPACE\" layout floating --window-id \"\$win\" >/dev/null 2>&1"
+    [[ -n "$workspace" ]] && actions="$actions
+    \"\$AEROSPACE\" move-node-to-workspace --window-id \"\$win\" '$workspace' >/dev/null 2>&1"
+    [[ -n "$actions" ]] || return 0
+    cat <<EOS
+# Place the new window: AeroSpace's on-window-detected runs before the
+# app sets its title, so the rule in aerospace.toml is only a fallback.
+AEROSPACE="\$(command -v aerospace 2>/dev/null || echo /opt/homebrew/bin/aerospace)"
+if [ -x "\$AEROSPACE" ]; then
+    _list() { "\$AEROSPACE" list-windows --monitor all --app-bundle-id '$app_id' --format '%{window-id}%{tab}%{window-title}' 2>/dev/null; }
+    before=\$(_list | cut -f1)
+    win="" new="" i=0
+    while [ "\$i" -lt 50 ]; do
+        sleep 0.2
+        i=\$((i + 1))
+        new=\$(_list | awk -F'\t' -v before="\$before" 'BEGIN { n = split(before, a, "\n"); for (k = 1; k <= n; k++) seen[a[k]] = 1 } !seen[\$1]')
+        win=\$(printf '%s\n' "\$new" | grep -E -- $re_q | head -1 | cut -f1)
+        [ -n "\$win" ] && break
+    done
+    # No title match: a single new window is still ours (title not set yet).
+    if [ -z "\$win" ] && [ "\$(printf '%s\n' "\$new" | grep -c .)" = 1 ]; then
+        win=\$(printf '%s\n' "\$new" | cut -f1)
+    fi
+    if [ -n "\$win" ]; then$actions
+    fi
+fi
+EOS
+}
+
 launcher_reload_aerospace() {
     bash "$DOTFILES_DIR/bin/dotfiles-restart" aerospace >/dev/null 2>&1 || true
 }

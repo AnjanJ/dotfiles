@@ -84,6 +84,9 @@ assert_contains "$block" "if.app-id = 'com.mitchellh.ghostty'" "rule matches Gho
 assert_contains "$block" "regex-substring = 'lazygit'" "rule matches the title"
 assert_contains "$block" "run = ['layout floating']" "floats by default"
 assert_contains "$out" "float" "reports the placement"
+assert_contains "$(launch lazygit)" "list-windows --monitor all --app-bundle-id 'com.mitchellh.ghostty'" "launch script watches for the new Ghostty window"
+assert_contains "$(launch lazygit)" "layout floating --window-id \"\$win\"" "launch script floats the window by id"
+assert_succeeds "launch script parses under /bin/bash 3.2" /bin/bash -n "$APPS/lazygit.app/Contents/MacOS/launch"
 echo ""
 
 section "Test 2: Options"
@@ -91,6 +94,7 @@ FIXTURE_ICON="$FIXTURE" "$INSTALL" "System Monitor" "btop --utf-force" --workspa
 assert_contains "$(launch 'System Monitor')" "--title='System Monitor' -e /bin/zsh -lic 'btop --utf-force'" "name and command quoted for the shell"
 assert_eq "$(plist 'System Monitor' CFBundleIdentifier)" "com.dotfiles.tui.system-monitor" "slug for a name with a space"
 assert_contains "$(rule_block 'System Monitor')" "run = ['layout floating', 'move-node-to-workspace 6']" "float plus workspace"
+assert_contains "$(launch 'System Monitor')" "move-node-to-workspace --window-id \"\$win\" '6'" "launch script moves the window to workspace 6 by id"
 if [[ "$(stat -f %z "$APPS/System Monitor.app/Contents/Resources/icon.icns")" -gt 1000 ]]; then
     pass "--icon URL converted to a real icns"
 else

@@ -76,7 +76,8 @@ fi
 # refused above by the whitespace/scheme check only, so escape anyway.
 url_q="'${URL//\'/\'\\\'\'}'"
 launcher_write_bundle "$NAME" webapp "$URL" \
-    "exec open -na \"Google Chrome\" --args --app=$url_q" "$ICNS"
+    "open -na \"Google Chrome\" --args --app=$url_q
+$(launcher_place_script com.google.Chrome "$TITLE_REGEX" "$FLOAT" "$WORKSPACE")" "$ICNS"
 [[ -n "$ICNS" ]] && rm -f "$ICNS" "${ICNS%.icns}"
 print_success "Launcher: $(launcher_bundle_path "$NAME")"
 
@@ -87,7 +88,7 @@ if [[ "$FLOAT" == true || -n "$WORKSPACE" ]]; then
     placement=""
     [[ "$FLOAT" == true ]] && placement=" float"
     [[ -n "$WORKSPACE" ]] && placement="$placement → workspace $WORKSPACE"
-    print_success "AeroSpace rule: Chrome windows titled /$TITLE_REGEX/$placement"
+    print_success "Placement: Chrome window titled /$TITLE_REGEX/$placement (by the launcher, plus an AeroSpace rule)"
 else
     launcher_rule_remove webapp "$NAME"
     print_success "No AeroSpace rule (pass --workspace N and/or --float to place it)"
