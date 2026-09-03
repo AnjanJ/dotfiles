@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Runs after `dotfiles theme <name>`; $1 is the theme name.
+# Rename to notify.sh (or anything without .sample) to enable.
+# A macOS notification is the least surprising thing to do here; a
+# more useful hook retints an app the pipeline does not know about,
+# reading colours from ~/.local/state/dotfiles/current/theme/colors.toml.
+if command -v terminal-notifier >/dev/null 2>&1; then
+    terminal-notifier -title "dotfiles" -message "Theme set to $1" >/dev/null
+else
+    osascript -e "display notification \"Theme set to $1\" with title \"dotfiles\""
+fi

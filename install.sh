@@ -687,6 +687,10 @@ dotfiles_for_each_link create_symlink
 
 print_success "All symlinks processed"
 
+# Sample hooks go into the user's hook directory once; they stay inert
+# until renamed without .sample (see hooks/README.md)
+bash "$DOTFILES_DIR/bin/dotfiles-hook" --seed
+
 # ============================================
 # 5. APPLY SELECTED THEME
 # ============================================
@@ -903,6 +907,10 @@ if bash "$DOTFILES_DIR/scripts/health-check.sh"; then
 else
     print_warning "Health check reported issues (listed above) — install continues"
 fi
+
+# The one event a fresh machine fires: whatever the repo cannot ship
+# (sign-ins, private clones) lives in the user's post-install hooks
+bash "$DOTFILES_DIR/bin/dotfiles-hook" post-install
 
 # ============================================
 # INSTALLATION COMPLETE

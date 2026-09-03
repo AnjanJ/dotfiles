@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Runs at the end of `dotfiles update` (after packages, migrations and
+# restarts). Rename without .sample to enable.
+if command -v terminal-notifier >/dev/null 2>&1; then
+    terminal-notifier -title "dotfiles" -message "Update finished" >/dev/null
+else
+    osascript -e 'display notification "Update finished" with title "dotfiles"'
+fi

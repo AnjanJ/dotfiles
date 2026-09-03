@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Runs after `dotfiles sync` (pull, relink, migrate, re-theme).
+# Rename without .sample to enable. Keeps a line per sync so "when did
+# this machine last catch up?" has an answer.
+mkdir -p "$HOME/.local/state/dotfiles"
+echo "$(date '+%Y-%m-%d %H:%M:%S') sync $(git -C "$(dotfiles dir)" rev-parse --short HEAD 2>/dev/null)" >> "$HOME/.local/state/dotfiles/sync.log"

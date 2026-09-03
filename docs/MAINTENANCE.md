@@ -99,7 +99,7 @@ dotfiles install --force            # Force reinstall everything
 
 **Migrations** are one-off, idempotent repairs for changes a relink cannot express: a symlink that moved, a generated file that changed location, a stale config to remove. They live in `migrations/<unix-ts>-<slug>.sh`, run in order during `dotfiles sync` and `dotfiles update` with `DOTFILES_DIR` exported, and are marked done per machine in `~/.local/state/dotfiles/migrations/`. A failing migration stays pending and is retried next time; `dotfiles health` warns when any are pending. Create one with `dotfiles migrate --new <slug>`.
 
-**Hooks** let you attach your own scripts to events without editing the repo. Put executable scripts in `~/.config/dotfiles/hooks/<event>.d/` (or a single `~/.config/dotfiles/hooks/<event>` file). Events: `theme-set <theme>` after a theme switch, `post-sync`, `post-update`. A failing hook is reported and never stops the caller.
+**Hooks** let you attach your own scripts to events without editing the repo. Put executable scripts in `~/.config/dotfiles/hooks/<event>.d/` (or a single `~/.config/dotfiles/hooks/<event>` file). Events: `theme-set <theme>` after a theme switch, `post-sync`, `post-update`, `post-install` (once, at the end of `install.sh`). A failing hook is reported and never stops the caller. The repo's `hooks/<event>.d/*.sample` files are seeded into that directory by install and doctor and stay inert until renamed without `.sample`; `dotfiles hook --list` shows what is installed and `dotfiles hook install <event> <file>` adds your own.
 
 ## Unattended installs
 
@@ -107,7 +107,7 @@ dotfiles install --force            # Force reinstall everything
 
 ## Testing
 
-Every push and PR runs 30 test suites, an end-to-end install, shellcheck, `dotfiles commands --check` and `dotfiles keys --check` via GitHub Actions. The suites are discovered from `tests/*-test.sh`, so a new file is in CI the moment it exists:
+Every push and PR runs 31 test suites, an end-to-end install, shellcheck, `dotfiles commands --check` and `dotfiles keys --check` via GitHub Actions. The suites are discovered from `tests/*-test.sh`, so a new file is in CI the moment it exists:
 
 - **Shellcheck** — lints all shell scripts
 - **Idempotency** (`idempotency`) — install/setup can run repeatedly with identical results (sandboxed)
@@ -124,6 +124,7 @@ Every push and PR runs 30 test suites, an end-to-end install, shellcheck, `dotfi
 - **Theme backgrounds** (`theme-bg`) — generated palette gradient, candidate order and cycling, `dotfiles theme bg` verbs, desktoppr/osascript setters, the toggle, set-on-switch-only from apply-theme
 - **Reminder** (`reminder`) — `dotfiles reminder`: the launchd agent plist, scheduling via a launchctl stub, show/clear, the `--fire` path (notification, self-removal, unload), validation
 - **Menu** (`menu`) — `dotfiles menu`: rows per route, active theme and toggle state, launcher rows from installed bundles, the commands route, `--run`, prompt rows, the numbered fallback picker
+- **Hooks** (`hook`) — sample hooks per event, `--seed` never overwriting, samples inert, `--list`, `dotfiles hook install`, every fired event known and sampled, `/bin/bash` 3.2
 - **Install answers** (`install-answers`) — `scripts/install-answers.sh`: every key, flag/env precedence, arrays and booleans, unknown-key warnings, missing and invalid files, install.sh's `--answers` / `DOTFILES_ANSWERS` / `~/.dotfiles-answers.json` handling
 - **Theme install** (`theme-install`) — `dotfiles theme install/remove/update` against a local git "remote": URL and name validation, the user themes dir, staging only colour data from a cloned theme (dropped code and symlinks named, theme.conf parsed not sourced, nvim fallback), hand-written user themes trusted, reinstall, palette-only repos
 - **Theme renderer** (`theme-render`) — token forms, colour maths, derived keys, error exits

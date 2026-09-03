@@ -116,6 +116,22 @@ for dir in ~/.config/zed/snippets ~/.config/mise; do
     fi
 done
 
+# ── 2b. Sample hooks ─────────────────────────
+# Copies only what is absent, so a user's edits and deletions stand
+_hooks_dir="${DOTFILES_HOOKS_DIR:-$HOME/.config/dotfiles/hooks}"
+_missing_samples=0
+for _sample in "$DOTFILES_DIR"/hooks/*.d/*.sample; do
+    [[ -f "$_sample" ]] || continue
+    _dest="$_hooks_dir/$(basename "$(dirname "$_sample")")/$(basename "$_sample")"
+    [[ -e "$_dest" || -e "${_dest%.sample}" ]] || _missing_samples=$((_missing_samples + 1))
+done
+if [[ $_missing_samples -eq 0 ]]; then
+    _ok "Sample hooks present in $_hooks_dir"
+else
+    [[ "$DRY_RUN" == false ]] && bash "$DOTFILES_DIR/bin/dotfiles-hook" --seed >/dev/null
+    _fix "Seeded $_missing_samples sample hook(s) into $_hooks_dir"
+fi
+
 # ── 3. Check mise trust ──────────────────────
 echo ""
 print_step "Checking mise..."

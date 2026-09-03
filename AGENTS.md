@@ -13,6 +13,7 @@ Guidance for anyone changing the dotfiles source, human or agent. End-user help 
 | `bin/dotfiles-*` | One command per file. |
 | `migrations/<unix-ts>-<slug>.sh` | One-off, idempotent per-machine repairs run by sync/update. |
 | `themes/` | `_templates/` plus one directory per theme. |
+| `hooks/` | Sample user hooks, one `<event>.d/<name>.sample` per event; `dotfiles hook --seed` copies them to `~/.config/dotfiles/hooks/` without overwriting. Fire a new event with `bash "$DOTFILES_DIR/bin/dotfiles-hook" <event>` and list it in `bin/dotfiles-hook`'s header. |
 | `tests/*-test.sh`, `tests/base-test.sh`, `tests/run` | One suite per area on the shared contract, discovered by the runner and by CI. `tests/e2e/` holds the real install run. |
 | `docs/` | Reference for users. `docs/KEYBINDINGS.md` has a generated block. |
 

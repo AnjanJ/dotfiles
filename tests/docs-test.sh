@@ -104,7 +104,7 @@ section "hook events"
 
 # Events fired by the code must be the events the skill and the hook
 # command's own help advertise.
-fired=$(/usr/bin/grep -rhoE 'dotfiles[-_ ]hook"? [a-z-]+' bin scripts install.sh update.sh | awk '{print $NF}' | sort -u)
+fired=$(/usr/bin/grep -rhoE 'dotfiles[-_ ]hook"? [a-z][a-z-]*' bin scripts install.sh update.sh | awk '{print $NF}' | sort -u)
 for event in $fired; do
     /usr/bin/grep -q "$event" agents/skills/dotfiles/commands.md || fail "skill documents every hook event" "$event is fired but undocumented"
     /usr/bin/grep -q "$event" bin/dotfiles-hook || fail "dotfiles hook --help lists every event" "$event is fired but not in the help"

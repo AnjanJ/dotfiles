@@ -26,7 +26,8 @@
 | `dotfiles restart <aerospace\|sketchybar\|borders>` | reload/relaunch one component now; `--later <c>` marks it for the end of the next update or sync; `--pending` consumes markers | safe |
 | `dotfiles export [--json]` | portable summary of this machine's setup (tools, runtimes, theme) for reproducing it elsewhere | yes |
 | `dotfiles default agent [name] [--command]` | show or set which CLI the `a` shell function launches | showing: yes; setting: when asked |
-| `dotfiles hook <event> [args]` | run the user's hooks for an event by hand (see Hooks below) | yes |
+| `dotfiles hook <event> [args]` / `--list` / `--seed` | run the user's hooks for an event by hand; list what is installed; copy the repo's sample hooks into place (see Hooks below) | yes |
+| `dotfiles hook install <event> <file>` | copy a script into `~/.config/dotfiles/hooks/<event>.d/` and make it executable | when asked |
 | `dotfiles cleanup [--force]` | remove Homebrew packages that are not in the Brewfile | **ask first** |
 | `dotfiles install` | full installer (idempotent, but slow and sudo) | **ask first** |
 | `dotfiles uninstall` | remove every managed symlink | **ask first** |
@@ -56,7 +57,10 @@ User scripts that run on events, outside the repo so updates never touch them:
 ~/.config/dotfiles/hooks/theme-set.d/*      after `dotfiles theme` ($1 = theme name)
 ~/.config/dotfiles/hooks/post-sync.d/*      after `dotfiles sync`
 ~/.config/dotfiles/hooks/post-update.d/*    after `dotfiles update`
+~/.config/dotfiles/hooks/post-install.d/*   once, at the end of install.sh
 ```
+
+`dotfiles hook --list` shows what is installed per event; `dotfiles hook install <event> <file>` copies a script in and makes it executable. Each event directory holds a `*.sample` from the repo's `hooks/` (seeded by install and doctor, inert until renamed without `.sample`).
 
 A single file `~/.config/dotfiles/hooks/<event>` also works. Failing hooks are reported and do not stop the caller. Use hooks for wallpaper changes, pushing the Slack colour string to the clipboard, restarting an app, anything the repo does not automate.
 

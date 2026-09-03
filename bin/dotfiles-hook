@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # dotfiles:summary=Run user hooks for an event (~/.config/dotfiles/hooks/)
-# dotfiles:args=<event> [args...]
+# dotfiles:args=<event> [args...] | --list | --seed
 set -euo pipefail
 # Run user hooks for an event — can be run from anywhere
 # Usage: dotfiles-hook <event> [args...]
@@ -13,20 +13,68 @@ set -euo pipefail
 #   theme-set <theme>     after `dotfiles theme` finishes
 #   post-sync             after `dotfiles sync`
 #   post-update           after `dotfiles update`
+#   post-install          once, at the end of install.sh
 #
 # A failing hook is reported and does not stop the caller.
+#
+#   dotfiles hook --list    what is installed per event (samples marked)
+#   dotfiles hook --seed    copy the repo's hooks/<event>.d/*.sample files
+#                           into place, never overwriting (install and
+#                           doctor do this); drop the .sample to enable
+#   dotfiles hook install <event> <file>   add a script of your own
 
 if [[ -z "${1:-}" || "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
-    echo "Usage: dotfiles-hook <event> [args...]"
+    echo "Usage: dotfiles hook <event> [args...] | --list | --seed"
+    echo "       dotfiles hook install <event> <file>"
     echo ""
     echo "Runs ~/.config/dotfiles/hooks/<event> and ~/.config/dotfiles/hooks/<event>.d/*"
-    echo "Events: theme-set <theme>, post-sync, post-update"
+    echo "Events: theme-set <theme>, post-sync, post-update, post-install"
+    echo "--list shows what is installed; --seed copies the sample hooks into place"
+    exit 0
+fi
+
+HOOKS_DIR="${DOTFILES_HOOKS_DIR:-$HOME/.config/dotfiles/hooks}"
+DOTFILES_DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+KNOWN_EVENTS="theme-set post-sync post-update post-install"
+
+if [[ "$1" == "--seed" ]]; then
+    # Samples are user files once copied: never overwrite, and a removed
+    # sample stays removed (the user may have deleted it on purpose).
+    seeded=0
+    for sample in "$DOTFILES_DIR"/hooks/*.d/*.sample; do
+        [[ -f "$sample" ]] || continue
+        dest="$HOOKS_DIR/$(basename "$(dirname "$sample")")/$(basename "$sample")"
+        [[ -e "$dest" || -e "${dest%.sample}" ]] && continue
+        mkdir -p "$(dirname "$dest")"
+        cp "$sample" "$dest"
+        chmod 755 "$dest"
+        seeded=$((seeded + 1))
+    done
+    echo "Seeded $seeded sample hook(s) into $HOOKS_DIR (rename without .sample to enable)"
+    exit 0
+fi
+
+if [[ "$1" == "--list" ]]; then
+    for event in $KNOWN_EVENTS; do
+        echo "$event:"
+        found=false
+        [[ -f "$HOOKS_DIR/$event" ]] && { echo "  $HOOKS_DIR/$event"; found=true; }
+        for hook in "$HOOKS_DIR/$event.d"/*; do
+            [[ -f "$hook" ]] || continue
+            found=true
+            if [[ "$hook" == *.sample ]]; then
+                echo "  $hook (sample, inactive)"
+            else
+                echo "  $hook"
+            fi
+        done
+        [[ "$found" == true ]] || echo "  (none)"
+    done
     exit 0
 fi
 
 EVENT="$1"
 shift
-HOOKS_DIR="${DOTFILES_HOOKS_DIR:-$HOME/.config/dotfiles/hooks}"
 HOOK_FILE="$HOOKS_DIR/$EVENT"
 HOOK_DIR="$HOOK_FILE.d"
 

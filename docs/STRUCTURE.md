@@ -16,6 +16,7 @@ dotfiles/
 ├── .zshrc-work-completions     # Work command tab-completion
 ├── .gitignore_global           # Global git ignores
 ├── .rubocop.yml                # Global RuboCop config (fallback for standalone Ruby files)
+├── hooks/                      # Sample hooks per event (<event>.d/*.sample), seeded into ~/.config/dotfiles/hooks/
 ├── .config/
 │   ├── aerospace/              # Window manager: layouts, keybindings
 │   ├── ghostty/                # Terminal: theme, fonts
@@ -56,7 +57,7 @@ dotfiles/
 ├── tests/
 │   ├── base-test.sh            # Shared contract: temp HOME, TAP pass/fail, assert_* helpers
 │   ├── run                     # Runs tests/*-test.sh, keeps going past a failing file
-│   ├── <area>-test.sh          # 30 suites, one per area, discovered by name
+│   ├── <area>-test.sh          # 31 suites, one per area, discovered by name
 │   └── e2e/install-e2e.sh      # Real install.sh into a fresh HOME (CI job, not a suite)
 ├── .github/workflows/test.yml  # CI: shellcheck + discovered suites + end-to-end install
 └── docs/                       # This documentation

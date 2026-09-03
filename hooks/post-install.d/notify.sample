@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Runs once at the end of install.sh, after the health check. Rename
+# without .sample to enable. The place for anything a fresh machine
+# needs that the repo cannot ship: signing into an app, opening a
+# checklist, cloning private repos with `dotfiles repos clone`.
+if command -v terminal-notifier >/dev/null 2>&1; then
+    terminal-notifier -title "dotfiles" -message "Install finished; run dotfiles health any time" >/dev/null
+else
+    osascript -e 'display notification "Install finished" with title "dotfiles"'
+fi
