@@ -218,6 +218,8 @@ Effects: theme switches no longer dirty the repo, `snapshot: system state` noise
 
 **9. Menu extensions.** `~/.config/dotfiles/menu.d/*.tsv` with `label<TAB>command` rows, a slash in the label nesting under a submenu, merged into `dotfiles menu --list` after the built-in tree; reusing a built-in label overrides that row, as `omarchy-menu.jsonc` does. Small.
 
+> **Item 10 done (2026-09-03):** section 13 of `.zshrc-terminal-enhancements` adds `gwa <branch>` / `gwr` (worktree beside the repo as `<repo>--<branch>`, `mise trust`, confirm before removal; `ga`/`gd` stay git add/diff), `compress` / `decompress`, and `fip` / `dip` / `lip` SSH port forwards, documented in `QUICK_REFERENCE.md` and covered by `tests/shell-test.sh`, which runs them under zsh against stubs.
+
 **10. Shell functions worth porting.** From `default/bash/fns/`: `ga <branch>` and `gd` for git worktrees next to the repo with `mise trust` (this repo's Rails and Phoenix work is where worktrees pay off), `compress`/`decompress`, and `fip`/`dip`/`lip` SSH port forwards. Into `.zshrc-terminal-enhancements` with a mention in `docs/DAILY_WORKFLOWS.md`. Skip the tmux dev layouts (Zellij layouts exist) and the rsync watchers. Small.
 
 **11. Ambitious, only with appetite.** An `agents` sketchybar item fed by a port of `bin/omarchy-agent-usage-claude` (python3, reads `~/.claude/projects/*.jsonl` and the OAuth usage endpoint, caches JSON under `~/.cache/dotfiles`). A crash watcher as a launchd agent with `WatchPaths` on `~/Library/Logs/DiagnosticReports`, posting a notification whose click runs `a` with a diagnose prompt, behind `dotfiles toggle crash-capture`. Each is medium to large.

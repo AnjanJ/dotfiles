@@ -20,6 +20,7 @@
 # 10. Helpful Aliases (vif, cdf, lg, lzd, etc.)
 # 11. zsh enhancements (autosuggestions + syntax highlighting)
 # 12. AI/LLM shell tooling (llm, ollama, gh-copilot)
+# 13. Worktrees, archives, SSH port forwards (gwa, gwr, compress, fip)
 #
 # ============================================
 
@@ -259,6 +260,85 @@ if command -v llm > /dev/null; then
         echo "$last_cmd" | llm "Explain this shell command in plain English"
     }
 fi
+
+# ============================================
+# 13. WORKTREES, ARCHIVES, SSH PORT FORWARDS
+# ============================================
+# Ported from Omarchy's shell functions (default/bash/fns). `ga`/`gd`
+# stay git add/diff here, so the worktree pair is gwa/gwr.
+
+# gwa <branch>: new worktree and branch beside this repo, trusted by
+# mise (the .mise.toml is the same file, but trust is per path), then
+# cd into it. Sibling directory: <repo>--<branch>.
+gwa() {
+  if [[ -z "$1" ]]; then
+    echo "Usage: gwa <branch>" >&2
+    return 1
+  fi
+  local root branch="$1" wt_path
+  root="$(git rev-parse --show-toplevel 2>/dev/null)" || { echo "Not in a git repository" >&2; return 1; }
+  wt_path="$(dirname "$root")/$(basename "$root")--${branch//\//-}"
+  git worktree add -b "$branch" "$wt_path" || return 1
+  command -v mise >/dev/null 2>&1 && mise trust "$wt_path" >/dev/null 2>&1
+  cd "$wt_path" || return 1
+}
+
+# gwr: remove the worktree you are standing in (made by gwa) and its
+# branch, after a confirmation. Refuses anything not named <repo>--<branch>.
+gwr() {
+  local cwd worktree root branch
+  cwd="$(git rev-parse --show-toplevel 2>/dev/null)" || { echo "Not in a git repository" >&2; return 1; }
+  worktree="$(basename "$cwd")"
+  root="${worktree%%--*}"
+  branch="${worktree#*--}"
+  if [[ "$root" == "$worktree" ]]; then
+    echo "$worktree is not a gwa worktree (<repo>--<branch>)" >&2
+    return 1
+  fi
+  if [[ -z "${GWR_YES:-}" ]]; then
+    read -q "REPLY?Remove worktree $worktree and branch $branch? [y/N] " || { echo; return 1; }
+    echo
+  fi
+  cd "$(dirname "$cwd")/$root" || return 1
+  git worktree remove "$cwd" --force || return 1
+  git branch -D "$branch"
+}
+
+# compress <file-or-dir> -> <name>.tar.gz next to it; decompress <archive>
+compress() {
+  [[ -n "$1" ]] || { echo "Usage: compress <file-or-dir>" >&2; return 1; }
+  tar -czf "${1%/}.tar.gz" "${1%/}" && echo "${1%/}.tar.gz"
+}
+decompress() {
+  [[ -n "$1" ]] || { echo "Usage: decompress <archive.tar.gz>" >&2; return 1; }
+  tar -xzf "$1"
+}
+
+# SSH port forwards, so a dev server on a remote box answers on
+# localhost (secure-context privileges included):
+#   fip nyc-dev 3000 5432    forward ports; dip 3000 stop one; lip list them
+fip() {
+  (( $# >= 2 )) || { echo "Usage: fip <host> <port> [port...]" >&2; return 1; }
+  local host="$1" port
+  shift
+  for port in "$@"; do
+    ssh -f -N -L "${port}:localhost:${port}" "$host" && echo "Forwarding localhost:$port -> $host:$port"
+  done
+}
+dip() {
+  (( $# >= 1 )) || { echo "Usage: dip <port> [port...]" >&2; return 1; }
+  local port
+  for port in "$@"; do
+    if pkill -f "ssh.*-L ${port}:localhost:${port}"; then
+      echo "Stopped forwarding port $port"
+    else
+      echo "No forwarding on port $port"
+    fi
+  done
+}
+lip() {
+  pgrep -fl "ssh.*-L [0-9]+:localhost:[0-9]+" || echo "No active forwards"
+}
 
 # ============================================
 # END OF TERMINAL ENHANCEMENTS

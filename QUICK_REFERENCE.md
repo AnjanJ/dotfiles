@@ -231,6 +231,13 @@ ssh -T git@github.com
 ## 🛠️ Common Tasks
 
 ### Git Workflow
+
+```bash
+gwa feature-x          # worktree + branch beside the repo (<repo>--feature-x), mise-trusted, cd into it
+gwr                    # remove the worktree you are in and its branch (asks first)
+compress dir           # dir.tar.gz          decompress dir.tar.gz
+fip nyc-dev 3000       # localhost:3000 -> nyc-dev:3000 over SSH; dip 3000 stops it; lip lists forwards
+```
 ```bash
 # Stage and commit
 lazygit  # or 'lg' alias
