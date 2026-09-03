@@ -107,7 +107,7 @@ dotfiles install --force            # Force reinstall everything
 
 ## Testing
 
-Every push and PR runs 29 test suites, an end-to-end install, shellcheck, `dotfiles commands --check` and `dotfiles keys --check` via GitHub Actions. The suites are discovered from `tests/*-test.sh`, so a new file is in CI the moment it exists:
+Every push and PR runs 30 test suites, an end-to-end install, shellcheck, `dotfiles commands --check` and `dotfiles keys --check` via GitHub Actions. The suites are discovered from `tests/*-test.sh`, so a new file is in CI the moment it exists:
 
 - **Shellcheck** — lints all shell scripts
 - **Idempotency** (`idempotency`) — install/setup can run repeatedly with identical results (sandboxed)
@@ -131,6 +131,7 @@ Every push and PR runs 29 test suites, an end-to-end install, shellcheck, `dotfi
 - **Toggles** (`toggle`) — flag files, `--enabled` exit codes, listing
 - **Keys** (`keys`) — aerospace.toml parsing, `# desc:` overrides, markdown, `--update`/`--check`
 - **Agent** (`agent`) — default-agent state, launch commands, skill files present
+- **Debug** (`debug`) — `dotfiles debug`: every section of the report, link states, the written file and clipboard copy, `--print`, `--no-copy`
 - **Doctor** (`doctor`) — auto-fix symlinks, permissions, dry-run mode
 - **Git setup** (`setup-git`) — identity configuration, work/personal split, smart defaults
 - **Backup** (`backup`) — create, list, restore, prune cycle

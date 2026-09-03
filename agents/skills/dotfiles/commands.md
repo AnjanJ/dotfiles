@@ -4,6 +4,7 @@
 
 | Command | Does | Safe to run unasked |
 |---------|------|---------------------|
+| `dotfiles debug --print` | one read-only report: versions, repo revision and dirt, theme, toggles, pending migrations/restarts/updates, every managed link's state, the full health check, the last update transcript. **Run this first when something is wrong.** Without `--print` it writes `~/.local/state/dotfiles/debug.log` and copies it to the clipboard | yes |
 | `dotfiles health` | 130+ read-only checks: tools, symlinks, runtimes, services, theme assets, pending migrations | yes |
 | `dotfiles sync` | `git pull`, relink from the symlink map, run pending migrations, re-render the theme, fire `post-sync` hooks | yes |
 | `dotfiles doctor [--dry-run]` | fix broken symlinks, `~/.ssh` permissions, missing mise runtimes | `--dry-run` yes; fixing: ask |
@@ -65,6 +66,7 @@ A single file `~/.config/dotfiles/hooks/<event>` also works. Failing hooks are r
 
 ## Diagnosing problems
 
+0. `dotfiles debug --print` — everything below in one report; read it before poking at files.
 1. `dotfiles health` — read the ✗ lines.
 2. `dotfiles doctor --dry-run` — see what it would fix, then run it without the flag if that is what the user wants.
 3. `dotfiles update available` — commits behind origin, outdated packages, pending migrations and restarts in one place; a pending migration means the repo moved ahead of this machine.

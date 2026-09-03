@@ -77,10 +77,21 @@ DOTFILES_LINK_DIRS=(
     ".config/zed/snippets:$HOME/.config/zed/snippets"
 )
 
+# Links made only when the agent that reads them is set up on this
+# machine (its config directory, the target's grandparent, exists), so a
+# machine without Codex never grows a ~/.codex. The Claude link above is
+# unconditional because Claude Code is this repo's default agent.
+DOTFILES_OPTIONAL_LINKS=(
+    "agents/skills/dotfiles:$HOME/.agents/skills/dotfiles"
+    "agents/skills/dotfiles:$HOME/.codex/skills/dotfiles"
+    "agents/skills/dotfiles:$HOME/.gemini/config/skills/dotfiles"
+)
+
 # dotfiles_for_each_link <callback>
 #
 # Invokes: <callback> <absolute source> <absolute target> <display name>
-# once per managed link whose source exists in the repo. Pure iteration —
+# once per managed link whose source exists in the repo (and, for the
+# optional links, whose agent directory exists). Pure iteration —
 # no mkdir/ln side effects here, so checkers can use it without mutating
 # anything; fixer callbacks create parent directories themselves.
 dotfiles_for_each_link() {
@@ -91,6 +102,14 @@ dotfiles_for_each_link() {
         _dst="${_entry#*:}"
         [ -e "$_src" ] || continue
         "$_cb" "$_src" "$_dst" "$_name"
+    done
+    for _entry in "${DOTFILES_OPTIONAL_LINKS[@]}"; do
+        _name="${_entry%%:*}"
+        _src="$DOTFILES_DIR/$_name"
+        _dst="${_entry#*:}"
+        [ -e "$_src" ] || continue
+        [ -d "$(dirname "$(dirname "$_dst")")" ] || continue
+        "$_cb" "$_src" "$_dst" "$_name -> ${_dst#"$HOME"/}"
     done
     for _entry in "${DOTFILES_LINK_DIRS[@]}"; do
         _dir="${_entry%%:*}"

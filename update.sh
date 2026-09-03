@@ -122,7 +122,8 @@ _update_exit() {
     fi
     if [[ $rc -ne 0 && "$CANCELLED" != true ]]; then
         print_error "Update failed (exit $rc). Transcript: $UPDATE_LOG"
-        echo "  Run \`dotfiles health\` for the current state, then \`dotfiles update\` again."
+        echo "  Run \`dotfiles debug\` for a report to paste into an issue or hand to an agent,"
+        echo "  \`dotfiles health\` for the current state, then \`dotfiles update\` again."
     fi
     exit "$rc"
 }

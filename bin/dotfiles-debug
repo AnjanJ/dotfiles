@@ -1,0 +1,150 @@
+#!/usr/bin/env bash
+# dotfiles:summary=One report of this machine's dotfiles state to paste into an issue or hand to an agent
+# dotfiles:args=[--print] [--no-copy]
+#
+#   dotfiles debug            # write ~/.local/state/dotfiles/debug.log and copy it to the clipboard
+#   dotfiles debug --print    # print to stdout instead (what an agent runs)
+#   dotfiles debug --no-copy  # write the file, leave the clipboard alone
+#
+# Versions, the repo's revision and dirt, the active theme and toggles,
+# what is waiting (migrations, restarts, updates), every managed link's
+# state, the full health check, and the tail of the last update
+# transcript. Read-only, no network. Ported from omarchy-debug.
+set -euo pipefail
+
+DOTFILES_DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+STATE_DIR="${DOTFILES_STATE_DIR:-$HOME/.local/state/dotfiles}"
+source "$DOTFILES_DIR/scripts/theme-utils.sh"
+source "$DOTFILES_DIR/scripts/symlink-map.sh"
+
+PRINT=false
+COPY=true
+for arg in "$@"; do
+    case "$arg" in
+        --print) PRINT=true ;;
+        --no-copy) COPY=false ;;
+        -h|--help)
+            sed -n '4,12p' "$0" | sed 's/^# \{0,1\}//'
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $arg (see --help)" >&2
+            exit 2
+            ;;
+    esac
+done
+
+heading() {
+    printf '\n=== %s ===\n' "$1"
+}
+
+version_of() {
+    # first line of `<cmd> --version`, or "not installed"
+    if command -v "$1" >/dev/null 2>&1; then
+        "$1" --version 2>&1 | head -1
+    else
+        echo "not installed"
+    fi
+}
+
+link_state() {
+    # callback for dotfiles_for_each_link
+    local src="$1" dst="$2" name="$3" state
+    if [[ -L "$dst" ]]; then
+        if [[ "$(readlink "$dst")" == "$src" ]]; then
+            state="ok"
+        elif [[ ! -e "$dst" ]]; then
+            state="DANGLING -> $(readlink "$dst")"
+        else
+            state="ELSEWHERE -> $(readlink "$dst")"
+        fi
+    elif [[ -e "$dst" ]]; then
+        state="REAL FILE (not linked)"
+    else
+        state="MISSING"
+    fi
+    printf '  %-48s %s\n' "$name" "$state"
+}
+
+report() {
+    echo "dotfiles debug $(date '+%Y-%m-%d %H:%M:%S')"
+    heading "Machine"
+    echo "  host:      $(hostname -s 2>/dev/null || hostname)"
+    echo "  macOS:     $(sw_vers -productVersion 2>/dev/null || echo unknown) ($(uname -m))"
+    echo "  shell:     $(version_of zsh)"
+    echo "  bash:      $(bash --version 2>&1 | head -1) at $(command -v bash)"
+    echo "  /bin/bash: $(/bin/bash --version 2>&1 | head -1)"
+    echo "  brew:      $(version_of brew)"
+    echo "  git:       $(version_of git)"
+    echo "  mise:      $(version_of mise)"
+
+    heading "Repo"
+    echo "  dir:       $DOTFILES_DIR"
+    if git -C "$DOTFILES_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        echo "  revision:  $(git -C "$DOTFILES_DIR" describe --always --dirty --tags 2>/dev/null) ($(git -C "$DOTFILES_DIR" log -1 --format='%cs %s' 2>/dev/null | cut -c1-80))"
+        echo "  branch:    $(git -C "$DOTFILES_DIR" branch --show-current 2>/dev/null || echo '?')"
+        local dirty
+        dirty=$(git -C "$DOTFILES_DIR" status --short 2>/dev/null || true)
+        if [[ -n "$dirty" ]]; then
+            echo "  dirty:"
+            printf '%s\n' "$dirty" | sed 's/^/    /'
+        else
+            echo "  dirty:     clean"
+        fi
+    else
+        echo "  revision:  not a git checkout"
+    fi
+    echo "  commands:  $(bash "$DOTFILES_DIR/bin/dotfiles" commands --plain 2>/dev/null | wc -l | tr -d ' ')"
+
+    heading "Theme"
+    local theme
+    theme="$(get_current_theme)"
+    echo "  active:    ${theme:-none} (mode: $(cat "$STATE_DIR/current/theme/theme.mode" 2>/dev/null || echo '?'))"
+    echo "  rendered:  $(find "$STATE_DIR/current/theme" -maxdepth 1 -type f 2>/dev/null | wc -l | tr -d ' ') files in $STATE_DIR/current/theme"
+    echo "  themes:    ${VALID_THEMES[*]:-none}"
+
+    heading "Toggles"
+    # --list exits 1 when something is off, which is not an error here
+    bash "$DOTFILES_DIR/bin/dotfiles-toggle" --list 2>/dev/null | sed 's/^/  /' || true
+
+    heading "Waiting"
+    local pending
+    pending=$(bash "$DOTFILES_DIR/bin/dotfiles-migrate" --pending 2>/dev/null || true)
+    echo "  migrations: $(echo "${pending:-none}" | tr '\n' ' ' | sed 's/ *$//')"
+    pending=$(bash "$DOTFILES_DIR/bin/dotfiles-restart" --list 2>/dev/null | tr '\n' ' ' || true)
+    echo "  restarts:   ${pending:-none}"
+    if [[ -f "$STATE_DIR/update-available" ]]; then
+        echo "  updates:    $(bash "$DOTFILES_DIR/bin/dotfiles-update-available" --cached --short 2>/dev/null || echo 'nothing') ($(head -1 "$STATE_DIR/update-available" | sed 's/^# //'))"
+    else
+        echo "  updates:    not checked yet"
+    fi
+
+    heading "Managed links"
+    dotfiles_for_each_link link_state
+
+    heading "Health check"
+    # Strip the colour codes so the report pastes cleanly
+    bash "$DOTFILES_DIR/scripts/health-check.sh" 2>&1 | sed $'s/\033\\[[0-9;]*m//g' || true
+
+    heading "Last update transcript (tail)"
+    if [[ -f "$STATE_DIR/update.log" ]]; then
+        echo "  $STATE_DIR/update.log"
+        tail -50 "$STATE_DIR/update.log" | sed $'s/\033\\[[0-9;]*m//g; s/^/  /'
+    else
+        echo "  no update has run on this machine yet"
+    fi
+}
+
+if [[ "$PRINT" == true ]]; then
+    report
+    exit 0
+fi
+
+mkdir -p "$STATE_DIR"
+OUT="$STATE_DIR/debug.log"
+report > "$OUT"
+echo "Wrote $OUT ($(wc -l < "$OUT" | tr -d ' ') lines)"
+if [[ "$COPY" == true ]] && command -v pbcopy >/dev/null 2>&1; then
+    pbcopy < "$OUT"
+    echo "Copied to the clipboard; paste it into the issue or the agent prompt"
+fi

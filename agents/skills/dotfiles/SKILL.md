@@ -45,7 +45,7 @@ dotfiles <command> --help     # usage from the command's metadata
 cat "$(dotfiles dir)/bin/dotfiles-<command>"   # read the source
 ```
 
-Common ones: `dotfiles health`, `dotfiles sync`, `dotfiles theme <name>`, `dotfiles keys`, `dotfiles toggle <flag>`, `dotfiles doctor`, `dotfiles migrate --pending`, `dotfiles backup`.
+Common ones: `dotfiles debug --print` (the first thing to run when asked to diagnose anything), `dotfiles health`, `dotfiles sync`, `dotfiles theme <name>`, `dotfiles keys`, `dotfiles toggle <flag>`, `dotfiles doctor`, `dotfiles migrate --pending`, `dotfiles backup`.
 
 ## Where things live
 
@@ -73,5 +73,5 @@ Machine-only overrides that should not be committed: `~/.zshrc.local`, `~/.zshrc
 - "Add a shortcut to open Finder on Ctrl+Shift+F" → add `ctrl-shift-f = '''exec-and-forget open -a "Finder"'''` under `[mode.main.binding]` in `aerospace.toml` with a `# desc:` line above it, `aerospace reload-config`, then `dotfiles keys --update`
 - "Stop the apps auto-launching at login" → `dotfiles toggle startup-apps off`
 - "Install ripgrep-all" → add `brew "ripgrep-all"` to the right group in the Brewfile, then `brew bundle --file="$(dotfiles dir)/Brewfile"`
-- "Something is off after pulling the repo" → `dotfiles sync`, then `dotfiles health`, then `dotfiles doctor` for the auto-fixable part
+- "Something is off after pulling the repo" → `dotfiles debug --print` to see the state, `dotfiles sync`, then `dotfiles health`, then `dotfiles doctor` for the auto-fixable part
 - "Run a script whenever the theme changes" → drop it in `~/.config/dotfiles/hooks/theme-set.d/`
