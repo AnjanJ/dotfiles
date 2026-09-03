@@ -91,6 +91,18 @@ dotfiles theme bg current
 
 The choice is a symlink at `~/.local/state/dotfiles/current/background`. A theme *switch* moves to that theme's next candidate; re-applying the same theme (`dotfiles sync`) leaves whatever you set alone. The desktop is set with [desktoppr](https://github.com/scriptingosx/desktoppr) from the Brewfile (a pkg, so the first `brew bundle` asks for sudo) or, without it, System Events through `osascript` under a 5-second watchdog. `dotfiles toggle background off` keeps the desktop alone while still recording the choice; scripts and tests set `DOTFILES_NO_BACKGROUND=1`.
 
+## Installing a theme from a git repository
+
+```bash
+dotfiles theme install https://github.com/someone/omarchy-nord-theme   # clone, then apply
+dotfiles theme remove nord                                             # undo (switch away first)
+dotfiles theme remove --list
+```
+
+The repo lands in `~/.config/dotfiles/themes/<name>/` (the name is the repo's, minus an `omarchy-`/`dotfiles-` prefix and a `-theme` suffix) and must carry a `colors.toml`; an Omarchy theme without a `theme.conf` gets a minimal one (editors keep their current theme, bat uses `ansi`). Themes you write by hand can live in the same directory and are treated exactly like the repo's own.
+
+A cloned theme is a stranger's repo, so `dotfiles theme` stages only its colour data, the way Omarchy does: `colors.toml`, `backgrounds/`, `bat/*.tmTheme`, `zed/*.json`, `warp/*.yaml`, `xcode/`, `sublime-text/`, and the `claude.json`, `lsd.yaml` and `zellij.kdl` overrides. Everything that can run code is dropped at staging and named in a warning: `nvim/*.lua` (Neovim loads it), `theme.conf` as code (it is parsed for the known `key="value"` lines instead of sourced), every other override (a Ghostty `command`, WezTerm Lua, Starship custom modules, lazygit custom commands, the sourced fzf/sketchybar/borders shell, delta's git config), and symlinks at any depth. Filtering at staging rather than at clone time means a file the theme gains later through `git pull` is filtered too. Neovim uses the palette-driven `dotfiles` colorscheme (`themes/_shared/nvim/dotfiles-theme.lua`, a base16 scheme built from the rendered palette), which also serves any theme that has no `nvim/` spec of its own.
+
 ## Adding a theme
 
 ```bash

@@ -259,10 +259,12 @@ section "Test 7: Applying the same theme twice is a no-op"
 setup_theme_sandbox
 load_theme_functions
 
+# Hash every rendered file (background.png is binary and
+# nvim-dotfiles-theme/ is a directory, so cat would not do)
 set +e; apply_theme "tokyo-night" "true" >/dev/null 2>&1; set -e
-first=$(cd "$RENDERED" && cat ./*)
+first=$(cd "$RENDERED" && find . -type f | sort | xargs shasum)
 set +e; apply_theme "tokyo-night" "true" >/dev/null 2>&1; set -e
-second=$(cd "$RENDERED" && cat ./*)
+second=$(cd "$RENDERED" && find . -type f | sort | xargs shasum)
 assert_eq "$second" "$first" "Rendered output identical after second apply"
 
 teardown_theme_sandbox

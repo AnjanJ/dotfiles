@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+# dotfiles:summary=Install a theme from a git repository (colour data only is trusted)
+# dotfiles:args=<git-url> [--no-apply]
+#
+#   dotfiles theme install https://github.com/someone/omarchy-nord-theme
+#   dotfiles theme install git@github.com:someone/my-theme.git --no-apply
+#
+# Clones into ~/.config/dotfiles/themes/<name>/ (name from the URL, minus
+# an omarchy-/dotfiles- prefix and a -theme suffix) and applies it. The
+# repo must carry a colors.toml (Omarchy's schema). Because it is a
+# stranger's repo, `dotfiles theme` stages only its colour data: nvim/
+# *.lua, theme.conf as code, most overrides and every symlink are dropped
+# at staging (see scripts/apply-theme.sh), and Neovim uses the
+# palette-driven fallback colorscheme. Remove with `dotfiles theme
+# remove <name>`. Ported from Omarchy's omarchy-theme-install.
+
+set -euo pipefail
+
+DOTFILES_DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+source "$DOTFILES_DIR/scripts/_helpers.sh"
+source "$DOTFILES_DIR/scripts/theme-utils.sh"
+
+URL="${1:-}"
+APPLY=true
+[[ -n "$URL" ]] || { echo "Usage: dotfiles theme install <git-url> [--no-apply]" >&2; exit 1; }
+shift
+for arg in "$@"; do
+    case "$arg" in
+        --no-apply) APPLY=false ;;
+        *) print_error "Unknown option: $arg"; exit 1 ;;
+    esac
+done
+
+# A URL that looks like a git option, or a transport git would hand to a
+# helper program (ext::), is refused before git sees it.
+case "$URL" in
+    -*|ext::*|*"ext::"*) print_error "Refusing URL '$URL'"; exit 1 ;;
+esac
+if [[ "$URL" =~ [[:space:]] ]]; then
+    print_error "URL must not contain whitespace"
+    exit 1
+fi
+
+# scp-style git@host:path has no scheme; strip host: so basename sees the path
+path="$URL"
+[[ "$path" != *"://"* && "$path" == *:* && "${path%%:*}" != */* ]] && path="${path#*:}"
+NAME="$(basename -- "$path" .git | sed -E 's/^(omarchy|dotfiles)-//; s/-theme$//' | tr '[:upper:]' '[:lower:]')"
+if ! (LC_ALL=C; [[ "$NAME" =~ ^[a-z0-9_][a-z0-9._+-]*$ ]]); then
+    print_error "'$URL' does not give a usable theme name (got '$NAME')"
+    exit 1
+fi
+if [[ -f "$DOTFILES_DIR/themes/$NAME/theme.conf" ]]; then
+    print_error "'$NAME' is a theme shipped with the repo; pick another name for the fork (rename the repo) or edit themes/$NAME"
+    exit 1
+fi
+
+DEST="$DOTFILES_USER_THEMES_DIR/$NAME"
+mkdir -p "$DOTFILES_USER_THEMES_DIR"
+if [[ -d "$DEST" ]]; then
+    if [[ -e "$DEST/.git" ]]; then
+        print_step "Replacing installed theme '$NAME'"
+        rm -rf "$DEST"
+    else
+        print_error "$DEST exists and is not a clone; remove it by hand if you want to replace it"
+        exit 1
+    fi
+fi
+
+print_step "Cloning $URL"
+if ! git clone --quiet --depth 1 -- "$URL" "$DEST"; then
+    rm -rf "$DEST"
+    print_error "Could not clone $URL"
+    exit 1
+fi
+
+if [[ ! -f "$DEST/colors.toml" ]]; then
+    rm -rf "$DEST"
+    print_error "No colors.toml in that repo; only palette-first themes (Omarchy's colors.toml schema) can be installed"
+    exit 1
+fi
+if [[ ! -f "$DEST/theme.conf" ]]; then
+    # An Omarchy theme has no theme.conf; give it one that names nothing
+    # (editor names stay unset, so those apps keep their current theme)
+    cat > "$DEST/theme.conf" <<'EOF_CONF'
+# Written by dotfiles theme install: the repo shipped no theme.conf.
+# Editor/bat theme names for the apps that need one; blank keeps the app as is.
+nvim_colorscheme="dotfiles"
+vscode_theme=""
+zed_theme=""
+bat_theme="ansi"
+delta_theme="ansi"
+EOF_CONF
+    print_warning "No theme.conf in the repo; wrote a minimal one (editors keep their theme, bat uses ansi)"
+fi
+print_success "Installed $NAME → $DEST"
+
+if [[ "$APPLY" == true ]]; then
+    exec bash "$DOTFILES_DIR/scripts/apply-theme.sh" "$NAME"
+fi
+echo "Apply with: dotfiles theme $NAME"

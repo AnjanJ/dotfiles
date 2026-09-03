@@ -78,8 +78,9 @@ theme_background_generate() {
 
 # theme_background_sources <theme> — one path per line, cycling order
 theme_background_sources() {
-    local theme="$1" dir f
-    for dir in "$DOTFILES_DIR/themes/$theme/backgrounds" "$THEME_BG_USER_DIR/$theme"; do
+    local theme="$1" dir f theme_dir
+    theme_dir="$(theme_dir_of "$theme" 2>/dev/null || echo "$DOTFILES_DIR/themes/$theme")"
+    for dir in "$theme_dir/backgrounds" "$THEME_BG_USER_DIR/$theme"; do
         [[ -d "$dir" ]] || continue
         for f in "$dir"/*; do
             [[ -f "$f" ]] || continue

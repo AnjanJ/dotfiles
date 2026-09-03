@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# dotfiles:summary=Remove a theme installed with `dotfiles theme install`
+# dotfiles:args=<name> | --list
+#
+#   dotfiles theme remove nord
+#   dotfiles theme remove --list     # installed (user) themes only
+#
+# Only touches ~/.config/dotfiles/themes/<name>/; themes shipped in the
+# repo are edited there, not removed. Refuses to remove the active theme
+# (switch first) so the rendered state never points at nothing.
+
+set -euo pipefail
+
+DOTFILES_DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+source "$DOTFILES_DIR/scripts/_helpers.sh"
+source "$DOTFILES_DIR/scripts/theme-utils.sh"
+
+case "${1:-}" in
+    --list)
+        for conf in "$DOTFILES_USER_THEMES_DIR"/*/theme.conf; do
+            [[ -f "$conf" ]] || continue
+            d="$(dirname "$conf")"
+            kind="hand-written"
+            [[ -e "$d/.git" ]] && kind="cloned"
+            printf '  %-24s %s (%s)\n' "$(basename "$d")" "$d" "$kind"
+        done
+        exit 0
+        ;;
+    "")
+        echo "Usage: dotfiles theme remove <name> | --list" >&2
+        exit 1
+        ;;
+esac
+
+NAME="$1"
+if [[ -f "$DOTFILES_DIR/themes/$NAME/theme.conf" ]]; then
+    print_error "'$NAME' ships with the repo (themes/$NAME); edit or delete it there"
+    exit 1
+fi
+DEST="$DOTFILES_USER_THEMES_DIR/$NAME"
+if [[ ! -d "$DEST" ]]; then
+    print_error "No installed theme '$NAME' (dotfiles theme remove --list)"
+    exit 1
+fi
+if [[ "$(get_current_theme)" == "$NAME" ]]; then
+    print_error "'$NAME' is the active theme; switch first (dotfiles theme tokyo-night)"
+    exit 1
+fi
+rm -rf "$DEST"
+print_success "Removed $NAME ($DEST)"

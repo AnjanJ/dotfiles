@@ -13,6 +13,11 @@
 #   themes/<name>/overrides/<out>  hand-written file that beats the template
 #   themes/_templates/<out>.tpl    one template per rendered file
 #
+# A theme may also live in ~/.config/dotfiles/themes/<name>/ (yours, or
+# cloned by `dotfiles theme install`). A cloned one is a stranger's
+# repo: only its colour data is staged (see _theme_sanitized_copy) and
+# its Neovim spec is replaced by the palette-driven themes/_shared one.
+#
 # Nothing tracked in git is modified by a theme switch: apps either
 # include the rendered file (ghostty, starship, lazygit, wezterm, nvim,
 # delta, fzf) or get a gitignored generated copy inside their config dir
@@ -94,6 +99,82 @@ _set_macos_appearance() {
     fi
 }
 
+# What a cloned theme may contribute: colour data only. Everything else
+# it ships can run code somewhere (nvim/*.lua is loaded by Neovim,
+# theme.conf is sourced, overrides/ghostty can name a `command`,
+# overrides/wezterm.lua is Lua, starship/lazygit/fzf/sketchybar/borders/
+# delta overrides run or source shell) and is dropped, by name, at
+# staging, so a theme that grows a file later through `git pull` is
+# filtered too. Symlinks are dropped at any depth: they point wherever
+# the author chose. theme.conf survives but is parsed, not sourced.
+THEME_UNTRUSTED_OVERRIDES="claude.json lsd.yaml zellij.kdl"
+THEME_UNTRUSTED_ASSET_DIRS="backgrounds bat zed warp xcode sublime-text"
+
+# _theme_sanitized_copy <src> <dst> — prints one dropped path per line
+_theme_sanitized_copy() {
+    local src="$1" dst="$2" f d rel keep
+    mkdir -p "$dst"
+    for f in "$src"/* "$src"/.[!.]*; do
+        [[ -e "$f" || -L "$f" ]] || continue
+        rel="${f#"$src"/}"
+        if [[ -L "$f" ]]; then
+            echo "$rel (symlink)"
+            continue
+        fi
+        case "$rel" in
+            .git) continue ;;
+            colors.toml|theme.conf|manual-instructions.txt|README.md|LICENSE|LICENSE.*)
+                [[ -f "$f" ]] && cp "$f" "$dst/$rel"
+                continue ;;
+            overrides)
+                [[ -d "$f" ]] || { echo "$rel"; continue; }
+                mkdir -p "$dst/overrides"
+                for d in "$f"/* "$f"/.[!.]*; do
+                    [[ -e "$d" || -L "$d" ]] || continue
+                    keep=false
+                    if [[ ! -L "$d" && -f "$d" ]]; then
+                        case " $THEME_UNTRUSTED_OVERRIDES " in *" $(basename "$d") "*) keep=true ;; esac
+                    fi
+                    if [[ "$keep" == true ]]; then cp "$d" "$dst/overrides/"
+                    elif [[ -L "$d" ]]; then echo "overrides/$(basename "$d") (symlink)"
+                    else echo "overrides/$(basename "$d")"; fi
+                done
+                continue ;;
+        esac
+        case " $THEME_UNTRUSTED_ASSET_DIRS " in
+            *" $rel "*)
+                [[ -d "$f" ]] || { echo "$rel"; continue; }
+                mkdir -p "$dst/$rel"
+                for d in "$f"/* "$f"/.[!.]*; do
+                    [[ -e "$d" || -L "$d" ]] || continue
+                    if [[ ! -L "$d" && -f "$d" ]]; then cp "$d" "$dst/$rel/"
+                    elif [[ -L "$d" ]]; then echo "$rel/$(basename "$d") (symlink)"
+                    else echo "$rel/$(basename "$d")"; fi
+                done
+                ;;
+            *) echo "$rel" ;;
+        esac
+    done
+}
+
+# _theme_conf_load <theme.conf> <trusted: true|false>
+# Trusted: sourced as before. Untrusted: only key="value" lines for the
+# keys the pipeline knows, values without $ ` \ or quotes.
+_theme_conf_load() {
+    local conf="$1" trusted="$2" line key val
+    if [[ "$trusted" == true ]]; then
+        # shellcheck source=/dev/null
+        source "$conf"
+        return 0
+    fi
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        if [[ "$line" =~ ^(nvim_plugin_file|nvim_colorscheme|vscode_theme|zed_theme|bat_theme|delta_theme|warp_theme|warp_custom_file)=\"([^\"\$\`\\]*)\"[[:space:]]*(#.*)?$ ]]; then
+            key="${BASH_REMATCH[1]}"; val="${BASH_REMATCH[2]}"
+            printf -v "$key" '%s' "$val"
+        fi
+    done < "$conf"
+}
+
 # shellcheck disable=SC2154  # theme.conf variables loaded dynamically
 apply_theme() {
     local THEME="$1"
@@ -102,13 +183,17 @@ apply_theme() {
     local TEMPLATES_DIR="$DOTFILES_DIR/themes/_templates"
     local CURRENT_DIR="$DOTFILES_STATE_DIR/current"
     local RENDERED="$CURRENT_DIR/theme"
+    local TRUSTED=true SOURCE_DIR="" SANITIZED="" dropped=""
 
     if ! validate_theme "$THEME"; then
         echo "Error: Invalid theme '$THEME'. Valid themes: ${VALID_THEMES[*]}"
         return 1
     fi
     if [[ ! -d "$THEMES_DIR" ]]; then
-        echo "Error: Theme directory not found: $THEMES_DIR"
+        THEMES_DIR="$(theme_dir_of "$THEME" 2>/dev/null || true)"
+    fi
+    if [[ -z "$THEMES_DIR" || ! -d "$THEMES_DIR" ]]; then
+        echo "Error: Theme directory not found: $DOTFILES_DIR/themes/$THEME"
         return 1
     fi
 
@@ -119,11 +204,23 @@ apply_theme() {
         echo "Each theme needs a theme.conf file. See themes/tokyo-night/theme.conf for an example."
         return 1
     fi
-    # shellcheck source=/dev/null
-    source "$conf"
+    if ! theme_is_trusted "$THEMES_DIR"; then
+        TRUSTED=false
+        SOURCE_DIR="$THEMES_DIR"
+        SANITIZED="$(mktemp -d "${TMPDIR:-/tmp}/dotfiles-theme-src.XXXXXX")"
+        dropped="$(_theme_sanitized_copy "$SOURCE_DIR" "$SANITIZED")"
+        THEMES_DIR="$SANITIZED"
+        conf="$THEMES_DIR/theme.conf"
+        _theme_step "Installed theme (cloned): staging colour data only"
+        if [[ -n "$dropped" ]]; then
+            _theme_warning "Dropped from $SOURCE_DIR (code or symlink): $(echo "$dropped" | tr '\n' ' ')"
+        fi
+    fi
+    _theme_conf_load "$conf" "$TRUSTED"
 
     local missing_vars=()
-    local required_vars=(nvim_colorscheme vscode_theme zed_theme bat_theme delta_theme)
+    # vscode_theme / zed_theme may be empty or "-": the editor keeps its theme
+    local required_vars=(nvim_colorscheme bat_theme delta_theme)
     for var in "${required_vars[@]}"; do
         [[ -z "${!var:-}" ]] && missing_vars+=("$var")
     done
@@ -136,11 +233,22 @@ apply_theme() {
     fi
     local nvim_plugin_file="${nvim_plugin_file:-$THEME-theme.lua}"
 
+    # Neovim: the theme's own lazy.nvim spec, or the palette-driven
+    # fallback (a cloned theme's nvim/*.lua is code and was dropped; a
+    # scaffold may not have one yet).
+    local nvim_spec="$THEMES_DIR/nvim/$nvim_plugin_file"
+    if [[ ! -f "$nvim_spec" ]]; then
+        nvim_spec="$DOTFILES_DIR/themes/_shared/nvim/dotfiles-theme.lua"
+        # shellcheck disable=SC2034  # read indirectly when the vars file is built
+        nvim_colorscheme="dotfiles"
+        _theme_warning "No nvim/$nvim_plugin_file for '$THEME'; using the palette-driven 'dotfiles' colorscheme"
+    fi
+
     # ── Pre-flight ───────────────────────────────────────
     _theme_step "Pre-flight validation..."
     local missing_files=()
     [[ -f "$THEMES_DIR/colors.toml" ]] || missing_files+=("themes/$THEME/colors.toml")
-    [[ -f "$THEMES_DIR/nvim/$nvim_plugin_file" ]] || missing_files+=("themes/$THEME/nvim/$nvim_plugin_file")
+    [[ -f "$nvim_spec" ]] || missing_files+=("themes/_shared/nvim/dotfiles-theme.lua")
     if ! compgen -G "$TEMPLATES_DIR/*.tpl" >/dev/null; then
         missing_files+=("themes/_templates/*.tpl")
     fi
@@ -150,6 +258,7 @@ apply_theme() {
         for f in "${missing_files[@]}"; do echo "  - $f"; done
         echo ""
         echo "Nothing was changed. Fix the above issues and try again."
+        [[ -n "$SANITIZED" ]] && rm -rf "$SANITIZED"
         return 1
     fi
     _theme_success "Palette, templates and theme.conf verified"
@@ -177,11 +286,23 @@ apply_theme() {
     local vars
     vars=$(mktemp)
     {
-        cat "$conf"
+        # A trusted theme.conf may carry extra keys for its own overrides;
+        # the known keys are re-emitted afterwards from the loaded (and,
+        # for a cloned theme, filtered) values, and a later line wins.
+        [[ "$TRUSTED" == true ]] && cat "$conf"
+        local k
+        for k in nvim_plugin_file nvim_colorscheme vscode_theme zed_theme bat_theme delta_theme warp_theme warp_custom_file; do
+            echo "$k=\"${!k:-}\""
+        done
         echo "theme_name=\"$THEME\""
         echo "dotfiles_dir=\"$DOTFILES_DIR\""
-        echo "nvim_plugin_spec=\"$THEMES_DIR/nvim/$nvim_plugin_file\""
+        echo "nvim_plugin_spec=\"$nvim_spec\""
+        echo "theme_source_dir=\"${SOURCE_DIR:-$THEMES_DIR}\""
+        echo "theme_trusted=\"$TRUSTED\""
     } > "$vars"
+    # The fallback colorscheme lives beside the rendered palette so its
+    # path never depends on where the repo is
+    cp -R "$DOTFILES_DIR/themes/_shared/nvim-dotfiles-theme" "$next/nvim-dotfiles-theme"
 
     # The theme's mode (light|dark): `mode` in colors.toml, else derived
     # from background luminance by the renderer. Rendered here so every
@@ -205,6 +326,7 @@ apply_theme() {
         if ! theme_render "$next/colors.toml" "$vars" "$tpl" "$out"; then
             rm -f "$vars"
             rm -rf "$next"
+            [[ -n "$SANITIZED" ]] && rm -rf "$SANITIZED"
             echo ""
             echo "Error: could not render themes/_templates/$name.tpl for '$THEME'."
             echo "The active theme was left untouched."
@@ -302,7 +424,7 @@ apply_theme() {
         mkdir -p "$HOME/.config/zed/themes"
         cp "$THEMES_DIR/zed"/*.json "$HOME/.config/zed/themes/"
     fi
-    if [[ -f "$zed_settings" ]] && command -v jq &>/dev/null; then
+    if [[ -n "${zed_theme:-}" && "${zed_theme:-}" != "-" && -f "$zed_settings" ]] && command -v jq &>/dev/null; then
         local tmpfile
         tmpfile=$(mktemp)
         # Pin Zed's mode to the theme's and fill that slot; the other slot
@@ -321,7 +443,7 @@ apply_theme() {
     # BSD sed -i refuses to edit symlinks.
     local vscode_settings="$HOME/Library/Application Support/Code/User/settings.json"
     [[ -L "$vscode_settings" ]] && vscode_settings=$(readlink "$vscode_settings")
-    if [[ -f "$vscode_settings" ]]; then
+    if [[ -n "${vscode_theme:-}" && "${vscode_theme:-}" != "-" && -f "$vscode_settings" ]]; then
         if grep -q '"workbench\.colorTheme"' "$vscode_settings"; then
             if ! grep -q "\"workbench\.colorTheme\": *\"$vscode_theme\"" "$vscode_settings"; then
                 sed -i '' 's/"workbench\.colorTheme": *"[^"]*"/"workbench.colorTheme": "'"$vscode_theme"'"/' "$vscode_settings"
@@ -385,6 +507,8 @@ apply_theme() {
     if [[ -x "$DOTFILES_DIR/bin/dotfiles-hook" ]]; then
         "$DOTFILES_DIR/bin/dotfiles-hook" theme-set "$THEME"
     fi
+
+    [[ -n "$SANITIZED" ]] && rm -rf "$SANITIZED"
 
     # ── Manual steps (skipped in quiet mode, e.g. during sync) ──
     if [[ "$QUIET" != "true" ]]; then

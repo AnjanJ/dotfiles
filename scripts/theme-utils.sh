@@ -9,8 +9,11 @@
 
 THEME_STATE_FILE="$HOME/.dotfiles-theme"
 
-# Auto-discover available themes from themes/*/theme.conf
-_discover_themes() {
+# Themes you wrote or installed with `dotfiles theme install`, outside
+# the repo. A repo theme of the same name wins.
+DOTFILES_USER_THEMES_DIR="${DOTFILES_USER_THEMES_DIR:-$HOME/.config/dotfiles/themes}"
+
+_theme_utils_root() {
     local script_dir
     # Support both bash (BASH_SOURCE) and zsh (%x)
     if [[ -n "${BASH_SOURCE[0]:-}" ]]; then
@@ -19,13 +22,43 @@ _discover_themes() {
         # shellcheck disable=SC2296  # zsh-specific syntax
         script_dir="$(cd "$(dirname "${(%):-%x}")/.." && pwd)"
     fi
-    local themes_dir="${DOTFILES_DIR:-$script_dir}/themes"
+    echo "${DOTFILES_DIR:-$script_dir}"
+}
+
+# Auto-discover available themes from themes/*/theme.conf, then the
+# user directory (names already taken by the repo are skipped)
+_discover_themes() {
+    local themes_dir conf name
+    themes_dir="$(_theme_utils_root)/themes"
     local themes=()
     for conf in "$themes_dir"/*/theme.conf; do
         [[ -f "$conf" ]] || continue
         themes+=("$(basename "$(dirname "$conf")")")
     done
+    for conf in "$DOTFILES_USER_THEMES_DIR"/*/theme.conf; do
+        [[ -f "$conf" ]] || continue
+        name="$(basename "$(dirname "$conf")")"
+        [[ -f "$themes_dir/$name/theme.conf" ]] && continue
+        themes+=("$name")
+    done
     echo "${themes[@]+"${themes[@]}"}"
+}
+
+# theme_dir_of <name> — the directory a theme lives in (repo first)
+theme_dir_of() {
+    local d
+    d="$(_theme_utils_root)/themes/$1"
+    [[ -f "$d/theme.conf" ]] && { echo "$d"; return 0; }
+    d="$DOTFILES_USER_THEMES_DIR/$1"
+    [[ -f "$d/theme.conf" ]] && { echo "$d"; return 0; }
+    return 1
+}
+
+# theme_is_trusted <dir> — repo themes and hand-written user themes may
+# ship code (a nvim plugin spec, a ghostty override); a directory that
+# was cloned by `dotfiles theme install` (it has .git) may not.
+theme_is_trusted() {
+    [[ ! -e "$1/.git" ]]
 }
 
 # shellcheck disable=SC2207
