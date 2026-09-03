@@ -128,7 +128,9 @@ assert_file_contains "$RENDERED/nvim.lua" 'plugin_spec = "'"$MOCK"'/themes/_shar
 assert_file_exists "$RENDERED/nvim-dotfiles-theme/colors/dotfiles.lua" "fallback colorscheme installed beside the palette"
 assert_file_contains "$RENDERED/nvim.lua" 'red = "#f07178"' "full palette rendered for the fallback"
 assert_eq "$(jq -r .theme.dark "$MOCK/.config/zed/settings.json")" "Inky Dark" "zed_theme parsed from theme.conf (with its trailing comment)"
-assert_file_exists "$HOME/.config/bat/config" "bat config written"
+if command -v bat >/dev/null 2>&1; then
+    assert_file_exists "$HOME/.config/bat/config" "bat config written"
+fi   # apply-theme only writes it where bat is installed (CI runners have none)
 assert_eq "$(cat "$HOME/.dotfiles-theme")" "inky" "state records the installed theme"
 assert_contains "$out" "Dropped from $DOTFILES_USER_THEMES_DIR/inky" "warning names the source dir"
 echo ""
