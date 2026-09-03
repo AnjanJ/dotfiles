@@ -42,7 +42,8 @@ Nothing tracked in git changes when you switch themes. Each app gets its colours
 |-----------|------|
 | Reads the rendered file directly | Starship (`$STARSHIP_CONFIG`), lazygit (`$LG_CONFIG_FILE`), WezTerm (`dofile`), Neovim (`dofile` in `astroui.lua` and `plugins/theme.lua`), git-delta (`[include]`), fzf (`~/.zshrc-theme-env`) |
 | Gitignored generated copy inside its config dir | Ghostty (`theme.generated`), Zellij (`themes/dotfiles.kdl`), sketchybar and borders (`colors.sh`) |
-| Own settings edited, best-effort | Zed and VS Code (theme name), Warp (`defaults write`), bat (`~/.config/bat/config` + custom `.tmTheme`), lsd, Claude Code (`~/.claude/themes/dotfiles.json`), Xcode, Sublime Text |
+| Generated from a tracked base | Zed and VS Code: `settings.base.json` is tracked, `settings.json` is rendered next to it with the theme name filled in (Zed's `theme.mode` and slot, VS Code's `workbench.colorTheme` placeholder), and anything changed in the editor's own settings UI is copied back into the base on the next `dotfiles theme` |
+| Own settings edited, best-effort | Warp (`defaults write`), bat (`~/.config/bat/config` + custom `.tmTheme`), lsd, Claude Code (`~/.claude/themes/dotfiles.json`), Xcode, Sublime Text |
 
 ## Palettes
 

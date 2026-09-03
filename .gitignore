@@ -45,6 +45,10 @@ Brewfile.backup
 .config/zellij/themes/dotfiles.kdl
 .config/sketchybar/colors.sh
 .config/borders/colors.sh
+# Editor settings: settings.base.json is tracked, settings.json is the
+# generated copy with the theme filled in (in-app edits flow back to base)
+.config/zed/settings.json
+.config/vscode/settings.json
 
 # Cache directories
 .cache/

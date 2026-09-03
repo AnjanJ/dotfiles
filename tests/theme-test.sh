@@ -57,7 +57,9 @@ setup_theme_sandbox() {
              "$MOCK_DOTFILES/.config/sketchybar" "$MOCK_DOTFILES/.config/borders" \
              "$MOCK_DOTFILES/.config/zed"
     echo 'config-file = ?theme.generated' > "$MOCK_DOTFILES/.config/ghostty/config"
-    echo '{"theme": {"mode": "dark", "dark": "old-theme"}}' > "$MOCK_DOTFILES/.config/zed/settings.json"
+    echo '{"theme": {"mode": "dark", "dark": "old-theme"}, "tab_size": 2}' > "$MOCK_DOTFILES/.config/zed/settings.base.json"
+    mkdir -p "$MOCK_DOTFILES/.config/vscode"
+    printf '{\n  "workbench.colorTheme": "{{ vscode_theme }}",\n  // a comment, so this is JSONC\n  "editor.fontSize": 18,\n}\n' > "$MOCK_DOTFILES/.config/vscode/settings.base.json"
 
     STATE="$TEST_HOME/.local/state/dotfiles/current"
     RENDERED="$STATE/theme"
@@ -147,6 +149,50 @@ mkdir -p "$TEST_HOME/.claude"
 set +e; apply_theme "aura" "true" >/dev/null 2>&1; set -e
 assert_file_exists "$TEST_HOME/.claude/themes/dotfiles.json" "Claude theme installed once ~/.claude exists"
 assert_file_contains "$TEST_HOME/.claude/themes/dotfiles.json" '"claude": "#a277ff"' "Claude theme retinted to Aura"
+
+teardown_theme_sandbox
+echo ""
+
+# ── Test 2b: Editor settings are generated; tracked base files stay clean ──
+section "Test 2b: Zed and VS Code settings rendered from settings.base.json"
+setup_theme_sandbox
+load_theme_functions
+mkdir -p "$TEST_HOME/.config/zed" "$TEST_HOME/Library/Application Support/Code/User"
+zed_base_before=$(cat "$MOCK_DOTFILES/.config/zed/settings.base.json")
+vscode_base_before=$(cat "$MOCK_DOTFILES/.config/vscode/settings.base.json")
+
+set +e; apply_theme "tokyo-night" "true" >/dev/null 2>&1; set -e
+assert_eq "$(cat "$MOCK_DOTFILES/.config/zed/settings.base.json")" "$zed_base_before" "Zed settings.base.json untouched by a theme switch"
+assert_eq "$(cat "$MOCK_DOTFILES/.config/vscode/settings.base.json")" "$vscode_base_before" "VS Code settings.base.json untouched by a theme switch"
+assert_eq "$(jq -r .theme.dark "$MOCK_DOTFILES/.config/zed/settings.json")" "Tokyo Night" "generated Zed settings carry the theme"
+assert_eq "$(jq -r .tab_size "$MOCK_DOTFILES/.config/zed/settings.json")" "2" "and everything else from the base"
+assert_file_contains "$MOCK_DOTFILES/.config/vscode/settings.json" '"workbench.colorTheme": "Tokyo Night"' "generated VS Code settings carry the theme"
+assert_file_contains "$MOCK_DOTFILES/.config/vscode/settings.json" '// a comment' "VS Code comments survive (JSONC handled as text)"
+assert_symlink "$TEST_HOME/.config/zed/settings.json" "$MOCK_DOTFILES/.config/zed/settings.json" "Zed's path linked to the generated file when nothing was there"
+assert_symlink "$TEST_HOME/Library/Application Support/Code/User/settings.json" "$MOCK_DOTFILES/.config/vscode/settings.json" "VS Code's path linked too"
+
+# The editors write their own settings files: those edits must reach the base
+jq '.tab_size = 4 | .new_key = "from-zed"' "$MOCK_DOTFILES/.config/zed/settings.json" > "$TEST_HOME/zed.tmp"
+mv "$TEST_HOME/zed.tmp" "$MOCK_DOTFILES/.config/zed/settings.json"
+sed -i '' 's/"editor.fontSize": 18/"editor.fontSize": 20/' "$MOCK_DOTFILES/.config/vscode/settings.json"
+set +e; out=$(apply_theme "aura" "true" 2>&1); set -e
+assert_contains "$out" "Zed settings changed in Zed" "in-app Zed edits are reported"
+assert_eq "$(jq -r .new_key "$MOCK_DOTFILES/.config/zed/settings.base.json")" "from-zed" "in-app Zed edits adopted into the base"
+assert_eq "$(jq -r .theme.dark "$MOCK_DOTFILES/.config/zed/settings.base.json")" "old-theme" "but the base keeps its default theme block"
+assert_eq "$(jq -r .theme.dark "$MOCK_DOTFILES/.config/zed/settings.json")" "Aura Soft Dark" "and the generated file moves to the new theme"
+assert_eq "$(jq -r .tab_size "$MOCK_DOTFILES/.config/zed/settings.json")" "4" "keeping the in-app value"
+assert_file_contains "$MOCK_DOTFILES/.config/vscode/settings.base.json" '"editor.fontSize": 20' "in-app VS Code edits adopted into the base"
+assert_file_contains "$MOCK_DOTFILES/.config/vscode/settings.base.json" '"workbench.colorTheme": "{{ vscode_theme }}"' "with the theme placeholder kept"
+assert_file_contains "$MOCK_DOTFILES/.config/vscode/settings.json" '"workbench.colorTheme": "Aura Dark"' "generated VS Code settings on the new theme"
+
+# A theme with no editor names leaves the live selection alone
+mkdir -p "$MOCK_DOTFILES/themes/plain"
+cp "$MOCK_DOTFILES/themes/tokyo-night/colors.toml" "$MOCK_DOTFILES/themes/plain/"
+printf 'nvim_colorscheme="x"\nvscode_theme=""\nzed_theme=""\nbat_theme="ansi"\ndelta_theme="ansi"\n' > "$MOCK_DOTFILES/themes/plain/theme.conf"
+VALID_THEMES+=("plain")
+set +e; apply_theme "plain" "true" >/dev/null 2>&1; set -e
+assert_eq "$(jq -r .theme.dark "$MOCK_DOTFILES/.config/zed/settings.json")" "Aura Soft Dark" "empty zed_theme keeps the previous Zed theme"
+assert_file_contains "$MOCK_DOTFILES/.config/vscode/settings.json" '"workbench.colorTheme": "Aura Dark"' "empty vscode_theme keeps the previous VS Code theme"
 
 teardown_theme_sandbox
 echo ""

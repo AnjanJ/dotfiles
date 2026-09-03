@@ -30,7 +30,7 @@ for b in dotfiles-theme-install dotfiles-theme-remove dotfiles-theme dotfiles-to
     cp "$ROOT/bin/$b" "$MOCK/bin/"
 done
 mkdir -p "$MOCK/.config/ghostty" "$MOCK/.config/zellij" "$MOCK/.config/sketchybar" "$MOCK/.config/borders" "$MOCK/.config/zed"
-echo '{"theme": {"mode": "dark", "dark": "old-theme"}}' > "$MOCK/.config/zed/settings.json"
+echo '{"theme": {"mode": "dark", "dark": "old-theme"}}' > "$MOCK/.config/zed/settings.base.json"
 export DOTFILES_DIR="$MOCK"
 export DOTFILES_STATE_DIR="$HOME/.local/state/dotfiles"
 export DOTFILES_USER_THEMES_DIR="$HOME/.config/dotfiles/themes"

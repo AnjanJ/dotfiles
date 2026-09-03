@@ -22,8 +22,8 @@ dotfiles/
 │   ├── wezterm/                # Alternate terminal (linked as ~/.wezterm.lua)
 │   ├── mise/                   # Version manager (all runtimes track latest; projects pin their own)
 │   ├── nvim/                   # Neovim config (AstroNvim)
-│   ├── zed/                    # Zed: settings.json, tasks.json, snippets/
-│   ├── vscode/                 # VS Code: settings.json, keybindings.json (linked into ~/Library/Application Support/Code/User/)
+│   ├── zed/                    # Zed: settings.base.json (tracked) → settings.json (generated), tasks.json, snippets/
+│   ├── vscode/                 # VS Code: settings.base.json → settings.json (generated), keybindings.json (linked into ~/Library/Application Support/Code/User/)
 │   ├── claude/                 # Global Claude Code config (~/.claude/settings.json) — distinct from the repo's own project-scoped .claude/
 │   ├── llm/                    # llm default-model preference (secrets/keys stored elsewhere by llm, never here)
 │   ├── zellij/                 # Multiplexer: config, theme, layouts (rails, phoenix, work)
@@ -90,8 +90,8 @@ Zed's Ruby formatter runs `bin/rubocop-auto`: inside an app whose Gemfile carrie
 
 ## Customizing
 
-- **Zed**: `.config/zed/settings.json` (languages, LSP, formatters), `tasks.json` (RSpec, Rails, Elixir, Zig, npm tasks), `snippets/`
-- **VS Code**: `.config/vscode/settings.json`, `keybindings.json` — linked into `~/Library/Application Support/Code/User/` (secrets like API keys live in the macOS keychain, not tracked here)
+- **Zed**: `.config/zed/settings.base.json` (languages, LSP, formatters; `settings.json` is generated from it with the theme), `tasks.json` (RSpec, Rails, Elixir, Zig, npm tasks), `snippets/`
+- **VS Code**: `.config/vscode/settings.base.json` (rendered to `settings.json`), `keybindings.json` — linked into `~/Library/Application Support/Code/User/` (secrets like API keys live in the macOS keychain, not tracked here)
 - **Keybindings**: see [KEYBINDINGS.md](KEYBINDINGS.md)
 - **Packages**: edit `Brewfile`, then `brew bundle install`
 - **Themes**: see [THEMES.md](THEMES.md)

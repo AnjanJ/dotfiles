@@ -27,6 +27,7 @@ Guidance for anyone changing the dotfiles source, human or agent. End-user help 
 
 - `~/.local/state/dotfiles/current/theme/*` — rendered by `dotfiles theme`.
 - `.config/ghostty/theme.generated`, `.config/zellij/themes/dotfiles.kdl`, `.config/sketchybar/colors.sh`, `.config/borders/colors.sh` — gitignored copies of the above.
+- `.config/zed/settings.json`, `.config/vscode/settings.json` — generated from the tracked `settings.base.json` next to each with the theme filled in; edit the base (or the editor's own settings UI, which `dotfiles theme` copies back into the base), never the generated file.
 - The block between `<!-- AEROSPACE_KEYS_START -->` and `<!-- AEROSPACE_KEYS_END -->` in `docs/KEYBINDINGS.md` — run `dotfiles keys --update` after changing `aerospace.toml`.
 - `docs/PACKAGE_CATALOG.md` — built by `scripts/catalog/build-catalog.py` from the Brewfile.
 

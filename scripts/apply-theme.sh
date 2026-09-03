@@ -56,6 +56,96 @@ _install_rendered() {
     cp "$src" "$dst"
 }
 
+# ── Editor settings: base file tracked, live file generated ──
+# Zed and VS Code have no include mechanism and both rewrite their own
+# settings file when a setting changes in-app. So the repo tracks
+# settings.base.json, `dotfiles theme` writes settings.json (gitignored)
+# next to it with the theme filled in, and before every render anything
+# that changed in the live file outside the theme keys is copied back
+# into the base. Theme switches never dirty the repo; in-app edits still
+# land in git. When nothing sits at the app's path yet, the link the
+# symlink map would have made is created here, so a fresh install whose
+# link step ran before the first render is not left without one.
+
+# _link_generated <generated file> <app path>
+_link_generated() {
+    local src="$1" dst="$2"
+    [[ -e "$dst" || -L "$dst" ]] && return 0
+    [[ -d "$(dirname "$dst")" ]] || return 0
+    ln -s "$src" "$dst"
+}
+
+# _render_zed_settings <zed theme name or empty> <light|dark>
+_render_zed_settings() {
+    local zed_theme="$1" mode="$2"
+    local base="$DOTFILES_DIR/.config/zed/settings.base.json"
+    local live="$DOTFILES_DIR/.config/zed/settings.json"
+    [[ -f "$base" ]] || return 0
+    if ! command -v jq &>/dev/null; then
+        [[ -f "$live" ]] || cp "$base" "$live"
+        _theme_warning "jq not installed: Zed settings copied without the theme"
+        return 0
+    fi
+    local tmp
+    tmp=$(mktemp)
+    if [[ -f "$live" ]] && ! cmp -s <(jq -S 'del(.theme)' "$live" 2>/dev/null) <(jq -S 'del(.theme)' "$base"); then
+        if jq --slurpfile b "$base" '.theme = $b[0].theme' "$live" > "$tmp" 2>/dev/null; then
+            mv "$tmp" "$base"
+            _theme_success "Zed settings changed in Zed → adopted into .config/zed/settings.base.json"
+        else
+            _theme_warning "Zed settings.json is not valid JSON; not adopted"
+        fi
+    fi
+    # The other mode's slot keeps its last value so "system" mode still
+    # has a pair; a first render takes the base file's defaults.
+    local src="$base"
+    [[ -f "$live" ]] && jq -e . "$live" >/dev/null 2>&1 && src="$live"
+    if [[ -n "$zed_theme" && "$zed_theme" != "-" ]]; then
+        jq --arg theme "$zed_theme" --arg mode "$mode" \
+            '.theme.mode = $mode | .theme[$mode] = $theme' "$src" > "$tmp"
+    else
+        cp "$src" "$tmp"
+    fi
+    if [[ ! -f "$live" ]] || ! cmp -s "$tmp" "$live"; then
+        mv "$tmp" "$live"
+        chmod 644 "$live"   # mktemp made it 0600
+        [[ -n "$zed_theme" && "$zed_theme" != "-" ]] && _theme_success "Zed → $zed_theme ($mode)"
+    fi
+    rm -f "$tmp"
+    _link_generated "$live" "$HOME/.config/zed/settings.json"
+}
+
+# _render_vscode_settings <vscode theme name or empty>
+# VS Code's file is JSONC (comments, trailing commas), so this works on
+# lines: the base carries "workbench.colorTheme": "{{ vscode_theme }}".
+_render_vscode_settings() {
+    local vscode_theme="$1"
+    local base="$DOTFILES_DIR/.config/vscode/settings.base.json"
+    local live="$DOTFILES_DIR/.config/vscode/settings.json"
+    [[ -f "$base" ]] || return 0
+    local placeholder='"workbench.colorTheme": "{{ vscode_theme }}"'
+    if [[ -f "$live" ]] && ! cmp -s <(grep -v '"workbench\.colorTheme"' "$live") <(grep -v '"workbench\.colorTheme"' "$base"); then
+        sed 's/"workbench\.colorTheme": *"[^"]*"/'"$placeholder"'/' "$live" > "$base"
+        _theme_success "VS Code settings changed in VS Code → adopted into .config/vscode/settings.base.json"
+    fi
+    if [[ -z "$vscode_theme" || "$vscode_theme" == "-" ]]; then
+        # Keep whatever the live file already selects; a first render
+        # falls back to VS Code's own default.
+        vscode_theme=$(grep -o '"workbench\.colorTheme": *"[^"]*"' "$live" 2>/dev/null | sed 's/.*: *"\(.*\)"/\1/')
+        [[ -n "$vscode_theme" && "$vscode_theme" != "{{ vscode_theme }}" ]] || vscode_theme="Default Dark Modern"
+    fi
+    local tmp
+    tmp=$(mktemp)
+    sed 's/"workbench\.colorTheme": *"[^"]*"/"workbench.colorTheme": "'"$vscode_theme"'"/' "$base" > "$tmp"
+    if [[ ! -f "$live" ]] || ! cmp -s "$tmp" "$live"; then
+        mv "$tmp" "$live"
+        chmod 644 "$live"
+        _theme_success "VS Code → $vscode_theme"
+    fi
+    rm -f "$tmp"
+    _link_generated "$live" "$HOME/Library/Application Support/Code/User/settings.json"
+}
+
 # _set_macos_appearance <light|dark>
 # Follows the theme's `mode`. Off with `dotfiles toggle appearance off` or
 # DOTFILES_NO_APPEARANCE=1 (tests, CI). Prefers the `dark-mode` CLI
@@ -413,49 +503,19 @@ apply_theme() {
     fi
 
     # ── GUI apps that only accept their own settings edits ─
-    # Best-effort, and none of them are tracked-file mutations except Zed
-    # and VS Code, whose settings.json files are symlinked into the repo.
+    # Best-effort. Zed and VS Code are rendered from their tracked
+    # settings.base.json into a gitignored settings.json (see the helpers
+    # at the top), so nothing here touches a tracked file.
 
     # Zed: its registry has no Aura, but it loads theme JSON dropped into
     # ~/.config/zed/themes. Install whatever the theme ships so the name
     # set below actually resolves -- Zed falls back silently otherwise.
-    local zed_settings="$DOTFILES_DIR/.config/zed/settings.json"
     if compgen -G "$THEMES_DIR/zed/*.json" >/dev/null; then
         mkdir -p "$HOME/.config/zed/themes"
         cp "$THEMES_DIR/zed"/*.json "$HOME/.config/zed/themes/"
     fi
-    if [[ -n "${zed_theme:-}" && "${zed_theme:-}" != "-" && -f "$zed_settings" ]] && command -v jq &>/dev/null; then
-        local tmpfile
-        tmpfile=$(mktemp)
-        # Pin Zed's mode to the theme's and fill that slot; the other slot
-        # keeps its last value so "system" mode still has a pair.
-        if jq --arg theme "$zed_theme" --arg mode "$theme_mode" \
-                '.theme.mode = $mode | .theme[$mode] = $theme' "$zed_settings" > "$tmpfile" 2>/dev/null \
-            && ! cmp -s "$tmpfile" "$zed_settings"; then
-            mv "$tmpfile" "$zed_settings"
-            _theme_success "Zed → $zed_theme ($theme_mode)"
-        else
-            rm -f "$tmpfile"
-        fi
-    fi
-
-    # VS Code uses JSONC, so sed rather than jq. Resolve the symlink first:
-    # BSD sed -i refuses to edit symlinks.
-    local vscode_settings="$HOME/Library/Application Support/Code/User/settings.json"
-    [[ -L "$vscode_settings" ]] && vscode_settings=$(readlink "$vscode_settings")
-    if [[ -n "${vscode_theme:-}" && "${vscode_theme:-}" != "-" && -f "$vscode_settings" ]]; then
-        if grep -q '"workbench\.colorTheme"' "$vscode_settings"; then
-            if ! grep -q "\"workbench\.colorTheme\": *\"$vscode_theme\"" "$vscode_settings"; then
-                sed -i '' 's/"workbench\.colorTheme": *"[^"]*"/"workbench.colorTheme": "'"$vscode_theme"'"/' "$vscode_settings"
-                _theme_success "VS Code → $vscode_theme"
-            fi
-        elif head -1 "$vscode_settings" | grep -q '^{'; then
-            sed -i '' '1a\
-\  "workbench.colorTheme": "'"$vscode_theme"'",
-' "$vscode_settings"
-            _theme_success "VS Code → $vscode_theme (key added)"
-        fi
-    fi
+    _render_zed_settings "${zed_theme:-}" "$theme_mode"
+    _render_vscode_settings "${vscode_theme:-}"
 
     if [[ -n "${warp_theme:-}" ]] && { command -v warp-cli &>/dev/null || [[ -d "/Applications/Warp.app" ]]; }; then
         local warp_themes_dir="$HOME/.warp/themes"

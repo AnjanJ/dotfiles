@@ -56,7 +56,7 @@ Common ones: `dotfiles health`, `dotfiles sync`, `dotfiles theme <name>`, `dotfi
 | Terminal | `~/.config/ghostty/config`, `~/.wezterm.lua`, `~/.config/zellij/config.kdl` + `layouts/` |
 | Shell | `~/.zshrc` (env, core), `~/.zshrc-terminal-enhancements` (fzf, zoxide, aliases), `~/.zshrc-dhh-additions` (Rails), `~/.zshrc-elixir-additions` (Phoenix), `~/.zshrc.local` (machine-only, untracked) |
 | Prompt | template `themes/_templates/starship.toml.tpl` in the repo (rendered per theme; `$STARSHIP_CONFIG` points at the result) |
-| Editors | `~/.config/nvim/lua/plugins/*.lua` (AstroNvim), `~/.config/zed/settings.json`, VS Code settings via `~/Library/Application Support/Code/User/` |
+| Editors | `~/.config/nvim/lua/plugins/*.lua` (AstroNvim), `.config/zed/settings.base.json` and `.config/vscode/settings.base.json` in the repo (the `settings.json` next to each is generated with the theme; `dotfiles theme` copies in-app edits back into the base) via `~/Library/Application Support/Code/User/` |
 | Git | `~/.gitconfig` (tracked), `~/.gitconfig-work` (untracked, from `dotfiles work setup`) |
 | Runtimes | `~/.config/mise/config.toml` |
 | Packages | `Brewfile` in the repo |

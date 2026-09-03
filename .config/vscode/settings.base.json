@@ -1,5 +1,5 @@
 {
-  "workbench.colorTheme": "Aura Dark",
+  "workbench.colorTheme": "{{ vscode_theme }}",
   "editor.fontSize": 18,
   "editor.formatOnSave": true,
   "files.watcherExclude": {

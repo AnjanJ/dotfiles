@@ -155,7 +155,7 @@ section "Tracked files stay clean"
 # may change.
 _dirty_after=$(git -C "$E2E_ROOT" status --porcelain 2>/dev/null || true)
 _new_dirt=$(comm -13 <(printf '%s\n' "$DIRTY_BEFORE" | sort) <(printf '%s\n' "$_dirty_after" | sort) \
-    | grep -vE '^ M (\.gitconfig|\.config/zed/settings\.json|\.config/vscode/settings\.json)$' || true)
+    | grep -vE '^ M \.gitconfig$' || true)
 assert_eq "$_new_dirt" "" "install changed no tracked file other than .gitconfig and the retinted editor settings"
 _gitconfig_drift=$(git -C "$E2E_ROOT" diff -U0 -- .gitconfig | grep -E '^[-+][^-+]' | grep -vE '^[-+][[:space:]]*(name|email) = ' || true)
 assert_eq "$_gitconfig_drift" "" ".gitconfig changed on identity lines only (no editor or excludesfile rewrite)"
