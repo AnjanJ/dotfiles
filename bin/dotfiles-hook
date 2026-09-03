@@ -14,6 +14,7 @@ set -euo pipefail
 #   post-sync             after `dotfiles sync`
 #   post-update           after `dotfiles update`
 #   post-install          once, at the end of install.sh
+#   font-set <family>     after `dotfiles font set` / `reset`
 #
 # A failing hook is reported and does not stop the caller.
 #
@@ -28,14 +29,14 @@ if [[ -z "${1:-}" || "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
     echo "       dotfiles hook install <event> <file>"
     echo ""
     echo "Runs ~/.config/dotfiles/hooks/<event> and ~/.config/dotfiles/hooks/<event>.d/*"
-    echo "Events: theme-set <theme>, post-sync, post-update, post-install"
+    echo "Events: theme-set <theme>, post-sync, post-update, post-install, font-set <family>"
     echo "--list shows what is installed; --seed copies the sample hooks into place"
     exit 0
 fi
 
 HOOKS_DIR="${DOTFILES_HOOKS_DIR:-$HOME/.config/dotfiles/hooks}"
 DOTFILES_DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
-KNOWN_EVENTS="theme-set post-sync post-update post-install"
+KNOWN_EVENTS="theme-set post-sync post-update post-install font-set"
 
 if [[ "$1" == "--seed" ]]; then
     # Samples are user files once copied: never overwrite, and a removed

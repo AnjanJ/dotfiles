@@ -4,7 +4,7 @@
 #
 #   dotfiles hook install theme-set ~/bin/retint-slack.sh
 #
-# Events: theme-set, post-sync, post-update, post-install (dotfiles hook
+# Events: theme-set, post-sync, post-update, post-install, font-set (dotfiles hook
 # --help explains each). Any other name is accepted with a warning, for
 # events fired by your own scripts. Ported from omarchy-hook-install.
 set -euo pipefail
@@ -24,7 +24,7 @@ if ! (LC_ALL=C; [[ "$EVENT" =~ ^[a-z][a-z0-9-]*$ ]]); then
     exit 1
 fi
 case "$EVENT" in
-    theme-set|post-sync|post-update|post-install) ;;
+    theme-set|post-sync|post-update|post-install|font-set) ;;
     *) echo "Warning: nothing in the dotfiles tooling fires '$EVENT'; only your own \`dotfiles hook $EVENT\` calls will run it" >&2 ;;
 esac
 if [[ ! -f "$FILE" ]]; then

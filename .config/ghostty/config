@@ -12,7 +12,8 @@
 config-file = ?theme.generated
 
 # Font configuration
-font-family = "Fira Code"
+# font-family is set by `dotfiles font set <family>` (rendered into font.generated)
+config-file = ?font.generated
 font-size = 14
 
 # Window settings

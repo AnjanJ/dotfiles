@@ -35,7 +35,7 @@ magenta = "#bb9af7"
 cyan = "#7dcfff"
 muted = "#565f89"
 EOF
-printf 'theme_name="tokyo-night"\nbat_theme="TwoDark"\n' > "$WORK/vars"
+printf 'theme_name="tokyo-night"\nbat_theme="TwoDark"\nfont_family="Fira Code"\n' > "$WORK/vars"
 
 # render <template-text> [vars] → stdout
 render() {
@@ -155,6 +155,7 @@ for theme_dir in "$REAL_DOTFILES_DIR"/themes/*/; do
         echo "theme_name=\"$theme\""
         echo "dotfiles_dir=\"/x\""
         echo "nvim_plugin_spec=\"/x/$theme.lua\""
+        echo "font_family=\"Fira Code\""
     } > "$WORK/vars-$theme"
     ok=true
     for tpl in "$REAL_DOTFILES_DIR"/themes/_templates/*.tpl; do

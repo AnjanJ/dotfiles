@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+# dotfiles:summary=The monospace font every terminal and editor uses: show, list installed families, set, reset
+# dotfiles:args=current | list | set <family> | reset
+#
+#   dotfiles font current                     # what is in use (default: Fira Code)
+#   dotfiles font list                        # installed monospace families (fontconfig)
+#   dotfiles font set "JetBrainsMono Nerd Font"
+#   dotfiles font reset                       # back to the default
+#
+# The family is recorded in ~/.local/state/dotfiles/font and reaches the
+# apps through the theme pipeline as {{ font_family }}: Ghostty and
+# WezTerm read it from the rendered theme dir, Zed and VS Code get it in
+# their generated settings.json. `set` re-renders the active theme and
+# fires the font-set hook with the family in $1. Sizes stay per app.
+# Ported from omarchy-font-set. Bash 3.2 compatible.
+set -euo pipefail
+
+DOTFILES_DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+STATE_DIR="${DOTFILES_STATE_DIR:-$HOME/.local/state/dotfiles}"
+FONT_FILE="$STATE_DIR/font"
+DEFAULT_FONT="Fira Code"
+
+current_font() {
+    local f=""
+    [[ -f "$FONT_FILE" ]] && f=$(head -1 "$FONT_FILE")
+    echo "${f:-$DEFAULT_FONT}"
+}
+
+rerender() {
+    local theme
+    theme=$(cat "$HOME/.dotfiles-theme" 2>/dev/null || true)
+    if [[ -z "$theme" ]]; then
+        echo "No theme applied yet; the font takes effect at the first: dotfiles theme <name>"
+        return 0
+    fi
+    bash "$DOTFILES_DIR/scripts/apply-theme.sh" "$theme" true >/dev/null
+}
+
+case "${1:-current}" in
+    current)
+        current_font
+        ;;
+    list)
+        if ! command -v fc-list >/dev/null 2>&1; then
+            echo "fc-list is not installed (brew install fontconfig); installed families are in Font Book" >&2
+            exit 1
+        fi
+        fc-list :spacing=mono family | sed 's/,.*$//' | sort -u
+        ;;
+    set)
+        family="${2:-}"
+        if [[ -z "$family" ]]; then
+            echo "Usage: dotfiles font set <family>" >&2
+            exit 1
+        fi
+        if command -v fc-list >/dev/null 2>&1 && [[ -z "$(fc-list :family="$family" family)" ]]; then
+            echo "No installed font family matches '$family' (dotfiles font list shows what is installed)" >&2
+            exit 1
+        fi
+        mkdir -p "$STATE_DIR"
+        printf '%s\n' "$family" > "$FONT_FILE"
+        echo "Font: $family"
+        rerender
+        bash "$DOTFILES_DIR/bin/dotfiles-hook" font-set "$family"
+        ;;
+    reset)
+        rm -f "$FONT_FILE"
+        echo "Font: $DEFAULT_FONT (default)"
+        rerender
+        bash "$DOTFILES_DIR/bin/dotfiles-hook" font-set "$DEFAULT_FONT"
+        ;;
+    -h|--help)
+        sed -n '4,15p' "$0" | sed 's/^# \{0,1\}//'
+        ;;
+    *)
+        echo "Usage: dotfiles font current | list | set <family> | reset" >&2
+        exit 1
+        ;;
+esac

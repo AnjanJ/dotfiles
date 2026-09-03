@@ -44,4 +44,4 @@ Palette keys (same schema as Omarchy themes): `mode`, `accent`, `selection`, `mu
 
 ## Fonts
 
-Fonts are not themed. Ghostty: `font-family`/`font-size` in `~/.config/ghostty/config`. WezTerm: `config.font` in `~/.wezterm.lua`. Zed: `buffer_font_family` in `~/.config/zed/settings.json`. sketchybar: `icon.font`/`label.font` in `sketchybarrc`. Fonts are installed from the Brewfile `fonts` group.
+The monospace family is one setting: `dotfiles font set <family>` (default Fira Code, `dotfiles font current`/`list`). It reaches Ghostty and WezTerm through the rendered theme dir (`{{ font_family }}` in `ghostty-font.tpl`, installed as `~/.config/ghostty/font.generated`, and `wezterm-font.lua.tpl`), and Zed (`buffer_font_family`) and VS Code (`editor.fontFamily`) through their generated `settings.json`; do not edit the family in those files, it is overwritten at the next render. Sizes stay per app: Ghostty `font-size` in `~/.config/ghostty/config`, WezTerm `config.font_size` in `~/.wezterm.lua`, Zed `buffer_font_size` in `~/.config/zed/settings.json`. sketchybar: `icon.font`/`label.font` in `sketchybarrc`. Fonts are installed from the Brewfile `fonts` group.

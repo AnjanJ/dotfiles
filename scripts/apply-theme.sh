@@ -75,9 +75,11 @@ _link_generated() {
     ln -s "$src" "$dst"
 }
 
-# _render_zed_settings <zed theme name or empty> <light|dark>
+# _render_zed_settings <zed theme name or empty> <light|dark> <font family>
+# Managed keys (.theme and .buffer_font_family) come from the pipeline;
+# the base keeps its own defaults for them across an adopt.
 _render_zed_settings() {
-    local zed_theme="$1" mode="$2"
+    local zed_theme="$1" mode="$2" font="$3"
     local base="$DOTFILES_DIR/.config/zed/settings.base.json"
     local live="$DOTFILES_DIR/.config/zed/settings.json"
     [[ -f "$base" ]] || return 0
@@ -88,8 +90,8 @@ _render_zed_settings() {
     fi
     local tmp
     tmp=$(mktemp)
-    if [[ -f "$live" ]] && ! cmp -s <(jq -S 'del(.theme)' "$live" 2>/dev/null) <(jq -S 'del(.theme)' "$base"); then
-        if jq --slurpfile b "$base" '.theme = $b[0].theme' "$live" > "$tmp" 2>/dev/null; then
+    if [[ -f "$live" ]] && ! cmp -s <(jq -S 'del(.theme, .buffer_font_family)' "$live" 2>/dev/null) <(jq -S 'del(.theme, .buffer_font_family)' "$base"); then
+        if jq --slurpfile b "$base" '.theme = $b[0].theme | .buffer_font_family = $b[0].buffer_font_family' "$live" > "$tmp" 2>/dev/null; then
             mv "$tmp" "$base"
             _theme_success "Zed settings changed in Zed → adopted into .config/zed/settings.base.json"
         else
@@ -101,10 +103,10 @@ _render_zed_settings() {
     local src="$base"
     [[ -f "$live" ]] && jq -e . "$live" >/dev/null 2>&1 && src="$live"
     if [[ -n "$zed_theme" && "$zed_theme" != "-" ]]; then
-        jq --arg theme "$zed_theme" --arg mode "$mode" \
-            '.theme.mode = $mode | .theme[$mode] = $theme' "$src" > "$tmp"
+        jq --arg theme "$zed_theme" --arg mode "$mode" --arg font "$font" \
+            '.theme.mode = $mode | .theme[$mode] = $theme | .buffer_font_family = $font' "$src" > "$tmp"
     else
-        cp "$src" "$tmp"
+        jq --arg font "$font" '.buffer_font_family = $font' "$src" > "$tmp"
     fi
     if [[ ! -f "$live" ]] || ! cmp -s "$tmp" "$live"; then
         mv "$tmp" "$live"
@@ -115,17 +117,19 @@ _render_zed_settings() {
     _link_generated "$live" "$HOME/.config/zed/settings.json"
 }
 
-# _render_vscode_settings <vscode theme name or empty>
+# _render_vscode_settings <vscode theme name or empty> <font family>
 # VS Code's file is JSONC (comments, trailing commas), so this works on
-# lines: the base carries "workbench.colorTheme": "{{ vscode_theme }}".
+# lines: the base carries "workbench.colorTheme": "{{ vscode_theme }}"
+# and "editor.fontFamily": "{{ font_family }}".
 _render_vscode_settings() {
-    local vscode_theme="$1"
+    local vscode_theme="$1" font="$2"
     local base="$DOTFILES_DIR/.config/vscode/settings.base.json"
     local live="$DOTFILES_DIR/.config/vscode/settings.json"
     [[ -f "$base" ]] || return 0
     local placeholder='"workbench.colorTheme": "{{ vscode_theme }}"'
-    if [[ -f "$live" ]] && ! cmp -s <(grep -v '"workbench\.colorTheme"' "$live") <(grep -v '"workbench\.colorTheme"' "$base"); then
-        sed 's/"workbench\.colorTheme": *"[^"]*"/'"$placeholder"'/' "$live" > "$base"
+    local font_placeholder='"editor.fontFamily": "{{ font_family }}"'
+    if [[ -f "$live" ]] && ! cmp -s <(grep -vE '"(workbench\.colorTheme|editor\.fontFamily)"' "$live") <(grep -vE '"(workbench\.colorTheme|editor\.fontFamily)"' "$base"); then
+        sed 's/"workbench\.colorTheme": *"[^"]*"/'"$placeholder"'/; s/"editor\.fontFamily": *"[^"]*"/'"$font_placeholder"'/' "$live" > "$base"
         _theme_success "VS Code settings changed in VS Code → adopted into .config/vscode/settings.base.json"
     fi
     if [[ -z "$vscode_theme" || "$vscode_theme" == "-" ]]; then
@@ -136,7 +140,7 @@ _render_vscode_settings() {
     fi
     local tmp
     tmp=$(mktemp)
-    sed 's/"workbench\.colorTheme": *"[^"]*"/"workbench.colorTheme": "'"$vscode_theme"'"/' "$base" > "$tmp"
+    sed 's/"workbench\.colorTheme": *"[^"]*"/"workbench.colorTheme": "'"$vscode_theme"'"/; s/"editor\.fontFamily": *"[^"]*"/"editor.fontFamily": "'"$font"'"/' "$base" > "$tmp"
     if [[ ! -f "$live" ]] || ! cmp -s "$tmp" "$live"; then
         mv "$tmp" "$live"
         chmod 644 "$live"
@@ -397,6 +401,11 @@ _apply_theme_locked() {
     fi
 
     # Template variables beyond the palette: theme.conf plus a few facts
+    # The monospace family every terminal and editor shares (dotfiles
+    # font set); sizes stay in each app's own config
+    local font_family
+    font_family=$(head -1 "$DOTFILES_STATE_DIR/font" 2>/dev/null || true)
+    [[ -n "$font_family" ]] || font_family="Fira Code"
     local vars
     vars=$(mktemp)
     {
@@ -410,6 +419,7 @@ _apply_theme_locked() {
         done
         echo "theme_name=\"$THEME\""
         echo "dotfiles_dir=\"$DOTFILES_DIR\""
+        echo "font_family=\"$font_family\""
         echo "nvim_plugin_spec=\"$nvim_spec\""
         echo "theme_source_dir=\"${SOURCE_DIR:-$THEMES_DIR}\""
         echo "theme_trusted=\"$TRUSTED\""
@@ -488,6 +498,8 @@ _apply_theme_locked() {
 
     # Generated, gitignored copies inside linked config dirs (these apps
     # cannot take an absolute include path)
+    _install_rendered ghostty-font "$DOTFILES_DIR/.config/ghostty/font.generated" \
+        && _theme_success "Ghostty font.generated installed"
     _install_rendered ghostty "$DOTFILES_DIR/.config/ghostty/theme.generated" \
         && _theme_success "Ghostty → .config/ghostty/theme.generated"
     _install_rendered zellij.kdl "$DOTFILES_DIR/.config/zellij/themes/dotfiles.kdl" \
@@ -538,8 +550,8 @@ _apply_theme_locked() {
         mkdir -p "$HOME/.config/zed/themes"
         cp "$THEMES_DIR/zed"/*.json "$HOME/.config/zed/themes/"
     fi
-    _render_zed_settings "${zed_theme:-}" "$theme_mode"
-    _render_vscode_settings "${vscode_theme:-}"
+    _render_zed_settings "${zed_theme:-}" "$theme_mode" "$font_family"
+    _render_vscode_settings "${vscode_theme:-}" "$font_family"
 
     if [[ -n "${warp_theme:-}" ]] && { command -v warp-cli &>/dev/null || [[ -d "/Applications/Warp.app" ]]; }; then
         local warp_themes_dir="$HOME/.warp/themes"
@@ -617,5 +629,5 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
         echo "Usage: bash scripts/apply-theme.sh <${VALID_THEMES[*]// /|}>"
         exit 1
     fi
-    apply_theme "$1"
+    apply_theme "$1" "${2:-false}"
 fi

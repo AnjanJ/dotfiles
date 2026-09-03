@@ -45,6 +45,10 @@ Nothing tracked in git changes when you switch themes. Each app gets its colours
 | Generated from a tracked base | Zed and VS Code: `settings.base.json` is tracked, `settings.json` is rendered next to it with the theme name filled in (Zed's `theme.mode` and slot, VS Code's `workbench.colorTheme` placeholder), and anything changed in the editor's own settings UI is copied back into the base on the next `dotfiles theme` |
 | Own settings edited, best-effort | Warp (`defaults write`), bat (`~/.config/bat/config` + custom `.tmTheme`), lsd, Claude Code (`~/.claude/themes/dotfiles.json`), Xcode, Sublime Text |
 
+## Fonts
+
+The monospace family is one setting, not per theme: `dotfiles font set "JetBrainsMono Nerd Font"` records it in `~/.local/state/dotfiles/font`, re-renders the active theme so Ghostty (`font-family` in `font.generated`, included by its config), WezTerm (`wezterm-font.lua`), Zed (`buffer_font_family`) and VS Code (`editor.fontFamily`) pick it up, and fires the `font-set` hook. `dotfiles font list` shows the installed monospace families (fontconfig), `dotfiles font reset` returns to Fira Code. Sizes stay in each app's config.
+
 ## Palettes
 
 | | Tokyo Night | Aura Dark | Catppuccin Mocha | Catppuccin Latte | Flexoki Light |

@@ -15,6 +15,7 @@
 | `dotfiles theme bg next\|set <img>\|list\|current` | desktop picture for the active theme: cycles `themes/<name>/backgrounds/`, `~/.config/dotfiles/backgrounds/<name>/`, then the gradient generated from the palette | yes, when asked |
 | `dotfiles menu [route] [--list\|--run <label>]` | fzf tree over every verb (theme, toggles, launchers, reminder, update, all commands); `--list` prints `label<TAB>command` rows, Ctrl+Shift+Space opens it in Ghostty | `--list` yes; running rows: as the row's command |
 | `dotfiles reminder <min> [msg]\|show\|clear` | macOS notification in N minutes via a self-removing launchd agent | yes |
+| `dotfiles font current\|list\|set <family>\|reset` | the monospace family shared by Ghostty, WezTerm, Zed and VS Code (default Fira Code); `set` verifies the family with fontconfig, re-renders the theme and fires `font-set` | `current`/`list` yes; `set`: when asked |
 | `dotfiles keys [--update\|--check\|--lint]` | keybinding cheatsheet; `--update` regenerates the doc; `--lint` fails on a chord bound twice in a mode, a binding with no readable description, or a script the repo does not ship (run it after editing aerospace.toml) | yes |
 | `dotfiles toggle <flag> [on\|off]` | flip `startup-apps`, `borders`, `auto-commit`, `appearance`, `background`, `update-notice` (or any name) | yes, when asked |
 | `dotfiles migrate [--pending]` | run one-off repairs shipped with the repo | yes |
@@ -58,6 +59,7 @@ User scripts that run on events, outside the repo so updates never touch them:
 ~/.config/dotfiles/hooks/post-sync.d/*      after `dotfiles sync`
 ~/.config/dotfiles/hooks/post-update.d/*    after `dotfiles update`
 ~/.config/dotfiles/hooks/post-install.d/*   once, at the end of install.sh
+~/.config/dotfiles/hooks/font-set.d/*       after `dotfiles font set` ($1 = family)
 ```
 
 `dotfiles hook --list` shows what is installed per event; `dotfiles hook install <event> <file>` copies a script in and makes it executable. Each event directory holds a `*.sample` from the repo's `hooks/` (seeded by install and doctor, inert until renamed without `.sample`).

@@ -1,5 +1,6 @@
 {
   "workbench.colorTheme": "{{ vscode_theme }}",
+  "editor.fontFamily": "{{ font_family }}",
   "editor.fontSize": 18,
   "editor.formatOnSave": true,
   "files.watcherExclude": {

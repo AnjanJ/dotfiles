@@ -12,9 +12,15 @@ config.audible_bell = 'Disabled'
 config.scrollback_lines = 50000
 
 -- ── Font (JetBrains Mono Nerd Font + ligatures) ───────────────────────────────
+-- Family from `dotfiles font set` (rendered next to the palette); the
+-- Nerd Font symbols fallback below keeps icons whatever the family.
+local font_ok, font_family = pcall(dofile, os.getenv('HOME') .. '/.local/state/dotfiles/current/theme/wezterm-font.lua')
+if not font_ok or type(font_family) ~= 'string' or font_family == '' then
+  font_family = 'Fira Code'
+end
 config.font = wezterm.font_with_fallback {
   {
-    family = 'JetBrainsMono Nerd Font',
+    family = font_family,
     weight = 'Medium',
     harfbuzz_features = { 'calt=1', 'clig=1', 'liga=1' },
   },

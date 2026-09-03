@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Runs after `dotfiles font set` / `reset`; $1 is the family now in use.
+# Rename without .sample to enable. Apps outside the pipeline (Warp,
+# Xcode, a browser's monospace setting) can be pointed at $1 here.
+if command -v terminal-notifier >/dev/null 2>&1; then
+    terminal-notifier -title "dotfiles" -message "Font set to $1" >/dev/null
+else
+    osascript -e "display notification \"Font set to $1\" with title \"dotfiles\""
+fi

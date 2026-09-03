@@ -20,14 +20,14 @@ Guidance for anyone changing the dotfiles source, human or agent. End-user help 
 ## Commands
 
 - Every `bin/dotfiles-*` starts with `# dotfiles:summary=…` and, when it takes arguments, `# dotfiles:args=…` (bracket optional parts: `[--yes]`). `# dotfiles:hidden=true` keeps plumbing out of listings. `dotfiles commands --check` runs in CI and fails on a missing summary.
-- Name commands `dotfiles-<group>-<verb>` so they route as `dotfiles <group> <verb>`. Existing groups: `add`, `work`, `repos`. Verbs in use: `sync`, `update`, `health`, `doctor`, `debug`, `backup`, `theme`, `toggle`, `keys`, `hook`, `migrate`.
+- Name commands `dotfiles-<group>-<verb>` so they route as `dotfiles <group> <verb>`. Existing groups: `add`, `work`, `repos`. Verbs in use: `sync`, `update`, `health`, `doctor`, `debug`, `backup`, `theme`, `font`, `toggle`, `keys`, `hook`, `migrate`.
 - `--help` is handled by the router from the header; a script's own `--help` is a bonus, not a requirement.
 - Completions come from `dotfiles commands --plain`; do not add commands to `.zshrc-work-completions` by hand.
 
 ## Generated files: never edit these
 
 - `~/.local/state/dotfiles/current/theme/*` — rendered by `dotfiles theme`.
-- `.config/ghostty/theme.generated`, `.config/zellij/themes/dotfiles.kdl`, `.config/sketchybar/colors.sh`, `.config/borders/colors.sh` — gitignored copies of the above.
+- `.config/ghostty/theme.generated`, `.config/ghostty/font.generated`, `.config/zellij/themes/dotfiles.kdl`, `.config/sketchybar/colors.sh`, `.config/borders/colors.sh` — gitignored copies of the above.
 - `.config/zed/settings.json`, `.config/vscode/settings.json` — generated from the tracked `settings.base.json` next to each with the theme filled in; edit the base (or the editor's own settings UI, which `dotfiles theme` copies back into the base), never the generated file.
 - The block between `<!-- AEROSPACE_KEYS_START -->` and `<!-- AEROSPACE_KEYS_END -->` in `docs/KEYBINDINGS.md` — run `dotfiles keys --update` after changing `aerospace.toml`.
 - `docs/PACKAGE_CATALOG.md` — built by `scripts/catalog/build-catalog.py` from the Brewfile.
