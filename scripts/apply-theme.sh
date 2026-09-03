@@ -50,6 +50,49 @@ _install_rendered() {
     cp "$src" "$dst"
 }
 
+# _set_macos_appearance <light|dark>
+# Follows the theme's `mode`. Off with `dotfiles toggle appearance off` or
+# DOTFILES_NO_APPEARANCE=1 (tests, CI). Prefers the `dark-mode` CLI
+# (Brewfile), which flips instantly with no permission dialog; falls back
+# to System Events via osascript, which macOS gates behind an Automation
+# prompt the first time, so it runs under a 5s watchdog rather than
+# hanging a sync.
+_set_macos_appearance() {
+    local mode="$1"
+    [[ -z "${DOTFILES_NO_APPEARANCE:-}" ]] || return 0
+    [[ "$(uname -s)" == "Darwin" ]] || return 0
+    if [[ -f "$DOTFILES_DIR/bin/dotfiles-toggle" ]] \
+        && ! bash "$DOTFILES_DIR/bin/dotfiles-toggle" --enabled appearance; then
+        return 0
+    fi
+    if command -v dark-mode &>/dev/null; then
+        local want=off
+        [[ "$mode" == "dark" ]] && want=on
+        if dark-mode "$want" >/dev/null 2>&1; then
+            _theme_success "macOS appearance → $mode"
+        else
+            _theme_warning "macOS appearance not switched (dark-mode $want failed)"
+        fi
+        return 0
+    fi
+    local flag=false pid i=0
+    [[ "$mode" == "dark" ]] && flag=true
+    osascript -e "tell application \"System Events\" to tell appearance preferences to set dark mode to $flag" >/dev/null 2>&1 &
+    pid=$!
+    while kill -0 "$pid" 2>/dev/null && [[ $i -lt 50 ]]; do
+        sleep 0.1
+        i=$((i + 1))
+    done
+    if kill -0 "$pid" 2>/dev/null; then
+        kill "$pid" 2>/dev/null || true
+        _theme_warning "macOS appearance not switched: osascript timed out (allow Automation for System Events, or brew install dark-mode)"
+    elif wait "$pid"; then
+        _theme_success "macOS appearance → $mode"
+    else
+        _theme_warning "macOS appearance not switched (osascript failed)"
+    fi
+}
+
 # shellcheck disable=SC2154  # theme.conf variables loaded dynamically
 apply_theme() {
     local THEME="$1"
@@ -139,6 +182,17 @@ apply_theme() {
         echo "nvim_plugin_spec=\"$THEMES_DIR/nvim/$nvim_plugin_file\""
     } > "$vars"
 
+    # The theme's mode (light|dark): `mode` in colors.toml, else derived
+    # from background luminance by the renderer. Rendered here so every
+    # consumer below agrees with the templates.
+    local theme_mode mode_tpl
+    mode_tpl=$(mktemp)
+    printf '{{ mode }}' > "$mode_tpl"
+    theme_mode=$(theme_render "$next/colors.toml" "$vars" "$mode_tpl" /dev/stdout 2>/dev/null || true)
+    rm -f "$mode_tpl"
+    [[ "$theme_mode" == "light" ]] || theme_mode="dark"
+    echo "$theme_mode" > "$next/theme.mode"
+
     local tpl out name rendered=0 overridden=0
     for tpl in "$TEMPLATES_DIR"/*.tpl; do
         name=$(basename "$tpl" .tpl)
@@ -159,7 +213,7 @@ apply_theme() {
     done
     rm -f "$vars"
     echo "$THEME" > "$next/theme.name"
-    _theme_success "Rendered $rendered templates ($overridden overridden by themes/$THEME/overrides)"
+    _theme_success "Rendered $rendered templates ($overridden overridden by themes/$THEME/overrides), mode: $theme_mode"
 
     # ── Swap ─────────────────────────────────────────────
     rm -rf "$RENDERED"
@@ -228,10 +282,13 @@ apply_theme() {
     if [[ -f "$zed_settings" ]] && command -v jq &>/dev/null; then
         local tmpfile
         tmpfile=$(mktemp)
-        if jq --arg theme "$zed_theme" '.theme.dark = $theme' "$zed_settings" > "$tmpfile" 2>/dev/null \
+        # Pin Zed's mode to the theme's and fill that slot; the other slot
+        # keeps its last value so "system" mode still has a pair.
+        if jq --arg theme "$zed_theme" --arg mode "$theme_mode" \
+                '.theme.mode = $mode | .theme[$mode] = $theme' "$zed_settings" > "$tmpfile" 2>/dev/null \
             && ! cmp -s "$tmpfile" "$zed_settings"; then
             mv "$tmpfile" "$zed_settings"
-            _theme_success "Zed → $zed_theme"
+            _theme_success "Zed → $zed_theme ($theme_mode)"
         else
             rm -f "$tmpfile"
         fi
@@ -289,6 +346,9 @@ apply_theme() {
             _theme_success "Sublime Text → $THEME"
         fi
     fi
+
+    # ── macOS appearance follows the theme's mode ─────────
+    _set_macos_appearance "$theme_mode"
 
     # ── Retint running apps (best-effort) ────────────────
     if command -v sketchybar &>/dev/null && pgrep -x sketchybar >/dev/null 2>&1; then

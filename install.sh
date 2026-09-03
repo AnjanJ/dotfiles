@@ -17,8 +17,8 @@
 #   --email "a@b.com"   Git personal email
 #   --work-email "x@y"  Git work email (enables work identity)
 #   --work-dir "~/work/code" Work directory (default: ~/work/code)
-#   --theme <name>      Theme: tokyo-night, aura, or catppuccin
-#                       (default: tokyo-night)
+#   --theme <name>      Theme: tokyo-night, aura, catppuccin, or a light
+#                       one: catppuccin-latte, flexoki-light (default: tokyo-night)
 #   --ssh <mode>        SSH: 1password, existing, generate, skip
 #                       Default: auto-detect 1Password SSH agent if running,
 #                       otherwise skip. Force with --ssh 1password.

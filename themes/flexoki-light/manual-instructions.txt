@@ -1,0 +1,25 @@
+
+══════════════════════════════════════════════════════
+  Manual Theme Steps: Flexoki Light
+══════════════════════════════════════════════════════
+
+macOS appearance was switched to Light (dotfiles toggle appearance off
+to leave it alone). The following apps need manual theme selection.
+
+──────────────────────────────────────────────────────
+SLACK
+──────────────────────────────────────────────────────
+  1. Open Slack → Preferences → Themes
+  2. Scroll to "Colors" section and click "Custom Theme"
+  3. Paste this color string:
+     #fffcf0,#f2f0e5,#205ea6,#fffcf0,#e6e4d9,#100f0f,#66800b,#af3029,#fffcf0,#100f0f
+
+──────────────────────────────────────────────────────
+OBSIDIAN / BROWSERS / RAYCAST
+──────────────────────────────────────────────────────
+  Flexoki started as an Obsidian theme: Settings → Appearance → Themes → "Flexoki".
+  Chrome and Firefox have no official Flexoki theme; the light system
+  appearance is enough for both. Raycast: search "Flexoki" at
+  https://ray.so/themes/ and click "Add to Raycast".
+
+══════════════════════════════════════════════════════

@@ -8,7 +8,7 @@ All commands work from anywhere — no need to `cd ~/dotfiles` first.
 dotfiles update       # Upgrade system & sync repo (pull → brew upgrade → snapshot → push)
 dotfiles sync         # Quick refresh: pull, relink, reapply theme (no upgrades)
 dotfiles health       # Verify all tools are installed and configured
-dotfiles theme aura   # Switch theme (tokyo-night | aura | catppuccin)
+dotfiles theme aura   # Switch theme (tokyo-night | aura | catppuccin | catppuccin-latte | flexoki-light)
 dotfiles add-theme x  # Scaffold a new theme directory with all required files
 dotfiles cleanup      # Find/remove Homebrew packages not in Brewfile (--force)
 dotfiles doctor       # Auto-fix common issues (symlinks, permissions, SSH keys)

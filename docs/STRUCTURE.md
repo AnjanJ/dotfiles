@@ -34,9 +34,8 @@ dotfiles/
 ├── migrations/                 # One-off per-machine repairs, run by sync/update (bin/dotfiles-migrate)
 ├── agents/skills/dotfiles/     # Claude Code skill for managing this machine (linked to ~/.claude/skills)
 ├── AGENTS.md                   # Conventions for changing this repo (CLAUDE.md points here)
-│   ├── tokyo-night/
-│   ├── aura/
-│   └── catppuccin/
+│   ├── tokyo-night/  aura/  catppuccin/       # dark
+│   └── catppuccin-latte/  flexoki-light/     # light (flip macOS appearance)
 ├── bin/                        # CLI commands, linked file-by-file into ~/bin
 │   ├── dotfiles                # CLI router: bin/dotfiles-<a>-<b> answers `dotfiles a b`; help from # dotfiles:summary= headers
 │   ├── dotfiles-*              # Subcommand implementations

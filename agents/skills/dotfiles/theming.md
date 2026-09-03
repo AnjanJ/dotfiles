@@ -16,6 +16,8 @@ themes/_templates/<file>.tpl       ← one template per app ({{ accent }}, {{ mi
 
 Apps read the rendered directory: Starship (`$STARSHIP_CONFIG`), lazygit (`$LG_CONFIG_FILE`), WezTerm and Neovim (`dofile`), git-delta (`[include]`), fzf (`~/.zshrc-theme-env`), Claude Code (`~/.claude/themes/dotfiles.json`). Ghostty, Zellij, sketchybar and borders get a gitignored generated copy inside their config dir. Zed and VS Code have their theme *name* written into their settings.
 
+Themes: `tokyo-night`, `aura`, `catppuccin` (dark) and `catppuccin-latte`, `flexoki-light` (light). A theme's `mode` drives `{{ is_light }}` in templates, Zed's `theme.mode` and slot, and the macOS appearance (`dark-mode` CLI, else `osascript`; off with `dotfiles toggle appearance off` or `DOTFILES_NO_APPEARANCE=1`).
+
 Palette keys (same schema as Omarchy themes): `mode`, `accent`, `selection`, `muted`, `background`, `dark_background`, `darker_background`, `lighter_background`, `foreground`, `dark_foreground`, `light_foreground`, `bright_foreground`, `black`, `red`, `green`, `yellow`, `blue`, `magenta`, `cyan`, `orange`, `purple`, `bright_*`. Missing keys are derived (accent from blue, muted from a fg/bg blend, bright shades 20% toward white).
 
 ## Do

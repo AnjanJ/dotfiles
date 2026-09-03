@@ -41,6 +41,9 @@ TEST_TMP="$(mktemp -d "${_test_tmp_parent%/}/dotfiles-test.XXXXXX")"
 export TEST_TMP
 export TMPDIR="$TEST_TMP"
 export HOME="$TEST_TMP/home"
+# Applying a theme in a suite must never flip the live macOS appearance;
+# the theme suite unsets this where it stubs dark-mode/osascript.
+export DOTFILES_NO_APPEARANCE=1
 mkdir -p "$HOME"
 
 _TEST_PASSED=0

@@ -73,7 +73,7 @@ dotfiles update       # Upgrade everything & sync the repo
 dotfiles sync         # Quick refresh: pull, relink, reapply theme
 dotfiles health       # Verify tools, symlinks, runtimes, services
 dotfiles doctor       # Auto-fix symlinks, permissions, SSH
-dotfiles theme aura   # Switch theme (tokyo-night | aura | catppuccin)
+dotfiles theme aura   # Switch theme (tokyo-night | aura | catppuccin | catppuccin-latte | flexoki-light)
 dotfiles keys         # Keybinding cheatsheet, generated from aerospace.toml
 ```
 
@@ -107,7 +107,7 @@ Full CLI reference, Brewfile recovery stories, and troubleshooting: [docs/MAINTE
 - **[ThePrimeagen](https://github.com/ThePrimeagen/.dotfiles)** — Harpoon workflow, vim-first development
 - **[José Valim](https://github.com/josevalim/dotfiles)** — Elixir tooling and workflows
 - **[AstroNvim](https://github.com/AstroNvim/AstroNvim)**, **[Starship](https://starship.rs/)**, **[Aerospace](https://github.com/nikitabobko/AeroSpace)**, **[Ghostty](https://ghostty.org/)** — the tools this is built on
-- Themes: [Tokyo Night](https://github.com/folke/tokyonight.nvim) by folke, [Aura](https://github.com/daltonmenezes/aura-theme) by daltonmenezes, [Catppuccin](https://github.com/catppuccin/catppuccin)
+- Themes: [Tokyo Night](https://github.com/folke/tokyonight.nvim) by folke, [Aura](https://github.com/daltonmenezes/aura-theme) by daltonmenezes, [Catppuccin](https://github.com/catppuccin/catppuccin) (Mocha and Latte), [Flexoki](https://stephango.com/flexoki) by kepano
 
 ## License
 

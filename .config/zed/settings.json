@@ -21,7 +21,7 @@
   "cli_default_open_behavior": "existing_window",
   "theme": {
     "mode": "dark",
-    "light": "One Light",
+    "light": "Catppuccin Latte",
     "dark": "Aura Soft Dark"
   },
   "ui_font_size": 16,
@@ -828,6 +828,8 @@
     "git_status": true
   },
   "auto_install_extensions": {
+    "catppuccin": true,
+    "flexoki-themes": true,
     "git-firefly": true,
     "toml": true,
     "dockerfile": true,

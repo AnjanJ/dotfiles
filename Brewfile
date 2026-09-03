@@ -54,6 +54,7 @@ cask "warp"
 cask "aerospace"
 brew "sketchybar"
 brew "borders"
+brew "dark-mode"                 # `dotfiles theme` flips macOS appearance to the theme's mode
 
 # @group terminal-tools — Terminal enhancements & TUI tools
 brew "cliclick"
@@ -224,6 +225,8 @@ vscode "tamasfe.even-better-toml"
 vscode "mechatroner.rainbow-csv"
 
 # Themes — must match your theme switcher
+vscode "catppuccin.catppuccin-vsc"     # Catppuccin Mocha + Latte
 vscode "daltonmenezes.aura-theme"
 vscode "enkia.tokyo-night"
+vscode "shadesofbuntu.flexoki-light"
 vscode "pkief.material-icon-theme"

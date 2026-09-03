@@ -16,7 +16,7 @@ git clone https://github.com/AnjanJ/dotfiles.git ~/dotfiles && bash ~/dotfiles/i
 dotfiles update       # Upgrade system & sync repo
 dotfiles sync         # Quick refresh: pull, relink, reapply theme
 dotfiles health       # Verify all tools are installed
-dotfiles theme aura   # Switch theme (tokyo-night | aura | catppuccin)
+dotfiles theme aura   # Switch theme (tokyo-night | aura | catppuccin | catppuccin-latte | flexoki-light)
 dotfiles add-theme x  # Scaffold a new theme directory
 dotfiles cleanup      # Find/remove unlisted Homebrew packages (--force)
 dotfiles doctor       # Auto-fix common issues

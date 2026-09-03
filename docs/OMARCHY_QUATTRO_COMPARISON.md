@@ -158,6 +158,8 @@ Effects: theme switches no longer dirty the repo, `snapshot: system state` noise
 
 ### Tier 3: ambitious extras
 
+> **Status (2026-09-03):** light themes and mode switching are done — `themes/catppuccin-latte/` and `themes/flexoki-light/` (Omarchy palettes with Ghostty's ANSI black/white slots), `apply-theme.sh` renders `{{ mode }}` once, records it in `theme.mode`, pins Zed's `theme.mode` and fills the matching slot, and flips macOS appearance through the `dark-mode` CLI (Brewfile) or a watchdogged `osascript` fallback, behind `dotfiles toggle appearance` and `DOTFILES_NO_APPEARANCE`. Editor themes come from `catppuccin.catppuccin-vsc`, `shadesofbuntu.flexoki-light` and Zed's `catppuccin` / `flexoki-themes` extensions.
+
 - **Light themes and mode switching.** Import `catppuccin-latte` and `flexoki-light`; use the `mode` key to flip macOS appearance with `osascript -e 'tell app "System Events" to tell appearance preferences to set dark mode to false'`.
 - **Per-theme backgrounds.** `themes/<name>/backgrounds/` plus `dotfiles theme bg next`, setting the desktop via `osascript` or `desktoppr`. Omarchy's `choose_theme_background` and the `current/background` symlink are the model.
 - **Theme install from git URL** with Omarchy's denylist (`*.lua`, terminal configs, symlinks) applied at staging, not at clone time.

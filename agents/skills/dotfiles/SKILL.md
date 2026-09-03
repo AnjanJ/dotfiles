@@ -67,6 +67,7 @@ Machine-only overrides that should not be committed: `~/.zshrc.local`, `~/.zshrc
 ## Example requests
 
 - "Switch to Tokyo Night" → `dotfiles theme tokyo-night`
+- "Go light" → `dotfiles theme catppuccin-latte` or `dotfiles theme flexoki-light` (macOS appearance follows; `dotfiles toggle appearance off` to stop that)
 - "Make the accent colour purple in Catppuccin" → edit `accent` in `themes/catppuccin/colors.toml`, then `dotfiles theme catppuccin`
 - "Add a shortcut to open Finder on Ctrl+Shift+F" → add `ctrl-shift-f = '''exec-and-forget open -a "Finder"'''` under `[mode.main.binding]` in `aerospace.toml` with a `# desc:` line above it, `aerospace reload-config`, then `dotfiles keys --update`
 - "Stop the apps auto-launching at login" → `dotfiles toggle startup-apps off`

@@ -1,0 +1,43 @@
+
+══════════════════════════════════════════════════════
+  Manual Theme Steps: Catppuccin Latte (light)
+══════════════════════════════════════════════════════
+
+macOS appearance was switched to Light (dotfiles toggle appearance off
+to leave it alone). The following apps need manual theme selection.
+
+──────────────────────────────────────────────────────
+SLACK
+──────────────────────────────────────────────────────
+  1. Open Slack → Preferences → Themes
+  2. Scroll to "Colors" section and click "Custom Theme"
+  3. Paste this color string:
+     #eff1f5,#e6e9ef,#1e66f5,#eff1f5,#ccd0da,#4c4f69,#40a02b,#d20f39,#eff1f5,#4c4f69
+
+──────────────────────────────────────────────────────
+GOOGLE CHROME
+──────────────────────────────────────────────────────
+  Install from Chrome Web Store (search "Catppuccin Latte"):
+  https://chromewebstore.google.com/search/catppuccin%20latte
+
+──────────────────────────────────────────────────────
+FIREFOX
+──────────────────────────────────────────────────────
+  Install from Firefox Add-ons:
+  https://addons.mozilla.org/en-US/firefox/addon/catppuccin-latte-blue/
+
+──────────────────────────────────────────────────────
+TELEGRAM
+──────────────────────────────────────────────────────
+  1. Download the Latte theme file from:
+     https://github.com/catppuccin/telegram
+  2. Open Telegram → Settings → Chat Settings
+  3. Under "Chat background", click "Choose from file"
+  4. Select the downloaded .tdesktop-theme file
+
+──────────────────────────────────────────────────────
+RAYCAST
+──────────────────────────────────────────────────────
+  Search "Catppuccin Latte" at https://ray.so/themes/ and click "Add to Raycast"
+
+══════════════════════════════════════════════════════

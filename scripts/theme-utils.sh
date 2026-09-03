@@ -64,6 +64,8 @@ _get_theme_description() {
         tokyo-night) printf "Tokyo Night  — Dark blue aesthetic by folke\n     Subtle, calm colors. Blue and purple accents." ;;
         aura)        printf "Aura Dark    — Deep purple aesthetic by daltonmenezes\n     Vibrant, bold colors. Purple and green accents." ;;
         catppuccin)  printf "Catppuccin   — Warm pastel aesthetic by catppuccin\n     Soothing pastels. Lavender and teal accents." ;;
+        catppuccin-latte) printf "Catppuccin Latte — LIGHT. The same pastels on a pale grey ground\n     Switches macOS to light appearance." ;;
+        flexoki-light)    printf "Flexoki Light — LIGHT. Inky, paper-like palette by kepano\n     Warm off-white ground. Switches macOS to light appearance." ;;
         *)           printf "%s" "$1" ;;
     esac
 }

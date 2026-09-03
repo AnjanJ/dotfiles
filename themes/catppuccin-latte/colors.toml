@@ -1,0 +1,42 @@
+# Catppuccin Latte — https://github.com/catppuccin/catppuccin (MIT)
+# Palette from Omarchy's themes/catppuccin-latte/colors.toml; the ANSI
+# black/white slots follow Ghostty's bundled "Catppuccin Latte" so a
+# light terminal keeps readable black text and grey surfaces.
+mode = "light"
+
+accent = "#1e66f5"
+selection = "#ccd0da"
+muted = "#acb0be"
+
+background = "#eff1f5"
+dark_background = "#e3e4e8"
+darker_background = "#d7d8dc"
+lighter_background = "#dce0e8"
+
+foreground = "#4c4f69"
+dark_foreground = "#9ca0b0"
+light_foreground = "#5c5f77"
+bright_foreground = "#4c4f69"
+
+black = "#5c5f77"
+red = "#d20f39"
+green = "#40a02b"
+yellow = "#df8e1d"
+blue = "#1e66f5"
+magenta = "#ea76cb"
+cyan = "#179299"
+white = "#acb0be"
+orange = "#d84e2b"
+purple = "#8839ef"
+brown = "#6c2715"
+
+bright_black = "#6c6f85"
+bright_red = "#d20f39"
+bright_green = "#40a02b"
+bright_yellow = "#df8e1d"
+bright_blue = "#1e66f5"
+bright_magenta = "#ea76cb"
+bright_cyan = "#179299"
+bright_white = "#bcc0cc"
+
+cursor = "#dc8a78"

@@ -38,6 +38,19 @@ setup_theme_sandbox() {
     cp "$REAL_DOTFILES_DIR/scripts/apply-theme.sh" "$MOCK_DOTFILES/scripts/"
     cp "$REAL_DOTFILES_DIR/scripts/_helpers.sh" "$MOCK_DOTFILES/scripts/"
     cp "$REAL_DOTFILES_DIR/bin/dotfiles-hook" "$MOCK_DOTFILES/bin/"
+    cp "$REAL_DOTFILES_DIR/bin/dotfiles-toggle" "$MOCK_DOTFILES/bin/"
+
+    # Stub the two ways apply-theme can flip macOS appearance; the log
+    # says which was called and with what.
+    STUB="$TEST_HOME/stub"
+    APPEARANCE_LOG="$TEST_HOME/appearance.log"
+    mkdir -p "$STUB"
+    : > "$APPEARANCE_LOG"
+    printf '#!/bin/bash\necho "dark-mode $*" >> "%s"\n' "$APPEARANCE_LOG" > "$STUB/dark-mode"
+    printf '#!/bin/bash\necho "osascript $*" >> "%s"\n' "$APPEARANCE_LOG" > "$STUB/osascript"
+    chmod +x "$STUB/dark-mode" "$STUB/osascript"
+    export PATH="$STUB:$PATH"
+    unset DOTFILES_NO_APPEARANCE
 
     mkdir -p "$MOCK_DOTFILES/.config/ghostty" "$MOCK_DOTFILES/.config/zellij" \
              "$MOCK_DOTFILES/.config/sketchybar" "$MOCK_DOTFILES/.config/borders" \
@@ -54,6 +67,8 @@ setup_theme_sandbox() {
 
 teardown_theme_sandbox() {
     export HOME="$REAL_HOME"
+    export PATH="${PATH#"$STUB":}"
+    export DOTFILES_NO_APPEARANCE=1
     unset DOTFILES_DIR
     rm -rf "$MOCK_DOTFILES" "$TEST_HOME"
 }
@@ -265,6 +280,62 @@ assert_file_contains "$RENDERED/nvim.lua" 'colorscheme = "catppuccin-mocha"' "Ne
 assert_file_contains "$MOCK_DOTFILES/.config/sketchybar/colors.sh" "BAR_COLOR=0xff1e1e2e" "sketchybar copy switched"
 assert_file_not_contains "$RENDERED/ghostty" "#1a1b26" "No Tokyo Night colours left in Ghostty"
 assert_eq "$(cat "$TEST_HOME/.dotfiles-theme")" "catppuccin" "State file updated to catppuccin"
+
+teardown_theme_sandbox
+echo ""
+
+# ── Test 8b: Light theme drives mode-aware outputs and macOS appearance ──
+section "Test 8b: Light theme (catppuccin-latte) sets mode, Zed slot and appearance"
+setup_theme_sandbox
+load_theme_functions
+
+set +e; apply_theme "catppuccin-latte" "true" >/dev/null 2>&1; rc=$?; set -e
+assert_eq "$rc" "0" "catppuccin-latte applies"
+assert_eq "$(cat "$RENDERED/theme.mode")" "light" "theme.mode records light"
+assert_file_contains "$RENDERED/lazygit.yml" "lightTheme: true" "lazygit told it is a light theme"
+assert_file_contains "$RENDERED/claude.json" '"base": "light"' "Claude Code theme base is light"
+assert_file_contains "$RENDERED/ghostty" "background = #eff1f5" "Ghostty background is Latte"
+assert_file_contains "$RENDERED/ghostty" "palette = 0=#5c5f77" "ANSI black stays dark on a light ground"
+assert_eq "$(jq -r .theme.mode "$MOCK_DOTFILES/.config/zed/settings.json")" "light" "Zed mode pinned to light"
+assert_eq "$(jq -r .theme.light "$MOCK_DOTFILES/.config/zed/settings.json")" "Catppuccin Latte" "Zed light slot set"
+assert_eq "$(jq -r .theme.dark "$MOCK_DOTFILES/.config/zed/settings.json")" "old-theme" "Zed dark slot untouched"
+assert_file_contains "$APPEARANCE_LOG" "^dark-mode off$" "macOS appearance switched to light via dark-mode"
+assert_file_not_contains "$APPEARANCE_LOG" "osascript" "osascript not used when dark-mode exists"
+
+: > "$APPEARANCE_LOG"
+set +e; apply_theme "tokyo-night" "true" >/dev/null 2>&1; set -e
+assert_eq "$(cat "$RENDERED/theme.mode")" "dark" "theme.mode back to dark"
+assert_eq "$(jq -r .theme.mode "$MOCK_DOTFILES/.config/zed/settings.json")" "dark" "Zed mode pinned to dark"
+assert_eq "$(jq -r .theme.dark "$MOCK_DOTFILES/.config/zed/settings.json")" "Tokyo Night" "Zed dark slot set"
+assert_eq "$(jq -r .theme.light "$MOCK_DOTFILES/.config/zed/settings.json")" "Catppuccin Latte" "Zed light slot keeps the last light theme"
+assert_file_contains "$APPEARANCE_LOG" "^dark-mode on$" "macOS appearance switched to dark"
+
+teardown_theme_sandbox
+echo ""
+
+# ── Test 8c: Appearance switch can be turned off, and falls back to osascript ──
+section "Test 8c: appearance toggle and the osascript fallback"
+setup_theme_sandbox
+load_theme_functions
+
+bash "$MOCK_DOTFILES/bin/dotfiles-toggle" appearance off >/dev/null
+set +e; apply_theme "flexoki-light" "true" >/dev/null 2>&1; rc=$?; set -e
+assert_eq "$rc" "0" "flexoki-light applies"
+assert_eq "$(cat "$APPEARANCE_LOG")" "" "no appearance call when the toggle is off"
+bash "$MOCK_DOTFILES/bin/dotfiles-toggle" appearance on >/dev/null
+
+DOTFILES_NO_APPEARANCE=1
+set +e; apply_theme "flexoki-light" "true" >/dev/null 2>&1; set -e
+unset DOTFILES_NO_APPEARANCE
+assert_eq "$(cat "$APPEARANCE_LOG")" "" "no appearance call under DOTFILES_NO_APPEARANCE"
+
+# Without dark-mode anywhere on PATH (Homebrew dropped too, so a real
+# install on this machine cannot leak in) apply-theme falls back to osascript.
+rm "$STUB/dark-mode"
+hash -r
+set +e; out=$(PATH="$STUB:/usr/bin:/bin" apply_theme "flexoki-light" "true" 2>&1); set -e
+assert_file_contains "$APPEARANCE_LOG" "set dark mode to false" "osascript fallback asks System Events for light"
+assert_contains "$out" "macOS appearance → light" "reports the switch"
 
 teardown_theme_sandbox
 echo ""

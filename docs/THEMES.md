@@ -1,6 +1,6 @@
 # Theming
 
-Choose between **[Tokyo Night](https://github.com/folke/tokyonight.nvim)** (dark blue), **[Aura Dark](https://github.com/daltonmenezes/aura-theme)** (deep purple), or **[Catppuccin Mocha](https://github.com/catppuccin/catppuccin)** (warm pastels) during install, and switch anytime after.
+Choose between **[Tokyo Night](https://github.com/folke/tokyonight.nvim)** (dark blue), **[Aura Dark](https://github.com/daltonmenezes/aura-theme)** (deep purple), or **[Catppuccin Mocha](https://github.com/catppuccin/catppuccin)** (warm pastels) during install, and switch anytime after. Two light themes, **Catppuccin Latte** and **[Flexoki Light](https://stephango.com/flexoki)**, switch macOS to light appearance along with every app.
 
 The theme is applied across **22 apps**: 17 configured automatically, 5 with manual one-click instructions.
 
@@ -45,26 +45,37 @@ Nothing tracked in git changes when you switch themes. Each app gets its colours
 
 ## Palettes
 
-| | Tokyo Night | Aura Dark | Catppuccin Mocha |
-|---|-----------|-----------|-----------------|
-| **Background** | `#1a1b26` | `#15141b` | `#1e1e2e` |
-| **Foreground** | `#c0caf5` | `#edecee` | `#cdd6f4` |
-| **Accent** | `#7aa2f7` blue | `#a277ff` purple | `#b4befe` lavender |
-| **Success** | `#9ece6a` green | `#61ffca` green | `#a6e3a1` green |
-| **Error** | `#f7768e` red | `#ff6767` red | `#f38ba8` red |
-| **Warning** | `#e0af68` yellow | `#ffca85` orange | `#f9e2af` yellow |
+| | Tokyo Night | Aura Dark | Catppuccin Mocha | Catppuccin Latte | Flexoki Light |
+|---|-----------|-----------|-----------------|-----------------|---------------|
+| **Mode** | dark | dark | dark | light | light |
+| **Background** | `#1a1b26` | `#15141b` | `#1e1e2e` | `#eff1f5` | `#fffcf0` |
+| **Foreground** | `#c0caf5` | `#edecee` | `#cdd6f4` | `#4c4f69` | `#100f0f` |
+| **Accent** | `#7aa2f7` blue | `#a277ff` purple | `#b4befe` lavender | `#1e66f5` blue | `#205ea6` blue |
+| **Success** | `#9ece6a` green | `#61ffca` green | `#a6e3a1` green | `#40a02b` green | `#66800b` green |
+| **Error** | `#f7768e` red | `#ff6767` red | `#f38ba8` red | `#d20f39` red | `#af3029` red |
+| **Warning** | `#e0af68` yellow | `#ffca85` orange | `#f9e2af` yellow | `#df8e1d` yellow | `#ad8301` yellow |
 
 The full palette for each theme is in `themes/<name>/colors.toml`.
 
 ## Switching
 
 ```bash
-dotfiles theme tokyo-night  # Switch to Tokyo Night
-dotfiles theme aura         # Switch to Aura Dark
-dotfiles theme catppuccin   # Switch to Catppuccin Mocha
+dotfiles theme tokyo-night       # Switch to Tokyo Night
+dotfiles theme aura              # Switch to Aura Dark
+dotfiles theme catppuccin        # Switch to Catppuccin Mocha
+dotfiles theme catppuccin-latte  # Light: Catppuccin Latte
+dotfiles theme flexoki-light     # Light: Flexoki
 ```
 
 Then reload what is already open: a new shell for the prompt and fzf, `cmd+shift+,` in Ghostty, restart Neovim (and `:Lazy sync` if the theme plugin is new). Zellij and WezTerm pick the theme up on next launch. The command ends by printing the manual steps for Slack, browsers, Telegram, and Raycast.
+
+## Light themes and macOS appearance
+
+Every palette declares `mode = "light"` or `"dark"` (derived from the background luminance when missing). The mode reaches every template as `{{ mode }}`, `{{ theme_type }}` and `{{ is_light }}`: lazygit gets `lightTheme`, Claude Code gets its `base`, and the rendered directory records it in `theme.mode`. Zed's `theme.mode` is pinned to it and the matching `theme.light` / `theme.dark` slot is filled, so the other slot keeps its last value.
+
+`dotfiles theme` also switches macOS between light and dark appearance to match, using the `dark-mode` CLI from the Brewfile (instant, no permission dialog) or, without it, System Events through `osascript` under a 5-second watchdog (macOS asks once to allow Automation for your terminal). Leave the appearance alone with `dotfiles toggle appearance off`; scripts and tests can set `DOTFILES_NO_APPEARANCE=1`.
+
+The light themes keep dark ANSI black and grey white slots (the values Ghostty ships for the same themes), so `ls` and prompts stay readable on a pale background. Their editor themes come from extensions listed in the Brewfile (`catppuccin.catppuccin-vsc`, `shadesofbuntu.flexoki-light`) and Zed's `auto_install_extensions` (`catppuccin`, `flexoki-themes`).
 
 ## Adding a theme
 
