@@ -60,14 +60,14 @@ fi
 # ============================================
 if command -v zoxide > /dev/null; then
     eval "$(zoxide init zsh)"
-    # Wrap cd with zoxide so 'cd projects' uses frecency-based jumping
-    # (Omarchy-inspired: muscle memory works, but smarter)
+    # zoxide adds `z` (frecency jump) and `zi` (interactive); `cd` itself is
+    # left alone on purpose so exact paths and AUTO_CD behave as stock zsh.
     alias cdi='zi'         # Interactive directory picker with fzf
-    alias cdd='builtin cd' # Original cd if needed
+    alias cdd='builtin cd' # Plain cd, for symmetry with cdi
     # Examples:
-    #   cd projects    # Jump to most frecent directory matching 'projects'
+    #   z projects     # Jump to the most frecent directory matching 'projects'
     #   cdi projects   # Interactive selection with fzf
-    #   cd ~/exact/path # Still works for exact paths
+    #   cd ~/exact/path # Plain cd, as always
 fi
 
 # ============================================

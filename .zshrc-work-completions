@@ -30,7 +30,8 @@ _dotfiles() {
             _describe 'event' events
             ;;
         toggle)
-            local -a flags=(startup-apps borders auto-commit)
+            # Every flag dotfiles-toggle knows plus any ad-hoc one that is off.
+            local -a flags=($(dotfiles-toggle --list 2>/dev/null | awk '{print $1}'))
             _describe 'flag' flags
             ;;
         install)
@@ -127,7 +128,7 @@ _dotfiles_install() {
         '--email[Git personal email]:email' \
         '--work-email[Git work email]:email' \
         '--work-dir[Work directory]:directory:_directories' \
-        '--theme[Theme]:theme:(tokyo-night aura catppuccin)' \
+        '--theme[Theme]:theme:($(_dotfiles_theme_names))' \
         '--ssh[SSH mode]:mode:(1password existing generate skip)' \
         '--groups[Package groups to install]:groups' \
         '--no-macos-defaults[Skip macOS defaults]' \

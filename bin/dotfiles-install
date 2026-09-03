@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # dotfiles:summary=Run the full installer (idempotent)
-# dotfiles:args=[--interactive] [--name <n>] [--email <e>] [--theme <t>] [--groups <a,b>]
+# dotfiles:args=[--interactive] [--name <n>] [--email <e>] [--theme <t>] [--groups <a,b>] [--ssh <mode>] [--answers <file>] [--no-macos-defaults] [--no-runtimes] [--force]
 # Run dotfiles installer — can be run from anywhere
 # Usage: dotfiles-install [--interactive] [--name "Name"] [--email "email"]
 
