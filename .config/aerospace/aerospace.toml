@@ -176,6 +176,8 @@ automatically-unhide-macos-hidden-apps = false
     # ctrl-shift-space = '''exec-and-forget open -a "Raycast"'''
     # desc: Launch Finder
     ctrl-shift-enter = '''exec-and-forget open -a "Finder"'''
+    # desc: Dotfiles menu (theme, toggles, launchers, update…) in a Ghostty window
+    ctrl-shift-space = '''exec-and-forget open -na Ghostty --args --title=dotfiles-menu -e /bin/zsh -lic 'DOTFILES_MENU_HOLD=1 dotfiles menu''''
 
     # See: https://nikitabobko.github.io/AeroSpace/commands#layout
     # desc: Tiles layout

@@ -28,6 +28,7 @@ The tables below are generated from `.config/aerospace/aerospace.toml` by `dotfi
 | `Ctrl+Shift+E` | Launch Ente Auth (workspace 6, floating) | `exec-and-forget open -a "Ente Auth"` |
 | `Ctrl+Shift+R` | Re-launch the whole startup session (restore-session) | `exec-and-forget ~/.config/aerospace/scripts/startup-apps.sh` |
 | `Ctrl+Shift+Enter` | Launch Finder | `exec-and-forget open -a "Finder"` |
+| `Ctrl+Shift+Space` | Dotfiles menu (theme, toggles, launchers, update…) in a Ghostty window | `exec-and-forget open -na Ghostty --args --title=dotfiles-menu -e /bin/zsh -lic 'DOTFILES_MENU_HOLD=1 dotfiles menu'` |
 | `Ctrl+Shift+/` | Tiles layout | `layout tiles horizontal vertical` |
 | `Ctrl+Shift+,` | Accordion layout | `layout accordion horizontal vertical` |
 | `Ctrl+Shift+H` | Focus window left | `focus left` |

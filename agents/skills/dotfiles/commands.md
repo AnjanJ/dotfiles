@@ -9,6 +9,7 @@
 | `dotfiles doctor [--dry-run]` | fix broken symlinks, `~/.ssh` permissions, missing mise runtimes | `--dry-run` yes; fixing: ask |
 | `dotfiles theme <name>` | switch theme (see `theming.md`) | yes, when asked to change the theme |
 | `dotfiles theme bg next\|set <img>\|list\|current` | desktop picture for the active theme: cycles `themes/<name>/backgrounds/`, `~/.config/dotfiles/backgrounds/<name>/`, then the gradient generated from the palette | yes, when asked |
+| `dotfiles menu [route] [--list\|--run <label>]` | fzf tree over every verb (theme, toggles, launchers, reminder, update, all commands); `--list` prints `label<TAB>command` rows, Ctrl+Shift+Space opens it in Ghostty | `--list` yes; running rows: as the row's command |
 | `dotfiles reminder <min> [msg]\|show\|clear` | macOS notification in N minutes via a self-removing launchd agent | yes |
 | `dotfiles keys [--update]` | keybinding cheatsheet; `--update` regenerates the doc | yes |
 | `dotfiles toggle <flag> [on\|off]` | flip `startup-apps`, `borders`, `auto-commit`, `appearance`, `background` (or any name) | yes, when asked |

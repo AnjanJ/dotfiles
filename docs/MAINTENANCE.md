@@ -103,7 +103,7 @@ dotfiles install --force            # Force reinstall everything
 
 ## Testing
 
-Every push and PR runs 23 test suites, an end-to-end install, shellcheck, `dotfiles commands --check` and `dotfiles keys --check` via GitHub Actions. The suites are discovered from `tests/*-test.sh`, so a new file is in CI the moment it exists:
+Every push and PR runs 24 test suites, an end-to-end install, shellcheck, `dotfiles commands --check` and `dotfiles keys --check` via GitHub Actions. The suites are discovered from `tests/*-test.sh`, so a new file is in CI the moment it exists:
 
 - **Shellcheck** — lints all shell scripts
 - **Idempotency** — install/setup can run repeatedly with identical results (sandboxed)
@@ -117,6 +117,7 @@ Every push and PR runs 23 test suites, an end-to-end install, shellcheck, `dotfi
 - **Theme system** — render, overrides, atomic swap, failure leaves previous theme, scaffolding, light-theme mode outputs and the macOS appearance switch
 - **Theme backgrounds** — generated palette gradient, candidate order and cycling, `dotfiles theme bg` verbs, desktoppr/osascript setters, the toggle, set-on-switch-only from apply-theme
 - **Reminder** — `dotfiles reminder`: the launchd agent plist, scheduling via a launchctl stub, show/clear, the `--fire` path (notification, self-removal, unload), validation
+- **Menu** — `dotfiles menu`: rows per route, active theme and toggle state, launcher rows from installed bundles, the commands route, `--run`, prompt rows, the numbered fallback picker
 - **Theme renderer** — token forms, colour maths, derived keys, error exits
 - **CLI router** — route resolution, `--help` never executes, required-arg guard, metadata lint, JSON
 - **Toggles** — flag files, `--enabled` exit codes, listing

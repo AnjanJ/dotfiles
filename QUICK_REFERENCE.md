@@ -17,6 +17,8 @@ dotfiles update       # Upgrade system & sync repo
 dotfiles sync         # Quick refresh: pull, relink, reapply theme
 dotfiles health       # Verify all tools are installed
 dotfiles theme aura   # Switch theme (tokyo-night | aura | catppuccin | catppuccin-latte | flexoki-light)
+dotfiles menu         # fzf menu over every verb (Ctrl+Shift+Space opens it in Ghostty)
+dotfiles reminder 15 "Tea"   # macOS notification in 15 minutes
 dotfiles add-theme x  # Scaffold a new theme directory
 dotfiles cleanup      # Find/remove unlisted Homebrew packages (--force)
 dotfiles doctor       # Auto-fix common issues
