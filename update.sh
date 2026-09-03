@@ -6,31 +6,53 @@
 # Keeps your system and dotfiles repo in sync.
 #
 # What it does:
-#   1. Pull latest dotfiles from git
-#   2. Upgrade Homebrew packages & snapshot diff (preserves organized Brewfile)
-#   3. Refresh symlinks & theme
+#   1. Pull latest dotfiles from git (marks aerospace/sketchybar for restart
+#      when their configs changed)
+#   2. Take a local APFS snapshot, then upgrade Homebrew packages & snapshot
+#      diff (preserves organized Brewfile)
+#   3. Refresh symlinks, run pending migrations
 #   4. Upgrade mise tools (config auto-syncs via symlink)
-#   5. Reload live configs (aerospace)
+#   5. Restart only what was marked (dotfiles restart --pending), run hooks
 #   6. Commit & push any changes back to repo
 #
-# Usage: bash update.sh [--interactive]
+# Around all of that: a transcript in ~/.local/state/dotfiles/update.log
+# (previous run kept as update.log.1) and a lock so two updates cannot
+# overlap.
+#
+# Usage: bash update.sh [--interactive] [--yes] [--no-snapshot]
 # ============================================
 
 INTERACTIVE=false
+UNATTENDED=false
+TAKE_SNAPSHOT=true
 
 for arg in "$@"; do
     case $arg in
         --interactive) INTERACTIVE=true ;;
+        --yes|-y) UNATTENDED=true ;;
+        --no-snapshot) TAKE_SNAPSHOT=false ;;
         --help)
             echo "Usage: bash update.sh [OPTIONS]"
             echo ""
             echo "Options:"
             echo "  --interactive  Prompt before each step"
+            echo "  --yes, -y      Unattended: never prompt (cron, ssh, CI)"
+            echo "  --no-snapshot  Skip the tmutil local snapshot before brew upgrade"
             echo "  --help         Show this help message"
+            echo ""
+            echo "Transcript: ~/.local/state/dotfiles/update.log"
             exit 0
             ;;
+        *) echo "Warning: unknown option '$arg' ignored (see --help)" >&2 ;;
     esac
 done
+
+# --yes is a promise not to ask anything. It beats --interactive, and hooks
+# and migrations can read it to skip their own prompts.
+if [[ "$UNATTENDED" == true ]]; then
+    INTERACTIVE=false
+    export DOTFILES_UPDATE_UNATTENDED=1
+fi
 
 set -euo pipefail
 
@@ -46,6 +68,44 @@ if [[ "$(uname)" != "Darwin" ]]; then
     exit 1
 fi
 
+STATE_DIR="${DOTFILES_STATE_DIR:-$HOME/.local/state/dotfiles}"
+mkdir -p "$STATE_DIR"
+UPDATE_LOG="$STATE_DIR/update.log"
+
+# ── Transcript ────────────────────────────────
+# Re-exec under script(1) so the whole run, brew's progress bars included,
+# lands in update.log while still showing on the terminal. Without a tty
+# (cron, ssh -T) script would give brew a pty it does not have on the
+# terminal side, so a plain tee is the honest transcript there.
+if [[ -z "${DOTFILES_UPDATE_LOGGED:-}" ]]; then
+    export DOTFILES_UPDATE_LOGGED=1
+    [[ -f "$UPDATE_LOG" ]] && mv -f "$UPDATE_LOG" "$UPDATE_LOG.1"
+    echo "# dotfiles update $(date '+%Y-%m-%d %H:%M:%S') $*" > "$UPDATE_LOG"
+    if [[ -t 1 ]] && command -v script >/dev/null 2>&1; then
+        exec script -q -a "$UPDATE_LOG" "$BASH" "$0" "$@"
+    else
+        exec > >(tee -a "$UPDATE_LOG") 2>&1
+    fi
+fi
+
+# ── Lock ──────────────────────────────────────
+# mkdir is atomic, and stock bash has no flock. A pid inside tells a stale
+# lock (crashed run, closed terminal) from a live one.
+LOCK_DIR="$STATE_DIR/update.lock"
+if ! mkdir "$LOCK_DIR" 2>/dev/null; then
+    _lock_pid=$(cat "$LOCK_DIR/pid" 2>/dev/null || true)
+    if [[ -n "$_lock_pid" ]] && kill -0 "$_lock_pid" 2>/dev/null; then
+        print_error "Another update is already running (pid $_lock_pid)"
+        echo "  Its transcript: $UPDATE_LOG"
+        exit 1
+    fi
+    print_warning "Removing stale update lock (pid ${_lock_pid:-unknown} is gone)"
+    rm -rf "$LOCK_DIR"
+    mkdir "$LOCK_DIR"
+fi
+echo $$ > "$LOCK_DIR/pid"
+trap 'rm -rf "$LOCK_DIR"' EXIT
+
 echo ""
 echo ""
 echo "  AJ's Dotfiles Update"
@@ -53,11 +113,13 @@ echo "  =========================================="
 echo ""
 echo "  This will:"
 echo "    - Pull latest changes from git"
-echo "    - Upgrade Homebrew & snapshot Brewfile"
-echo "    - Refresh symlinks"
+echo "    - Take a local APFS snapshot, then upgrade Homebrew & snapshot Brewfile"
+echo "    - Refresh symlinks, run migrations"
 echo "    - Upgrade mise tools"
+echo "    - Restart whatever changed (aerospace, sketchybar, borders)"
 echo "    - Push changes back to repo"
 echo ""
+echo "  Transcript: $UPDATE_LOG"
 echo ""
 
 if [[ "$INTERACTIVE" == true ]]; then
@@ -85,8 +147,19 @@ if [[ -n $(git status -s) ]]; then
     DID_STASH=true
 fi
 
+_before_pull=$(git rev-parse HEAD)
 git pull origin main
 print_success "Repository updated"
+
+# A pulled change to a live config needs its app restarted, but not now:
+# step 5 restarts everything marked, once, after symlinks and migrations.
+_pulled=$(git diff --name-only "$_before_pull" HEAD -- .config/aerospace .config/sketchybar .config/borders 2>/dev/null || true)
+for _component in aerospace sketchybar borders; do
+    if echo "$_pulled" | grep -q "^\.config/$_component/"; then
+        bash "$DOTFILES_DIR/bin/dotfiles-restart" --later "$_component"
+        print_success "$_component config changed — will restart in step 5"
+    fi
+done
 
 # Restore stashed changes immediately after pull
 if [[ "$DID_STASH" == true ]]; then
@@ -99,6 +172,20 @@ fi
 # ============================================
 echo ""
 print_step "Step 2: Updating Homebrew packages..."
+
+# A local APFS snapshot is the rollback point for a bad upgrade: mount it
+# or restore from Time Machine's browser. macOS thins them itself when
+# space is tight, so it costs nothing to keep taking one per update.
+if [[ "$TAKE_SNAPSHOT" == true ]]; then
+    if _snapshot=$(tmutil localsnapshot 2>&1) && [[ "$_snapshot" == *"Created local snapshot"* ]]; then
+        print_success "Local snapshot taken (${_snapshot##*date: })"
+        echo "  Roll back: tmutil listlocalsnapshots /"
+    else
+        print_warning "Could not take a local snapshot — continuing without one"
+    fi
+else
+    print_warning "Skipping local snapshot (--no-snapshot)"
+fi
 
 # Update Homebrew itself
 brew update
@@ -211,6 +298,12 @@ create_symlink() {
         mkdir -p "$(dirname "$target")"
         ln -sf "$source" "$target"
         print_success "$name refreshed"
+        # A relinked live config is a changed live config to its app
+        case "$source" in
+            */.config/aerospace*)  bash "$DOTFILES_DIR/bin/dotfiles-restart" --later aerospace ;;
+            */.config/sketchybar*) bash "$DOTFILES_DIR/bin/dotfiles-restart" --later sketchybar ;;
+            */.config/borders*)    bash "$DOTFILES_DIR/bin/dotfiles-restart" --later borders ;;
+        esac
     fi
 }
 
@@ -244,18 +337,16 @@ mise upgrade --yes 2>/dev/null || mise install
 print_success "mise tools updated"
 
 # ============================================
-# 5. RELOAD CONFIGURATIONS
+# 5. RESTART WHAT CHANGED
 # ============================================
+# Only components marked during this run (pulled config, refreshed link,
+# a migration's `dotfiles restart --later`) are touched. The old
+# unconditional `aerospace reload-config` reloaded on every run, and
+# because the process is spelled AeroSpace its pgrep guard never matched.
 echo ""
-print_step "Step 5: Reloading configurations..."
+print_step "Step 5: Restarting what changed..."
 
-# Reload aerospace if running
-if pgrep -x "Aerospace" > /dev/null; then
-    aerospace reload-config
-    print_success "Aerospace config reloaded"
-else
-    print_warning "Aerospace not running"
-fi
+bash "$DOTFILES_DIR/bin/dotfiles-restart" --pending
 
 bash "$DOTFILES_DIR/bin/dotfiles-hook" post-update
 
@@ -321,4 +412,5 @@ echo "  Update Complete!"
 echo "  =========================================="
 echo ""
 echo "   Restart your terminal or run: source ~/.zshrc"
+echo "   Transcript: $UPDATE_LOG"
 echo ""

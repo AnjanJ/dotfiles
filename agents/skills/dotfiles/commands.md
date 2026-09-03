@@ -12,7 +12,8 @@
 | `dotfiles toggle <flag> [on\|off]` | flip `startup-apps`, `borders`, `auto-commit` (or any name) | yes, when asked |
 | `dotfiles migrate [--pending]` | run one-off repairs shipped with the repo | yes |
 | `dotfiles backup [--list\|--restore <n>]` | snapshot every managed file to `~/.dotfiles-backups` | creating: yes; restoring: ask |
-| `dotfiles update` | upgrade Homebrew, mise, relink, **commit and push** Brewfile changes to GitHub | **ask first** |
+| `dotfiles update` | upgrade Homebrew, mise, relink, **commit and push** Brewfile changes to GitHub; `--yes` never prompts; transcript in `~/.local/state/dotfiles/update.log` | **ask first** |
+| `dotfiles restart <aerospace\|sketchybar\|borders>` | reload/relaunch one component now; `--later <c>` marks it for the end of the next update or sync; `--pending` consumes markers | safe |
 | `dotfiles install` | full installer (idempotent, but slow and sudo) | **ask first** |
 | `dotfiles uninstall` | remove every managed symlink | **ask first** |
 | `dotfiles work setup\|status\|nuke\|switch` | work git identity, SSH hosts, repos | `status` yes; others ask |

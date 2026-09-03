@@ -278,6 +278,16 @@ else
     ((PASSED++))
 fi
 
+# A restart marker left behind means an update or sync was interrupted
+# before step 5, or a migration asked and nothing has consumed it yet
+if _pending_restarts=$(bash "$DOTFILES_DIR/bin/dotfiles-restart" --list 2>/dev/null); then
+    echo -e "${YELLOW}⚠${NC} Pending restarts: $(echo "$_pending_restarts" | tr '\n' ' ')(run: dotfiles restart --pending)"
+    ((WARNINGS++))
+else
+    echo -e "${GREEN}✓${NC} Restarts: nothing pending"
+    ((PASSED++))
+fi
+
 # ============================================
 # 6. LANGUAGE RUNTIMES (mise)
 # ============================================

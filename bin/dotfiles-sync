@@ -118,7 +118,12 @@ else
     print_success "Theme: $CURRENT_THEME"
 fi
 
-[[ "$DRY_RUN" == true ]] || bash "$DOTFILES_DIR/bin/dotfiles-hook" post-sync
+if [[ "$DRY_RUN" != true ]]; then
+    # Migrations above may have marked a component; restart it now rather
+    # than leaving the marker for the next update.
+    bash "$DOTFILES_DIR/bin/dotfiles-restart" --pending
+    bash "$DOTFILES_DIR/bin/dotfiles-hook" post-sync
+fi
 
 # ── Summary ──────────────────────────────────
 

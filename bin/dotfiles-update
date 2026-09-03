@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # dotfiles:summary=Upgrade everything and sync the repo
-# dotfiles:args=[--interactive]
+# dotfiles:args=[--interactive] [--yes] [--no-snapshot]
 # Update dotfiles — can be run from anywhere
-# Usage: dotfiles-update [--interactive]
+# Usage: dotfiles-update [--interactive] [--yes] [--no-snapshot]
 
 DOTFILES_DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
 exec bash "$DOTFILES_DIR/update.sh" "$@"

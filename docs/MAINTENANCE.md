@@ -32,13 +32,17 @@ There is no command table to maintain: every executable `bin/dotfiles-*` is a co
 
 ## What `dotfiles update` does
 
-1. Pull latest changes from git
-2. `brew update` + `brew upgrade` + `brew cleanup`
+1. Pull latest changes from git. A pulled change under `.config/aerospace`, `.config/sketchybar` or `.config/borders` marks that component for a restart in step 6.
+2. Take a local APFS snapshot with `tmutil localsnapshot` (`--no-snapshot` skips it), then `brew update` + `brew upgrade` + `brew cleanup`
 3. Snapshot installed packages and show diff against Brewfile (without overwriting the organized Brewfile)
-4. Refresh all symlinks (from `scripts/symlink-map.sh`)
+4. Refresh all symlinks (from `scripts/symlink-map.sh`) and run pending migrations
 5. Upgrade mise tools
-6. Reload live configs (aerospace)
+6. Restart only what was marked: `dotfiles restart --pending` reloads aerospace and sketchybar and relaunches borders, then clears the markers. Nothing marked, nothing restarted.
 7. Commit & push changes back to repo
+
+Around the whole run: a lock in `~/.local/state/dotfiles/update.lock` refuses a second concurrent update (a stale lock from a crashed run is removed automatically), and a transcript of everything printed lands in `~/.local/state/dotfiles/update.log` with the previous run kept as `update.log.1`. `dotfiles update --yes` is a promise not to prompt, for cron, ssh and CI; it also exports `DOTFILES_UPDATE_UNATTENDED=1` for hooks and migrations that ask questions of their own.
+
+**Restart markers.** `dotfiles restart <aerospace|sketchybar|borders>` restarts a component now. `dotfiles restart --later <component>` drops `~/.local/state/dotfiles/restart-<component>-required` for `dotfiles update` and `dotfiles sync` to consume at their end; a migration that edits a live config should do this rather than restart mid-run. `dotfiles restart --list` shows what is pending and `dotfiles health` warns about it. Rolling back a bad upgrade: `tmutil listlocalsnapshots /` shows the snapshot the update took; mount it with `tmutil mount` or browse it in Time Machine.
 
 **Your Brewfile stays organized.** The Brewfile is organized into `@group` sections (core, editors, work, databases, etc.) and `dotfiles update` never overwrites it. The snapshot step shows you what's new or missing compared to your system.
 
@@ -99,14 +103,15 @@ dotfiles install --force            # Force reinstall everything
 
 ## Testing
 
-Every push and PR runs 18 test suites, an end-to-end install, shellcheck, `dotfiles commands --check` and `dotfiles keys --check` via GitHub Actions. The suites are discovered from `tests/*-test.sh`, so a new file is in CI the moment it exists:
+Every push and PR runs 19 test suites, an end-to-end install, shellcheck, `dotfiles commands --check` and `dotfiles keys --check` via GitHub Actions. The suites are discovered from `tests/*-test.sh`, so a new file is in CI the moment it exists:
 
 - **Shellcheck** — lints all shell scripts
 - **Idempotency** — install/setup can run repeatedly with identical results (sandboxed)
 - **Work identity** — setup, nuke, switch lifecycle, and status diagnostics
 - **SSH config** — adversarial inputs and edge cases
 - **Repo cloner** — SSH alias detection and URL rewriting
-- **Update flow** — symlink creation and refresh
+- **Update flow** — symlink creation and refresh, plus the whole pipeline against stubs: lock, transcript, snapshot before upgrade, restart markers, `--yes`
+- **Restart** — `dotfiles restart` now/later/pending/list, the AeroSpace process-name case, borders relaunch honouring its toggle
 - **Theme system** — render, overrides, atomic swap, failure leaves previous theme, scaffolding
 - **Theme renderer** — token forms, colour maths, derived keys, error exits
 - **CLI router** — route resolution, `--help` never executes, required-arg guard, metadata lint, JSON
