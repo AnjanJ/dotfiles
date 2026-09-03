@@ -28,6 +28,9 @@ THEME="${DOTFILES_THEME:-tokyo-night}"
 LOG="$TEST_TMP/install.log"
 E2E_ROOT="$TEST_TMP/dotfiles"
 cp -R "$ROOT" "$E2E_ROOT"
+# Local edits in the checkout come along with the copy; remember them so
+# the "install rewrote a tracked file" check below only sees new drift.
+DIRTY_BEFORE=$(git -C "$E2E_ROOT" status --porcelain 2>/dev/null || true)
 
 # Never block on a password prompt; CI has passwordless sudo, a laptop
 # does not. Keep the runner's login shell alone (install.sh only calls
@@ -130,6 +133,20 @@ fi
 assert_file_not_contains "$LOG.2" "replaced existing directory" "re-run replaced nothing"
 assert_file_contains "$LOG.2" "Personal Git identity: CI Tester <ci@example.com>" "re-run keeps the git identity"
 assert_eq "$(git config --file "$E2E_ROOT/.gitconfig" user.name)" "CI Tester" "identity written through ~/.gitconfig"
+
+section "Tracked files stay clean"
+# Configs are symlinked into $HOME, so anything the install writes with
+# `git config --global` or sed lands in the checkout. Identity is the one
+# tracked value the install is meant to set, and the theme step retints
+# the Zed and VS Code settings in place (they have no include mechanism;
+# see docs/OMARCHY_QUATTRO_COMPARISON.md, Tier 2 item 2). Nothing else
+# may change.
+_dirty_after=$(git -C "$E2E_ROOT" status --porcelain 2>/dev/null || true)
+_new_dirt=$(comm -13 <(printf '%s\n' "$DIRTY_BEFORE" | sort) <(printf '%s\n' "$_dirty_after" | sort) \
+    | grep -vE '^ M (\.gitconfig|\.config/zed/settings\.json|\.config/vscode/settings\.json)$' || true)
+assert_eq "$_new_dirt" "" "install changed no tracked file other than .gitconfig and the retinted editor settings"
+_gitconfig_drift=$(git -C "$E2E_ROOT" diff -U0 -- .gitconfig | grep -E '^[-+][^-+]' | grep -vE '^[-+][[:space:]]*(name|email) = ' || true)
+assert_eq "$_gitconfig_drift" "" ".gitconfig changed on identity lines only (no editor or excludesfile rewrite)"
 _LINK_OK=0
 _LINK_BAD=""
 dotfiles_for_each_link _check_link

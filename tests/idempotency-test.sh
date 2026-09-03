@@ -104,12 +104,9 @@ test_02_setup_git_personal_only() {
     assert_snapshots_equal "$TEST_HOME/snap1" "$TEST_HOME/snap2" "State identical after 2 runs"
     assert_eq "$(git config --global user.name)" "Test User" "user.name correct"
     assert_eq "$(git config --global user.email)" "test@example.com" "user.email correct"
-    assert_eq "$(git config --global core.editor)" "zed --wait" "core.editor correct"
-    assert_eq "$(git config --global diff.algorithm)" "histogram" "diff.algorithm correct"
-    assert_eq "$(git config --global rerere.enabled)" "true" "rerere.enabled correct"
-    assert_eq "$(git config --global push.autoSetupRemote)" "true" "push.autoSetupRemote correct"
-    assert_eq "$(git config --global branch.sort)" "-committerdate" "branch.sort correct"
-    assert_eq "$(git config --global commit.verbose)" "true" "commit.verbose correct"
+    # Defaults belong to the tracked .gitconfig, not to setup_git
+    assert_eq "$(git config --global core.editor 2>/dev/null || true)" "" "core.editor not written"
+    assert_eq "$(git config --global diff.algorithm 2>/dev/null || true)" "" "diff.algorithm not written"
 
     # No includeIf should exist
     local include_count=$(git config --global --get-regexp 'includeIf' 2>/dev/null | wc -l | tr -d ' ')
@@ -524,9 +521,9 @@ EOF
     teardown_sandbox
 }
 
-test_14_git_config_defaults_idempotent() {
+test_14_git_config_user_editor_preserved() {
     echo ""
-    section "Test 14: git config defaults — values unchanged on re-run"
+    section "Test 14: git config — a user's core.editor survives a re-run"
     setup_sandbox
 
     unset _HELPERS_LOADED
@@ -544,9 +541,9 @@ test_14_git_config_defaults_idempotent() {
     git config --global core.editor "vim"
     assert_eq "$(git config --global core.editor)" "vim" "User changed editor to vim"
 
-    # Run 2: setup_git overwrites it back
+    # Run 2: setup_git owns identity only, so the editor stays
     setup_git 2>/dev/null
-    assert_eq "$(git config --global core.editor)" "zed --wait" "Editor reset to zed --wait (expected: setup_git is authoritative)"
+    assert_eq "$(git config --global core.editor)" "vim" "Editor still vim (the tracked .gitconfig owns defaults, not setup_git)"
 
     teardown_sandbox
 }
@@ -837,7 +834,7 @@ test_10_work_setup_sentinel_markers
 test_11_work_nuke_no_work
 test_12_includeif_no_duplicates
 test_13_zshrc_work_preserved
-test_14_git_config_defaults_idempotent
+test_14_git_config_user_editor_preserved
 test_15_nuke_setup_cycle
 test_16_ssh_config_no_key_field
 test_17_work_helpers_functions_with_no_config

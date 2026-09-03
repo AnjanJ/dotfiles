@@ -32,9 +32,6 @@ setup_git_sandbox() {
     FORCE_INSTALL=false
     export FORCE_INSTALL
 
-    # Create gitignore_global so the symlink works
-    touch "$DOTFILES_DIR/.gitignore_global"
-
     # Source helpers and the setup-git script
     # shellcheck source=/dev/null
     source "$DOTFILES_DIR/scripts/_helpers.sh"
@@ -57,35 +54,10 @@ echo "║   Setup-Git Tests                                         ║"
 echo "╚═══════════════════════════════════════════════════════════╝"
 echo ""
 
-# ── Test 1: Git defaults configured ──
-section "Test 1: Git defaults are configured correctly"
-setup_git_sandbox
-
-GIT_NAME="Test User"
-GIT_EMAIL="test@example.com"
-export GIT_NAME GIT_EMAIL
-
-setup_git >/dev/null 2>&1
-
-assert_eq "$(git config --global pull.rebase)" "false" \
-    "pull.rebase set to false"
-assert_eq "$(git config --global diff.algorithm)" "histogram" \
-    "diff.algorithm set to histogram"
-assert_eq "$(git config --global rerere.enabled)" "true" \
-    "rerere.enabled set to true"
-assert_eq "$(git config --global push.autoSetupRemote)" "true" \
-    "push.autoSetupRemote set to true"
-assert_eq "$(git config --global branch.sort)" "-committerdate" \
-    "branch.sort set to -committerdate"
-assert_eq "$(git config --global commit.verbose)" "true" \
-    "commit.verbose set to true"
-
-unset GIT_NAME GIT_EMAIL
-teardown_git_sandbox
-echo ""
-
-# ── Test 2: Respects $EDITOR ──
-section "Test 2: Respects EDITOR environment variable"
+# ── Test 1: Defaults are not written ──
+# The tracked .gitconfig (symlinked into $HOME) owns the defaults;
+# setup_git must not write them through the symlink.
+section "Test 1: setup_git leaves git defaults to the tracked .gitconfig"
 setup_git_sandbox
 
 GIT_NAME="Test User"
@@ -95,26 +67,63 @@ export GIT_NAME GIT_EMAIL EDITOR
 
 setup_git >/dev/null 2>&1
 
-assert_eq "$(git config --global core.editor)" "nvim" \
-    "core.editor respects EDITOR=nvim"
+assert_eq "$(git config --global core.editor 2>/dev/null || true)" "" \
+    "core.editor not written by setup_git"
+assert_eq "$(git config --global diff.algorithm 2>/dev/null || true)" "" \
+    "diff.algorithm not written by setup_git"
+assert_eq "$(git config --global core.excludesfile 2>/dev/null || true)" "" \
+    "core.excludesfile not written by setup_git"
+assert_eq "$(git config --global user.name)" "Test User" \
+    "identity is still written"
 
 unset GIT_NAME GIT_EMAIL EDITOR
 teardown_git_sandbox
 echo ""
 
-# ── Test 3: Default editor without $EDITOR ──
-section "Test 3: Falls back to zed --wait without EDITOR"
+# ── Test 2: Tracked .gitconfig stays byte-identical ──
+section "Test 2: a re-run over the symlinked .gitconfig does not rewrite it"
 setup_git_sandbox
 
-GIT_NAME="Test User"
-GIT_EMAIL="test@example.com"
+# Mirror install.sh: ~/.gitconfig is a symlink to a tracked copy.
+tracked_dir="$TEST_HOME/repo"
+mkdir -p "$tracked_dir"
+cp "$REAL_DOTFILES_DIR/.gitconfig" "$tracked_dir/.gitconfig"
+ln -s "$tracked_dir/.gitconfig" "$TEST_HOME/.gitconfig"
+before=$(shasum "$tracked_dir/.gitconfig")
+
+GIT_NAME=$(git config --file "$tracked_dir/.gitconfig" user.name)
+GIT_EMAIL=$(git config --file "$tracked_dir/.gitconfig" user.email)
 unset EDITOR
 export GIT_NAME GIT_EMAIL
 
 setup_git >/dev/null 2>&1
 
-assert_eq "$(git config --global core.editor)" "zed --wait" \
-    "core.editor defaults to zed --wait"
+assert_eq "$(shasum "$tracked_dir/.gitconfig")" "$before" \
+    "tracked .gitconfig unchanged after setup_git"
+assert_eq "$(readlink "$TEST_HOME/.gitconfig")" "$tracked_dir/.gitconfig" \
+    "~/.gitconfig is still the symlink"
+assert_eq "$(git config --global core.editor)" "nvim" \
+    "core.editor still comes from the tracked file"
+assert_eq "$(git config --global --path core.excludesfile)" "$TEST_HOME/.gitignore_global" \
+    "core.excludesfile still comes from the tracked file"
+
+unset GIT_NAME GIT_EMAIL
+teardown_git_sandbox
+echo ""
+
+# ── Test 3: Existing editor preserved ──
+section "Test 3: setup_git does not clobber a user's core.editor"
+setup_git_sandbox
+
+git config --global core.editor "vim"
+GIT_NAME="Test User"
+GIT_EMAIL="test@example.com"
+export GIT_NAME GIT_EMAIL
+
+setup_git >/dev/null 2>&1
+
+assert_eq "$(git config --global core.editor)" "vim" \
+    "core.editor left as the user set it"
 
 unset GIT_NAME GIT_EMAIL
 teardown_git_sandbox
@@ -269,8 +278,8 @@ unset GIT_NAME GIT_EMAIL PROJECTS_DIR
 teardown_git_sandbox
 echo ""
 
-# ── Test 10: Gitignore global symlinked ──
-section "Test 10: Global gitignore symlink configured"
+# ── Test 10: Gitignore global belongs to the symlink map ──
+section "Test 10: setup_git does not create ~/.gitignore_global"
 setup_git_sandbox
 
 GIT_NAME="Test User"
@@ -279,9 +288,10 @@ export GIT_NAME GIT_EMAIL
 
 setup_git >/dev/null 2>&1
 
-excludes=$(git config --global core.excludesfile 2>/dev/null || echo "")
-assert_eq "$excludes" "$TEST_HOME/.gitignore_global" \
-    "core.excludesfile set to ~/.gitignore_global"
+assert_file_not_exists "$TEST_HOME/.gitignore_global" \
+    "~/.gitignore_global is linked by the symlink map, not setup_git"
+assert_contains "$(grep -c 'gitignore_global' "$REAL_DOTFILES_DIR/scripts/symlink-map.sh")" "1" \
+    "symlink map carries .gitignore_global"
 
 unset GIT_NAME GIT_EMAIL
 teardown_git_sandbox

@@ -9,6 +9,10 @@
 #   DOTFILES_DIR, INTERACTIVE, FORCE_INSTALL
 #   GIT_NAME, GIT_EMAIL (personal), GIT_WORK_EMAIL, WORK_DIR
 #
+# Git defaults (editor, delta, rerere, excludesfile...) live in the
+# tracked .gitconfig, symlinked into $HOME by the symlink map. This
+# script writes identity only.
+#
 # Sets for caller:
 #   GIT_PERSONAL_EMAIL, GIT_WORK_EMAIL, WORK_DIR
 # ============================================
@@ -16,22 +20,18 @@
 source "$(dirname "${BASH_SOURCE[0]}")/_helpers.sh"
 
 setup_git() {
-    # ── Smart Defaults ────────────────────────────
-    print_step "Step 8b: Configuring Git defaults..."
-
-    git config --global core.editor "${EDITOR:-zed --wait}"
-    git config --global pull.rebase false
-    ln -sf "$DOTFILES_DIR/.gitignore_global" ~/.gitignore_global
-    git config --global core.excludesfile ~/.gitignore_global
-    git config --global diff.algorithm histogram
-    git config --global rerere.enabled true
-    git config --global push.autoSetupRemote true
-    git config --global branch.sort -committerdate
-    git config --global commit.verbose true
-    git config --global merge.tool nvimdiff
-    git config --global merge.conflictstyle diff3
-
-    print_success "Git defaults configured (editor, pull, diff, rerere, push, branch sort, merge tool)"
+    # ── Defaults ──────────────────────────────────
+    # ~/.gitconfig is a symlink to the tracked .gitconfig (scripts/
+    # symlink-map.sh), which already carries the defaults (editor, pull,
+    # diff, rerere, push, branch sort, merge tool, excludesfile). Writing
+    # them here again would go through the symlink and dirty the repo on
+    # every install, so this step only handles identity.
+    print_step "Step 8b: Configuring Git identity..."
+    if [[ -L ~/.gitconfig ]]; then
+        print_success "Git defaults come from the tracked .gitconfig"
+    else
+        print_warning "~/.gitconfig is not the dotfiles symlink; defaults (editor, delta, rerere) are not applied"
+    fi
 
     # ── Backup Existing Configs ───────────────────
     echo ""
@@ -67,8 +67,12 @@ setup_git() {
 
     # ── Apply identity ────────────────────────────
     if [[ -n "$git_name" && -n "$GIT_PERSONAL_EMAIL" ]]; then
-        git config --global user.name "$git_name"
-        git config --global user.email "$GIT_PERSONAL_EMAIL"
+        # Only write when something changed: git rewrites the whole file
+        # on set, and ~/.gitconfig is the tracked copy.
+        [[ "$(git config --global user.name 2>/dev/null || true)" == "$git_name" ]] \
+            || git config --global user.name "$git_name"
+        [[ "$(git config --global user.email 2>/dev/null || true)" == "$GIT_PERSONAL_EMAIL" ]] \
+            || git config --global user.email "$GIT_PERSONAL_EMAIL"
         print_success "Personal Git identity: $git_name <$GIT_PERSONAL_EMAIL>"
     elif [[ -n "$(git config --global user.name 2>/dev/null)" ]]; then
         print_success "Personal Git identity already configured: $(git config --global user.name) <$(git config --global user.email)>"
