@@ -33,7 +33,6 @@ jobs:
             bin/rubocop-auto \
             .config/aerospace/scripts/*.sh \
             .config/sketchybar/sketchybarrc \
-            .config/sketchybar/colors.sh \
             .config/sketchybar/plugins/*.sh \
             .config/borders/bordersrc \
             .config/claude/statusline-command.sh \

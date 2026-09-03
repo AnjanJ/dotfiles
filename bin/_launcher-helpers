@@ -115,7 +115,9 @@ EOF
     # effort: the tool is a private path, and a sandboxed test has no
     # LaunchServices to talk to).
     local lsregister=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
-    [[ -x "$lsregister" && -z "${DOTFILES_LAUNCHER_NO_REGISTER:-}" ]] && "$lsregister" -f "$app" >/dev/null 2>&1 || true
+    if [[ -x "$lsregister" && -z "${DOTFILES_LAUNCHER_NO_REGISTER:-}" ]]; then
+        "$lsregister" -f "$app" >/dev/null 2>&1 || true
+    fi
 }
 
 # launcher_bundle_kind <app path> -> webapp|tui, or nothing if not ours
