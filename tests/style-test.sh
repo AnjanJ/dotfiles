@@ -52,6 +52,15 @@ section "arithmetic"
 increments=$(code_lines_matching '\(\([A-Za-z_][A-Za-z0-9_]*(\+\+|--)\)\)' "${commands[@]}" "${libraries[@]}" install.sh update.sh)
 assert_eq "$increments" "" "no ((VAR++)) or ((VAR--)) increments"
 
+section "quoting"
+
+# `cmd` inside a double-quoted message is a command substitution: a
+# theme-update error message once ran the real `dotfiles update` from a
+# test this way. Escape the backticks or use single quotes.
+# shellcheck disable=SC2016  # the backticks are the pattern being searched for
+backticks=$(code_lines_matching '"[^"]*[^\\]`[^`"]+`[^"]*"' "${commands[@]}" "${libraries[@]}" install.sh update.sh)
+assert_eq "$backticks" "" "no unescaped \`command\` inside a double-quoted string"
+
 section "bash 3.2 on the install path"
 
 # install.sh runs under /bin/bash from `bash <(curl ...)` and sources

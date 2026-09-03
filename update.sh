@@ -111,6 +111,15 @@ CANCELLED=false
 _update_exit() {
     local rc=$?
     rm -rf "$LOCK_DIR"
+    # A run that dies between the auto-stash and its pop (a pull that
+    # cannot reach origin, say) must not leave the working tree emptied.
+    if [[ "${DID_STASH:-false}" == true && "${STASH_RESTORED:-false}" != true ]]; then
+        if git -C "$DOTFILES_DIR" stash pop >/dev/null 2>&1; then
+            print_warning "Restored the auto-stashed working tree changes"
+        else
+            print_error "Could not restore the auto-stash; run: git -C $DOTFILES_DIR stash pop"
+        fi
+    fi
     if [[ $rc -ne 0 && "$CANCELLED" != true ]]; then
         print_error "Update failed (exit $rc). Transcript: $UPDATE_LOG"
         echo "  Run \`dotfiles health\` for the current state, then \`dotfiles update\` again."
@@ -184,6 +193,7 @@ done
 
 # Restore stashed changes immediately after pull
 if [[ "$DID_STASH" == true ]]; then
+    STASH_RESTORED=true
     git stash pop || print_warning "Stash pop had conflicts — resolve manually"
     print_success "Uncommitted changes restored"
 fi

@@ -358,6 +358,21 @@ test_37b_stay_awake_and_failure_hint() {
     assert_dir_not_exists "$STATE/update.lock" "lock released after a failure"
 }
 
+test_37c_failed_pull_restores_stash() {
+    echo ""
+    section "Test 37c: a pull that fails restores the auto-stash"
+    setup_pipeline_sandbox
+    echo "# local edit" >> "$MOCK/.zshrc"
+    rm -rf "$ORIGIN"   # origin unreachable, so git pull fails after the stash
+    local out
+    set +e; out=$(run_update --no-snapshot); rc=$?; set -e
+    [[ $rc -ne 0 ]] || fail "update.sh fails when the pull fails"
+    pass "update.sh fails when the pull fails"
+    assert_contains "$out" "Restored the auto-stashed" "the exit trap pops the stash"
+    assert_file_contains "$MOCK/.zshrc" "# local edit" "the local edit is back in the working tree"
+    assert_eq "$(git -C "$MOCK" stash list | wc -l | tr -d ' ')" "0" "no stash left behind"
+}
+
 test_38_transcript() {
     echo ""
     section "Test 38: Transcript"
@@ -393,4 +408,5 @@ test_35_marker_from_elsewhere
 test_36_no_snapshot_and_yes
 test_37_lock
 test_37b_stay_awake_and_failure_hint
+test_37c_failed_pull_restores_stash
 test_38_transcript
