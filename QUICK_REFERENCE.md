@@ -13,22 +13,36 @@ git clone https://github.com/AnjanJ/dotfiles.git ~/dotfiles && bash ~/dotfiles/i
 ## 🔧 Dotfiles CLI (works from anywhere, tab-completable)
 
 ```bash
-dotfiles update       # Upgrade system & sync repo
-dotfiles sync         # Quick refresh: pull, relink, reapply theme
+dotfiles update       # Upgrade system & sync repo (--yes never asks)
+dotfiles update available   # What is waiting: repo commits, brew upgrades, migrations, restarts
+dotfiles sync         # Quick refresh: pull, relink, migrate, reapply theme
 dotfiles health       # Verify all tools are installed
+dotfiles doctor       # Auto-fix common issues
+dotfiles debug --print   # One report of this machine's state on stdout (no flag: write file + copy to clipboard)
 dotfiles theme aura   # Switch theme (tokyo-night | aura | catppuccin | catppuccin-latte | flexoki-light)
+dotfiles theme preview [name]   # Palette swatches in the terminal (no name: the active theme)
+dotfiles theme install <git-url>   # Add a theme from a repo; `theme update [name]` pulls it, `theme remove <name>` drops it
+dotfiles theme bg next   # Desktop background for the theme: next | set <image> | list | current | generate | dir
+dotfiles font set <family>   # Monospace font for every terminal and editor: current | list | set | reset
 dotfiles menu         # fzf menu over every verb (Ctrl+Shift+Space opens it in Ghostty)
-dotfiles reminder 15 "Tea"   # macOS notification in 15 minutes
+dotfiles reminder 15 "Tea"   # macOS notification in 15 minutes; `show` lists pending, `clear` cancels all
+dotfiles restart <aerospace|sketchybar|borders>   # Restart a component now (--later defers it to the next update)
 dotfiles add-theme x  # Scaffold a new theme directory
 dotfiles cleanup      # Find/remove unlisted Homebrew packages (--force)
-dotfiles doctor       # Auto-fix common issues
 dotfiles backup       # Snapshot dotfiles state (--list, --restore)
 dotfiles profile      # Measure shell startup time (--detailed)
 dotfiles export       # Export setup snapshot (--json)
-dotfiles toggle <f>   # Flip startup-apps / borders / auto-commit
-dotfiles keys         # AeroSpace keybinding cheatsheet (fzf)
+dotfiles toggle <f>   # Flip startup-apps / borders / auto-commit / appearance / background / update-notice / agent-usage
+dotfiles keys         # AeroSpace keybinding cheatsheet (fzf); --update after editing aerospace.toml, --lint to check it
+dotfiles hook --list  # User hooks in ~/.config/dotfiles/hooks/; --seed copies the samples there
+dotfiles migrate --pending   # One-off per-machine repairs not yet run (sync and update run them)
+dotfiles default agent <name>   # Which agent `a` launches: claude | oclaude | gemini | copilot | llm
+dotfiles agent usage  # Claude plan usage: the 5-hour session and 7-day windows
+dotfiles webapp install <name> <url>   # Chrome --app launcher + AeroSpace rule (`webapp remove <name>`)
+dotfiles tui install <name> <cmd>      # Ghostty launcher for a terminal command + AeroSpace rule (`tui remove <name>`)
 dotfiles commands     # List every command
 dotfiles install      # Re-run full installer
+dotfiles uninstall    # Remove every managed symlink (keeps repo and packages; --yes skips the prompt)
 dotfiles edit         # Open dotfiles in your editor
 dotfiles dir          # Print dotfiles directory path
 ```
@@ -56,6 +70,15 @@ dotfiles dir          # Print dotfiles directory path
 | `Ctrl+Shift+O` | Obsidian (workspace 6) |
 | `Ctrl+Shift+;` | Service mode (reload, float, join) |
 
+### Ghostty
+| Key | Action |
+|-----|--------|
+| `` Cmd+` `` | Toggle the quick terminal (global: works from any app, drops down from the top) |
+| `Cmd+D` / `Cmd+Shift+D` | New split right / down |
+| `Cmd+Shift+H/J/K/L` | Focus split left / bottom / top / right |
+| `Cmd+Up` / `Cmd+Down` | Jump to previous / next prompt |
+| `Cmd+Shift+E` | Write the scrollback to a file and open it in `$EDITOR` |
+
 ### Neovim (Leader: `Space`)
 | Key | Action |
 |-----|--------|
@@ -72,12 +95,15 @@ dotfiles dir          # Print dotfiles directory path
 ### Zellij
 | Key | Action |
 |-----|--------|
-| `Ctrl+O` | Enter mode |
+| `Ctrl+O` | Session mode (rebound from the default pane mode) |
 | `Ctrl+G` | Lock (pass-through) |
-| `Alt+H/J/K/L` | Navigate panes |
+| `Alt+H/L` | Focus pane left / right, moving to the previous / next tab at the edge |
+| `Alt+J/K` | Focus pane down / up |
 | `Ctrl+Q` | Quit |
 
-**Layouts**: `zr` (Rails), `zp` (Phoenix), `zw` (Work)
+Other modes keep the Zellij defaults (`Ctrl+P` pane, `Ctrl+T` tab, `Ctrl+N` resize, `Ctrl+S` scroll); the status bar shows them.
+
+**Layouts**: `zr` (Rails), `zp` (Phoenix), `zw` (Work) | **Sessions**: `zn <name>` new, `za <name>` attach, `zl` list, `zk <name>` kill | **Tabs**: `zt` new, `zc` close
 
 ### Zed Tasks (`Cmd+Shift+P` > "task: spawn")
 | Task | Command |
@@ -117,9 +143,9 @@ Your shell replaces standard commands with modern alternatives:
 
 | You type | Actually runs | Why |
 |----------|--------------|-----|
-| `cd projects` | `z projects` (zoxide) | Frecency-based — jumps to most visited match |
+| `z projects` | zoxide jump | Frecency-based — jumps to the most visited match; `cd` itself stays plain (with `AUTO_CD`, a bare directory name also works) |
 | `cdi` | `zi` (zoxide interactive) | Pick directory with fzf |
-| `cdd` | `builtin cd` | Original cd when you need exact paths |
+| `cdd` | `builtin cd` | Original cd, bypassing any alias |
 | `ls` | `eza --icons` | Icons + git status + grouped dirs |
 | `ll` | `eza --long --git` | Long listing with git info |
 | `la` | `eza --long --all --git` | Long listing including hidden files |
@@ -127,10 +153,33 @@ Your shell replaces standard commands with modern alternatives:
 | `grep` | `rg` (ripgrep) | Much faster, respects .gitignore |
 | `find` | `fd` | Faster, simpler syntax |
 | `vim` / `vi` / `v` | `nvim` | Neovim with AstroNvim |
+| `vv` | `nvim .` | Open the current directory in Neovim |
 | `lg` | `lazygit` | Full Git TUI |
 | `tree` | `eza --tree` | Tree view with icons |
+| `Ctrl+R` | atuin | History search backed by atuin's database (fzf keeps `Ctrl+T` files and `Alt+C` cd) |
+| `Tab` | fzf-tab | Every completion menu is an fzf picker |
 
 **Original commands**: `cdd`, `lss`, `catt`, `grepp`, `findd`
+
+### System & Python
+
+| Command | What it does |
+|---------|-------------|
+| `updatebrew` | `brew update && brew upgrade && brew cleanup` |
+| `killspring` | Kill every Rails Spring process (`pkill -9 -f spring`) |
+| `docker-nuke` | `docker system prune -a --volumes` — removes all unused images, containers and volumes |
+| `venv` | Activate `./venv` (`source venv/bin/activate`) |
+| `pyserve` | Serve the current directory over HTTP (`python3 -m http.server`) |
+| `rails_tree` | `lsd --tree` ignoring `tmp`, `vendors`, `node_modules` |
+| `delgems <ruby-version>` | **Destructive**: deletes every gem installed under mise's Ruby `<version>` after a typed `yes` |
+
+### AeroSpace helpers
+
+| Command | What it does |
+|---------|-------------|
+| `restore-session` | Re-launch the standard workspace layout (`Ctrl+Shift+R` does the same); running apps are focused, not duplicated |
+| `ws` | List open windows as `workspace  app-name` |
+| `ws-ids` | Same list with bundle ids, to paste into `aerospace.toml` |
 
 ### Development Services & Logging
 
@@ -157,6 +206,16 @@ These are configured automatically by `install.sh`:
 | `commit.verbose` | See the full diff while writing commit messages |
 | `merge.tool nvimdiff` | Use Neovim for 3-way merge conflict resolution |
 | `merge.conflictstyle diff3` | Show base, ours, and theirs in merge conflicts |
+
+**Git shortcuts** (`ga`, `gc`, `gco`, `gb`, `gp`, `gl`, `gd`, `gdc`, `gclean` from `.zshrc-dhh-additions`, plus these from `.zshrc`):
+
+| Alias | Runs |
+|-------|------|
+| `gst` | `git status` |
+| `gcm` | `git commit -m` |
+| `gcane` | `git commit --amend --no-edit` |
+| `gstash` / `gpop` | `git stash` / `git stash pop` |
+| `glog` | `git log --graph` in fzf with a `git show` preview; `Ctrl+Y` copies the hash |
 
 ### SSH Setup
 
@@ -227,6 +286,8 @@ ssh -T git@github.com
 | `repos-clone` | Interactive repo cloner (GitHub/GitLab/Bitbucket/Codeberg) |
 | `repos-clone --dir ~/work --org mycompany` | Clone with presets |
 | `repos-clone --all` | Clone all repos without selection prompt |
+
+The same scripts route through the CLI as `dotfiles work setup`, `dotfiles work status`, `dotfiles work nuke`, `dotfiles work switch` and `dotfiles repos clone`.
 
 ## 🛠️ Common Tasks
 
@@ -307,6 +368,12 @@ ollama run qwen2.5-coder:7b "..."           # direct invoke (rare; prefer `llm`)
 
 # Custom helper
 explain-last                                # explain the last shell command via llm
+
+# Coding agents
+a                                           # launch the default agent (claude unless `dotfiles default agent <name>` says otherwise)
+oclaude                                     # Claude Code through Ollama, default model glm-5.2:cloud, --permission-mode auto
+oclaude -m kimi-k3:cloud                    # pick a model; bare `-m` lists cloud + local models and asks
+oq "explain SIGPIPE"                        # local qwen3.8:27b via `ollama run`, thinking off for speed
 ```
 
 ## 🔧 Environment
@@ -315,6 +382,15 @@ explain-last                                # explain the last shell command via
 |---------|-------------|
 | `RUBY_YJIT_ENABLE=1` | Enables YJIT JIT compiler for Ruby 3.1+ (significant performance boost) |
 | `~/.zshrc.local` | Machine-specific overrides — sourced last, never committed to git |
+| `PROJECTS_DIR` / `WORK_DIR` | Where personal (`~/code`) and work (`~/work/code`) projects live; the `work-*` helpers use `WORK_DIR` |
+| `DOTFILES_CODE_DIRS` | Space-separated directories `dotfiles health` scans for mise toolchain drift (default: `~/code ~/work/code`) |
+| `DOTFILES_THEME_DIR` | Where `dotfiles theme` renders app configs (`~/.local/state/dotfiles/current/theme`); starship, lazygit and others read from it |
+| `RAILS_TEMPLATES_DIR` | Your `.rubocop.yml` / `lefthook.yml` / `ci.yml` templates for `rails-setup-*` (not shipped; set it in `~/.zshrc.local`) |
+| `OLLAMA_MAX_LOADED_MODELS=1` / `OLLAMA_KEEP_ALIVE=24h` | One model resident at a time (36 GB cannot hold two large ones), kept loaded for a day |
+| `DOTFILES_UPDATE_UNATTENDED=1` | Exported by `dotfiles update --yes`; hooks and migrations read it to skip their own prompts |
+| `DOTFILES_NO_APPEARANCE=1` | Stops `dotfiles theme` switching macOS light/dark mode (tests, CI); `dotfiles toggle appearance off` is the persistent form |
+
+**Update notice**: once a day the shell runs a detached fetch and, when commits, brew upgrades, migrations or restarts are waiting, prints a yellow `dotfiles: ...` line at login. `dotfiles update available` shows the detail; `dotfiles toggle update-notice off` silences it.
 
 ## 🔧 Troubleshooting
 
@@ -378,18 +454,9 @@ aerospace --version
 brew list
 ```
 
-## 🎨 Theme Colors (Tokyo Night)
+## 🎨 Theme Colors
 
-| Element | Hex |
-|---------|-----|
-| Background | `#1a1b26` |
-| Foreground | `#c0caf5` |
-| Blue | `#7aa2f7` |
-| Cyan | `#7dcfff` |
-| Purple | `#bb9af7` |
-| Green | `#9ece6a` |
-| Red | `#f7768e` |
-| Yellow | `#e0af68` |
+Run `dotfiles theme preview` for the active palette as swatches, or `dotfiles theme preview <name>` for any other theme; `--no-color` prints plain `key #hex` lines. The source of truth is `themes/<name>/colors.toml`.
 
 ---
 

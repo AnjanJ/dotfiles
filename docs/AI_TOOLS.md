@@ -12,6 +12,7 @@ A modern shell needs AI tooling. This setup wires LLMs into the daily flow witho
 | **ollama** | Run LLMs locally (offline + private) | `ollama run <model>` or via `llm` |
 | **Gemini CLI** | Google's terminal LLM | `gemini` |
 | **explain-last** | "What did that command do?" | `explain-last` |
+| **`a`** | Launches whichever agent `dotfiles default-agent` names (Claude Code unless changed) | `a` |
 
 > **Why `llm` and not `mods`?** Earlier versions of this setup used [`mods`](https://github.com/charmbracelet/mods), but Charmbracelet sunset that project on 2026-03-09 (issues like #561 — Ollama streaming output looping — were never patched). Simon Willison's [`llm`](https://llm.datasette.io/) is the modern replacement: actively maintained, plugin-based, works cleanly with Ollama via `llm-ollama`.
 
@@ -180,16 +181,20 @@ sketchybar shows `5h 86% · 7d 25%`: how full the 5-hour session window and the 
 ```bash
 dotfiles agent usage             # Session (5h)  86%  resets 10:19 (in 1h 12m) ...
 dotfiles agent usage --json      # the same, for scripts
+dotfiles agent usage --refresh   # ignore the cache
+dotfiles agent usage --max-age 300   # accept a cache up to 300 s old (default 60)
 dotfiles toggle agent-usage off  # drop the item (then: dotfiles restart sketchybar)
 ```
 
-The figures come from the endpoint behind Claude Code's own `/usage` screen, read with the token Claude Code keeps in the keychain. The token is never refreshed or sent anywhere else, and the reply is cached for a minute in `~/.cache/dotfiles/agent-usage.json`. The item hides itself when there is no Claude Code login.
+The figures come from the endpoint behind Claude Code's own `/usage` screen, read with the token Claude Code keeps in the keychain. The token is never refreshed or sent anywhere else, and the reply is cached for a minute in `~/.cache/dotfiles/agent-usage.json`. The item hides itself when there is no Claude Code login. For scripts, the exit code says why there is no output: 0 with data, 2 when no Claude Code login is found, 3 when the endpoint could not be reached and nothing is cached.
 
 ## Agents know this setup
 
-`agents/skills/dotfiles/` is a skill for Claude Code (symlinked to `~/.claude/skills/dotfiles`) that explains where every config lives, how theming works, what is generated and must not be edited, and which `dotfiles` commands are safe to run. Ask Claude to "make the accent colour purple" or "add a shortcut for Finder" and it will edit the right source file, re-render, and validate. Contributor conventions for the repo itself are in `AGENTS.md` (loaded by `CLAUDE.md`).
+`agents/skills/dotfiles/` is a skill for Claude Code (symlinked to `~/.claude/skills/dotfiles`) that explains where every config lives, how theming works, what is generated and must not be edited, and which `dotfiles` commands are safe to run. The same directory is also linked to `~/.agents/skills/dotfiles`, `~/.codex/skills/dotfiles` and `~/.gemini/config/skills/dotfiles`, each only when its parent (`~/.agents`, `~/.codex`, `~/.gemini/config`) already exists (`DOTFILES_OPTIONAL_LINKS` in `scripts/symlink-map.sh`), so Codex and Gemini agents read the same guide without the install creating directories for tools you do not use. Ask Claude to "make the accent colour purple" or "add a shortcut for Finder" and it will edit the right source file, re-render, and validate. Contributor conventions for the repo itself are in `AGENTS.md` (loaded by `CLAUDE.md`).
 
-`dotfiles default-agent [claude|oclaude|gemini|copilot|llm]` picks which agent the `a` shell function launches; each runs with a scoped permission mode (`--permission-mode auto` for Claude Code, matching `~/.claude/settings.json`). `oclaude` (Claude Code through Ollama) uses the same mode; add `--dangerously-skip-permissions` yourself for a run that needs it.
+`dotfiles default-agent [claude|oclaude|gemini|copilot|llm]` picks which agent the `a` shell function launches; the choice lives in `~/.local/state/dotfiles/default-agent` and each agent runs with a scoped permission mode (`--permission-mode auto` for Claude Code, `--approval-mode auto_edit` for Gemini), matching `"defaultMode": "auto"` in Claude Code's settings. Those settings are the repo's `.config/claude/settings.json`, symlinked to `~/.claude/settings.json` by `scripts/symlink-map.sh`; the two paths are the same file.
+
+`oclaude` runs Claude Code against Ollama: `ollama launch claude --model <model> -- --permission-mode auto`, so it uses the same permission mode (add `--dangerously-skip-permissions` yourself for a run that needs it) and any other argument is passed through to `claude`. With no flag the model is `glm-5.2:cloud`. `-m <model>` names one directly; a bare `-m` opens a numbered picker that lists the hard-coded cloud models first (`glm-5.3:cloud`, `glm-5.2:cloud`, `kimi-k3:cloud`, `deepseek-v4-pro:cloud`), then the preferred local models `qwen3.8-cc:27b` and `qwen3.8:27b` when `ollama list` has them, then everything else `ollama list` reports; Enter takes the first entry and `q` cancels. `oq` is the quick, non-agent path: `ollama run qwen3.8:27b --think=false`, thinking off for speed, with your arguments appended.
 
 ## Which model where
 
@@ -199,7 +204,8 @@ Each tool picks its own model, on purpose: small and fast for one-shot shell use
 |------|---------|-------|
 | `llm` (shell, `explain-last`) | `.config/llm/default_model.txt` | `qwen2.5-coder:7b` |
 | `oq` (quick chat, no thinking) | `.zshrc` | `qwen3.8:27b` |
-| `oclaude` (Claude Code via Ollama) | `.zshrc` picker | cloud models or any installed local model |
-| Zed inline / commit / summaries | `.config/zed/settings.base.json` | `qwen2.5-coder:7b-base` |
-| Zed agent panel | `.config/zed/settings.base.json` | `qwen3-coder:30b` (local) or DeepSeek / Claude (cloud) |
-| Claude Code | `.config/claude/settings.json` | Claude Fable 5.1 |
+| `oclaude` (Claude Code via Ollama) | `.zshrc` (`-m`, or the picker) | `glm-5.2:cloud` by default; any Ollama cloud or installed local model |
+| Zed agent panel (`default_model`) | `.config/zed/settings.base.json` | `deepseek-v4-pro` (DeepSeek, cloud; thinking on, effort high) |
+| Zed inline assistant (`inline_assistant_model`) | `.config/zed/settings.base.json` | `qwen3-coder:30b` (local); alternatives offered: `qwen2.5-coder:7b-base`, Claude via zed.dev |
+| Zed commit messages / thread summaries | `.config/zed/settings.base.json` | `qwen2.5-coder:7b-base` (local) |
+| Claude Code | `.config/claude/settings.json` (= `~/.claude/settings.json`) | `claude-fable-5-1[1m]`: Claude Fable 5.1 with the 1M context |

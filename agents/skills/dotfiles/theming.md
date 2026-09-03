@@ -28,7 +28,7 @@ Palette keys (same schema as Omarchy themes): `mode`, `accent`, `selection`, `mu
 - Add a theme: `dotfiles add-theme <name>` (or paste an Omarchy `colors.toml`), fill `theme.conf`, put the lazy.nvim spec in `nvim/<name>-theme.lua` (or leave it out: the palette-driven `dotfiles` colorscheme is used), `dotfiles theme <name>`.
 - Install someone else's theme: `dotfiles theme install <git-url>` (clones to `~/.config/dotfiles/themes/<name>/`; a cloned theme contributes colour data only, its `nvim/*.lua`, code-capable overrides and symlinks are dropped at staging). `dotfiles theme remove <name>` undoes it.
 - See the active theme: `cat ~/.dotfiles-theme` or `dotfiles health` (Theme Assets section).
-- Desktop picture: `dotfiles theme bg next` cycles `themes/<name>/backgrounds/`, `~/.config/dotfiles/backgrounds/<name>/`, then the gradient generated from the palette; `dotfiles theme bg set <image>` pins one. `dotfiles toggle background off` to leave the desktop alone.
+- Desktop picture: `dotfiles theme bg next` (also `set <img>`, `list`, `current`, `generate`, `dir`) cycles `themes/<name>/backgrounds/`, `~/.config/dotfiles/backgrounds/<name>/`, then the gradient generated from the palette; `dotfiles theme bg set <image>` pins one. `dotfiles toggle background off` to leave the desktop alone.
 
 ## Do not
 

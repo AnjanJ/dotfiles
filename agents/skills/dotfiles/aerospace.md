@@ -28,4 +28,4 @@ Read this before changing keybindings, workspaces, window rules, the status bar 
 
 - Never write a colour into `sketchybarrc`, a plugin, or `bordersrc`; use the exported variables (`$ACCENT_COLOR`, `$ITEM_BG_COLOR`, `$WHITE`, `$BORDERS_ACTIVE_COLOR` …) that the theme provides. Plugins must `source "$HOME/.config/sketchybar/colors.sh"` themselves; they do not inherit the bar's environment.
 - Apply with `sketchybar --reload`. `sketchybar --query bar` shows the live state.
-- Borders restart: `brew services restart borders` or re-login (it is launched by AeroSpace's `after-startup-command`).
+- Borders restart: `dotfiles restart borders` (or `brew services restart borders`) or re-login (it is launched by AeroSpace's `after-startup-command`).

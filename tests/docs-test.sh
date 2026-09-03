@@ -110,3 +110,30 @@ for event in $fired; do
     /usr/bin/grep -q "$event" bin/dotfiles-hook || fail "dotfiles hook --help lists every event" "$event is fired but not in the help"
 done
 pass "every fired hook event is documented"
+
+section "front-door docs"
+
+# The cheat sheet and the maintenance guide are what a person reads, the
+# skill is what an agent reads. Each toggle, fired hook event, command
+# group and theme template must reach the human docs too, or a feature
+# ships visible only to agents.
+for flag in $(/usr/bin/grep -oE 'dotfiles:summary=.*\((.*)\)' bin/dotfiles-toggle | sed 's/.*(\(.*\))/\1/' | tr ',' ' '); do
+    for doc in QUICK_REFERENCE.md docs/MAINTENANCE.md; do
+        /usr/bin/grep -q -- "$flag" "$doc" || fail "$doc lists every toggle" "$flag is missing"
+    done
+done
+pass "QUICK_REFERENCE.md and MAINTENANCE.md list every toggle"
+for event in $fired; do
+    /usr/bin/grep -q "$event" docs/MAINTENANCE.md || fail "docs/MAINTENANCE.md lists every hook event" "$event is missing"
+done
+pass "docs/MAINTENANCE.md lists every hook event"
+for group in $(bin/dotfiles commands --plain | cut -f1 | awk '{print $1}' | sort -u); do
+    for doc in QUICK_REFERENCE.md docs/MAINTENANCE.md; do
+        /usr/bin/grep -qE "dotfiles $group([ -]|\`|$)" "$doc" || fail "$doc mentions every command group" "dotfiles $group is missing"
+    done
+done
+pass "QUICK_REFERENCE.md and MAINTENANCE.md mention every command group"
+for tpl in themes/_templates/*.tpl; do
+    /usr/bin/grep -q "$(basename "$tpl")" docs/THEMES.md || fail "docs/THEMES.md lists every template" "$(basename "$tpl") is missing"
+done
+pass "docs/THEMES.md lists every template"

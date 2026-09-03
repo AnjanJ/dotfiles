@@ -7,36 +7,47 @@ dotfiles/
 ├── install.sh                  # Main installation script (idempotent)
 ├── update.sh                   # Update script for syncing changes
 ├── Brewfile                    # Homebrew packages, organized into @group sections
+├── Brewfile.backup             # Previous Brewfile, written by dotfiles update before each upgrade (gitignored)
 ├── README.md                   # Front page
 ├── QUICK_REFERENCE.md          # Printable cheat sheet
+├── TOOL_GUIDE.md               # Every shell tool and alias, what it does and when to use it
+├── AGENTS.md                   # Conventions for changing this repo (CLAUDE.md points here)
+├── CLAUDE.md                   # One line: @AGENTS.md, so Claude Code reads the conventions
+├── LICENSE                     # MIT
 ├── .zshrc                      # Main shell config
 ├── .zshrc-dhh-additions        # Rails workflows
 ├── .zshrc-elixir-additions     # Elixir/Phoenix
-├── .zshrc-terminal-enhancements # Terminal tools, shell UX, AI tooling
+├── .zshrc-terminal-enhancements # Terminal tools, shell UX, AI tooling, worktree/archive/port-forward helpers
 ├── .zshrc-work-completions     # Work command tab-completion
+├── .gitconfig                  # Global git config (nvim editor, delta pager, pull/push/merge defaults)
 ├── .gitignore_global           # Global git ignores
 ├── .rubocop.yml                # Global RuboCop config (fallback for standalone Ruby files)
+├── .claude/                    # Project-scoped Claude Code context for this repo (agent memory), not linked anywhere
+├── .github/
+│   ├── FUNDING.yml             # Sponsor links
+│   └── workflows/test.yml      # CI: shellcheck, commands --check, keys --check/--lint, discovered suites, end-to-end install
 ├── hooks/                      # Sample hooks per event (<event>.d/*.sample), seeded into ~/.config/dotfiles/hooks/
 ├── .config/
-│   ├── aerospace/              # Window manager: layouts, keybindings
-│   ├── ghostty/                # Terminal: theme, fonts
+│   ├── aerospace/              # Window manager: layouts, keybindings, startup/cycle scripts
+│   ├── ghostty/                # Terminal: config; theme and font come from generated files
 │   ├── wezterm/                # Alternate terminal (linked as ~/.wezterm.lua)
 │   ├── mise/                   # Version manager (all runtimes track latest; projects pin their own)
 │   ├── nvim/                   # Neovim config (AstroNvim)
 │   ├── zed/                    # Zed: settings.base.json (tracked) → settings.json (generated), tasks.json, snippets/
 │   ├── vscode/                 # VS Code: settings.base.json → settings.json (generated), keybindings.json (linked into ~/Library/Application Support/Code/User/)
-│   ├── claude/                 # Global Claude Code config (~/.claude/settings.json) — distinct from the repo's own project-scoped .claude/
+│   ├── claude/                 # Global Claude Code config (~/.claude/settings.json, statusline) — distinct from the repo's own project-scoped .claude/
 │   ├── llm/                    # llm default-model preference (secrets/keys stored elsewhere by llm, never here)
 │   ├── zellij/                 # Multiplexer: config, theme, layouts (rails, phoenix, work)
 │   ├── lazygit/                # Git UI: config + theme
 │   ├── borders/                # JankyBorders: active window highlighting
-│   ├── sketchybar/             # Menu bar: config + plugins
-├── themes/                     # One colors.toml per theme + _templates/ — see docs/THEMES.md
-├── migrations/                 # One-off per-machine repairs, run by sync/update (bin/dotfiles-migrate)
-├── agents/skills/dotfiles/     # Claude Code skill for managing this machine (linked to ~/.claude/skills)
-├── AGENTS.md                   # Conventions for changing this repo (CLAUDE.md points here)
-│   ├── tokyo-night/  aura/  catppuccin/       # dark
+│   └── sketchybar/             # Menu bar: config + plugins (including the Claude usage item)
+├── themes/                     # See docs/THEMES.md
+│   ├── _templates/             # One <output>.tpl per themed app, rendered with {{ token }}s from colors.toml
+│   ├── _shared/                # Palette-driven Neovim colorscheme, the fallback for any theme without an nvim/ spec
+│   ├── tokyo-night/  aura/  catppuccin/       # dark: colors.toml, theme.conf, nvim spec, optional overrides/
 │   └── catppuccin-latte/  flexoki-light/     # light (flip macOS appearance)
+├── migrations/                 # One-off per-machine repairs, run by sync/update (bin/dotfiles-migrate)
+├── agents/skills/dotfiles/     # Claude Code skill for managing this machine (linked to ~/.claude/skills; also into ~/.agents, ~/.codex and ~/.gemini/config skills dirs when those tools exist)
 ├── bin/                        # CLI commands, linked file-by-file into ~/bin
 │   ├── dotfiles                # CLI router: bin/dotfiles-<a>-<b> answers `dotfiles a b`; help from # dotfiles:summary= headers
 │   ├── dotfiles-*              # Subcommand implementations
@@ -44,22 +55,26 @@ dotfiles/
 │   ├── repos-clone             # Clone from GitHub/GitLab/Bitbucket/Codeberg
 │   ├── erb-lint-formatter      # ERB lint wrapper for Zed
 │   ├── rubocop-auto            # RuboCop wrapper: bundle exec inside apps, global gem otherwise
-│   └── _work-helpers           # Shared utilities for work scripts
+│   ├── _work-helpers           # Shared utilities for work scripts
+│   └── _launcher-helpers       # Shared code for webapp/tui launchers: bundles, icons, AeroSpace rules
 ├── scripts/
 │   ├── _helpers.sh             # Shared colors & print functions
 │   ├── symlink-map.sh          # SINGLE SOURCE OF TRUTH for every managed symlink
 │   ├── setup-git.sh            # Git identity & defaults setup
 │   ├── setup-ssh.sh            # SSH key & config setup
+│   ├── install-answers.sh      # JSON answers file for unattended installs
+│   ├── package-utils.sh        # Brewfile @group parsing and selection
 │   ├── health-check.sh         # Verify installation (sweeps the symlink map)
 │   ├── theme-utils.sh          # Theme utility functions
 │   ├── theme-render.sh         # {{ token }} renderer (bash + awk)
-│   └── apply-theme.sh          # Render colors.toml through templates, swap into ~/.local/state, install
+│   ├── theme-background.sh     # Desktop background generation and setting for the active theme
+│   ├── apply-theme.sh          # Render colors.toml through templates, swap into ~/.local/state, install
+│   └── catalog/                # Builds docs/PACKAGE_CATALOG.md from the Brewfile
 ├── tests/
 │   ├── base-test.sh            # Shared contract: temp HOME, TAP pass/fail, assert_* helpers
-│   ├── run                     # Runs tests/*-test.sh, keeps going past a failing file
+│   ├── run                     # Runs tests/*-test.sh, keeps going past a failing file; `tests/run <area> [<area>…]` runs just those
 │   ├── <area>-test.sh          # 34 suites, one per area, discovered by name
 │   └── e2e/install-e2e.sh      # Real install.sh into a fresh HOME (CI job, not a suite)
-├── .github/workflows/test.yml  # CI: shellcheck + discovered suites + end-to-end install
 └── docs/                       # This documentation
 ```
 

@@ -20,7 +20,7 @@ Guidance for anyone changing the dotfiles source, human or agent. End-user help 
 ## Commands
 
 - Every `bin/dotfiles-*` starts with `# dotfiles:summary=…` and, when it takes arguments, `# dotfiles:args=…` (bracket optional parts: `[--yes]`). `# dotfiles:hidden=true` keeps plumbing out of listings. `dotfiles commands --check` runs in CI and fails on a missing summary.
-- Name commands `dotfiles-<group>-<verb>` so they route as `dotfiles <group> <verb>`. Existing groups: `add`, `work`, `repos`. Verbs in use: `sync`, `update`, `health`, `doctor`, `debug`, `backup`, `theme`, `font`, `toggle`, `keys`, `hook`, `migrate`.
+- Name commands `dotfiles-<group>-<verb>` so they route as `dotfiles <group> <verb>`. Groups with verbs today: `add`, `agent`, `default`, `hook`, `repos`, `theme`, `tui`, `update`, `webapp`, `work`. Single-word commands in use: `sync`, `update`, `health`, `doctor`, `debug`, `backup`, `theme`, `font`, `toggle`, `keys`, `hook`, `migrate`, `menu`, `reminder`, `restart`, `export`, `profile`, `cleanup`, `install`, `uninstall`. `dotfiles commands --plain` is the live list.
 - `--help` is handled by the router from the header; a script's own `--help` is a bonus, not a requirement.
 - Completions come from `dotfiles commands --plain`; do not add commands to `.zshrc-work-completions` by hand.
 
@@ -28,6 +28,7 @@ Guidance for anyone changing the dotfiles source, human or agent. End-user help 
 
 - `~/.local/state/dotfiles/current/theme/*` — rendered by `dotfiles theme`.
 - `.config/ghostty/theme.generated`, `.config/ghostty/font.generated`, `.config/zellij/themes/dotfiles.kdl`, `.config/sketchybar/colors.sh`, `.config/borders/colors.sh` — gitignored copies of the above.
+- `~/.zshrc-theme-env`, `~/.config/lsd/colors.yaml`, `~/.config/bat/config`, `~/.claude/themes/dotfiles.json` — written into `$HOME` by `dotfiles theme` from the same rendered set; an edit there is lost on the next theme apply.
 - `.config/zed/settings.json`, `.config/vscode/settings.json` — generated from the tracked `settings.base.json` next to each with the theme filled in; edit the base (or the editor's own settings UI, which `dotfiles theme` copies back into the base), never the generated file.
 - The block between `<!-- AEROSPACE_KEYS_START -->` and `<!-- AEROSPACE_KEYS_END -->` in `docs/KEYBINDINGS.md` — run `dotfiles keys --update` after changing `aerospace.toml`.
 - `docs/PACKAGE_CATALOG.md` — built by `scripts/catalog/build-catalog.py` from the Brewfile.
@@ -50,7 +51,7 @@ Colours belong in `themes/<name>/colors.toml`; app configs reference the rendere
 - `[[ ]]` for tests, `$(( ))` for arithmetic, `local` in functions, quote every expansion.
 - Increment with `VAR=$((VAR + 1))`, not `((VAR++))` (returns 1 at zero under `set -e`).
 - Prefer explaining *why* in a comment over restating *what* the code does.
-- shellcheck must pass with the CI flags: `-x -e SC2162,SC1091,SC2088,SC2317`. Disable a rule inline only with a reason.
+- shellcheck must pass with the CI flags: `-x -e SC2162,SC1091,SC2088,SC2317`. CI lints `bin/`, `scripts/`, `tests/`, `install.sh`, `update.sh` and the shell files under `.config/` (aerospace scripts, sketchybarrc and its plugins, bordersrc, the Claude statusline); the list is in `.github/workflows/test.yml`. Disable a rule inline only with a reason.
 - Markdown docs: full lines, no hard wrap.
 
 ## Tests

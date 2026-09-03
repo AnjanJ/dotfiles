@@ -1,101 +1,101 @@
 # My Personal Aerospace Setup
 ## Work/Personal Split Organization
 
-**Last Updated**: 2025-11-23
+**Last Updated**: 2026-09-03 (chords and workspace numbers follow the generated table in [KEYBINDINGS.md](KEYBINDINGS.md); `dotfiles keys` prints the live list)
 
 ---
 
 ## 🎯 My Workspace Layout
 
-### WORK CONTEXT (Workspaces 1-4)
+### TERMINAL, BROWSERS, EDITOR (Workspaces 1-4)
 
 ```
 ┌─────────────────────────────────────┐
-│ WORKSPACE 1: Work Browser           │
-│ → Google Chrome                     │
-│ → Work tabs, research, docs         │
+│ WORKSPACE 1: Terminal               │
+│ → Warp                              │
+│ → Commands, git, servers            │
 │ Shortcut: Ctrl+Shift+1              │
-│ Launch: Ctrl+Shift+C                │
-└─────────────────────────────────────┘
-
-┌─────────────────────────────────────┐
-│ WORKSPACE 2: Code Editor            │
-│ → VS Code (primary)                 │
-│ → Zed (alternative)                 │
-│ → Work projects                     │
-│ Shortcut: Ctrl+Shift+2              │
-│ Launch: Ctrl+Shift+V (VS Code)      │
-│         Ctrl+Shift+Z (Zed)          │
-└─────────────────────────────────────┘
-
-┌─────────────────────────────────────┐
-│ WORKSPACE 3: Work Terminal          │
-│ → Ghostty                              │
-│ → Work commands, git, servers       │
-│ Shortcut: Ctrl+Shift+3              │
 │ Launch: Ctrl+Shift+W                │
 └─────────────────────────────────────┘
 
 ┌─────────────────────────────────────┐
-│ WORKSPACE 4: Communication          │
-│ → Slack, Teams, Email               │
-│ → Work chat and collaboration       │
+│ WORKSPACE 2: Personal Browser       │
+│ → Zen                               │
+│ → Personal browsing, research       │
+│ Shortcut: Ctrl+Shift+2              │
+│ Launch: Ctrl+Shift+X                │
+└─────────────────────────────────────┘
+
+┌─────────────────────────────────────┐
+│ WORKSPACE 3: Work Browser           │
+│ → Google Chrome                     │
+│ → Work tabs, docs, web apps         │
+│ Shortcut: Ctrl+Shift+3              │
+│ Launch: Ctrl+Shift+C (new window)   │
+└─────────────────────────────────────┘
+
+┌─────────────────────────────────────┐
+│ WORKSPACE 4: Code Editor            │
+│ → Zed (primary)                     │
+│ → VS Code (alternative)             │
 │ Shortcut: Ctrl+Shift+4              │
+│ Launch: Ctrl+Shift+Z (Zed)          │
+│         Ctrl+Shift+V (VS Code)      │
 └─────────────────────────────────────┘
 ```
 
 ---
 
-### PERSONAL CONTEXT (Workspaces 5-8)
+### MAIL, NOTES, CHAT, AI (Workspaces 5-7)
 
 ```
 ┌─────────────────────────────────────┐
-│ WORKSPACE 5: Browser & Email        │
-│ → Firefox                           │
+│ WORKSPACE 5: Email                  │
 │ → Proton Mail                       │
-│ → Personal browsing, email          │
 │ Shortcut: Ctrl+Shift+5              │
-│ Launch: Ctrl+Shift+F (Firefox)      │
-│         Ctrl+Shift+M (Proton Mail)  │
+│ Launch: Ctrl+Shift+M                │
 └─────────────────────────────────────┘
 
 ┌─────────────────────────────────────┐
-│ WORKSPACE 6: Personal Projects      │
-│ → Zed (light projects)              │
-│ → VS Code (if needed)               │
-│ → Side projects, learning           │
+│ WORKSPACE 6: Notes, Chat, 2FA       │
+│ → Obsidian (tiled)                  │
+│ → Slack, Ente Auth (floating)       │
 │ Shortcut: Ctrl+Shift+6              │
-│ Launch: Ctrl+Shift+Z                │
+│ Launch: Ctrl+Shift+O (Obsidian)     │
+│         Ctrl+Shift+S (Slack)        │
+│         Ctrl+Shift+E (Ente Auth)    │
 └─────────────────────────────────────┘
 
 ┌─────────────────────────────────────┐
-│ WORKSPACE 7: Personal Terminal      │
-│ → Ghostty                           │
-│ → Personal projects, experiments    │
+│ WORKSPACE 7: AI                     │
+│ → Claude, ChatGPT (both floating)   │
 │ Shortcut: Ctrl+Shift+7              │
-│ Launch: Ctrl+Shift+G                │
-└─────────────────────────────────────┘
-
-┌─────────────────────────────────────┐
-│ WORKSPACE 8: Knowledge Management   │
-│ → Obsidian                          │
-│ → Notes, PKM, documentation         │
-│ Shortcut: Ctrl+Shift+8              │
-│ Launch: Ctrl+Shift+O                │
+│ Launch: Ctrl+Shift+A (Claude)       │
+│         Ctrl+Shift+T (ChatGPT)      │
 └─────────────────────────────────────┘
 ```
 
 ---
 
-### UTILITIES (Workspace 9)
+### SCRATCH (Workspaces 8-9) AND FLOATERS
 
 ```
 ┌─────────────────────────────────────┐
-│ WORKSPACE 9: Password Manager       │
-│ → 1Password                         │
-│ → Access credentials                │
-│ Shortcut: Ctrl+Shift+9              │
-│ Launch: Ctrl+Shift+P                │
+│ WORKSPACES 8-9: Unassigned          │
+│ → Free space for whatever the day   │
+│   needs; 10-12 are overflow         │
+│ Shortcut: Ctrl+Shift+8 / 9          │
+│ Overflow: Ctrl+Shift+0 (next),      │
+│           Ctrl+Alt+0 (previous)     │
+└─────────────────────────────────────┘
+
+┌─────────────────────────────────────┐
+│ NO HOME WORKSPACE                   │
+│ → 1Password floats where opened, so │
+│   its Touch ID prompt follows you   │
+│ → Ghostty opens on the current      │
+│   workspace                         │
+│ Launch: Ctrl+Shift+P (1Password)    │
 └─────────────────────────────────────┘
 ```
 
@@ -106,54 +106,59 @@
 ### App Launchers (Print This!)
 
 ```
-WORK APPS
----------
-Ctrl+Shift+C  →  Chrome (opens NEW window) 🆕
-Ctrl+Shift+V  →  VS Code (editor)
-Ctrl+Shift+W  →  Ghostty (work terminal)
+TERMINAL, BROWSERS, EDITOR
+--------------------------
+Ctrl+Shift+W  →  Warp (terminal, workspace 1)
+Ctrl+Shift+X  →  Zen (personal browser, workspace 2)
+Ctrl+Shift+C  →  Chrome (work browser, opens NEW window, workspace 3) 🆕
+Ctrl+Shift+Z  →  Zed (editor, workspace 4)
+Ctrl+Shift+V  →  VS Code (editor, workspace 4)
 
-PERSONAL APPS
--------------
-Ctrl+Shift+F  →  Firefox (opens NEW window) 🆕
-Ctrl+Shift+M  →  Proton Mail (email)
-Ctrl+Shift+Z  →  Zed (editor)
-Ctrl+Shift+G  →  Ghostty (personal terminal)
-Ctrl+Shift+O  →  Obsidian (notes/PKM)
+MAIL, NOTES, CHAT, AI
+---------------------
+Ctrl+Shift+M  →  Proton Mail (workspace 5)
+Ctrl+Shift+O  →  Obsidian (notes/PKM, workspace 6)
+Ctrl+Shift+S  →  Slack (workspace 6, floating)
+Ctrl+Shift+E  →  Ente Auth (workspace 6, floating)
+Ctrl+Shift+A  →  Claude (workspace 7, floating)
+Ctrl+Shift+T  →  ChatGPT (workspace 7, floating)
 
 UTILITIES
 ---------
-Ctrl+Shift+P  →  1Password
-Ctrl+Shift+Space  →  Raycast (app launcher)
+Ctrl+Shift+P      →  1Password (floats on the current workspace)
+Ctrl+Shift+Space  →  dotfiles menu (theme, toggles, launchers, update…)
 Ctrl+Shift+Enter  →  Finder
+Ctrl+Shift+R      →  Re-launch the whole startup session
 
 BROWSER WINDOW CYCLING 🆕
 -------------------------
 Ctrl+Shift+N  →  Next Chrome window (all workspaces)
 Ctrl+Shift+B  →  Previous Chrome window (all workspaces)
-Alt+Shift+N   →  Next Firefox window (all workspaces)
-Alt+Shift+B   →  Previous Firefox window (all workspaces)
+Alt+Shift+N   →  Next Zen window (all workspaces)
+Alt+Shift+B   →  Previous Zen window (all workspaces)
 ```
 
 ### Workspace Switching
 
 ```
-WORK CONTEXT
-------------
-Ctrl+Shift+1  →  Work Browser (Chrome)
-Ctrl+Shift+2  →  Code Editor (VS Code/Zed)
-Ctrl+Shift+3  →  Work Terminal (Ghostty)
-Ctrl+Shift+4  →  Communication
+TERMINAL, BROWSERS, EDITOR
+--------------------------
+Ctrl+Shift+1  →  Terminal (Warp)
+Ctrl+Shift+2  →  Personal Browser (Zen)
+Ctrl+Shift+3  →  Work Browser (Chrome)
+Ctrl+Shift+4  →  Code Editor (Zed/VS Code)
 
-PERSONAL CONTEXT
-----------------
-Ctrl+Shift+5  →  Browser & Email (Firefox, Proton Mail)
-Ctrl+Shift+6  →  Personal Projects (Zed)
-Ctrl+Shift+7  →  Personal Terminal (Ghostty)
-Ctrl+Shift+8  →  Notes (Obsidian)
+MAIL, NOTES, CHAT, AI
+---------------------
+Ctrl+Shift+5  →  Email (Proton Mail)
+Ctrl+Shift+6  →  Notes, Chat, 2FA (Obsidian, Slack, Ente Auth)
+Ctrl+Shift+7  →  AI (Claude, ChatGPT)
 
-UTILITIES
----------
-Ctrl+Shift+9  →  1Password
+SCRATCH
+-------
+Ctrl+Shift+8  →  Free
+Ctrl+Shift+9  →  Free
+Ctrl+Shift+0  →  Cycle forward through overflow workspaces 10-12 (Ctrl+Alt+0 backward)
 
 QUICK TOGGLE
 ------------
@@ -167,44 +172,44 @@ Ctrl+Shift+Tab  →  Toggle between last 2 workspaces ⭐
 ### Morning Startup (Work Mode)
 
 ```bash
-# Start work context
-Ctrl+Shift+1    # Chrome (check email, calendar)
-Ctrl+Shift+2    # VS Code (open work project)
-Ctrl+Shift+3    # Ghostty (start dev server)
-Ctrl+Shift+4    # Slack (check messages)
+# Start work context (or Ctrl+Shift+R to relaunch the whole session at once)
+Ctrl+Shift+3    # Chrome (check calendar, work docs)
+Ctrl+Shift+4    # Zed or VS Code (open work project)
+Ctrl+Shift+1    # Warp (start dev server)
+Ctrl+Shift+6    # Slack (check messages)
 
 # Now ready to work!
-# Focus on workspace 2 (code editor)
-Ctrl+Shift+2
+# Focus on workspace 4 (code editor)
+Ctrl+Shift+4
 ```
 
 ### Work Development Flow
 
 ```bash
 # The main workflow loop
-Workspace 2 (VS Code)
+Workspace 4 (Zed / VS Code)
   ↓
-Ctrl+Shift+3 (Ghostty terminal)
+Ctrl+Shift+1 (Warp terminal)
   ↓
 Run tests/server
   ↓
-Ctrl+Shift+Tab (back to VS Code)
+Ctrl+Shift+Tab (back to the editor)
   ↓
 Write code
   ↓
-Ctrl+Shift+Tab (back to Ghostty)
+Ctrl+Shift+Tab (back to Warp)
   ↓
 Check output
   ↓
 Repeat!
 
 # Need to check docs?
-Ctrl+Shift+1 (Chrome)
+Ctrl+Shift+3 (Chrome)
 # Back to coding
-Ctrl+Shift+2 (VS Code)
+Ctrl+Shift+4 (editor)
 
 # Need password?
-Ctrl+Shift+P (1Password)
+Ctrl+Shift+P (1Password floats right here)
 # Back to work
 Ctrl+Shift+Tab
 ```
@@ -213,29 +218,89 @@ Ctrl+Shift+Tab
 
 ```bash
 # Switch to personal context
-Ctrl+Shift+5    # Firefox & Proton Mail (browsing, email)
-Ctrl+Shift+6    # Zed (side project)
-Ctrl+Shift+7    # Ghostty (personal terminal)
-Ctrl+Shift+8    # Obsidian (journaling, notes)
+Ctrl+Shift+2    # Zen (personal browsing)
+Ctrl+Shift+5    # Proton Mail (email)
+Ctrl+Shift+4    # Zed (side project)
+Ctrl+Shift+1    # Warp (personal terminal)
+Ctrl+Shift+6    # Obsidian (journaling, notes)
 ```
 
 ### Writing/Note-Taking Flow
 
 ```bash
-Ctrl+Shift+8    # Obsidian (writing)
-Ctrl+Shift+5    # Firefox (research)
+Ctrl+Shift+6    # Obsidian (writing)
+Ctrl+Shift+2    # Zen (research)
 Ctrl+Shift+Tab  # Toggle between them
 
 # Quick capture in Obsidian
 Ctrl+Shift+O    # Launch Obsidian if not open
-Ctrl+Shift+8    # Go to Obsidian workspace
+Ctrl+Shift+6    # Go to Obsidian workspace
+```
+
+---
+
+## 🧰 The dotfiles CLI in a Working Day
+
+The window manager is half the setup; the other half is `dotfiles`, one command with a verb per job. `dotfiles menu` (or `Ctrl+Shift+Space`, which opens it in a Ghostty window) is the fzf tree over all of them, so nothing here has to be memorised.
+
+### Start of the day
+
+```bash
+# The login notice already said "dotfiles: 3 commits, 2 brew upgrades…" in yellow if anything waits.
+# .zshrc refreshes that once a day in a detached job; the shell only reads the cache.
+dotfiles update available        # The same check, live: commits, brew upgrades, migrations, restarts
+dotfiles update                  # Apply it all (pull → brew upgrade → relink → migrate → mise → restart what changed)
+dotfiles toggle update-notice off   # If the login line annoys you
+
+dotfiles agent usage             # Claude plan usage: the 5-hour session and the 7-day window, with reset times
+# The sketchybar item shows the same ("5h 86% · 7d 25%"), yellow at 70%, red at 90%;
+# click it for a notification. dotfiles toggle agent-usage off hides it.
+```
+
+### While coding
+
+```bash
+gwa feature/login                # New worktree + branch beside the repo (myapp--feature-login), mise-trusted, cd into it
+# ... work, commit, push ...
+gwr                              # From inside it: remove the worktree and delete the branch, after a y/N
+
+dotfiles reminder 25             # "Your 25 minutes are up" as a macOS notification; a launchd agent, so it fires
+dotfiles reminder 15 "Stand-up"  # even if you close the terminal or the Mac sleeps in between
+dotfiles reminder show           # What is pending and when; `clear` cancels
+
+fip nyc-dev 3000 5432            # SSH port forwards: localhost:3000 and :5432 answer from the remote box
+lip                              # List active forwards
+dip 3000                         # Stop one
+
+compress ./dist                  # → dist.tar.gz next to it; decompress dist.tar.gz unpacks it here
+```
+
+### Shaping the desk
+
+```bash
+dotfiles webapp install Linear https://linear.app --workspace 3   # Chrome --app launcher with its own AeroSpace rule
+dotfiles tui install Top btop                                       # A terminal program as a floating Ghostty app
+dotfiles webapp remove --list                                       # What launchers exist on this machine
+dotfiles theme aura              # Switch every app's palette; dotfiles theme bg next cycles the desktop picture
+dotfiles font set "JetBrainsMono Nerd Font"   # One monospace family for every terminal and editor
+dotfiles keys                    # The live keybinding cheatsheet (also service mode: Ctrl+Shift+; then K)
+```
+
+### When something is off
+
+```bash
+dotfiles restart sketchybar      # Or aerospace, borders: restart a component now
+dotfiles health                  # Tools, symlinks, runtimes, services, pending migrations and restarts
+dotfiles doctor                  # Fix the symlink and permission problems health found
+dotfiles debug --print           # One report of the whole state; without --print it lands in
+                                 # ~/.local/state/dotfiles/debug.log and on the clipboard, ready for an issue or an agent
 ```
 
 ---
 
 ## 🎨 App-Specific Tips
 
-### VS Code (Workspace 2)
+### VS Code (Workspace 4)
 
 **Best setup:**
 - Full-screen (`F11`)
@@ -247,16 +312,16 @@ Ctrl+Shift+8    # Go to Obsidian workspace
 Ctrl+` (VS Code shortcut)
 ```
 
-**Or use dedicated Ghostty:**
+**Or use the dedicated terminal:**
 ```
-Ctrl+Shift+3 (full Ghostty in workspace 3)
+Ctrl+Shift+1 (full Warp in workspace 1)
 ```
 
-### Ghostty Terminal (Workspace 3)
+### Terminal (Workspace 1)
 
 **Multiple sessions:**
-- Split panes within Ghostty
-- Or open multiple Ghostty windows in same workspace
+- Split panes within Warp, or Zellij inside Ghostty
+- Or open multiple terminal windows in same workspace (Ghostty has no home workspace: it opens where you are)
 
 **Common commands:**
 ```bash
@@ -267,7 +332,7 @@ rt          # bin/rails test
 gst         # git status
 ```
 
-### Obsidian (Workspace 8)
+### Obsidian (Workspace 6)
 
 **Quick capture:**
 ```
@@ -277,11 +342,11 @@ Cmd+N           # New note (Obsidian shortcut)
 
 **Daily note:**
 ```
-Ctrl+Shift+8    # Go to Obsidian
+Ctrl+Shift+6    # Go to Obsidian
 Cmd+D           # Open daily note (if configured)
 ```
 
-### 1Password (Workspace 9)
+### 1Password (floats on the current workspace)
 
 **Quick access:**
 ```
@@ -290,8 +355,8 @@ Cmd+\           # Autofill (1Password shortcut)
 ```
 
 **Or use browser extension:**
-- Chrome: Cmd+\ in workspace 1
-- Firefox: Cmd+\ in workspace 5
+- Chrome: Cmd+\ in workspace 3
+- Zen: Cmd+\ in workspace 2
 
 ---
 
@@ -301,31 +366,31 @@ Cmd+\           # Autofill (1Password shortcut)
 
 ```bash
 # Working on work project
-Workspaces 1-4
+Workspaces 1, 3, 4 (Warp, Chrome, editor)
 
 # Break time, check personal stuff
-Ctrl+Shift+5 (Firefox)
+Ctrl+Shift+2 (Zen)
 
 # Back to work
-Ctrl+Shift+2 (VS Code)
+Ctrl+Shift+4 (editor)
 
 # End of day, switch to personal project
-Ctrl+Shift+6 (Zed)
-Ctrl+Shift+7 (Ghostty)
+Ctrl+Shift+4 (Zed)
+Ctrl+Shift+1 (Warp)
 ```
 
 ### Deep Work Mode (Work)
 
 ```bash
 # Focus on coding only
-Ctrl+Shift+2    # VS Code
+Ctrl+Shift+4    # Zed / VS Code
 F11             # Full-screen
 
 # Kill distractions
 Ctrl+Shift+;    # Service mode
 Backspace       # Close all other windows in workspace
 
-# Only VS Code + Ghostty toggle
+# Only editor + Warp toggle
 Ctrl+Shift+Tab  # Quick switch
 ```
 
@@ -333,11 +398,11 @@ Ctrl+Shift+Tab  # Quick switch
 
 ```bash
 # Focus on side project
-Ctrl+Shift+6    # Zed
+Ctrl+Shift+4    # Zed
 F11             # Full-screen
 
 # Or focus on writing
-Ctrl+Shift+8    # Obsidian
+Ctrl+Shift+6    # Obsidian
 F11             # Full-screen
 ```
 
@@ -346,34 +411,34 @@ F11             # Full-screen
 ```bash
 # Use same browser in multiple workspaces
 
-# Work research (workspace 1)
-Ctrl+Shift+1    # Go to work workspace
-Ctrl+Shift+C    # Open NEW Chrome window
+# Chrome's home is workspace 3, so a new window lands there wherever
+# you pressed the chord; move it afterwards with Ctrl+Alt+<n>.
+
+# Work research (workspace 3)
+Ctrl+Shift+C    # Open NEW Chrome window (lands on workspace 3)
 # Browse work docs, Rails guides, etc.
 
-# Personal browsing (workspace 5)
-Ctrl+Shift+5    # Go to personal workspace
+# Reference next to the editor (workspace 4)
 Ctrl+Shift+C    # Open ANOTHER Chrome window
-# Browse YouTube, personal sites, etc.
+Ctrl+Alt+4      # Move it to the editor workspace
+# Browse API docs beside the code
 
 # Cycle between browser windows (no workspace switching!)
-Ctrl+Shift+N    # Next Chrome window → jumps to workspace 1
-Ctrl+Shift+N    # Next Chrome window → jumps to workspace 5
-Ctrl+Shift+N    # Wraps around → back to workspace 1
+Ctrl+Shift+N    # Next Chrome window → jumps to workspace 3
+Ctrl+Shift+N    # Next Chrome window → jumps to workspace 4
+Ctrl+Shift+N    # Wraps around → back to workspace 3
 
-# Same for Firefox
-Ctrl+Shift+1    # Work workspace
-Ctrl+Shift+F    # Open NEW Firefox window
-Ctrl+Shift+5    # Personal workspace
-Ctrl+Shift+F    # Open ANOTHER Firefox window
-Alt+Shift+N     # Cycle through Firefox windows
+# Same for Zen
+Ctrl+Shift+X    # Open Zen (lands on workspace 2)
+Cmd+N           # ANOTHER Zen window, then Ctrl+Alt+6 to park it by your notes
+Alt+Shift+N     # Cycle through Zen windows
 ```
 
 **Why this is powerful:**
 - Same browser extensions in both work & personal contexts
 - No need to remember which workspace has which tab
-- Faster than `Ctrl+Shift+1` or `Ctrl+Shift+5` for switching
-- Perfect for tutorials: docs in workspace 1, video in workspace 5
+- Faster than `Ctrl+Shift+3` or `Ctrl+Shift+2` for switching
+- Perfect for tutorials: docs in workspace 3, video in workspace 2
 
 ---
 
@@ -606,8 +671,8 @@ You control which workspace shows on which monitor
 Example:
 Laptop Screen          BenQ Monitor
 ─────────────          ────────────
-Workspace 2            Workspace 5
-(VS Code)              (Firefox)
+Workspace 4            Workspace 2
+(Zed / VS Code)        (Zen)
 
 You can change either monitor independently:
 Ctrl+Shift+1  → Changes laptop to workspace 1
@@ -660,33 +725,33 @@ When you connect your BenQ monitor:
 
 #### Workflow Example: Coding Session with Dual Monitor
 
-**Goal**: Code on laptop (workspace 2), have docs on BenQ (workspace 8)
+**Goal**: Code on laptop (workspace 4), have notes on BenQ (workspace 6)
 
 ```bash
 # Setup laptop screen
-Ctrl+Shift+2         # Switch laptop to workspace 2 (VS Code)
+Ctrl+Shift+4         # Switch laptop to workspace 4 (Zed / VS Code)
 
 # Setup BenQ monitor
 Alt+Shift+L          # Focus BenQ monitor
-Ctrl+Shift+8         # Switch BenQ to workspace 8 (Obsidian)
+Ctrl+Shift+6         # Switch BenQ to workspace 6 (Obsidian)
 
 # Now you have:
-# Laptop: Workspace 2 (VS Code)
-# BenQ:   Workspace 8 (Obsidian)
+# Laptop: Workspace 4 (editor)
+# BenQ:   Workspace 6 (Obsidian)
 
 # Work between them
-Ctrl+Shift+Tab       # Quick toggle between workspace 2 ↔ 8
+Ctrl+Shift+Tab       # Quick toggle between workspace 4 ↔ 6
 
 # Or focus monitors directly
-Alt+Shift+H          # Focus laptop (shows workspace 2)
-Alt+Shift+L          # Focus BenQ (shows workspace 8)
+Alt+Shift+H          # Focus laptop (shows workspace 4)
+Alt+Shift+L          # Focus BenQ (shows workspace 6)
 ```
 
 #### Moving Windows Between Monitors
 
 **Move individual window**:
 ```bash
-# Have VS Code open on laptop, want it on BenQ
+# Have the editor open on laptop, want it on BenQ
 Ctrl+Shift+Cmd+M     # Move focused window to next monitor
 
 # Or be specific
@@ -696,8 +761,8 @@ Ctrl+Shift+Cmd+H     # Move window back to left monitor (laptop)
 
 **Move entire workspace**:
 ```bash
-# Working in workspace 2 on laptop, want whole workspace on BenQ
-Ctrl+Alt+Tab         # Move entire workspace 2 to BenQ
+# Working in workspace 4 on laptop, want whole workspace on BenQ
+Ctrl+Alt+Tab         # Move entire workspace 4 to BenQ
 Ctrl+Alt+Tab         # Move back to laptop
 ```
 
@@ -714,7 +779,7 @@ When you AirPlay to TV:
 
 ```bash
 # Open browser with presentation
-Ctrl+Shift+5         # Firefox (personal workspace)
+Ctrl+Shift+2         # Zen (personal browser)
 
 # Move to TV for presentation
 Ctrl+Alt+Tab         # Cycles through monitors
@@ -735,19 +800,19 @@ Ctrl+Alt+Tab         # Cycle back to BenQ or laptop
 
 #### What Happens?
 When you disconnect external monitor:
-- Workspaces 5-8 automatically move to laptop screen
+- The workspaces it was showing move to the laptop screen
 - All your windows preserved
 - No manual rearrangement needed
 
 #### Workflow
 ```bash
 # At coffee shop (laptop only)
-Ctrl+Shift+5         # Firefox (now on laptop)
-Ctrl+Shift+2         # VS Code (still on laptop)
+Ctrl+Shift+2         # Zen (now on laptop)
+Ctrl+Shift+4         # Editor (still on laptop)
 Ctrl+Shift+Tab       # Quick toggle between workspaces
 
 # Back home, connect BenQ
-# Workspaces 5-8 automatically move to BenQ ✓
+# It comes up showing an empty workspace; pick what goes there ✓
 ```
 
 ---
@@ -772,10 +837,10 @@ Alt+Shift+M          →  Focus next monitor
 Alt+Shift+H          →  Focus left monitor (laptop)
 Alt+Shift+L          →  Focus right monitor (BenQ)
 
-WORKSPACE SHORTCUTS (automatic monitor assignment)
+WORKSPACE SHORTCUTS (no forced monitor assignment)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Ctrl+Shift+1-4       →  Workspaces on laptop (work)
-Ctrl+Shift+5-8       →  Workspaces on external (personal)
+Ctrl+Shift+1-9       →  Show that workspace on the focused monitor
+Ctrl+Shift+0         →  Overflow workspaces 10-12 on the focused monitor
 ```
 
 ---
@@ -785,11 +850,11 @@ Ctrl+Shift+5-8       →  Workspaces on external (personal)
 #### Workflow 1: Code + Documentation
 
 ```bash
-# Laptop: VS Code
-Ctrl+Shift+2
+# Laptop: Zed / VS Code
+Ctrl+Shift+4
 
 # BenQ: Documentation/Browser
-Ctrl+Shift+5
+Ctrl+Shift+3
 
 # Quick reference while coding
 Alt+Shift+M          # Glance at docs on BenQ
@@ -799,11 +864,11 @@ Alt+Shift+H          # Back to coding on laptop
 #### Workflow 2: Code + Terminal + Logs
 
 ```bash
-# Laptop: VS Code + Terminal (side by side in workspace 2)
-Ctrl+Shift+2
+# Laptop: editor + a Ghostty window (side by side in workspace 4)
+Ctrl+Shift+4
 
-# BenQ: Full-screen terminal with logs
-Ctrl+Shift+7
+# BenQ: Full-screen Warp with logs
+Ctrl+Shift+1
 
 # Watch logs on BenQ while coding on laptop
 # No need to switch - both visible!
@@ -813,13 +878,13 @@ Ctrl+Shift+7
 
 ```bash
 # Laptop: Obsidian for writing
-Ctrl+Shift+8         # Wait, this goes to BenQ...
+Ctrl+Shift+6         # Opens on whichever monitor is focused
 
-# Move it to laptop for focused writing
+# If that was BenQ, move it to laptop for focused writing
 Ctrl+Shift+Cmd+H     # Move Obsidian to laptop
 
-# BenQ: Firefox for research
-Ctrl+Shift+5
+# BenQ: Zen for research
+Ctrl+Shift+2
 
 # Write on laptop, research on BenQ simultaneously
 ```
@@ -828,7 +893,7 @@ Ctrl+Shift+5
 
 ```bash
 # Prepare on laptop
-Ctrl+Shift+1         # Open presentation in Chrome
+Ctrl+Shift+3         # Open presentation in Chrome
 
 # Move to TV
 Ctrl+Alt+Tab         # Move workspace to BenQ
@@ -836,7 +901,7 @@ Ctrl+Alt+Tab         # Move workspace to TV
 
 # Control from laptop
 Alt+Shift+H          # Focus laptop
-Ctrl+Shift+3         # Open notes in workspace 3
+Ctrl+Shift+6         # Open notes in workspace 6
 
 # Presentation on TV, notes on laptop!
 ```
@@ -845,17 +910,17 @@ Ctrl+Shift+3         # Open notes in workspace 3
 
 ### Pro Tips for Multi-Monitor Setup
 
-**1. Let Workspaces Auto-Assign**
+**1. Apps Auto-Assign, Monitors Do Not**
 ```bash
-# Don't fight the assignments!
-# Workspace 5? Automatically goes to external monitor ✓
-# Just use Ctrl+Shift+5 and it appears on BenQ
+# Every app has a home workspace (aerospace.toml [[on-window-detected]]),
+# so Ctrl+Shift+O always lands Obsidian on workspace 6.
+# Which monitor shows workspace 6 is up to you: it opens on the focused one.
 ```
 
 **2. Use Ctrl+Alt+Tab for Flexibility**
 ```bash
-# Want workspace 2 on BenQ sometimes?
-Ctrl+Shift+2         # Open workspace 2 (laptop)
+# Want workspace 4 on BenQ sometimes?
+Ctrl+Shift+4         # Open workspace 4 (laptop)
 Ctrl+Alt+Tab         # Move to BenQ for bigger screen
 
 # Done? Move back
@@ -889,8 +954,8 @@ Ctrl+Alt+Tab         # Back to laptop
 **Problem: Workspace not on expected monitor**
 
 ```bash
-# Check assignments
-cat ~/.config/aerospace/aerospace.toml | grep workspace-to-monitor
+# There is no forced assignment; a workspace shows where you last put it
+aerospace list-workspaces --all --format '%{workspace} %{monitor-name}'
 
 # Reload config
 Ctrl+Shift+; → Esc
@@ -914,7 +979,7 @@ Ctrl+Shift+2         # Cycle through to find it
 
 ```bash
 # Edit ~/.config/aerospace/aerospace.toml
-# Change workspace-to-monitor-force-assignment section
+# Add a [workspace-to-monitor-force-assignment] section (none exists today)
 # Reload: Ctrl+Shift+; → Esc
 ```
 
@@ -926,27 +991,25 @@ Ctrl+Shift+2         # Cycle through to find it
 ```
 Laptop                    BenQ Monitor
 ━━━━━━━━━━━━━━━━━━━━     ━━━━━━━━━━━━━━━━━━━━
-1. Chrome (docs)          5. Firefox (testing)
-2. VS Code (coding)       6. (empty)
-3. Ghostty (commands)        7. Ghostty (logs)
-4. Slack (chat)           8. (empty)
+4. Zed / VS Code (coding) 3. Chrome (docs, testing)
+1. Warp (commands, logs)  6. Obsidian + Slack (chat)
+                          7. Claude / ChatGPT
 ```
 
 **Evening (Personal Mode)**:
 ```
 Laptop                    BenQ Monitor
 ━━━━━━━━━━━━━━━━━━━━     ━━━━━━━━━━━━━━━━━━━━
-1-4. (work - closed)      5. Firefox (browsing)
-                          6. Zed (side project)
-                          7. Ghostty (personal)
-                          8. Obsidian (writing)
+3. (Chrome closed)        2. Zen (browsing)
+4. Zed (side project)     5. Proton Mail
+1. Warp (personal)        6. Obsidian (writing)
 ```
 
 **Presentation (with TV)**:
 ```
 Laptop                    BenQ                  TV
 ━━━━━━━━━━━━━━━━━━━━     ━━━━━━━━━━━━━━━━     ━━━━━━━━━━━━
-3. Notes/Control          (not used)            1. Presentation
+6. Notes/Control          (not used)            3. Presentation (Chrome)
 ```
 
 ---
@@ -956,33 +1019,36 @@ Laptop                    BenQ                  TV
 ### App Launchers (Letters Match Apps)
 
 ```
+W → Warp
+X → Zen (Z was taken by Zed)
 C → Chrome
-V → VS Code (Visual Studio Code)
-W → Ghostty
-F → Firefox
-M → (Proton) Mail
 Z → Zed
-G → Ghostty
+V → VS Code (Visual Studio Code)
+M → (Proton) Mail
 O → Obsidian
+S → Slack
+E → Ente Auth
+A → Claude (AI, Anthropic)
+T → ChaTGPT
 P → 1Password
+R → Restore session
 ```
 
 ### Workspace Numbers (Logical Flow)
 
 ```
-1-4  → Work (sequential work tasks)
-  1 → Browse
-  2 → Code
-  3 → Terminal
-  4 → Communicate
+1-4  → Build (the tools you code with)
+  1 → Terminal (Warp)
+  2 → Personal browser (Zen)
+  3 → Work browser (Chrome)
+  4 → Editor (Zed / VS Code)
 
-5-8  → Personal (mirror work structure)
-  5 → Browse & Email
-  6 → Code
-  7 → Terminal
-  8 → Notes
+5-7  → Communicate and think
+  5 → Mail
+  6 → Notes, chat, 2FA
+  7 → AI
 
-9    → Utilities (password manager)
+8-9  → Scratch (nothing assigned; 10-12 overflow via Ctrl+Shift+0)
 ```
 
 ---
@@ -992,61 +1058,59 @@ P → 1Password
 ### 1. **Keep Work/Personal Separate**
 
 **Don't:**
-- ❌ Open Chrome in workspace 5
-- ❌ Mix work and personal in same workspace
-- ❌ Use work terminal for personal projects
+- ❌ Log into personal accounts in Chrome
+- ❌ Mix work and personal tabs in the same browser
+- ❌ Park work web apps in Zen
 
 **Do:**
-- ✅ Chrome = workspace 1 (work only)
-- ✅ Firefox = workspace 5 (personal only)
-- ✅ Ghostty = workspace 3 (work only)
-- ✅ Ghostty = workspace 7 (personal only)
+- ✅ Chrome = workspace 3 (work browsing only)
+- ✅ Zen = workspace 2 (personal browsing only)
+- ✅ Work web apps as their own launchers: `dotfiles webapp install <name> <url> --workspace 3`
+- ✅ Warp on workspace 1 for both; the git identity is per directory (`work-setup`), not per terminal
 
 ### 2. **Use the Toggle (Ctrl+Shift+Tab)**
 
 **Most common patterns:**
 ```
 Code ↔ Terminal
-  Workspace 2 ↔ Workspace 3 (work)
-  Workspace 6 ↔ Workspace 7 (personal)
+  Workspace 4 ↔ Workspace 1
 
 Browse ↔ Code
-  Workspace 1 ↔ Workspace 2 (work)
-  Workspace 5 ↔ Workspace 6 (personal)
+  Workspace 3 ↔ Workspace 4 (work)
+  Workspace 2 ↔ Workspace 4 (personal)
 
 Notes ↔ Browser
-  Workspace 8 ↔ Workspace 5 (research + write)
+  Workspace 6 ↔ Workspace 2 (research + write)
 ```
 
 ### 3. **Launch Apps in Their Workspace**
 
 **Workflow:**
 ```bash
-# Wrong way:
-Launch Chrome anywhere
-Then move to workspace 1
-
-# Right way:
-Ctrl+Shift+1    # Go to workspace 1 first
-Ctrl+Shift+C    # Launch Chrome here
+# Every app has a home workspace, so the launcher does the placing:
+Ctrl+Shift+C    # Launch Chrome; the window lands on workspace 3 wherever you are
 
 # Even better:
-Ctrl+Shift+1    # Just switch (Chrome already open)
+Ctrl+Shift+3    # Just switch (Chrome already open)
+
+# Want it somewhere else this once?
+Ctrl+Alt+4      # Move the focused window to workspace 4
 ```
 
 ### 4. **Muscle Memory Training**
 
 **Week 1: Learn numbers**
 ```
-Ctrl+Shift+1/2/3  (work context)
-Ctrl+Shift+5/6/7  (personal context)
+Ctrl+Shift+1/3/4  (terminal, work browser, editor)
+Ctrl+Shift+2/5/6  (personal browser, mail, notes)
 ```
 
 **Week 2: Add app launchers**
 ```
+Ctrl+Shift+W (Warp)
 Ctrl+Shift+C (Chrome)
-Ctrl+Shift+V (VS Code)
-Ctrl+Shift+F (Firefox)
+Ctrl+Shift+Z (Zed)
+Ctrl+Shift+X (Zen)
 ```
 
 **Week 3: Master toggle**
@@ -1063,26 +1127,27 @@ Ctrl+Shift+Tab (most used shortcut!)
 Edit `~/.config/aerospace/aerospace.toml`:
 
 ```toml
-# Example: Add Slack
-ctrl-shift-s = '''exec-and-forget open -a "Slack"'''
-
-# Example: Add Spotify
-ctrl-shift-t = '''exec-and-forget open -a "Spotify"'''
+# Example: Add Spotify (S is Slack and T is ChatGPT already; Y is free)
+# desc: Launch Spotify
+ctrl-shift-y = '''exec-and-forget open -a "Spotify"'''
 ```
 
-Then reload:
+Then reload and regenerate the cheatsheet (`dotfiles keys --lint` catches a chord bound twice):
 ```bash
 Ctrl+Shift+; → Esc
 # or
 aerospace reload-config
+dotfiles keys --update
 ```
+
+A web app or terminal program needs no TOML at all: `dotfiles webapp install Linear https://linear.app --workspace 3` and `dotfiles tui install Top btop` create launchers with their own AeroSpace rules.
 
 ### Changing Workspace Assignments
 
 **Current:**
-- 1-4: Work
-- 5-8: Personal
-- 9: Utilities
+- 1-4: Terminal, personal browser, work browser, editor
+- 5-7: Mail, notes/chat/2FA, AI
+- 8-9: Scratch (10-12 overflow)
 
 **Want different layout?**
 Edit this file and reorganize!
@@ -1095,44 +1160,45 @@ Edit this file and reorganize!
 
 **Work:**
 - 🌐 Chrome (browser)
-- 💻 VS Code (editor)
-- ⚡ Ghostty (terminal)
-- 💬 Slack/Teams (communication)
+- 💻 Zed, VS Code (editors)
+- ⚡ Warp (terminal), Ghostty (terminal, no home workspace)
+- 💬 Slack (communication)
 
 **Personal:**
-- 🦊 Firefox (browser)
+- 🦊 Zen (browser)
 - 📧 Proton Mail (email)
-- ⚡ Zed (editor)
-- 👻 Ghostty (terminal)
 - 📝 Obsidian (PKM)
+- 🤖 Claude, ChatGPT (AI)
 
 **Utilities:**
-- 🔐 1Password (passwords)
-- 🚀 Raycast (launcher)
+- 🔐 1Password (passwords), Ente Auth (2FA)
+- 🚀 dotfiles menu (Ctrl+Shift+Space)
 
 ### My Workspace Organization
 
 ```
-WORK        PERSONAL           UTILITIES
-────────    ──────────────     ─────────
-1. Chrome   5. Firefox + Mail  9. 1Password
-2. VS Code  6. Zed
-3. Ghostty     7. Ghostty
-4. Comm     8. Obsidian
+BUILD               COMMUNICATE, THINK          SCRATCH
+────────────────    ─────────────────────────   ─────────
+1. Warp             5. Proton Mail              8. (free)
+2. Zen              6. Obsidian, Slack, Ente    9. (free)
+3. Chrome           7. Claude, ChatGPT
+4. Zed / VS Code    (1Password floats anywhere)
 ```
 
 ### Most Used Shortcuts
 
 ```
-Ctrl+Shift+1/2/3  →  Work context
-Ctrl+Shift+5/6/7  →  Personal context
+Ctrl+Shift+1/3/4  →  Terminal, work browser, editor
+Ctrl+Shift+2/5/6  →  Personal browser, mail, notes
 Ctrl+Shift+Tab    →  Quick toggle ⭐
+Ctrl+Shift+W      →  Warp
 Ctrl+Shift+C      →  Chrome
-Ctrl+Shift+V      →  VS Code
-Ctrl+Shift+F      →  Firefox
+Ctrl+Shift+Z      →  Zed
+Ctrl+Shift+X      →  Zen
 Ctrl+Shift+M      →  Proton Mail
 Ctrl+Shift+O      →  Obsidian
 Ctrl+Shift+P      →  1Password
+Ctrl+Shift+Space  →  dotfiles menu
 ```
 
 ---
@@ -1141,18 +1207,18 @@ Ctrl+Shift+P      →  1Password
 
 ### Day 1: Work Context
 ```
-□ Learn Ctrl+Shift+1/2/3 (work workspaces)
+□ Learn Ctrl+Shift+1/3/4 (terminal, work browser, editor)
+□ Practice Ctrl+Shift+W (Warp)
 □ Practice Ctrl+Shift+C (Chrome)
-□ Practice Ctrl+Shift+V (VS Code)
-□ Practice Ctrl+Shift+W (Ghostty)
+□ Practice Ctrl+Shift+Z (Zed) and Ctrl+Shift+V (VS Code)
 ```
 
 ### Day 2: Personal Context
 ```
-□ Learn Ctrl+Shift+5/6/7 (personal workspaces)
-□ Practice Ctrl+Shift+F (Firefox)
-□ Practice Ctrl+Shift+Z (Zed)
-□ Practice Ctrl+Shift+G (Ghostty)
+□ Learn Ctrl+Shift+2/5/6 (personal browser, mail, notes)
+□ Practice Ctrl+Shift+X (Zen)
+□ Practice Ctrl+Shift+M (Proton Mail)
+□ Practice Ctrl+Shift+O (Obsidian)
 ```
 
 ### Day 3: Toggle Mastery
@@ -1192,12 +1258,12 @@ Track your progress:
 
 **Quick test:**
 ```bash
-Ctrl+Shift+C    # Should launch Chrome
+Ctrl+Shift+W    # Should launch Warp
 Ctrl+Shift+1    # Should go to workspace 1
-Ctrl+Shift+V    # Should launch VS Code
-Ctrl+Shift+2    # Should go to workspace 2
-Ctrl+Shift+F    # Should launch Firefox
-Ctrl+Shift+M    # Should launch Proton Mail
+Ctrl+Shift+C    # Should launch Chrome on workspace 3
+Ctrl+Shift+Z    # Should launch Zed on workspace 4
+Ctrl+Shift+X    # Should launch Zen on workspace 2
+Ctrl+Shift+M    # Should launch Proton Mail on workspace 5
 ```
 
 **Everything working?** Start building that muscle memory! 💪

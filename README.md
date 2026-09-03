@@ -3,7 +3,7 @@
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-yellow?logo=buymeacoffee)](https://buymeacoffee.com/anjanj)
 [![Sponsor](https://img.shields.io/badge/Sponsor-GitHub%20Sponsors-ea4aaa?logo=githubsponsors)](https://github.com/sponsors/AnjanJ)
 
-> A complete macOS development environment — Ruby/Rails, Elixir/Phoenix, Node/React, Python, Go, Rust, Zig — with your choice of Tokyo Night, Aura Dark, or Catppuccin Mocha applied across 21 apps.
+> A complete macOS development environment — Ruby/Rails, Elixir/Phoenix, Node/React, Python, Go, Rust, Zig — with your choice of five themes (Tokyo Night, Aura Dark, Catppuccin Mocha, Catppuccin Latte, Flexoki Light) applied across 22 apps.
 
 **These are my personal dotfiles.** They're opinionated for how I work — my keybindings, my workspace layout, my editor and model choices. Everything is installable with one command and personalizable via flags, but the honest advice is: **fork it, steal the pieces you like, and adapt** rather than running it blind. The philosophy comes from DHH's [Omakub](https://omakub.org/): everything in one place, everything just works.
 
@@ -74,6 +74,8 @@ dotfiles update       # Upgrade everything & sync the repo
 dotfiles sync         # Quick refresh: pull, relink, reapply theme
 dotfiles health       # Verify tools, symlinks, runtimes, services
 dotfiles doctor       # Auto-fix symlinks, permissions, SSH
+dotfiles debug --print # One report of this machine's state, for an issue or an agent
+dotfiles menu         # Every verb as an fzf tree; Ctrl+Shift+Space opens it in a Ghostty window
 dotfiles theme aura   # Switch theme (tokyo-night | aura | catppuccin | catppuccin-latte | flexoki-light)
 dotfiles keys         # Keybinding cheatsheet, generated from aerospace.toml
 ```
@@ -91,7 +93,8 @@ Full CLI reference, Brewfile recovery stories, and troubleshooting: [docs/MAINTE
 | [docs/SSH.md](docs/SSH.md) | 1Password SSH agent: Touch ID for git push, no keys on disk |
 | [docs/STRUCTURE.md](docs/STRUCTURE.md) | Repo layout, symlink map, modular shell design |
 | [docs/MAINTENANCE.md](docs/MAINTENANCE.md) | CLI reference, update flow, recovery, testing, troubleshooting |
-| [docs/DAILY_WORKFLOWS.md](docs/DAILY_WORKFLOWS.md) | Day-to-day usage patterns |
+| [docs/DAILY_WORKFLOWS.md](docs/DAILY_WORKFLOWS.md) | Workspace layout and launcher chords, window and multi-monitor patterns, the dotfiles CLI in a working day |
+| [TOOL_GUIDE.md](TOOL_GUIDE.md) | Every shell tool and alias installed, what it does and when to reach for it |
 | [QUICK_REFERENCE.md](QUICK_REFERENCE.md) | Printable cheat sheet |
 
 ## Design principles
