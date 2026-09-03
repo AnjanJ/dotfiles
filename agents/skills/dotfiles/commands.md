@@ -13,6 +13,8 @@
 | `dotfiles migrate [--pending]` | run one-off repairs shipped with the repo | yes |
 | `dotfiles backup [--list\|--restore <n>]` | snapshot every managed file to `~/.dotfiles-backups` | creating: yes; restoring: ask |
 | `dotfiles update` | upgrade Homebrew, mise, relink, **commit and push** Brewfile changes to GitHub; `--yes` never prompts; transcript in `~/.local/state/dotfiles/update.log` | **ask first** |
+| `dotfiles webapp install <name> <url> [--workspace N] [--float]` | Chrome `--app` launcher in `~/Applications` plus an AeroSpace rule between the `DOTFILES_LAUNCHERS` markers in `aerospace.toml`; `dotfiles webapp remove <name>` undoes it | safe |
+| `dotfiles tui install <name> <cmd> [--workspace N] [--tile]` | Ghostty launcher for a terminal program, floats by default; `dotfiles tui remove <name>` undoes it | safe |
 | `dotfiles restart <aerospace\|sketchybar\|borders>` | reload/relaunch one component now; `--later <c>` marks it for the end of the next update or sync; `--pending` consumes markers | safe |
 | `dotfiles install` | full installer (idempotent, but slow and sudo) | **ask first** |
 | `dotfiles uninstall` | remove every managed symlink | **ask first** |

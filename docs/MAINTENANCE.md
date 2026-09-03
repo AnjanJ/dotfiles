@@ -103,7 +103,7 @@ dotfiles install --force            # Force reinstall everything
 
 ## Testing
 
-Every push and PR runs 19 test suites, an end-to-end install, shellcheck, `dotfiles commands --check` and `dotfiles keys --check` via GitHub Actions. The suites are discovered from `tests/*-test.sh`, so a new file is in CI the moment it exists:
+Every push and PR runs 21 test suites, an end-to-end install, shellcheck, `dotfiles commands --check` and `dotfiles keys --check` via GitHub Actions. The suites are discovered from `tests/*-test.sh`, so a new file is in CI the moment it exists:
 
 - **Shellcheck** — lints all shell scripts
 - **Idempotency** — install/setup can run repeatedly with identical results (sandboxed)
@@ -112,6 +112,8 @@ Every push and PR runs 19 test suites, an end-to-end install, shellcheck, `dotfi
 - **Repo cloner** — SSH alias detection and URL rewriting
 - **Update flow** — symlink creation and refresh, plus the whole pipeline against stubs: lock, transcript, snapshot before upgrade, restart markers, `--yes`
 - **Restart** — `dotfiles restart` now/later/pending/list, the AeroSpace process-name case, borders relaunch honouring its toggle
+- **Web apps** — `dotfiles webapp install/remove`: bundle, plist, icon conversion, AeroSpace rule placement and removal, URL and name validation
+- **TUIs** — `dotfiles tui install/remove`: Ghostty launch line, default float, Ghostty icon fallback, rule lifecycle
 - **Theme system** — render, overrides, atomic swap, failure leaves previous theme, scaffolding
 - **Theme renderer** — token forms, colour maths, derived keys, error exits
 - **CLI router** — route resolution, `--help` never executes, required-arg guard, metadata lint, JSON
@@ -133,6 +135,14 @@ Every suite sources `tests/base-test.sh`: it gets a fresh temporary `HOME`, TAP 
 /opt/homebrew/bin/bash tests/run theme keys     # just these
 /bin/bash tests/e2e/install-e2e.sh              # the real install from a copy of the checkout, minutes
 ```
+
+## Web apps and TUI launchers
+
+`dotfiles webapp install <name> <url> [--workspace N] [--float] [--title-regex R] [--icon <url|path>]` turns a site into `~/Applications/<name>.app`: a two-line bundle that runs `open -na "Google Chrome" --args --app=<url>`, with the site's apple-touch-icon converted to `.icns` by `sips` and `iconutil`. Spotlight, Raycast and the Dock treat it as an app. With `--workspace` or `--float` it also writes an `[[on-window-detected]]` rule for Chrome windows whose title contains the name (macOS has no window class, so the page title is the key; use `--title-regex` when the title differs).
+
+`dotfiles tui install <name> <command> [--workspace N] [--tile] [--icon <url|path>]` does the same for a terminal program: the bundle runs `open -na Ghostty --args --title=<name> -e /bin/zsh -lic '<command>'`, so PATH, mise runtimes and aliases are all present. TUIs float by default and get Ghostty's icon unless you pass one.
+
+Rules live between the `DOTFILES_LAUNCHERS_START/END` markers near the top of the rules section in `.config/aerospace/aerospace.toml`, ahead of the app-wide rules because AeroSpace applies only the first match. The file is tracked, so commit it to carry launchers to other machines; the bundles themselves are per machine (`dotfiles webapp remove --list` and `dotfiles tui remove --list` show what exists). `dotfiles webapp remove <name>` and `dotfiles tui remove <name>` delete the bundle and its rule; they only touch bundles carrying the `DotfilesLauncher` plist key.
 
 ## Troubleshooting
 

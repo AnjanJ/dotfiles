@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# dotfiles:summary=Remove a TUI launcher and its AeroSpace rule
+# dotfiles:args=<name> | --list
+#
+#   dotfiles tui remove lazygit
+#   dotfiles tui remove --list      # what `dotfiles tui install` made
+#
+# Only bundles carrying the DotfilesLauncher=tui plist key are
+# candidates, so this can never delete an app it did not create.
+
+set -euo pipefail
+
+source "$(dirname "$(readlink -f "$0")")/_launcher-helpers"
+
+case "${1:-}" in
+    --list)
+        launcher_list tui | awk -F'\t' '{ printf "  %-24s %s\n", $1, $2 }'
+        exit 0
+        ;;
+    "")
+        echo "Usage: dotfiles tui remove <name> | --list" >&2
+        exit 1
+        ;;
+esac
+
+NAME="$*"
+launcher_require_plain_name "$NAME" || exit 1
+APP="$(launcher_bundle_path "$NAME")"
+
+if [[ ! -d "$APP" ]]; then
+    print_error "No launcher named '$NAME' in $LAUNCHER_APPS_DIR"
+    installed="$(launcher_list tui | cut -f1)"
+    [[ -n "$installed" ]] && { echo "  Installed TUIs:"; echo "$installed" | awk '{ print "    " $0 }'; }
+    exit 1
+fi
+if [[ "$(launcher_bundle_kind "$APP")" != "tui" ]]; then
+    print_error "$APP was not created by dotfiles tui install; leaving it alone"
+    exit 1
+fi
+
+rm -rf "$APP"
+launcher_rule_remove tui "$NAME"
+launcher_reload_aerospace
+print_success "Removed $NAME (bundle and AeroSpace rule)"

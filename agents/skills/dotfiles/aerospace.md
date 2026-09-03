@@ -4,7 +4,7 @@ Read this before changing keybindings, workspaces, window rules, the status bar 
 
 ## Files
 
-- `~/.config/aerospace/aerospace.toml` — everything: layout defaults, `[mode.main.binding]`, `[mode.service.binding]`, `[[on-window-detected]]` rules
+- `~/.config/aerospace/aerospace.toml` — everything: layout defaults, `[mode.main.binding]`, `[mode.service.binding]`, `[[on-window-detected]]` rules. The block between `# DOTFILES_LAUNCHERS_START` and `# DOTFILES_LAUNCHERS_END` is written by `dotfiles webapp install` / `dotfiles tui install`; do not edit inside it by hand, and keep it above the app-wide rules because AeroSpace applies only the first matching rule
 - `~/.config/aerospace/scripts/startup-apps.sh` — launches the daily app set at login (`Ctrl+Shift+R` re-runs it; `dotfiles toggle startup-apps off` disables it)
 - `~/.config/aerospace/scripts/cycle-app-windows.sh`, `cycle-extra-workspaces.sh` — helpers bound to keys
 - `~/.config/sketchybar/sketchybarrc`, `plugins/*.sh` — status bar; colours come from the generated `colors.sh`

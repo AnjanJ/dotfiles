@@ -1,0 +1,98 @@
+#!/usr/bin/env bash
+# dotfiles:summary=Wrap a URL in a Chrome --app launcher with an AeroSpace rule
+# dotfiles:args=<name> <url> [--workspace N] [--float] [--title-regex R] [--icon <url|path>] [--no-icon]
+#
+#   dotfiles webapp install Gmail https://mail.google.com --workspace 5
+#   dotfiles webapp install "Proton Calendar" calendar.proton.me --float --icon ~/pics/cal.png
+#
+# Creates ~/Applications/<name>.app whose executable runs
+#   open -na "Google Chrome" --args --app=<url>
+# so Spotlight, Raycast and the Dock treat the site as an app, and adds a
+# [[on-window-detected]] rule (Chrome app-id + window title) that floats
+# it or sends it to a workspace. The rule is written between the
+# DOTFILES_LAUNCHERS markers in .config/aerospace/aerospace.toml, which is
+# tracked: commit it if you want the launcher on other machines.
+#
+# The title match defaults to the name, because AeroSpace on macOS has no
+# window class to key on: a Chrome --app window is titled by the page.
+# Pass --title-regex when the page title does not contain the name.
+# Ported from Omarchy's omarchy-webapp-install.
+
+set -euo pipefail
+
+source "$(dirname "$(readlink -f "$0")")/_launcher-helpers"
+
+NAME="${1:-}"
+URL="${2:-}"
+[[ $# -ge 2 ]] || { echo "Usage: dotfiles webapp install <name> <url> [--workspace N] [--float] [--title-regex R] [--icon <url|path>] [--no-icon]" >&2; exit 1; }
+shift 2
+
+WORKSPACE=""
+FLOAT=false
+TITLE_REGEX=""
+ICON_REF=""
+WANT_ICON=true
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --workspace) WORKSPACE="${2:-}"; shift 2 ;;
+        --float) FLOAT=true; shift ;;
+        --title-regex) TITLE_REGEX="${2:-}"; shift 2 ;;
+        --icon) ICON_REF="${2:-}"; shift 2 ;;
+        --no-icon) WANT_ICON=false; shift ;;
+        *) print_error "Unknown option: $1"; exit 1 ;;
+    esac
+done
+
+launcher_require_plain_name "$NAME" || exit 1
+
+# Chrome --app= treats javascript:, file: and data: as a document to run.
+# Add https to schemeless input, then accept only http(s).
+[[ "$URL" =~ ^[a-zA-Z][a-zA-Z0-9+.-]*: ]] || URL="https://$URL"
+if [[ "$URL" =~ [[:space:]] ]] || ! [[ "$(printf '%s' "$URL" | tr '[:upper:]' '[:lower:]')" =~ ^https?:// ]]; then
+    print_error "URL must be http or https with no whitespace (got: '$URL')"
+    exit 1
+fi
+if [[ -n "$WORKSPACE" ]] && ! [[ "$WORKSPACE" =~ ^[A-Za-z0-9]+$ ]]; then
+    print_error "--workspace takes a workspace name like 5 or M (got: '$WORKSPACE')"
+    exit 1
+fi
+[[ -n "$TITLE_REGEX" ]] || TITLE_REGEX="$NAME"
+
+# ── Icon ──────────────────────────────────────
+ICNS=""
+if [[ "$WANT_ICON" == true ]]; then
+    ICNS="$(mktemp "${TMPDIR:-/tmp}/dotfiles-webapp.XXXXXX").icns"
+    if launcher_resolve_icon "$ICON_REF" "$URL" "$ICNS"; then
+        print_success "Icon ready"
+    else
+        print_warning "No usable icon found; the launcher gets the generic app icon (pass --icon <url|path>)"
+        rm -f "$ICNS"
+        ICNS=""
+    fi
+fi
+
+# ── Bundle ────────────────────────────────────
+# Single-quote the URL for the shell; a quote inside a URL is already
+# refused above by the whitespace/scheme check only, so escape anyway.
+url_q="'${URL//\'/\'\\\'\'}'"
+launcher_write_bundle "$NAME" webapp "$URL" \
+    "exec open -na \"Google Chrome\" --args --app=$url_q" "$ICNS"
+[[ -n "$ICNS" ]] && rm -f "$ICNS" "${ICNS%.icns}"
+print_success "Launcher: $(launcher_bundle_path "$NAME")"
+
+# ── AeroSpace rule ────────────────────────────
+if [[ "$FLOAT" == true || -n "$WORKSPACE" ]]; then
+    launcher_rule_add webapp "$NAME" "com.google.Chrome" "$TITLE_REGEX" "$FLOAT" "$WORKSPACE"
+    launcher_reload_aerospace
+    placement=""
+    [[ "$FLOAT" == true ]] && placement=" float"
+    [[ -n "$WORKSPACE" ]] && placement="$placement → workspace $WORKSPACE"
+    print_success "AeroSpace rule: Chrome windows titled /$TITLE_REGEX/$placement"
+else
+    launcher_rule_remove webapp "$NAME"
+    print_success "No AeroSpace rule (pass --workspace N and/or --float to place it)"
+fi
+
+echo ""
+echo "  Open it from Spotlight or Raycast as \"$NAME\", or: open -a \"$NAME\""
+echo "  Remove with: dotfiles webapp remove \"$NAME\""

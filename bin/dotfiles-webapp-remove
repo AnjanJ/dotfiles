@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# dotfiles:summary=Remove a web app launcher and its AeroSpace rule
+# dotfiles:args=<name> | --list
+#
+#   dotfiles webapp remove Gmail
+#   dotfiles webapp remove --list      # what `dotfiles webapp install` made
+#
+# Only bundles carrying the DotfilesLauncher=webapp plist key are
+# candidates, so this can never delete an app it did not create.
+
+set -euo pipefail
+
+source "$(dirname "$(readlink -f "$0")")/_launcher-helpers"
+
+case "${1:-}" in
+    --list)
+        launcher_list webapp | awk -F'\t' '{ printf "  %-24s %s\n", $1, $2 }'
+        exit 0
+        ;;
+    "")
+        echo "Usage: dotfiles webapp remove <name> | --list" >&2
+        exit 1
+        ;;
+esac
+
+NAME="$*"
+launcher_require_plain_name "$NAME" || exit 1
+APP="$(launcher_bundle_path "$NAME")"
+
+if [[ ! -d "$APP" ]]; then
+    print_error "No launcher named '$NAME' in $LAUNCHER_APPS_DIR"
+    installed="$(launcher_list webapp | cut -f1)"
+    [[ -n "$installed" ]] && { echo "  Installed web apps:"; echo "$installed" | awk '{ print "    " $0 }'; }
+    exit 1
+fi
+if [[ "$(launcher_bundle_kind "$APP")" != "webapp" ]]; then
+    print_error "$APP was not created by dotfiles webapp install; leaving it alone"
+    exit 1
+fi
+
+rm -rf "$APP"
+launcher_rule_remove webapp "$NAME"
+launcher_reload_aerospace
+print_success "Removed $NAME (bundle and AeroSpace rule)"

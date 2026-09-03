@@ -311,6 +311,14 @@ automatically-unhide-macos-hidden-apps = false
 #
 # To find an app-id for a new app:  aerospace list-windows --all --format '%{app-bundle-id}|%{app-name}'
 
+# --- Launchers: web apps and TUIs ---
+# Managed by `dotfiles webapp install` / `dotfiles tui install`; do not
+# edit inside the markers by hand. These come FIRST because AeroSpace
+# applies only the first matching rule: a Chrome --app window must match
+# its own title rule before the app-wide Chrome rule below claims it.
+# DOTFILES_LAUNCHERS_START
+# DOTFILES_LAUNCHERS_END
+
 # --- Workspace 1: Terminal ---
 [[on-window-detected]]
 if.app-id = 'dev.warp.Warp-Stable'

@@ -28,6 +28,7 @@ jobs:
             bin/work-* \
             bin/repos-clone \
             bin/_work-helpers \
+            bin/_launcher-helpers \
             bin/erb-lint-formatter \
             bin/rubocop-auto \
             .config/aerospace/scripts/*.sh \

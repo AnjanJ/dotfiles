@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+# dotfiles:summary=Wrap a terminal command in a Ghostty launcher with an AeroSpace rule
+# dotfiles:args=<name> <command> [--workspace N] [--tile] [--title-regex R] [--icon <url|path>] [--no-icon]
+#
+#   dotfiles tui install lazygit lazygit
+#   dotfiles tui install "System Monitor" btop --workspace 6
+#   dotfiles tui install Disk "dust; read -n 1 -s" --tile
+#
+# Creates ~/Applications/<name>.app whose executable runs
+#   open -na Ghostty --args --title=<name> -e /bin/zsh -lic '<command>'
+# so the TUI shows up in Spotlight, Raycast and the Dock like any app.
+# The login+interactive zsh means your PATH, mise runtimes and aliases
+# are all there. Each launcher is its own Ghostty process (open -n), so
+# quitting it does not touch your other terminals.
+#
+# TUIs float by default (Omarchy's choice too); --tile makes the window
+# tile instead. The AeroSpace rule matches Ghostty windows whose title
+# contains the name; pass --title-regex when the program sets its own
+# title. Ported from Omarchy's omarchy-tui-install.
+
+set -euo pipefail
+
+source "$(dirname "$(readlink -f "$0")")/_launcher-helpers"
+
+NAME="${1:-}"
+CMD="${2:-}"
+[[ $# -ge 2 ]] || { echo "Usage: dotfiles tui install <name> <command> [--workspace N] [--tile] [--title-regex R] [--icon <url|path>] [--no-icon]" >&2; exit 1; }
+shift 2
+
+WORKSPACE=""
+FLOAT=true
+TITLE_REGEX=""
+ICON_REF=""
+WANT_ICON=true
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --workspace) WORKSPACE="${2:-}"; shift 2 ;;
+        --tile) FLOAT=false; shift ;;
+        --float) FLOAT=true; shift ;;
+        --title-regex) TITLE_REGEX="${2:-}"; shift 2 ;;
+        --icon) ICON_REF="${2:-}"; shift 2 ;;
+        --no-icon) WANT_ICON=false; shift ;;
+        *) print_error "Unknown option: $1"; exit 1 ;;
+    esac
+done
+
+launcher_require_plain_name "$NAME" || exit 1
+if [[ -z "$CMD" || "$CMD" == *$'\n'* ]]; then
+    print_error "Command must be a non-empty single line"
+    exit 1
+fi
+if [[ -n "$WORKSPACE" ]] && ! [[ "$WORKSPACE" =~ ^[A-Za-z0-9]+$ ]]; then
+    print_error "--workspace takes a workspace name like 5 or M (got: '$WORKSPACE')"
+    exit 1
+fi
+[[ -n "$TITLE_REGEX" ]] || TITLE_REGEX="$NAME"
+
+# ── Icon ──────────────────────────────────────
+# Default to Ghostty's own icon so the launcher is recognisably a terminal.
+ICNS=""
+if [[ "$WANT_ICON" == true ]]; then
+    ICNS="$(mktemp "${TMPDIR:-/tmp}/dotfiles-tui.XXXXXX").icns"
+    if [[ -n "$ICON_REF" ]]; then
+        if launcher_resolve_icon "$ICON_REF" "" "$ICNS"; then
+            print_success "Icon ready"
+        else
+            print_warning "Could not read icon '$ICON_REF'; using Ghostty's"
+            ICON_REF=""
+        fi
+    fi
+    if [[ -z "$ICON_REF" ]]; then
+        ghostty_icns="${DOTFILES_GHOSTTY_ICNS:-/Applications/Ghostty.app/Contents/Resources/Ghostty.icns}"
+        if [[ -f "$ghostty_icns" ]]; then
+            cp "$ghostty_icns" "$ICNS"
+        else
+            print_warning "Ghostty icon not found; the launcher gets the generic app icon"
+            rm -f "$ICNS"
+            ICNS=""
+        fi
+    fi
+fi
+
+# ── Bundle ────────────────────────────────────
+cmd_q="'${CMD//\'/\'\\\'\'}'"
+name_q="'${NAME//\'/\'\\\'\'}'"
+launcher_write_bundle "$NAME" tui "$CMD" \
+    "exec open -na Ghostty --args --title=$name_q -e /bin/zsh -lic $cmd_q" "$ICNS"
+[[ -n "$ICNS" ]] && rm -f "$ICNS" "${ICNS%.icns}"
+print_success "Launcher: $(launcher_bundle_path "$NAME")"
+
+# ── AeroSpace rule ────────────────────────────
+if [[ "$FLOAT" == true || -n "$WORKSPACE" ]]; then
+    launcher_rule_add tui "$NAME" "com.mitchellh.ghostty" "$TITLE_REGEX" "$FLOAT" "$WORKSPACE"
+    launcher_reload_aerospace
+    placement="tile"
+    [[ "$FLOAT" == true ]] && placement="float"
+    [[ -n "$WORKSPACE" ]] && placement="$placement → workspace $WORKSPACE"
+    print_success "AeroSpace rule: Ghostty windows titled /$TITLE_REGEX/ $placement"
+else
+    launcher_rule_remove tui "$NAME"
+    print_success "No AeroSpace rule: tiles on the current workspace like any window"
+fi
+
+echo ""
+echo "  Open it from Spotlight or Raycast as \"$NAME\", or: open -a \"$NAME\""
+echo "  Remove with: dotfiles tui remove \"$NAME\""
