@@ -51,6 +51,12 @@ export PATH="$STUB:$PATH"
 
 marker() { echo "$STATE/restart-$1-required"; }
 reset() { rm -rf "$STATE"; : > "$LOG"; }
+# The borders relaunch is backgrounded; give it up to 5s to reach the log
+# rather than a fixed sleep (0.5s was not enough on a busy laptop).
+wait_for_log() {
+    local i=0
+    while [[ $i -lt 50 ]] && ! grep -q "$1" "$LOG"; do sleep 0.1; i=$((i + 1)); done
+}
 
 echo ""
 echo "╔═══════════════════════════════════════════════════════════╗"
@@ -94,14 +100,14 @@ section "Test 4: borders is kill-and-relaunch, honouring the toggle"
 reset
 "$R" --later borders
 RUNNING="borders" "$R" --pending >/dev/null
-sleep 0.5   # the relaunch is backgrounded
+wait_for_log "^borders $"
 assert_file_contains "$LOG" "^pkill -x borders$" "borders killed"
 assert_file_contains "$LOG" "^borders $" "borders relaunched"
 reset
 bash "$ROOT/bin/dotfiles-toggle" borders off >/dev/null
 "$R" --later borders
 out=$(RUNNING="borders" "$R" --pending)
-sleep 0.5
+sleep 1   # nothing to wait for: assert the relaunch did not happen
 assert_file_contains "$LOG" "^pkill -x borders$" "borders killed when toggled off"
 assert_file_not_contains "$LOG" "^borders $" "borders not relaunched when toggled off"
 assert_contains "$out" "toggled off" "says why"
