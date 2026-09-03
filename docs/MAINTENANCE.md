@@ -107,7 +107,7 @@ dotfiles install --force            # Force reinstall everything
 
 ## Testing
 
-Every push and PR runs 28 test suites, an end-to-end install, shellcheck, `dotfiles commands --check` and `dotfiles keys --check` via GitHub Actions. The suites are discovered from `tests/*-test.sh`, so a new file is in CI the moment it exists:
+Every push and PR runs 29 test suites, an end-to-end install, shellcheck, `dotfiles commands --check` and `dotfiles keys --check` via GitHub Actions. The suites are discovered from `tests/*-test.sh`, so a new file is in CI the moment it exists:
 
 - **Shellcheck** — lints all shell scripts
 - **Idempotency** (`idempotency`) — install/setup can run repeatedly with identical results (sandboxed)
@@ -115,6 +115,7 @@ Every push and PR runs 28 test suites, an end-to-end install, shellcheck, `dotfi
 - **Work status** (`work-status`) — status diagnostics for the work identity
 - **SSH config** (`ssh-adversarial`) — adversarial inputs and edge cases
 - **Repo cloner** (`repos-clone`) — SSH alias detection and URL rewriting
+- **Update available** (`update-available`) — `dotfiles update available`: behind-origin count against a local bare origin, brew outdated via a stub, migrations and restart markers, the cache file, `--cached`, `--short`, `--quiet`, exit codes, a fetch that cannot reach origin
 - **Update flow** (`update`) — symlink creation and refresh, plus the whole pipeline against stubs: lock, transcript, snapshot before upgrade, restart markers, `--yes`
 - **Restart** (`restart`) — `dotfiles restart` now/later/pending/list, the AeroSpace process-name case, borders relaunch honouring its toggle
 - **Web apps** (`webapp`) — `dotfiles webapp install/remove`: bundle, plist, icon conversion, AeroSpace rule placement and removal, URL and name validation

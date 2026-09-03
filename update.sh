@@ -104,7 +104,27 @@ if ! mkdir "$LOCK_DIR" 2>/dev/null; then
     mkdir "$LOCK_DIR"
 fi
 echo $$ > "$LOCK_DIR/pid"
-trap 'rm -rf "$LOCK_DIR"' EXIT
+
+# A failed run should end with where to look, not a bare exit code.
+# Cancelling at the prompt is not a failure and stays quiet.
+CANCELLED=false
+_update_exit() {
+    local rc=$?
+    rm -rf "$LOCK_DIR"
+    if [[ $rc -ne 0 && "$CANCELLED" != true ]]; then
+        print_error "Update failed (exit $rc). Transcript: $UPDATE_LOG"
+        echo "  Run \`dotfiles health\` for the current state, then \`dotfiles update\` again."
+    fi
+    exit "$rc"
+}
+trap _update_exit EXIT
+
+# Hold off idle sleep for the length of the run (brew upgrade on a laptop
+# lid-closed at the wrong moment leaves half-linked kegs). -w ends the
+# assertion when this pid exits, so nothing is left behind.
+if command -v caffeinate >/dev/null 2>&1; then
+    caffeinate -i -w $$ >/dev/null 2>&1 &
+fi
 
 echo ""
 echo ""
@@ -127,6 +147,7 @@ if [[ "$INTERACTIVE" == true ]]; then
     echo
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
         print_warning "Update cancelled"
+        CANCELLED=true
         exit 1
     fi
 fi
@@ -406,6 +427,10 @@ fi
 # ============================================
 # UPDATE COMPLETE
 # ============================================
+# Refresh the cache behind the login notice so the next shell does not
+# announce the commits and packages this run just applied.
+bash "$DOTFILES_DIR/bin/dotfiles-update-available" --quiet >/dev/null 2>&1 || true
+
 echo ""
 echo "  =========================================="
 echo "  Update Complete!"

@@ -13,10 +13,11 @@
 | `dotfiles menu [route] [--list\|--run <label>]` | fzf tree over every verb (theme, toggles, launchers, reminder, update, all commands); `--list` prints `label<TAB>command` rows, Ctrl+Shift+Space opens it in Ghostty | `--list` yes; running rows: as the row's command |
 | `dotfiles reminder <min> [msg]\|show\|clear` | macOS notification in N minutes via a self-removing launchd agent | yes |
 | `dotfiles keys [--update]` | keybinding cheatsheet; `--update` regenerates the doc | yes |
-| `dotfiles toggle <flag> [on\|off]` | flip `startup-apps`, `borders`, `auto-commit`, `appearance`, `background` (or any name) | yes, when asked |
+| `dotfiles toggle <flag> [on\|off]` | flip `startup-apps`, `borders`, `auto-commit`, `appearance`, `background`, `update-notice` (or any name) | yes, when asked |
 | `dotfiles migrate [--pending]` | run one-off repairs shipped with the repo | yes |
 | `dotfiles backup [--list\|--restore <n>]` | snapshot every managed file to `~/.dotfiles-backups` | creating: yes; restoring: ask |
 | `dotfiles update` | upgrade Homebrew, mise, relink, **commit and push** Brewfile changes to GitHub; `--yes` never prompts; transcript in `~/.local/state/dotfiles/update.log` | **ask first** |
+| `dotfiles update available [--cached\|--short]` | what is waiting: commits behind origin, outdated brew packages, pending migrations, restart markers; `--cached` reads the last result without a fetch; exit 1 means nothing is waiting | yes |
 | `dotfiles webapp install <name> <url> [--workspace N] [--float]` | Chrome `--app` launcher in `~/Applications` plus an AeroSpace rule between the `DOTFILES_LAUNCHERS` markers in `aerospace.toml`; `dotfiles webapp remove <name>` undoes it | safe |
 | `dotfiles tui install <name> <cmd> [--workspace N] [--tile]` | Ghostty launcher for a terminal program, floats by default; `dotfiles tui remove <name>` undoes it | safe |
 | `dotfiles restart <aerospace\|sketchybar\|borders>` | reload/relaunch one component now; `--later <c>` marks it for the end of the next update or sync; `--pending` consumes markers | safe |
@@ -38,6 +39,9 @@ Flag files under `~/.local/state/dotfiles/toggles/<flag>.off`; everything is on 
 - `startup-apps` — the login session restore (`startup-apps.sh`)
 - `borders` — launching JankyBorders from AeroSpace
 - `auto-commit` — `dotfiles update` committing and pushing `snapshot: system state`
+- `appearance` — `dotfiles theme` switching macOS light/dark to match the theme
+- `background` — `dotfiles theme` setting the desktop picture
+- `update-notice` — the one-line "updates waiting" notice at shell login
 
 `dotfiles toggle --list` shows state; scripts check `dotfiles-toggle --enabled <flag>`.
 
@@ -61,7 +65,7 @@ A single file `~/.config/dotfiles/hooks/<event>` also works. Failing hooks are r
 
 1. `dotfiles health` — read the ✗ lines.
 2. `dotfiles doctor --dry-run` — see what it would fix, then run it without the flag if that is what the user wants.
-3. `dotfiles migrate --pending` — a pending migration means the repo moved ahead of this machine.
+3. `dotfiles update available` — commits behind origin, outdated packages, pending migrations and restarts in one place; a pending migration means the repo moved ahead of this machine.
 4. Theme looks wrong: `dotfiles theme "$(cat ~/.dotfiles-theme)"` re-renders; `theming.md` explains what reads what.
 5. A symlink points somewhere odd: check `scripts/symlink-map.sh` in the repo; `dotfiles sync` relinks.
 6. Shell slow: `dotfiles profile --detailed`.

@@ -202,7 +202,7 @@ setup_pipeline_sandbox() {
     (cd "$MOCK" && git remote add origin "$ORIGIN")
 
     : > "$CALLS"
-    for cmd in mise aerospace sketchybar pkill borders; do
+    for cmd in mise aerospace sketchybar pkill borders caffeinate; do
         printf '#!/bin/bash\necho "%s $*" >> "%s"\n' "$cmd" "$CALLS" > "$STUB/$cmd"
         chmod +x "$STUB/$cmd"
     done
@@ -340,6 +340,24 @@ test_37_lock() {
     assert_dir_not_exists "$STATE/update.lock" "lock released afterwards"
 }
 
+test_37b_stay_awake_and_failure_hint() {
+    echo ""
+    section "Test 37b: caffeinate and the failure hint"
+    setup_pipeline_sandbox
+    run_update --no-snapshot >/dev/null
+    assert_file_contains "$CALLS" "^caffeinate -i -w [0-9]*$" "caffeinate holds off sleep for the run's pid"
+    assert_file_exists "$STATE/update-available" "the update-available cache is refreshed at the end"
+    printf '#!/bin/bash\nexit 1\n' > "$STUB/mise"   # mise upgrade and mise install both fail
+    local out
+    set +e; out=$(run_update --no-snapshot); rc=$?; set -e
+    [[ $rc -ne 0 ]] || fail "a failing step makes update.sh exit non-zero"
+    pass "a failing step makes update.sh exit non-zero"
+    assert_contains "$out" "Update failed (exit $rc)" "the exit trap names the failure"
+    assert_contains "$out" "Transcript: $STATE/update.log" "and where the transcript is"
+    assert_contains "$out" "dotfiles health" "and what to run next"
+    assert_dir_not_exists "$STATE/update.lock" "lock released after a failure"
+}
+
 test_38_transcript() {
     echo ""
     section "Test 38: Transcript"
@@ -374,4 +392,5 @@ test_34_pulled_config_marks_restart
 test_35_marker_from_elsewhere
 test_36_no_snapshot_and_yes
 test_37_lock
+test_37b_stay_awake_and_failure_hint
 test_38_transcript

@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+# dotfiles:summary=What is waiting to be applied: repo commits, Homebrew upgrades, migrations, restarts
+# dotfiles:args=[--cached] [--short] [--quiet]
+#
+# The one check behind the login notice in .zshrc, the Updates section of
+# `dotfiles health`, and the end of `dotfiles update`. A live run fetches
+# origin (under a 10s alarm, so a dead network cannot hang a caller), asks
+# brew for outdated packages, and counts pending migrations and restart
+# markers, then writes the result to ~/.local/state/dotfiles/update-available
+# so the shell can print it without paying for the fetch.
+#
+#   dotfiles update available            live check; prints one line per item
+#   dotfiles update available --cached   print the last result, no network
+#   dotfiles update available --short    everything on one line (the notice)
+#   dotfiles update available --quiet    refresh the cache, print nothing
+#
+# Exit 0 when something is waiting, 1 when everything is current (the
+# Omarchy convention, so `if dotfiles update available; then` reads right).
+# Bash 3.2 compatible: the login notice may run before Homebrew bash exists.
+set -euo pipefail
+
+DOTFILES_DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+STATE_DIR="${DOTFILES_STATE_DIR:-$HOME/.local/state/dotfiles}"
+CACHE="$STATE_DIR/update-available"
+FETCH_TIMEOUT="${DOTFILES_FETCH_TIMEOUT:-10}"
+
+CACHED=false
+SHORT=false
+QUIET=false
+for arg in "$@"; do
+    case "$arg" in
+        --cached) CACHED=true ;;
+        --short) SHORT=true ;;
+        --quiet) QUIET=true ;;
+        -h|--help)
+            sed -n '4,19p' "$0" | sed 's/^# \{0,1\}//'
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $arg (see --help)" >&2
+            exit 2
+            ;;
+    esac
+done
+
+# Runs a command under an alarm. perl ships with macOS and the alarm
+# survives exec, so SIGALRM ends the child without a `timeout` binary.
+with_alarm() {
+    local seconds="$1"
+    shift
+    if command -v perl >/dev/null 2>&1; then
+        perl -e 'alarm shift; exec @ARGV' "$seconds" "$@"
+    else
+        "$@"
+    fi
+}
+
+plural() {
+    local n="$1" word="$2"
+    if [[ "$n" -eq 1 ]]; then
+        echo "$n $word"
+    else
+        echo "$n ${word}s"
+    fi
+}
+
+lines=()
+
+if [[ "$CACHED" == true ]]; then
+    if [[ -f "$CACHE" ]]; then
+        while IFS= read -r line; do
+            [[ -z "$line" || "$line" == \#* ]] && continue
+            lines+=("$line")
+        done < "$CACHE"
+    fi
+else
+    # Repo: commits on origin/main that this checkout has not pulled.
+    if git -C "$DOTFILES_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        if GIT_TERMINAL_PROMPT=0 with_alarm "$FETCH_TIMEOUT" git -C "$DOTFILES_DIR" fetch --quiet origin main >/dev/null 2>&1; then
+            behind=$(git -C "$DOTFILES_DIR" rev-list --count HEAD..origin/main 2>/dev/null || echo 0)
+            if [[ "$behind" -gt 0 ]]; then
+                lines+=("repo: $(plural "$behind" commit) behind origin/main (run: dotfiles update)")
+            fi
+        else
+            echo "Could not fetch origin (offline?); repo status not checked" >&2
+        fi
+    fi
+
+    # Homebrew: formulae and casks with a newer version available.
+    if command -v brew >/dev/null 2>&1; then
+        outdated=$(brew outdated --quiet 2>/dev/null | grep -c . || true)
+        if [[ "$outdated" -gt 0 ]]; then
+            lines+=("brew: $(plural "$outdated" package) outdated (run: dotfiles update)")
+        fi
+    fi
+
+    # Repo changes this machine has not applied yet.
+    pending=$(bash "$DOTFILES_DIR/bin/dotfiles-migrate" --pending 2>/dev/null | grep -c . || true)
+    if [[ "$pending" -gt 0 ]]; then
+        lines+=("migrations: $(plural "$pending" migration) pending (run: dotfiles migrate)")
+    fi
+
+    # Restart markers left by an interrupted update or a migration.
+    restarts=$(bash "$DOTFILES_DIR/bin/dotfiles-restart" --list 2>/dev/null | tr '\n' ' ' || true)
+    if [[ -n "${restarts// /}" ]]; then
+        lines+=("restarts: ${restarts% } to restart (run: dotfiles restart --pending)")
+    fi
+
+    mkdir -p "$STATE_DIR"
+    {
+        echo "# checked $(date '+%Y-%m-%d %H:%M:%S')"
+        for line in ${lines[@]+"${lines[@]}"}; do echo "$line"; done
+    } > "$CACHE.tmp"
+    mv -f "$CACHE.tmp" "$CACHE"
+fi
+
+if [[ "$QUIET" == true ]]; then
+    if [[ ${#lines[@]} -gt 0 ]]; then exit 0; else exit 1; fi
+fi
+
+if [[ ${#lines[@]} -eq 0 ]]; then
+    [[ "$SHORT" == true ]] || echo "Everything is up to date"
+    exit 1
+fi
+
+if [[ "$SHORT" == true ]]; then
+    # "3 commits behind, 2 packages outdated, 1 migration pending"
+    summary=""
+    for line in "${lines[@]}"; do
+        item="${line#*: }"
+        item="${item% (run:*}"
+        summary+="${summary:+, }$item"
+    done
+    echo "$summary (run: dotfiles update)"
+else
+    printf '%s\n' "${lines[@]}"
+fi
+exit 0

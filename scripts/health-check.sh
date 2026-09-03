@@ -289,6 +289,21 @@ else
     PASSED=$((PASSED + 1))
 fi
 
+# Commits on origin and outdated brew packages, from the cache the login
+# notice reads (no network here; `dotfiles update available` refreshes it)
+if [[ -f "${DOTFILES_STATE_DIR:-$HOME/.local/state/dotfiles}/update-available" ]]; then
+    if _waiting=$(bash "$DOTFILES_DIR/bin/dotfiles-update-available" --cached --short 2>/dev/null); then
+        echo -e "${YELLOW}⚠${NC} Updates waiting: $_waiting"
+        WARNINGS=$((WARNINGS + 1))
+    else
+        echo -e "${GREEN}✓${NC} Updates: nothing waiting at the last check"
+        PASSED=$((PASSED + 1))
+    fi
+else
+    echo -e "${YELLOW}⚠${NC} Updates: not checked yet (run: dotfiles update available)"
+    WARNINGS=$((WARNINGS + 1))
+fi
+
 # ============================================
 # 6. LANGUAGE RUNTIMES (mise)
 # ============================================

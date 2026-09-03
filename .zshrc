@@ -234,6 +234,24 @@ a() {
   eval "$cmd" '"$@"'
 }
 
+# ── Update notice ─────────────────────────────
+# One line at login when commits, brew upgrades, migrations or restarts are
+# waiting. The check itself (a git fetch, seconds) never runs in the prompt
+# path: once a day a detached job refreshes the cache and the shell only
+# reads it. `dotfiles update` refreshes it too, so the notice clears at
+# once. Silence it with: dotfiles toggle update-notice off
+if [[ -o interactive && ! -f "$HOME/.local/state/dotfiles/toggles/update-notice.off" ]] \
+   && command -v dotfiles-update-available >/dev/null 2>&1; then
+  _dotfiles_ua="$HOME/.local/state/dotfiles/update-available"
+  if [[ ! -f "$_dotfiles_ua" || -n "$(/usr/bin/find "$_dotfiles_ua" -mtime +0 2>/dev/null)" ]]; then
+    command mkdir -p "${_dotfiles_ua:h}" && command touch "$_dotfiles_ua"   # so parallel shells do not all fetch
+    (dotfiles-update-available --quiet >/dev/null 2>&1 &)
+  elif _dotfiles_ua_line="$(dotfiles-update-available --cached --short 2>/dev/null)"; then
+    print -P "%F{yellow}dotfiles:%f $_dotfiles_ua_line"
+  fi
+  unset _dotfiles_ua _dotfiles_ua_line
+fi
+
 # Local Qwen3.8-27B for quick coding queries, thinking off for speed.
 # (Claude Code via `ollama launch` has no way to pass Ollama's per-request
 # `think` field, so thinking-off only applies to this direct path.)
