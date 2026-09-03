@@ -24,7 +24,7 @@
 set -euo pipefail
 
 TOGGLES_DIR="${DOTFILES_STATE_DIR:-$HOME/.local/state/dotfiles}/toggles"
-KNOWN_FLAGS=(startup-apps borders auto-commit appearance background update-notice)
+KNOWN_FLAGS=(startup-apps borders auto-commit appearance background update-notice agent-usage)
 
 usage() {
     echo "Usage: dotfiles toggle <flag> [on|off|toggle|status]"
