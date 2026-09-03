@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
-# dotfiles:summary=Keybinding cheatsheet generated from aerospace.toml (fzf, --markdown, --update, --check)
-# dotfiles:args=[--markdown | --tsv | --update | --check] [--config <aerospace.toml>] [--doc <KEYBINDINGS.md>]
+# dotfiles:summary=Keybinding cheatsheet generated from aerospace.toml (fzf, --markdown, --update, --check, --lint)
+# dotfiles:args=[--markdown | --tsv | --update | --check | --lint] [--config <aerospace.toml>] [--doc <KEYBINDINGS.md>]
 #
 # Show or regenerate the AeroSpace keybinding cheatsheet — can be run from anywhere
 # Usage: dotfiles keys              # interactive list (fzf when available)
 #        dotfiles keys --markdown   # print the markdown tables
 #        dotfiles keys --update     # rewrite the block in docs/KEYBINDINGS.md
 #        dotfiles keys --check      # exit 1 if the doc is out of date (CI)
+#        dotfiles keys --lint       # exit 1 on a key bound twice in a mode, a binding
+#                                   # with no readable description, or a script that is not in the repo (CI)
 #
 # The config file is the source of truth. Every `key = 'command'` in
 # [mode.main.binding] and [mode.service.binding] becomes a row; the
@@ -28,6 +30,7 @@ while [[ $# -gt 0 ]]; do
         --tsv) MODE="tsv"; shift ;;
         --update) MODE="update"; shift ;;
         --check) MODE="check"; shift ;;
+        --lint) MODE="lint"; shift ;;
         --config) CONFIG="$2"; shift 2 ;;
         --doc) DOC="$2"; shift 2 ;;
         --help|-h)
@@ -43,7 +46,7 @@ done
 # ── Parse: mode<TAB>key<TAB>description<TAB>command ──
 # shellcheck disable=SC2016  # awk program
 parse_bindings() {
-    awk '
+    awk -v lint="${1:-0}" '
     function cap(s) { return toupper(substr(s, 1, 1)) substr(s, 2) }
 
     function pretty_key(k,    n, parts, i, out, p) {
@@ -71,6 +74,19 @@ parse_bindings() {
             out = out (i > 1 ? "+" : "") p
         }
         return out
+    }
+
+    # ctrl-shift-h and shift-ctrl-h are the same chord to AeroSpace
+    function canonical_key(k,    n, parts, i, mods, key) {
+        n = split(k, parts, "-"); mods = ""; key = ""
+        for (i = 1; i <= n; i++) {
+            if (parts[i] == "ctrl" || parts[i] == "alt" || parts[i] == "shift" || parts[i] == "cmd") has[parts[i]] = 1
+            else key = parts[i]
+        }
+        if (has["ctrl"]) mods = mods "ctrl-"; if (has["alt"]) mods = mods "alt-"
+        if (has["shift"]) mods = mods "shift-"; if (has["cmd"]) mods = mods "cmd-"
+        delete has
+        return mods tolower(key)
     }
 
     function strip_quotes(v) {
@@ -119,6 +135,8 @@ parse_bindings() {
         if (c == "volume set 0") return "Mute"
         if (c ~ /^volume /) { sub(/^volume /, "", c); return "Volume " c }
         if (c ~ /^fullscreen/) return "Toggle fullscreen"
+        if (c ~ /^close( |$)/) return "Close window"
+        generic = 1   # nothing above matched: the cheatsheet would show the raw command
         gsub(/-/, " ", c)
         return cap(c)
     }
@@ -138,6 +156,7 @@ parse_bindings() {
         key = $0; sub(/^[[:space:]]*/, "", key); sub(/[[:space:]]*=.*$/, "", key)
         val = $0; sub(/^[^=]*=[[:space:]]*/, "", val)
         sub(/[[:space:]]+#[^\047"]*$/, "", val)   # trailing comment
+        generic = 0
         if (val ~ /^\[/) {
             # array: describe the first element, show them all
             inner = val; sub(/^\[[[:space:]]*/, "", inner); sub(/[[:space:]]*\][[:space:]]*$/, "", inner)
@@ -149,7 +168,16 @@ parse_bindings() {
             cmd = strip_quotes(val)
             d = (desc != "") ? desc : describe(cmd)
         }
-        printf "%s\t%s\t%s\t%s\n", mode, pretty_key(key), d, cmd
+        if (lint) {
+            problem = ""
+            canon = canonical_key(key)
+            if ((mode SUBSEP canon) in seen) problem = "duplicate of " seen[mode SUBSEP canon]
+            else seen[mode SUBSEP canon] = key
+            if (desc == "" && generic) problem = (problem != "" ? problem "; " : "") "no readable description (add a # desc: line)"
+            printf "%s\t%s\t%s\t%s\t%s\n", mode, pretty_key(key), d, cmd, problem
+        } else {
+            printf "%s\t%s\t%s\t%s\n", mode, pretty_key(key), d, cmd
+        }
         desc = ""
     }
     ' "$CONFIG"
@@ -220,6 +248,23 @@ case "$MODE" in
             diff <(doc_block) <(render_block) | head -20 >&2 || true
             exit 1
         fi
+        ;;
+    lint)
+        problems=$(parse_bindings 1 | awk -F'\t' '$5 != "" { printf "  [%s] %s (%s): %s\n", $1, $2, $4, $5 }')
+        # Scripts the bindings run must ship with the repo (the ~/.config
+        # and ~/bin paths are symlinks into it)
+        while IFS= read -r path; do
+            [[ -n "$path" ]] || continue
+            [[ -e "$DOTFILES_DIR/${path#\~/}" ]] || problems+="${problems:+
+}  script not in the repo: $path"
+        done < <(grep -oE 'exec-and-forget ~/(\.config/aerospace/scripts|bin)/[^ '"'"'"]+' "$CONFIG" | sed 's/^exec-and-forget //' | sort -u)
+        count=$(parse_bindings | wc -l | tr -d ' ')
+        if [[ -n "$problems" ]]; then
+            echo "Keybinding problems in $CONFIG:" >&2
+            printf '%s\n' "$problems" >&2
+            exit 1
+        fi
+        echo "$count bindings: no duplicate chords, every binding described, every script present"
         ;;
     list)
         if command -v fzf &>/dev/null && [[ -t 1 ]]; then

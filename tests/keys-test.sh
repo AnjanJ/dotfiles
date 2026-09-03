@@ -57,6 +57,8 @@ if.app-id = 'x'
 run = 'move-node-to-workspace 1'
 EOF
 
+cp "$WORK/aerospace.toml" "$WORK/pristine.toml"   # Test 4 edits the fixture; the lint tests want the original
+
 tsv() { "$K" --config "$WORK/aerospace.toml" --tsv; }
 row() { tsv | awk -F'\t' -v k="$1" '$2 == k { print $1 "|" $3 "|" $4 }'; }
 
@@ -135,6 +137,35 @@ assert_contains "$out" "run: dotfiles keys --update" "--check tells you how to f
 sed -i '' 's/<!-- AEROSPACE_KEYS_START -->//' "$WORK/KEYBINDINGS.md"
 set +e; "$K" --config "$WORK/aerospace.toml" --doc "$WORK/KEYBINDINGS.md" --update >/dev/null 2>&1; rc=$?; set -e
 assert_eq "$rc" "1" "--update refuses a doc without markers"
+echo ""
+
+section "Test 5b: --lint"
+out=$("$K" --config "$WORK/pristine.toml" --lint)
+assert_matches "$out" "^[0-9][0-9]* bindings: no duplicate chords" "fixture lints clean"
+cp "$WORK/pristine.toml" "$WORK/bad.toml"
+cat >> "$WORK/bad.toml" <<'EOF'
+
+[mode.main.binding]
+    shift-ctrl-h = 'focus right'
+    ctrl-shift-x = 'some-new-command --flag'
+    ctrl-shift-y = 'exec-and-forget ~/.config/aerospace/scripts/does-not-exist.sh'
+EOF
+set +e; out=$("$K" --config "$WORK/bad.toml" --lint 2>&1); rc=$?; set -e
+assert_eq "$rc" "1" "problems exit 1"
+assert_contains "$out" "[main] Shift+Ctrl+H (focus right): duplicate of ctrl-shift-h" "a chord bound twice is caught regardless of modifier order"
+assert_contains "$out" "[main] Ctrl+Shift+X (some-new-command --flag): no readable description" "a command the cheatsheet cannot describe needs a # desc:"
+assert_contains "$out" "script not in the repo: ~/.config/aerospace/scripts/does-not-exist.sh" "a script the repo does not ship is caught"
+assert_not_contains "$out" "cycle-app-windows.sh" "a shipped script is fine"
+sed -i '' 's/^    ctrl-shift-x = /    # desc: Do the new thing\
+    ctrl-shift-x = /' "$WORK/bad.toml"
+set +e; out=$("$K" --config "$WORK/bad.toml" --lint 2>&1); set -e
+assert_not_contains "$out" "Ctrl+Shift+X" "a # desc: line satisfies the description check"
+assert_not_contains "$(tsv)" $'\t'"duplicate" "--tsv output is unchanged by lint bookkeeping"
+echo ""
+
+section "Test 5c: Real config lints clean"
+set +e; out=$("$K" --lint 2>&1); rc=$?; set -e
+assert_eq "$rc" "0" "aerospace.toml has no duplicate chords, undescribed bindings or missing scripts"
 echo ""
 
 section "Test 5: Real config and doc are in sync"

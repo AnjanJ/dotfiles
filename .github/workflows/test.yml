@@ -44,6 +44,8 @@ jobs:
         run: bin/dotfiles commands --check
       - name: Keybinding cheatsheet is current
         run: bin/dotfiles keys --check
+      - name: Keybindings have no duplicate chords, undescribed bindings or missing scripts
+        run: bin/dotfiles keys --lint
 
   # The suite list is discovered from tests/*-test.sh so a new suite is
   # covered the moment it exists; nothing here to keep in step.

@@ -15,7 +15,7 @@
 | `dotfiles theme bg next\|set <img>\|list\|current` | desktop picture for the active theme: cycles `themes/<name>/backgrounds/`, `~/.config/dotfiles/backgrounds/<name>/`, then the gradient generated from the palette | yes, when asked |
 | `dotfiles menu [route] [--list\|--run <label>]` | fzf tree over every verb (theme, toggles, launchers, reminder, update, all commands); `--list` prints `label<TAB>command` rows, Ctrl+Shift+Space opens it in Ghostty | `--list` yes; running rows: as the row's command |
 | `dotfiles reminder <min> [msg]\|show\|clear` | macOS notification in N minutes via a self-removing launchd agent | yes |
-| `dotfiles keys [--update]` | keybinding cheatsheet; `--update` regenerates the doc | yes |
+| `dotfiles keys [--update\|--check\|--lint]` | keybinding cheatsheet; `--update` regenerates the doc; `--lint` fails on a chord bound twice in a mode, a binding with no readable description, or a script the repo does not ship (run it after editing aerospace.toml) | yes |
 | `dotfiles toggle <flag> [on\|off]` | flip `startup-apps`, `borders`, `auto-commit`, `appearance`, `background`, `update-notice` (or any name) | yes, when asked |
 | `dotfiles migrate [--pending]` | run one-off repairs shipped with the repo | yes |
 | `dotfiles backup [--list\|--restore <n>]` | snapshot every managed file to `~/.dotfiles-backups` | creating: yes; restoring: ask |

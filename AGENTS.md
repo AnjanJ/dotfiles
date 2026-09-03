@@ -40,7 +40,7 @@ Colours belong in `themes/<name>/colors.toml`; app configs reference the rendere
 - **New theme:** `dotfiles add-theme <name>`, fill `colors.toml` and `theme.conf`, add the nvim plugin spec. See `docs/THEMES.md`.
 - **New app to theme:** add `themes/_templates/<output>.tpl`, then make the app read `~/.local/state/dotfiles/current/theme/<output>` (or add an `_install_rendered` line in `apply-theme.sh` for apps that need a copy). Add the file to the Theme Assets section of `scripts/health-check.sh`.
 - **Change that other machines must apply** (moved symlink, removed generated file, renamed state): `dotfiles migrate --new <slug>`, write an idempotent script. Never rely on a human running a one-off command.
-- **Keybinding:** edit `.config/aerospace/aerospace.toml`, put a `# desc:` comment on the line above when the command alone does not explain it, run `dotfiles keys --update`.
+- **Keybinding:** edit `.config/aerospace/aerospace.toml`, put a `# desc:` comment on the line above when the command alone does not explain it, run `dotfiles keys --update` and `dotfiles keys --lint` (CI runs both: the lint fails on a chord bound twice in a mode, an undescribed binding, or a script the repo does not ship).
 - **Feature that should be switchable:** consult `dotfiles-toggle --enabled <flag>` in the script; document the flag in `bin/dotfiles-toggle`'s header.
 - Configs are symlinked into `$HOME`, so an edit takes effect on the live machine immediately. Validate before moving on: `ghostty +validate-config`, `zellij setup --check`, `aerospace reload-config`, `sketchybar --reload`, `nvim --headless +qa`.
 
