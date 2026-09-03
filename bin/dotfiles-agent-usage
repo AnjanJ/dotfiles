@@ -1,0 +1,244 @@
+#!/usr/bin/env bash
+# dotfiles:summary=Claude plan usage: the 5-hour session and 7-day windows, cached for the sketchybar item
+# dotfiles:args=[--json|--bar|--notify] [--refresh] [--max-age <seconds>]
+#
+# Reads the OAuth token Claude Code keeps (macOS keychain item
+# "Claude Code-credentials", or ~/.claude/.credentials.json elsewhere) and
+# asks the usage endpoint behind Claude Code's own /usage screen. The reply
+# is cached in ~/.cache/dotfiles/agent-usage.json so the bar can poll
+# without hammering the API.
+#
+#   dotfiles agent usage             human summary with reset times
+#   dotfiles agent usage --json      normalised JSON (session, week, weekly[], stale)
+#   dotfiles agent usage --bar       "label<TAB>level" for the sketchybar plugin;
+#                                    prints nothing when there is no login
+#   dotfiles agent usage --notify    macOS notification with the summary
+#                                    (what clicking the bar item does)
+#   --refresh ignores the cache; --max-age N accepts a cache up to N seconds
+#   old (default 60).
+#
+# Exit 0 with data, 2 when no Claude Code login is found, 3 when the
+# endpoint could not be reached and nothing is cached.
+#
+# The "7d" figure is the highest of the weekly limits (the all-models one
+# and any per-model one), because whichever fills first is the one that
+# blocks. Levels: critical at 90%, warning at 70%, stale when the last
+# fetch failed and the cache is being shown instead.
+#
+# The token is never refreshed here: rotating it would invalidate the one
+# Claude Code holds. An expired token shows the last figures as stale until
+# the next Claude Code session refreshes it.
+#
+# Overrides, mainly for tests: DOTFILES_AGENT_USAGE_CREDENTIALS (a
+# credentials JSON file), DOTFILES_AGENT_USAGE_URL, DOTFILES_CACHE_DIR,
+# DOTFILES_AGENT_USAGE_NOW (epoch seconds).
+
+set -euo pipefail
+
+# launchd starts sketchybar with a bare PATH; jq and curl live here.
+PATH="$PATH:/opt/homebrew/bin:/usr/local/bin"
+
+MODE="human"
+REFRESH=0
+MAX_AGE=60
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --json) MODE="json" ;;
+        --bar) MODE="bar" ;;
+        --notify) MODE="notify" ;;
+        --refresh) REFRESH=1 ;;
+        --max-age)
+            shift
+            MAX_AGE="${1:-}"
+            [[ "$MAX_AGE" =~ ^[0-9]+$ ]] || { echo "dotfiles agent usage: --max-age wants a number of seconds" >&2; exit 1; }
+            ;;
+        -h|--help)
+            sed -n '4,30p' "$0" | sed 's/^# \{0,1\}//'
+            exit 0
+            ;;
+        *) echo "dotfiles agent usage: unknown option '$1'" >&2; exit 1 ;;
+    esac
+    shift
+done
+
+for dep in jq curl; do
+    command -v "$dep" >/dev/null 2>&1 || { echo "dotfiles agent usage: needs $dep" >&2; exit 1; }
+done
+
+CACHE_DIR="${DOTFILES_CACHE_DIR:-$HOME/.cache/dotfiles}"
+CACHE="$CACHE_DIR/agent-usage.json"
+URL="${DOTFILES_AGENT_USAGE_URL:-https://api.anthropic.com/api/oauth/usage}"
+NOW="${DOTFILES_AGENT_USAGE_NOW:-$(date +%s)}"
+
+# ---- credentials -----------------------------------------------------------
+
+credentials_json() {
+    if [[ -n "${DOTFILES_AGENT_USAGE_CREDENTIALS:-}" ]]; then
+        [[ -r "$DOTFILES_AGENT_USAGE_CREDENTIALS" ]] && cat "$DOTFILES_AGENT_USAGE_CREDENTIALS"
+        return 0
+    fi
+    if [[ -r "$HOME/.claude/.credentials.json" ]]; then
+        cat "$HOME/.claude/.credentials.json"
+        return 0
+    fi
+    if [[ "$(uname -s)" == "Darwin" ]] && command -v security >/dev/null 2>&1; then
+        security find-generic-password -s "Claude Code-credentials" -w 2>/dev/null || true
+    fi
+}
+
+CREDS="$(credentials_json)"
+TOKEN=""
+EXPIRES=0
+PLAN=""
+if [[ -n "$CREDS" ]]; then
+    TOKEN="$(printf '%s' "$CREDS" | jq -r '.claudeAiOauth.accessToken // empty' 2>/dev/null || true)"
+    EXPIRES="$(printf '%s' "$CREDS" | jq -r '((.claudeAiOauth.expiresAt // 0) / 1000) | floor' 2>/dev/null || echo 0)"
+    PLAN="$(printf '%s' "$CREDS" | jq -r '[.claudeAiOauth.subscriptionType, .claudeAiOauth.rateLimitTier] | map(select(. != null)) | join(", ")' 2>/dev/null || true)"
+fi
+
+# ---- fetch and cache -------------------------------------------------------
+
+TOKEN_EXPIRED=0
+[[ -n "$TOKEN" && "$EXPIRES" -gt 0 && "$EXPIRES" -le "$NOW" ]] && TOKEN_EXPIRED=1
+
+cache_age() {
+    local fetched
+    [[ -f "$CACHE" ]] || { echo 999999999; return 0; }
+    fetched="$(jq -r '.fetched_at // 0' "$CACHE" 2>/dev/null || echo 0)"
+    echo $((NOW - fetched))
+}
+
+fetch() {
+    local body tmp
+    [[ -n "$TOKEN" && "$TOKEN_EXPIRED" -eq 0 ]] || return 1
+    body="$(curl -sS -f -m 10 \
+        -H "Authorization: Bearer $TOKEN" \
+        -H "anthropic-beta: oauth-2025-04-20" \
+        -H "Accept: application/json" \
+        "$URL" 2>/dev/null)" || return 1
+    # A reply without either shape is not usage data; keep the old cache.
+    printf '%s' "$body" | jq -e '(.limits? // .five_hour?) != null' >/dev/null 2>&1 || return 1
+    mkdir -p "$CACHE_DIR"
+    tmp="$CACHE.tmp.$$"
+    printf '%s' "$body" | jq --argjson now "$NOW" '{fetched_at: $now, response: .}' > "$tmp"
+    mv "$tmp" "$CACHE"
+}
+
+not_signed_in() {
+    [[ "$MODE" == "bar" ]] && exit 2
+    if [[ "$TOKEN_EXPIRED" -eq 1 ]]; then
+        echo "Claude Code token has expired; start a Claude Code session to refresh it." >&2
+    else
+        echo "No Claude Code login found (start claude once and sign in)." >&2
+    fi
+    exit 2
+}
+
+if [[ -z "$TOKEN" && ! -f "$CACHE" ]]; then
+    not_signed_in
+fi
+
+STALE=false
+if [[ "$REFRESH" -eq 1 || "$(cache_age)" -gt "$MAX_AGE" ]]; then
+    fetch || STALE=true
+fi
+
+if [[ ! -f "$CACHE" ]]; then
+    [[ "$TOKEN_EXPIRED" -eq 1 ]] && not_signed_in
+    [[ "$MODE" == "bar" ]] && exit 3
+    echo "dotfiles agent usage: could not reach $URL and nothing is cached." >&2
+    exit 3
+fi
+
+# ---- normalise -------------------------------------------------------------
+
+# One shape whatever the endpoint sends: `limits[]` (kind/group/percent/
+# resets_at, with per-model scopes) when present, else the older
+# five_hour/seven_day objects. Timestamps become epoch seconds here so the
+# callers never parse ISO strings.
+# shellcheck disable=SC2016  # a jq program: $stale and $plan are jq variables
+NORMALISE='
+def epoch: if . == null then null else (sub("\\.[0-9]+"; "") | sub("\\+00:00$"; "Z") | fromdateiso8601) end;
+def level: if . >= 90 then "critical" elif . >= 70 then "warning" else "normal" end;
+def pick(g): [ (.response.limits // [])[] | select(.group == g) ];
+.response as $r
+| (pick("session") | max_by(.percent)) as $s
+| (pick("weekly") | max_by(.percent)) as $w
+| (pick("weekly") | map({
+      name: (.scope.model.display_name // "all"),
+      percent: (.percent | round),
+      resets_at: (.resets_at | epoch)
+  })) as $weekly
+| { session: { percent: (($s.percent // $r.five_hour.utilization // 0) | round),
+               resets_at: (($s.resets_at // $r.five_hour.resets_at) | epoch) },
+    week:    { percent: (($w.percent // $r.seven_day.utilization // 0) | round),
+               resets_at: (($w.resets_at // $r.seven_day.resets_at) | epoch),
+               scope: ($w.scope.model.display_name // "all") },
+    weekly:  (if ($weekly | length) > 0 then $weekly
+              else [{ name: "all", percent: (($r.seven_day.utilization // 0) | round), resets_at: ($r.seven_day.resets_at | epoch) }] end),
+    fetched_at: .fetched_at,
+    stale: $stale,
+    plan: $plan }
+| .level = (if $stale then "stale" else ([.session.percent, .week.percent] | max | level) end)
+'
+
+DATA="$(jq --argjson stale "$STALE" --arg plan "$PLAN" "$NORMALISE" "$CACHE")"
+
+# ---- output ----------------------------------------------------------------
+
+relative() {
+    local s="$1" d h m
+    [[ "$s" -gt 0 ]] || { echo "now"; return 0; }
+    d=$((s / 86400)); h=$((s % 86400 / 3600)); m=$((s % 3600 / 60))
+    if [[ "$d" -gt 0 ]]; then echo "in ${d}d ${h}h"
+    elif [[ "$h" -gt 0 ]]; then echo "in ${h}h ${m}m"
+    elif [[ "$m" -gt 0 ]]; then echo "in ${m}m"
+    else echo "in <1m"; fi
+}
+
+# jq's strflocaltime honours TZ, which is what the tests pin.
+clock() { jq -rn --argjson t "$1" --arg f "$2" 'if $t == null then "?" else ($t | strflocaltime($f)) end'; }
+
+field() { printf '%s' "$DATA" | jq -r "$1"; }
+
+case "$MODE" in
+    json)
+        printf '%s\n' "$DATA"
+        ;;
+    bar)
+        printf '5h %s%% · 7d %s%%\t%s\n' "$(field .session.percent)" "$(field .week.percent)" "$(field .level)"
+        ;;
+    human|notify)
+        s_pct="$(field .session.percent)"; s_at="$(field '.session.resets_at // empty')"
+        s_when="?"
+        [[ -n "$s_at" ]] && s_when="$(clock "$s_at" '%H:%M') ($(relative $((s_at - NOW))))"
+        lines="$(printf '%-12s %4s  resets %s' "Session (5h)" "${s_pct}%" "$s_when")"
+        while IFS=$'\t' read -r name pct at; do
+            [[ -n "$name" ]] || continue
+            when="?"
+            [[ -n "$at" && "$at" != "null" ]] && when="$(clock "$at" '%a %H:%M') ($(relative $((at - NOW))))"
+            if [[ "$name" == "all" ]]; then label="Week (7d)"; else label="Week, $name"; fi
+            lines="$lines"$'\n'"$(printf '%-12s %4s  resets %s' "$label" "${pct}%" "$when")"
+        done < <(field '.weekly[] | [.name, .percent, (.resets_at // "")] | @tsv')
+        if [[ "$MODE" == "human" ]]; then
+            [[ -n "$PLAN" ]] && echo "Plan: $PLAN"
+            printf '%s\n' "$lines"
+            age=$((NOW - $(field .fetched_at)))
+            if [[ "$age" -lt 60 ]]; then fetched="Fetched just now"; else fetched="Fetched $(relative "$age" | sed 's/^in //') ago"; fi
+            if [[ "$STALE" == "true" ]]; then
+                echo "$fetched (stale: the last refresh failed)"
+            else
+                echo "$fetched"
+            fi
+        else
+            msg="$(printf '%s' "$lines" | sed 's/  */ /g' | tr '\n' ';' | sed 's/;/ · /g')"
+            [[ "$STALE" == "true" ]] && msg="$msg (stale)"
+            if command -v osascript >/dev/null 2>&1; then
+                DOTFILES_AGENT_USAGE_MSG="$msg" osascript -e 'display notification (system attribute "DOTFILES_AGENT_USAGE_MSG") with title "Claude usage"' >/dev/null 2>&1 || true
+            else
+                echo "$msg"
+            fi
+        fi
+        ;;
+esac

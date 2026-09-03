@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# dotfiles:summary=Turn a feature on or off with a flag file (startup-apps, borders, auto-commit, appearance, background, update-notice)
+# dotfiles:summary=Turn a feature on or off with a flag file (startup-apps, borders, auto-commit, appearance, background, update-notice, agent-usage)
 # dotfiles:args=<flag> [on|off|toggle|status] | --list | --enabled <flag>
 #
 # Toggle features without editing a config file — can be run from anywhere
@@ -17,6 +17,7 @@
 #   appearance     `dotfiles theme` switching macOS light/dark to the theme's mode
 #   background     `dotfiles theme` / `dotfiles theme bg` setting the desktop picture
 #   update-notice  the one-line "updates waiting" notice .zshrc prints at login
+#   agent-usage    the Claude usage item in sketchybarrc (restart sketchybar to apply)
 #
 # Any other name works too; consumers just have to ask.
 

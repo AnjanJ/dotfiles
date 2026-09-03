@@ -17,7 +17,7 @@
 | `dotfiles reminder <min> [msg]\|show\|clear` | macOS notification in N minutes via a self-removing launchd agent | yes |
 | `dotfiles font current\|list\|set <family>\|reset` | the monospace family shared by Ghostty, WezTerm, Zed and VS Code (default Fira Code); `set` verifies the family with fontconfig, re-renders the theme and fires `font-set` | `current`/`list` yes; `set`: when asked |
 | `dotfiles keys [--update\|--check\|--lint]` | keybinding cheatsheet; `--update` regenerates the doc; `--lint` fails on a chord bound twice in a mode, a binding with no readable description, or a script the repo does not ship (run it after editing aerospace.toml) | yes |
-| `dotfiles toggle <flag> [on\|off]` | flip `startup-apps`, `borders`, `auto-commit`, `appearance`, `background`, `update-notice` (or any name) | yes, when asked |
+| `dotfiles toggle <flag> [on\|off]` | flip `startup-apps`, `borders`, `auto-commit`, `appearance`, `background`, `update-notice`, `agent-usage` (or any name) | yes, when asked |
 | `dotfiles migrate [--pending]` | run one-off repairs shipped with the repo | yes |
 | `dotfiles backup [--list\|--restore <n>]` | snapshot every managed file to `~/.dotfiles-backups` | creating: yes; restoring: ask |
 | `dotfiles update` | upgrade Homebrew, mise, relink, **commit and push** Brewfile changes to GitHub; `--yes` never prompts; transcript in `~/.local/state/dotfiles/update.log` | **ask first** |
@@ -27,6 +27,7 @@
 | `dotfiles restart <aerospace\|sketchybar\|borders>` | reload/relaunch one component now; `--later <c>` marks it for the end of the next update or sync; `--pending` consumes markers | safe |
 | `dotfiles export [--json]` | portable summary of this machine's setup (tools, runtimes, theme) for reproducing it elsewhere | yes |
 | `dotfiles default agent [name] [--command]` | show or set which CLI the `a` shell function launches | showing: yes; setting: when asked |
+| `dotfiles agent usage [--json\|--bar\|--notify] [--refresh]` | Claude plan usage from the endpoint behind Claude Code's `/usage`: the 5-hour session and 7-day windows with reset times (the weekly figure is the fullest weekly limit, per-model ones included), cached for a minute in `~/.cache/dotfiles`; `--bar` feeds the sketchybar item, `--notify` posts the summary | yes |
 | `dotfiles hook <event> [args]` / `--list` / `--seed` | run the user's hooks for an event by hand; list what is installed; copy the repo's sample hooks into place (see Hooks below) | yes |
 | `dotfiles hook install <event> <file>` | copy a script into `~/.config/dotfiles/hooks/<event>.d/` and make it executable | when asked |
 | `dotfiles cleanup [--force]` | remove Homebrew packages that are not in the Brewfile | **ask first** |
@@ -47,6 +48,7 @@ Flag files under `~/.local/state/dotfiles/toggles/<flag>.off`; everything is on 
 - `appearance` — `dotfiles theme` switching macOS light/dark to match the theme
 - `background` — `dotfiles theme` setting the desktop picture
 - `update-notice` — the one-line "updates waiting" notice at shell login
+- `agent-usage` — the Claude usage item in sketchybar (`dotfiles restart sketchybar` to apply)
 
 `dotfiles toggle --list` shows state; scripts check `dotfiles-toggle --enabled <flag>`.
 

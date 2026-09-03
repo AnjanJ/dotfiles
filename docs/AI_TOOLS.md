@@ -173,6 +173,18 @@ $ explain-last
 - **"I'm offline / this is sensitive."** → ollama via `llm` (default), or `ollama run` directly
 - **"I want a chat-style interface."** → Claude Code app, Perplexity, or `llm chat`
 
+## Claude usage in the menu bar
+
+sketchybar shows `5h 86% · 7d 25%`: how full the 5-hour session window and the 7-day window of the Claude plan are. White below 70%, yellow from 70%, red from 90%, grey when the last fetch failed and the cached figure is showing. The 7-day figure is the fullest of the weekly limits (all models, or a per-model one), because whichever fills first is the one that blocks. Click the item for a notification with the reset times, or ask the terminal:
+
+```bash
+dotfiles agent usage             # Session (5h)  86%  resets 10:19 (in 1h 12m) ...
+dotfiles agent usage --json      # the same, for scripts
+dotfiles toggle agent-usage off  # drop the item (then: dotfiles restart sketchybar)
+```
+
+The figures come from the endpoint behind Claude Code's own `/usage` screen, read with the token Claude Code keeps in the keychain. The token is never refreshed or sent anywhere else, and the reply is cached for a minute in `~/.cache/dotfiles/agent-usage.json`. The item hides itself when there is no Claude Code login.
+
 ## Agents know this setup
 
 `agents/skills/dotfiles/` is a skill for Claude Code (symlinked to `~/.claude/skills/dotfiles`) that explains where every config lives, how theming works, what is generated and must not be edited, and which `dotfiles` commands are safe to run. Ask Claude to "make the accent colour purple" or "add a shortcut for Finder" and it will edit the right source file, re-render, and validate. Contributor conventions for the repo itself are in `AGENTS.md` (loaded by `CLAUDE.md`).

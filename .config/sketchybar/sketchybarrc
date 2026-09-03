@@ -94,5 +94,23 @@ sketchybar --add item battery right \
                  background.corner_radius=5 \
                  background.height=24
 
+# Claude plan usage, "5h 86% · 7d 25%", from `dotfiles agent usage`: yellow
+# at 70%, red at 90%, grey when the last fetch failed. Click posts a
+# notification with the reset times. Polled every two minutes (the command
+# caches for one). Off with `dotfiles toggle agent-usage off`; a missing
+# toggle script (fresh clone before `dotfiles doctor`) counts as on, and the
+# plugin hides the item when there is no Claude Code login.
+if [ ! -x "$HOME/bin/dotfiles-toggle" ] || "$HOME/bin/dotfiles-toggle" --enabled agent-usage; then
+    sketchybar --add item agent_usage right \
+               --set agent_usage \
+                     update_freq=120 \
+                     icon=󰚩 \
+                     script="$HOME/.config/sketchybar/plugins/agent-usage.sh" \
+                     click_script="$HOME/.config/sketchybar/plugins/agent-usage.sh notify" \
+                     background.color="$ITEM_BG_COLOR" \
+                     background.corner_radius=5 \
+                     background.height=24
+fi
+
 ##### Finalizing Setup #####
 sketchybar --update
