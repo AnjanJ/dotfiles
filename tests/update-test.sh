@@ -8,47 +8,15 @@
 # idempotency, broken link handling, OS guard.
 #
 # Uses a temporary HOME directory — no real configs touched.
-# Usage: bash tests/test-update.sh
+# Usage: tests/run update   (or /opt/homebrew/bin/bash tests/update-test.sh)
 # ============================================
 
 set -euo pipefail
 
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/base-test.sh"
+
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REAL_HOME="$HOME"
-
-# ── Test Framework ────────────────────────────
-
-PASS=0
-FAIL=0
-FAILURES=()
-
-pass() {
-    PASS=$((PASS + 1))
-    echo -e "  \033[0;32m✓\033[0m $1"
-}
-
-fail() {
-    FAIL=$((FAIL + 1))
-    FAILURES+=("$1")
-    echo -e "  \033[0;31m✗\033[0m $1"
-}
-
-assert_eq() {
-    local actual="$1" expected="$2" label="$3"
-    if [[ "$actual" == "$expected" ]]; then
-        pass "$label"
-    else
-        fail "$label (expected '$expected', got '$actual')"
-    fi
-}
-
-assert_file_exists() {
-    if [[ -f "$1" ]] || [[ -L "$1" ]]; then
-        pass "$2"
-    else
-        fail "$2 ($1 not found)"
-    fi
-}
 
 setup_sandbox() {
     TEST_HOME=$(mktemp -d)
@@ -79,7 +47,7 @@ create_symlink() {
 
 test_27_create_symlink_new() {
     echo ""
-    echo "Test 27: create_symlink creates link when none exists"
+    section "Test 27: create_symlink creates link when none exists"
     setup_sandbox
 
     local source_file="$TEST_HOME/dotfiles/myconfig"
@@ -105,7 +73,7 @@ test_27_create_symlink_new() {
 
 test_28_create_symlink_already_correct() {
     echo ""
-    echo "Test 28: create_symlink is no-op when link already correct"
+    section "Test 28: create_symlink is no-op when link already correct"
     setup_sandbox
 
     local source_file="$TEST_HOME/dotfiles/myconfig"
@@ -125,7 +93,7 @@ test_28_create_symlink_already_correct() {
 
 test_29_create_symlink_broken() {
     echo ""
-    echo "Test 29: create_symlink overwrites broken symlink"
+    section "Test 29: create_symlink overwrites broken symlink"
     setup_sandbox
 
     local source_file="$TEST_HOME/dotfiles/myconfig"
@@ -156,7 +124,7 @@ test_29_create_symlink_broken() {
 
 test_30_create_symlink_wrong_target() {
     echo ""
-    echo "Test 30: create_symlink overwrites link pointing to wrong target"
+    section "Test 30: create_symlink overwrites link pointing to wrong target"
     setup_sandbox
 
     local source_file="$TEST_HOME/dotfiles/myconfig"
@@ -182,7 +150,7 @@ test_30_create_symlink_wrong_target() {
 
 test_31_macos_only_guard() {
     echo ""
-    echo "Test 31: macOS-only guard in update.sh"
+    section "Test 31: macOS-only guard in update.sh"
     setup_sandbox
 
     # Test the guard logic — on macOS this always passes,
@@ -218,21 +186,3 @@ test_28_create_symlink_already_correct
 test_29_create_symlink_broken
 test_30_create_symlink_wrong_target
 test_31_macos_only_guard
-
-# ── Summary ───────────────────────────────────
-
-echo ""
-echo "════════════════════════════════════════════════════════════"
-echo -e "  \033[0;32mPassed: $PASS\033[0m  |  \033[0;31mFailed: $FAIL\033[0m"
-echo "════════════════════════════════════════════════════════════"
-
-if [[ ${#FAILURES[@]} -gt 0 ]]; then
-    echo ""
-    echo "  Failed tests:"
-    for f in "${FAILURES[@]}"; do
-        echo -e "    \033[0;31m✗\033[0m $f"
-    done
-fi
-
-echo ""
-[[ $FAIL -eq 0 ]]

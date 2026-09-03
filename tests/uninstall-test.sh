@@ -8,57 +8,15 @@
 # honours --yes / cancellation, and shows --help.
 #
 # Uses temporary directories — no real configs touched.
-# Usage: bash tests/test-uninstall.sh
+# Usage: tests/run uninstall   (or /opt/homebrew/bin/bash tests/uninstall-test.sh)
 # ============================================
 
 set -euo pipefail
 
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/base-test.sh"
+
 REAL_DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REAL_HOME="$HOME"
-
-# ── Test Framework ────────────────────────────
-
-PASS=0
-FAIL=0
-FAILURES=()
-
-pass() {
-    PASS=$((PASS + 1))
-    echo -e "  \033[0;32m✓\033[0m $1"
-}
-
-fail() {
-    FAIL=$((FAIL + 1))
-    FAILURES+=("$1")
-    echo -e "  \033[0;31m✗\033[0m $1"
-}
-
-assert_contains() {
-    local text="$1" pattern="$2" label="$3"
-    if echo "$text" | /usr/bin/grep -qF -- "$pattern" 2>/dev/null; then
-        pass "$label"
-    else
-        fail "$label ('$pattern' not found)"
-    fi
-}
-
-assert_gone() {
-    local path="$1" label="$2"
-    if [[ ! -e "$path" && ! -L "$path" ]]; then
-        pass "$label"
-    else
-        fail "$label (still present: $path)"
-    fi
-}
-
-assert_symlink_kept() {
-    local path="$1" label="$2"
-    if [[ -L "$path" ]]; then
-        pass "$label"
-    else
-        fail "$label (symlink missing: $path)"
-    fi
-}
 
 # ── Mock Setup ────────────────────────────────
 
@@ -116,7 +74,7 @@ echo "╚═══════════════════════�
 echo ""
 
 # ── Test 1: --help shows usage ──
-echo "Test 1: --help shows usage"
+section "Test 1: --help shows usage"
 setup_uninstall_sandbox
 output=$(bash "$MOCK_DOTFILES/bin/dotfiles-uninstall" --help 2>&1)
 assert_contains "$output" "Usage:" "--help shows usage line"
@@ -125,14 +83,14 @@ teardown_uninstall_sandbox
 echo ""
 
 # ── Test 2: --yes removes every mapped symlink ──
-echo "Test 2: --yes removes every mapped symlink"
+section "Test 2: --yes removes every mapped symlink"
 setup_uninstall_sandbox
 output=$(bash "$MOCK_DOTFILES/bin/dotfiles-uninstall" --yes 2>&1)
-assert_gone "$TEST_HOME/.zshrc" "Removed ~/.zshrc"
-assert_gone "$TEST_HOME/.rubocop.yml" "Removed map-only entry ~/.rubocop.yml"
-assert_gone "$TEST_HOME/.config/nvim" "Removed ~/.config/nvim directory link"
-assert_gone "$TEST_HOME/.config/mise/config.toml" "Removed nested single-file link"
-assert_gone "$TEST_HOME/bin/test-script" "Removed ~/bin script link"
+assert_file_not_exists "$TEST_HOME/.zshrc" "Removed ~/.zshrc"
+assert_file_not_exists "$TEST_HOME/.rubocop.yml" "Removed map-only entry ~/.rubocop.yml"
+assert_file_not_exists "$TEST_HOME/.config/nvim" "Removed ~/.config/nvim directory link"
+assert_file_not_exists "$TEST_HOME/.config/mise/config.toml" "Removed nested single-file link"
+assert_file_not_exists "$TEST_HOME/bin/test-script" "Removed ~/bin script link"
 assert_contains "$output" "Uninstall Complete" "Prints completion banner"
 # 4 mapped files + 2 bin/ scripts (test-script and the uninstall script itself)
 assert_contains "$output" "6 symlinks" "Reports six removals"
@@ -140,46 +98,30 @@ teardown_uninstall_sandbox
 echo ""
 
 # ── Test 3: Foreign symlinks at managed paths are left alone ──
-echo "Test 3: Foreign symlinks are left alone"
+section "Test 3: Foreign symlinks are left alone"
 setup_uninstall_sandbox
 output=$(bash "$MOCK_DOTFILES/bin/dotfiles-uninstall" --yes 2>&1)
-assert_symlink_kept "$TEST_HOME/.zshrc-dhh-additions" "Foreign ~/.zshrc-dhh-additions kept"
+assert_is_symlink "$TEST_HOME/.zshrc-dhh-additions" "Foreign ~/.zshrc-dhh-additions kept"
 assert_contains "$output" "Skipped" "Reports the skipped foreign link"
 teardown_uninstall_sandbox
 echo ""
 
 # ── Test 4: Declining the prompt removes nothing ──
-echo "Test 4: Declining the prompt removes nothing"
+section "Test 4: Declining the prompt removes nothing"
 setup_uninstall_sandbox
 output=$(echo "n" | bash "$MOCK_DOTFILES/bin/dotfiles-uninstall" 2>&1 || true)
 assert_contains "$output" "will be removed" "Preview lists pending removals"
 assert_contains "$output" "cancelled" "Reports cancellation"
-assert_symlink_kept "$TEST_HOME/.zshrc" "~/.zshrc untouched after cancel"
-assert_symlink_kept "$TEST_HOME/bin/test-script" "~/bin script untouched after cancel"
+assert_is_symlink "$TEST_HOME/.zshrc" "~/.zshrc untouched after cancel"
+assert_is_symlink "$TEST_HOME/bin/test-script" "~/bin script untouched after cancel"
 teardown_uninstall_sandbox
 echo ""
 
 # ── Test 5: Idempotent — second run finds nothing ──
-echo "Test 5: Second run is a no-op"
+section "Test 5: Second run is a no-op"
 setup_uninstall_sandbox
 bash "$MOCK_DOTFILES/bin/dotfiles-uninstall" --yes >/dev/null 2>&1
 output=$(bash "$MOCK_DOTFILES/bin/dotfiles-uninstall" --yes 2>&1)
 assert_contains "$output" "Removed:" "Second run still completes"
 assert_contains "$output" " 0 symlinks" "Second run removes zero"
 teardown_uninstall_sandbox
-echo ""
-
-# ── Summary ───────────────────────────────────
-
-echo ""
-echo "  =========================================="
-echo -e "  \033[0;32mPassed: $PASS\033[0m  |  \033[0;31mFailed: $FAIL\033[0m"
-echo "  =========================================="
-if [[ $FAIL -gt 0 ]]; then
-    echo ""
-    for f in "${FAILURES[@]}"; do
-        echo "    - $f"
-    done
-    exit 1
-fi
-exit 0

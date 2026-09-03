@@ -11,57 +11,15 @@
 # actual git clone + gh/glab calls are not tested.
 #
 # Uses a temporary HOME directory — no real configs touched.
-# Usage: bash tests/test-repos-clone.sh
+# Usage: tests/run repos-clone   (or /opt/homebrew/bin/bash tests/repos-clone-test.sh)
 # ============================================
 
 set -euo pipefail
 
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/base-test.sh"
+
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REAL_HOME="$HOME"
-
-# ── Test Framework ────────────────────────────
-
-PASS=0
-FAIL=0
-FAILURES=()
-
-pass() {
-    PASS=$((PASS + 1))
-    echo -e "  \033[0;32m✓\033[0m $1"
-}
-
-fail() {
-    FAIL=$((FAIL + 1))
-    FAILURES+=("$1")
-    echo -e "  \033[0;31m✗\033[0m $1"
-}
-
-assert_eq() {
-    local actual="$1" expected="$2" label="$3"
-    if [[ "$actual" == "$expected" ]]; then
-        pass "$label"
-    else
-        fail "$label (expected '$expected', got '$actual')"
-    fi
-}
-
-assert_contains() {
-    local haystack="$1" needle="$2" label="$3"
-    if [[ "$haystack" == *"$needle"* ]]; then
-        pass "$label"
-    else
-        fail "$label ('$needle' not found in output)"
-    fi
-}
-
-assert_not_contains() {
-    local haystack="$1" needle="$2" label="$3"
-    if [[ "$haystack" != *"$needle"* ]]; then
-        pass "$label"
-    else
-        fail "$label ('$needle' unexpectedly found in output)"
-    fi
-}
 
 setup_sandbox() {
     TEST_HOME=$(mktemp -d)
@@ -124,7 +82,7 @@ expand_selection() {
 
 test_10_ssh_alias_detection_github() {
     echo ""
-    echo "Test 10: SSH alias detection for github.com"
+    section "Test 10: SSH alias detection for github.com"
     setup_sandbox
 
     cat > "$TEST_HOME/.ssh/config" <<EOF
@@ -147,7 +105,7 @@ EOF
 
 test_11_ssh_alias_detection_gitlab() {
     echo ""
-    echo "Test 11: SSH alias detection for gitlab.com"
+    section "Test 11: SSH alias detection for gitlab.com"
     setup_sandbox
 
     cat > "$TEST_HOME/.ssh/config" <<EOF
@@ -170,7 +128,7 @@ EOF
 
 test_12_no_aliases_when_no_match() {
     echo ""
-    echo "Test 12: No aliases when SSH config has no matching HostName"
+    section "Test 12: No aliases when SSH config has no matching HostName"
     setup_sandbox
 
     cat > "$TEST_HOME/.ssh/config" <<EOF
@@ -192,7 +150,7 @@ EOF
 
 test_13_multiple_aliases_same_host() {
     echo ""
-    echo "Test 13: Multiple aliases for same host"
+    section "Test 13: Multiple aliases for same host"
     setup_sandbox
 
     cat > "$TEST_HOME/.ssh/config" <<EOF
@@ -221,7 +179,7 @@ EOF
 
 test_14_ssh_url_rewriting() {
     echo ""
-    echo "Test 14: SSH URL rewriting with alias substitution"
+    section "Test 14: SSH URL rewriting with alias substitution"
     setup_sandbox
 
     local url="git@github.com:org/repo.git"
@@ -237,7 +195,7 @@ test_14_ssh_url_rewriting() {
 
 test_15_range_expansion() {
     echo ""
-    echo "Test 15: Range expansion '1-5 7 9-11'"
+    section "Test 15: Range expansion '1-5 7 9-11'"
     setup_sandbox
 
     local result
@@ -257,7 +215,7 @@ test_15_range_expansion() {
 
 test_16_skip_existing_repos() {
     echo ""
-    echo "Test 16: Already-cloned repos are skipped"
+    section "Test 16: Already-cloned repos are skipped"
     setup_sandbox
 
     local target="$TEST_HOME/repos"
@@ -284,7 +242,7 @@ test_16_skip_existing_repos() {
 
 test_17_tilde_expansion() {
     echo ""
-    echo "Test 17: Target directory with tilde expansion"
+    section "Test 17: Target directory with tilde expansion"
     setup_sandbox
 
     local input="~/projects"
@@ -301,7 +259,7 @@ test_17_tilde_expansion() {
 
 test_18_unusual_whitespace() {
     echo ""
-    echo "Test 18: SSH config with unusual whitespace"
+    section "Test 18: SSH config with unusual whitespace"
     setup_sandbox
 
     # Tabs and extra spaces in SSH config
@@ -325,7 +283,7 @@ EOF
 
 test_19_comments_between_host_hostname() {
     echo ""
-    echo "Test 19: SSH config with comments between Host/HostName"
+    section "Test 19: SSH config with comments between Host/HostName"
     setup_sandbox
 
     cat > "$TEST_HOME/.ssh/config" <<EOF
@@ -365,21 +323,3 @@ test_16_skip_existing_repos
 test_17_tilde_expansion
 test_18_unusual_whitespace
 test_19_comments_between_host_hostname
-
-# ── Summary ───────────────────────────────────
-
-echo ""
-echo "════════════════════════════════════════════════════════════"
-echo -e "  \033[0;32mPassed: $PASS\033[0m  |  \033[0;31mFailed: $FAIL\033[0m"
-echo "════════════════════════════════════════════════════════════"
-
-if [[ ${#FAILURES[@]} -gt 0 ]]; then
-    echo ""
-    echo "  Failed tests:"
-    for f in "${FAILURES[@]}"; do
-        echo -e "    \033[0;31m✗\033[0m $f"
-    done
-fi
-
-echo ""
-[[ $FAIL -eq 0 ]]

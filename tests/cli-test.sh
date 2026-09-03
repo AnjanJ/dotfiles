@@ -10,33 +10,18 @@
 #
 # Uses a sandbox bin/ with fake commands that record their invocation,
 # so nothing real runs. The real bin/ is also checked at the end.
-# Usage: bash tests/test-cli.sh
+# Usage: tests/run cli   (or /opt/homebrew/bin/bash tests/cli-test.sh)
 # ============================================
 
 set -euo pipefail
 
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/base-test.sh"
+
 REAL_DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-
-PASS=0
-FAIL=0
-FAILURES=()
-
-pass() { PASS=$((PASS + 1)); echo -e "  \033[0;32m✓\033[0m $1"; }
-fail() { FAIL=$((FAIL + 1)); FAILURES+=("$1"); echo -e "  \033[0;31m✗\033[0m $1"; }
-
-assert_eq() {
-    local actual="$1" expected="$2" label="$3"
-    if [[ "$actual" == "$expected" ]]; then pass "$label"; else fail "$label (expected '$expected', got '$actual')"; fi
-}
-assert_contains() {
-    local text="$1" pattern="$2" label="$3"
-    if echo "$text" | /usr/bin/grep -qF -- "$pattern"; then pass "$label"; else fail "$label ('$pattern' not found)"; fi
-}
 
 # ── Sandbox ───────────────────────────────────
 
 MOCK=$(mktemp -d)
-trap 'rm -rf "$MOCK"' EXIT
 mkdir -p "$MOCK/bin"
 cp "$REAL_DOTFILES_DIR/bin/dotfiles" "$MOCK/bin/dotfiles"
 LOG="$MOCK/calls.log"
@@ -74,7 +59,7 @@ echo "║   CLI Router Tests                                        ║"
 echo "╚═══════════════════════════════════════════════════════════╝"
 echo ""
 
-echo "Test 1: Filename routing"
+section "Test 1: Filename routing"
 : > "$LOG"
 out=$("$D" backup --list 2>&1)
 assert_eq "$out" "ran dotfiles-backup" "dotfiles backup runs bin/dotfiles-backup"
@@ -98,7 +83,7 @@ assert_eq "$(tail -1 "$LOG")" "work-setup " "non-prefixed scripts route: work se
 assert_eq "$(tail -1 "$LOG")" "repos-clone --all" "repos clone → repos-clone with args"
 echo ""
 
-echo "Test 2: --help never executes the target"
+section "Test 2: --help never executes the target"
 : > "$LOG"
 out=$("$D" backup --help)
 assert_contains "$out" "Usage: dotfiles backup [--list] [--restore <name>]" "--help prints usage from metadata"
@@ -112,7 +97,7 @@ assert_eq "$(wc -l < "$LOG" | tr -d ' ')" "0" "--help anywhere in the arguments 
 assert_eq "$(tail -1 "$LOG")" "dotfiles-backup -- --help" "-- ends the scan; --help after it is forwarded"
 echo ""
 
-echo "Test 3: Required-args guard"
+section "Test 3: Required-args guard"
 : > "$LOG"
 set +e; out=$("$D" theme 2>&1); rc=$?; set -e
 assert_eq "$rc" "1" "bare command with required <name> exits 1"
@@ -123,7 +108,7 @@ assert_eq "$(wc -l < "$LOG" | tr -d ' ')" "0" "bare command not executed"
 assert_eq "$(tail -1 "$LOG")" "dotfiles-backup " "command with only optional args runs bare"
 echo ""
 
-echo "Test 4: Unknown commands"
+section "Test 4: Unknown commands"
 set +e; out=$("$D" nope 2>&1); rc=$?; set -e
 assert_eq "$rc" "127" "unknown command exits 127"
 assert_contains "$out" "unknown command 'nope'" "unknown command named"
@@ -135,7 +120,7 @@ set +e; "$D" _helpers >/dev/null 2>&1; rc=$?; set -e
 assert_eq "$rc" "127" "underscore helpers are not routable"
 echo ""
 
-echo "Test 5: Listings"
+section "Test 5: Listings"
 out=$("$D")
 assert_contains "$out" "add theme" "bare dotfiles lists routes"
 assert_contains "$out" "Snapshot state" "listing shows summaries"
@@ -153,7 +138,7 @@ if command -v python3 &>/dev/null; then
 fi
 echo ""
 
-echo "Test 6: commands --check"
+section "Test 6: commands --check"
 out=$("$D" commands --check)
 assert_contains "$out" "carry metadata" "--check passes when every dotfiles-* has a summary"
 printf '#!/usr/bin/env bash\necho x\n' > "$MOCK/bin/dotfiles-bare"; chmod +x "$MOCK/bin/dotfiles-bare"
@@ -163,20 +148,9 @@ assert_contains "$out" "dotfiles-bare" "--check names the offender"
 rm "$MOCK/bin/dotfiles-bare"
 echo ""
 
-echo "Test 7: Built-ins and the real repo"
+section "Test 7: Built-ins and the real repo"
 assert_eq "$("$D" dir)" "$(cd "$MOCK" && pwd -P)" "dir prints the repo root"
 out=$("$REAL_DOTFILES_DIR/bin/dotfiles" commands --check)
 assert_contains "$out" "carry metadata" "real bin/ passes --check"
 out=$(/bin/bash "$REAL_DOTFILES_DIR/bin/dotfiles" commands --plain)
 assert_contains "$out" "theme" "router runs under /bin/bash 3.2"
-echo ""
-
-echo "════════════════════════════════════════════════════════════"
-echo -e "  \033[0;32mPassed: $PASS\033[0m  |  \033[0;31mFailed: $FAIL\033[0m"
-echo "════════════════════════════════════════════════════════════"
-if [[ ${#FAILURES[@]} -gt 0 ]]; then
-    echo ""
-    for f in "${FAILURES[@]}"; do echo -e "    \033[0;31m✗\033[0m $f"; done
-fi
-echo ""
-[[ $FAIL -eq 0 ]]

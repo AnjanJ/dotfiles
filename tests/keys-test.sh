@@ -8,30 +8,17 @@
 # prettifying, `# desc:` overrides, derived descriptions, the markdown
 # tables, --update between markers, and --check drift detection. Then
 # checks the real config/doc pair is in sync.
-# Usage: bash tests/test-keys.sh
+# Usage: tests/run keys   (or /opt/homebrew/bin/bash tests/keys-test.sh)
 # ============================================
 
 set -euo pipefail
 
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/base-test.sh"
+
 REAL_DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 K="$REAL_DOTFILES_DIR/bin/dotfiles-keys"
 
-PASS=0
-FAIL=0
-FAILURES=()
-pass() { PASS=$((PASS + 1)); echo -e "  \033[0;32m✓\033[0m $1"; }
-fail() { FAIL=$((FAIL + 1)); FAILURES+=("$1"); echo -e "  \033[0;31m✗\033[0m $1"; }
-assert_eq() {
-    local actual="$1" expected="$2" label="$3"
-    if [[ "$actual" == "$expected" ]]; then pass "$label"; else fail "$label (expected '$expected', got '$actual')"; fi
-}
-assert_contains() {
-    local text="$1" pattern="$2" label="$3"
-    if echo "$text" | /usr/bin/grep -qF -- "$pattern"; then pass "$label"; else fail "$label ('$pattern' not found)"; fi
-}
-
 WORK=$(mktemp -d)
-trap 'rm -rf "$WORK"' EXIT
 
 cat > "$WORK/aerospace.toml" <<'EOF'
 # Fixture config
@@ -79,7 +66,7 @@ echo "║   Keybinding Cheatsheet Tests                             ║"
 echo "╚═══════════════════════════════════════════════════════════╝"
 echo ""
 
-echo "Test 1: Parsing and derived descriptions"
+section "Test 1: Parsing and derived descriptions"
 assert_eq "$(tsv | wc -l | tr -d ' ')" "16" "16 bindings parsed (on-window-detected ignored)"
 assert_eq "$(row 'Ctrl+Shift+W')" 'main|Launch Warp|exec-and-forget open -a "Warp"' "triple-quoted launcher"
 assert_eq "$(row 'Ctrl+Shift+H')" "main|Focus window left|focus left" "single-quoted command"
@@ -94,7 +81,7 @@ assert_eq "$(row 'Ctrl+Shift+;')" "main|Enter service mode|mode service" "mode c
 assert_eq "$(row 'Ctrl+Shift+-')" "main|Resize -50|resize smart -50" "desc followed by a blank line does not attach"
 echo ""
 
-echo "Test 2: desc overrides and service mode"
+section "Test 2: desc overrides and service mode"
 assert_eq "$(row 'Ctrl+Shift+C')" 'main|Launch Chrome, new window (workspace 3)|exec-and-forget open -na "Google Chrome" --args --new-window' "# desc: overrides the derived text"
 assert_eq "$(row 'Esc')" "service|Reload config|reload-config, mode main" "array binding: first element described, all shown"
 assert_eq "$(row 'F')" "service|Toggle floating / tiling|layout floating tiling, mode main" "array with trailing comment"
@@ -102,7 +89,7 @@ assert_eq "$(row 'Shift+Down')" "service|Mute|volume set 0, mode main" "volume s
 assert_eq "$(row 'Down')" "service|Volume down|volume down" "service-mode plain binding"
 echo ""
 
-echo "Test 3: Markdown"
+section "Test 3: Markdown"
 md=$("$K" --config "$WORK/aerospace.toml" --markdown)
 assert_contains "$md" "### Main mode" "main heading"
 # shellcheck disable=SC2016  # markdown backticks
@@ -112,7 +99,7 @@ assert_contains "$md" "| Key | Action | AeroSpace command |" "table header"
 assert_contains "$md" '| `Ctrl+Shift+W` | Launch Warp | `exec-and-forget open -a "Warp"` |' "table row"
 echo ""
 
-echo "Test 4: --update and --check"
+section "Test 4: --update and --check"
 cat > "$WORK/KEYBINDINGS.md" <<'EOF'
 # Keys
 
@@ -150,21 +137,10 @@ set +e; "$K" --config "$WORK/aerospace.toml" --doc "$WORK/KEYBINDINGS.md" --upda
 assert_eq "$rc" "1" "--update refuses a doc without markers"
 echo ""
 
-echo "Test 5: Real config and doc are in sync"
+section "Test 5: Real config and doc are in sync"
 set +e; out=$("$K" --check 2>&1); rc=$?; set -e
 assert_eq "$rc" "0" "docs/KEYBINDINGS.md matches aerospace.toml"
 real_count=$("$K" --tsv | wc -l | tr -d ' ')
 if [[ "$real_count" -gt 50 ]]; then pass "real config parses ($real_count bindings)"; else fail "real config parsed only $real_count bindings"; fi
 set +e; /bin/bash "$K" --tsv >/dev/null; rc=$?; set -e
 assert_eq "$rc" "0" "runs under /bin/bash 3.2"
-echo ""
-
-echo "════════════════════════════════════════════════════════════"
-echo -e "  \033[0;32mPassed: $PASS\033[0m  |  \033[0;31mFailed: $FAIL\033[0m"
-echo "════════════════════════════════════════════════════════════"
-if [[ ${#FAILURES[@]} -gt 0 ]]; then
-    echo ""
-    for f in "${FAILURES[@]}"; do echo -e "    \033[0;31m✗\033[0m $f"; done
-fi
-echo ""
-[[ $FAIL -eq 0 ]]

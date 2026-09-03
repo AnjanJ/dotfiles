@@ -10,73 +10,15 @@
 # theme that actually applies.
 #
 # Uses a temporary directory — no real configs touched.
-# Usage: bash tests/test-theme.sh
+# Usage: tests/run theme   (or /opt/homebrew/bin/bash tests/theme-test.sh)
 # ============================================
 
 set -euo pipefail
 
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/base-test.sh"
+
 REAL_DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REAL_HOME="$HOME"
-
-# ── Test Framework ────────────────────────────
-
-PASS=0
-FAIL=0
-FAILURES=()
-
-pass() {
-    PASS=$((PASS + 1))
-    echo -e "  \033[0;32m✓\033[0m $1"
-}
-
-fail() {
-    FAIL=$((FAIL + 1))
-    FAILURES+=("$1")
-    echo -e "  \033[0;31m✗\033[0m $1"
-}
-
-assert_eq() {
-    local actual="$1" expected="$2" label="$3"
-    if [[ "$actual" == "$expected" ]]; then
-        pass "$label"
-    else
-        fail "$label (expected '$expected', got '$actual')"
-    fi
-}
-
-assert_contains() {
-    local file="$1" pattern="$2" label="$3"
-    if /usr/bin/grep -q -- "$pattern" "$file" 2>/dev/null; then
-        pass "$label"
-    else
-        fail "$label ('$pattern' not found in $(basename "$file"))"
-    fi
-}
-
-assert_not_contains() {
-    local file="$1" pattern="$2" label="$3"
-    if ! /usr/bin/grep -q -- "$pattern" "$file" 2>/dev/null; then
-        pass "$label"
-    else
-        fail "$label ('$pattern' unexpectedly found in $(basename "$file"))"
-    fi
-}
-
-assert_file_exists() {
-    if [[ -f "$1" ]]; then
-        pass "$2"
-    else
-        fail "$2 ($1 not found)"
-    fi
-}
-
-assert_file_missing() {
-    if [[ ! -e "$1" ]]; then
-        pass "$2"
-    else
-        fail "$2 ($1 exists)"
-    fi
-}
 
 # ── Mock Setup ────────────────────────────────
 
@@ -137,7 +79,7 @@ echo "╚═══════════════════════�
 echo ""
 
 # ── Test 1: Valid theme renders every template ──
-echo "Test 1: Valid theme renders every template into the state dir"
+section "Test 1: Valid theme renders every template into the state dir"
 setup_theme_sandbox
 load_theme_functions
 
@@ -150,27 +92,27 @@ for tpl in "$MOCK_DOTFILES"/themes/_templates/*.tpl; do
     assert_file_exists "$RENDERED/$name" "rendered $name"
 done
 assert_file_exists "$RENDERED/colors.toml" "colors.toml copied alongside"
-assert_file_missing "$STATE/next-theme" "staging dir removed after swap"
+assert_file_not_exists "$STATE/next-theme" "staging dir removed after swap"
 
-assert_contains "$RENDERED/ghostty" "background = #1a1b26" "Ghostty background is Tokyo Night"
-assert_contains "$RENDERED/ghostty" "palette = 4=#7aa2f7" "Ghostty ANSI blue rendered"
-assert_contains "$RENDERED/starship.toml" 'palette = "dotfiles"' "Starship selects the fixed palette name"
-assert_contains "$RENDERED/starship.toml" 'accent = "#7aa2f7"' "Starship palette carries the accent"
-assert_contains "$RENDERED/zellij.kdl" '    dotfiles {' "Zellij theme is named dotfiles"
-assert_contains "$RENDERED/sketchybar-colors.sh" "ACCENT_COLOR=0xff7aa2f7" "sketchybar accent in ARGB"
-assert_contains "$RENDERED/borders-colors.sh" "BORDERS_BACKGROUND_COLOR=0x301a1b26" "borders alpha + stripped hex"
-assert_contains "$RENDERED/nvim.lua" 'colorscheme = "tokyonight"' "nvim.lua carries theme.conf colorscheme"
-assert_contains "$RENDERED/nvim.lua" "themes/tokyo-night/nvim/tokyo-night-theme.lua" "nvim.lua points at the plugin spec"
-assert_contains "$RENDERED/claude.json" '"claude": "#7aa2f7"' "Claude theme uses the accent"
-assert_contains "$RENDERED/delta.gitconfig" "syntax-theme = TwoDark" "delta theme from theme.conf"
-assert_contains "$RENDERED/bat.conf" '--theme="TwoDark"' "bat theme from theme.conf"
-assert_not_contains "$RENDERED/claude.json" "{{" "no unresolved tokens in claude.json"
+assert_file_contains "$RENDERED/ghostty" "background = #1a1b26" "Ghostty background is Tokyo Night"
+assert_file_contains "$RENDERED/ghostty" "palette = 4=#7aa2f7" "Ghostty ANSI blue rendered"
+assert_file_contains "$RENDERED/starship.toml" 'palette = "dotfiles"' "Starship selects the fixed palette name"
+assert_file_contains "$RENDERED/starship.toml" 'accent = "#7aa2f7"' "Starship palette carries the accent"
+assert_file_contains "$RENDERED/zellij.kdl" '    dotfiles {' "Zellij theme is named dotfiles"
+assert_file_contains "$RENDERED/sketchybar-colors.sh" "ACCENT_COLOR=0xff7aa2f7" "sketchybar accent in ARGB"
+assert_file_contains "$RENDERED/borders-colors.sh" "BORDERS_BACKGROUND_COLOR=0x301a1b26" "borders alpha + stripped hex"
+assert_file_contains "$RENDERED/nvim.lua" 'colorscheme = "tokyonight"' "nvim.lua carries theme.conf colorscheme"
+assert_file_contains "$RENDERED/nvim.lua" "themes/tokyo-night/nvim/tokyo-night-theme.lua" "nvim.lua points at the plugin spec"
+assert_file_contains "$RENDERED/claude.json" '"claude": "#7aa2f7"' "Claude theme uses the accent"
+assert_file_contains "$RENDERED/delta.gitconfig" "syntax-theme = TwoDark" "delta theme from theme.conf"
+assert_file_contains "$RENDERED/bat.conf" '--theme="TwoDark"' "bat theme from theme.conf"
+assert_file_not_contains "$RENDERED/claude.json" "{{" "no unresolved tokens in claude.json"
 
 teardown_theme_sandbox
 echo ""
 
 # ── Test 2: Generated copies installed where apps read them ──
-echo "Test 2: Generated copies installed into config dirs and HOME"
+section "Test 2: Generated copies installed into config dirs and HOME"
 setup_theme_sandbox
 load_theme_functions
 
@@ -181,30 +123,30 @@ assert_file_exists "$MOCK_DOTFILES/.config/zellij/themes/dotfiles.kdl" "Zellij t
 assert_file_exists "$MOCK_DOTFILES/.config/sketchybar/colors.sh" "sketchybar colors.sh installed"
 assert_file_exists "$MOCK_DOTFILES/.config/borders/colors.sh" "borders colors.sh installed"
 assert_file_exists "$TEST_HOME/.zshrc-theme-env" "fzf env file installed in HOME"
-assert_contains "$TEST_HOME/.zshrc-theme-env" "FZF_THEME_COLORS=" "fzf env exports the colour string"
-assert_contains "$MOCK_DOTFILES/.config/zed/settings.json" '"dark": "Tokyo Night"' "Zed settings updated (best-effort)"
-assert_file_missing "$TEST_HOME/.claude/themes/dotfiles.json" "Claude theme skipped when ~/.claude is absent"
+assert_file_contains "$TEST_HOME/.zshrc-theme-env" "FZF_THEME_COLORS=" "fzf env exports the colour string"
+assert_file_contains "$MOCK_DOTFILES/.config/zed/settings.json" '"dark": "Tokyo Night"' "Zed settings updated (best-effort)"
+assert_file_not_exists "$TEST_HOME/.claude/themes/dotfiles.json" "Claude theme skipped when ~/.claude is absent"
 
 mkdir -p "$TEST_HOME/.claude"
 set +e; apply_theme "aura" "true" >/dev/null 2>&1; set -e
 assert_file_exists "$TEST_HOME/.claude/themes/dotfiles.json" "Claude theme installed once ~/.claude exists"
-assert_contains "$TEST_HOME/.claude/themes/dotfiles.json" '"claude": "#a277ff"' "Claude theme retinted to Aura"
+assert_file_contains "$TEST_HOME/.claude/themes/dotfiles.json" '"claude": "#a277ff"' "Claude theme retinted to Aura"
 
 teardown_theme_sandbox
 echo ""
 
 # ── Test 3: Overrides beat templates ──
-echo "Test 3: themes/<name>/overrides/<file> replaces the template output"
+section "Test 3: themes/<name>/overrides/<file> replaces the template output"
 setup_theme_sandbox
 load_theme_functions
 
 set +e; apply_theme "aura" "true" >/dev/null 2>&1; set -e
 # Aura ships overrides/ghostty with its hand-tuned palette 8 and selection
-assert_contains "$RENDERED/ghostty" "palette = 8=#4d4d4d" "Aura override used for Ghostty"
-assert_contains "$RENDERED/ghostty" "selection-background = #a277ff" "Aura override keeps accent selection"
-assert_not_contains "$RENDERED/ghostty" "Generated by" "Override is verbatim, not rendered"
+assert_file_contains "$RENDERED/ghostty" "palette = 8=#4d4d4d" "Aura override used for Ghostty"
+assert_file_contains "$RENDERED/ghostty" "selection-background = #a277ff" "Aura override keeps accent selection"
+assert_file_not_contains "$RENDERED/ghostty" "Generated by" "Override is verbatim, not rendered"
 # Other files still come from templates
-assert_contains "$RENDERED/zellij.kdl" 'bg "#15141b"' "Zellij still rendered from the Aura palette"
+assert_file_contains "$RENDERED/zellij.kdl" 'bg "#15141b"' "Zellij still rendered from the Aura palette"
 
 # A custom override for another output
 mkdir -p "$MOCK_DOTFILES/themes/tokyo-night/overrides"
@@ -216,7 +158,7 @@ teardown_theme_sandbox
 echo ""
 
 # ── Test 4: Invalid theme rejected, nothing rendered ──
-echo "Test 4: Invalid theme rejected"
+section "Test 4: Invalid theme rejected"
 setup_theme_sandbox
 load_theme_functions
 
@@ -226,13 +168,13 @@ if [[ $rc -eq 0 ]]; then
 else
     pass "Invalid theme returns non-zero exit code"
 fi
-assert_file_missing "$RENDERED" "Nothing rendered for an invalid theme"
+assert_file_not_exists "$RENDERED" "Nothing rendered for an invalid theme"
 
 teardown_theme_sandbox
 echo ""
 
 # ── Test 5: Missing theme.conf / colors.toml error out cleanly ──
-echo "Test 5: Missing theme.conf or colors.toml errors properly"
+section "Test 5: Missing theme.conf or colors.toml errors properly"
 setup_theme_sandbox
 load_theme_functions
 
@@ -260,7 +202,7 @@ teardown_theme_sandbox
 echo ""
 
 # ── Test 6: A failed render leaves the previous theme active ──
-echo "Test 6: Render failure leaves the previous theme untouched"
+section "Test 6: Render failure leaves the previous theme untouched"
 setup_theme_sandbox
 load_theme_functions
 
@@ -278,7 +220,7 @@ fi
 assert_eq "$(cat "$STATE/theme.name")" "tokyo-night" "theme.name still tokyo-night"
 assert_eq "$(cat "$RENDERED/ghostty")" "$before" "Rendered Ghostty file unchanged"
 assert_eq "$(cat "$TEST_HOME/.dotfiles-theme")" "tokyo-night" "State file still tokyo-night"
-assert_file_missing "$STATE/next-theme" "Staging dir cleaned up after failure"
+assert_file_not_exists "$STATE/next-theme" "Staging dir cleaned up after failure"
 
 # An unresolved token in a template also fails safely
 setup_theme_sandbox
@@ -297,7 +239,7 @@ teardown_theme_sandbox
 echo ""
 
 # ── Test 7: Idempotent — apply same theme twice ──
-echo "Test 7: Applying the same theme twice is a no-op"
+section "Test 7: Applying the same theme twice is a no-op"
 setup_theme_sandbox
 load_theme_functions
 
@@ -311,24 +253,24 @@ teardown_theme_sandbox
 echo ""
 
 # ── Test 8: Theme switch replaces everything ──
-echo "Test 8: Theme switch (tokyo-night → catppuccin)"
+section "Test 8: Theme switch (tokyo-night → catppuccin)"
 setup_theme_sandbox
 load_theme_functions
 
 set +e; apply_theme "tokyo-night" "true" >/dev/null 2>&1; set -e
-assert_contains "$RENDERED/zellij.kdl" 'bg "#1a1b26"' "Initially Tokyo Night"
+assert_file_contains "$RENDERED/zellij.kdl" 'bg "#1a1b26"' "Initially Tokyo Night"
 set +e; apply_theme "catppuccin" "true" >/dev/null 2>&1; set -e
-assert_contains "$RENDERED/zellij.kdl" 'bg "#1e1e2e"' "Zellij switched to Catppuccin"
-assert_contains "$RENDERED/nvim.lua" 'colorscheme = "catppuccin-mocha"' "Neovim colorscheme switched"
-assert_contains "$MOCK_DOTFILES/.config/sketchybar/colors.sh" "BAR_COLOR=0xff1e1e2e" "sketchybar copy switched"
-assert_not_contains "$RENDERED/ghostty" "#1a1b26" "No Tokyo Night colours left in Ghostty"
+assert_file_contains "$RENDERED/zellij.kdl" 'bg "#1e1e2e"' "Zellij switched to Catppuccin"
+assert_file_contains "$RENDERED/nvim.lua" 'colorscheme = "catppuccin-mocha"' "Neovim colorscheme switched"
+assert_file_contains "$MOCK_DOTFILES/.config/sketchybar/colors.sh" "BAR_COLOR=0xff1e1e2e" "sketchybar copy switched"
+assert_file_not_contains "$RENDERED/ghostty" "#1a1b26" "No Tokyo Night colours left in Ghostty"
 assert_eq "$(cat "$TEST_HOME/.dotfiles-theme")" "catppuccin" "State file updated to catppuccin"
 
 teardown_theme_sandbox
 echo ""
 
 # ── Test 9: theme-set hook fires with the theme name ──
-echo "Test 9: theme-set hook runs with the theme name"
+section "Test 9: theme-set hook runs with the theme name"
 setup_theme_sandbox
 load_theme_functions
 
@@ -344,7 +286,7 @@ teardown_theme_sandbox
 echo ""
 
 # ── Test 10: add-theme scaffolds a theme that applies ──
-echo "Test 10: add-theme scaffolds a theme that applies"
+section "Test 10: add-theme scaffolds a theme that applies"
 setup_theme_sandbox
 load_theme_functions
 
@@ -354,9 +296,9 @@ assert_file_exists "$MOCK_DOTFILES/themes/test-new/colors.toml" "colors.toml cre
 assert_file_exists "$MOCK_DOTFILES/themes/test-new/theme.conf" "theme.conf created"
 assert_file_exists "$MOCK_DOTFILES/themes/test-new/nvim/test-new-theme.lua" "nvim plugin template created"
 assert_file_exists "$MOCK_DOTFILES/themes/test-new/overrides/README.md" "overrides/ explained"
-assert_contains "$MOCK_DOTFILES/themes/test-new/theme.conf" "nvim_colorscheme" "theme.conf has nvim_colorscheme"
-assert_contains "$MOCK_DOTFILES/themes/test-new/theme.conf" "bat_theme" "theme.conf has bat_theme"
-assert_not_contains "$MOCK_DOTFILES/themes/test-new/theme.conf" "fzf_colors" "theme.conf no longer carries colours"
+assert_file_contains "$MOCK_DOTFILES/themes/test-new/theme.conf" "nvim_colorscheme" "theme.conf has nvim_colorscheme"
+assert_file_contains "$MOCK_DOTFILES/themes/test-new/theme.conf" "bat_theme" "theme.conf has bat_theme"
+assert_file_not_contains "$MOCK_DOTFILES/themes/test-new/theme.conf" "fzf_colors" "theme.conf no longer carries colours"
 
 # Fill in the required names and apply it
 sed -i '' 's/^nvim_colorscheme=""/nvim_colorscheme="x"/; s/^vscode_theme=""/vscode_theme="x"/; s/^zed_theme=""/zed_theme="x"/; s/^bat_theme=""/bat_theme="x"/; s/^delta_theme=""/delta_theme="x"/' \
@@ -364,7 +306,7 @@ sed -i '' 's/^nvim_colorscheme=""/nvim_colorscheme="x"/; s/^vscode_theme=""/vsco
 VALID_THEMES+=("test-new")
 set +e; apply_theme "test-new" "true" >/dev/null 2>&1; rc=$?; set -e
 assert_eq "$rc" "0" "Scaffolded theme applies cleanly"
-assert_contains "$RENDERED/ghostty" "background = #1a1b26" "Scaffold palette rendered"
+assert_file_contains "$RENDERED/ghostty" "background = #1a1b26" "Scaffold palette rendered"
 
 # Minimal palette: derived keys fill the gaps
 cat > "$MOCK_DOTFILES/themes/test-new/colors.toml" <<'MIN'
@@ -379,27 +321,7 @@ cyan = "#00ffff"
 MIN
 set +e; apply_theme "test-new" "true" >/dev/null 2>&1; rc=$?; set -e
 assert_eq "$rc" "0" "Minimal 8-colour palette applies"
-assert_contains "$RENDERED/sketchybar-colors.sh" "ACCENT_COLOR=0xff0000ff" "accent derived from blue"
-assert_contains "$RENDERED/lazygit.yml" "lightTheme: false" "mode derived from background luminance"
+assert_file_contains "$RENDERED/sketchybar-colors.sh" "ACCENT_COLOR=0xff0000ff" "accent derived from blue"
+assert_file_contains "$RENDERED/lazygit.yml" "lightTheme: false" "mode derived from background luminance"
 
 teardown_theme_sandbox
-echo ""
-
-# ── Summary ───────────────────────────────────
-
-echo ""
-echo "════════════════════════════════════════════════════════════"
-echo -e "  \033[0;32mPassed: $PASS\033[0m  |  \033[0;31mFailed: $FAIL\033[0m"
-echo "════════════════════════════════════════════════════════════"
-
-if [[ ${#FAILURES[@]} -gt 0 ]]; then
-    echo ""
-    echo "  Failed tests:"
-    for f in "${FAILURES[@]}"; do
-        echo -e "    \033[0;31m✗\033[0m $f"
-    done
-fi
-
-echo ""
-
-[[ $FAIL -eq 0 ]]

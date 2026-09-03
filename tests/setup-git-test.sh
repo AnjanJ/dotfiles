@@ -7,56 +7,15 @@
 # Git identity, defaults, and work identity.
 #
 # Uses a temporary HOME — no real configs touched.
-# Usage: bash tests/test-setup-git.sh
+# Usage: tests/run setup-git   (or /opt/homebrew/bin/bash tests/setup-git-test.sh)
 # ============================================
 
 set -euo pipefail
 
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/base-test.sh"
+
 REAL_DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REAL_HOME="$HOME"
-
-# ── Test Framework ────────────────────────────
-
-PASS=0
-FAIL=0
-FAILURES=()
-
-pass() {
-    PASS=$((PASS + 1))
-    echo -e "  \033[0;32m✓\033[0m $1"
-}
-
-fail() {
-    FAIL=$((FAIL + 1))
-    FAILURES+=("$1")
-    echo -e "  \033[0;31m✗\033[0m $1"
-}
-
-assert_eq() {
-    local actual="$1" expected="$2" label="$3"
-    if [[ "$actual" == "$expected" ]]; then
-        pass "$label"
-    else
-        fail "$label (expected '$expected', got '$actual')"
-    fi
-}
-
-assert_file_exists() {
-    if [[ -f "$1" ]]; then
-        pass "$2"
-    else
-        fail "$2 ($1 not found)"
-    fi
-}
-
-assert_contains() {
-    local file="$1" pattern="$2" label="$3"
-    if /usr/bin/grep -q "$pattern" "$file" 2>/dev/null; then
-        pass "$label"
-    else
-        fail "$label ('$pattern' not found in $(basename "$file"))"
-    fi
-}
 
 # ── Mock Setup ────────────────────────────────
 
@@ -99,7 +58,7 @@ echo "╚═══════════════════════�
 echo ""
 
 # ── Test 1: Git defaults configured ──
-echo "Test 1: Git defaults are configured correctly"
+section "Test 1: Git defaults are configured correctly"
 setup_git_sandbox
 
 GIT_NAME="Test User"
@@ -126,7 +85,7 @@ teardown_git_sandbox
 echo ""
 
 # ── Test 2: Respects $EDITOR ──
-echo "Test 2: Respects EDITOR environment variable"
+section "Test 2: Respects EDITOR environment variable"
 setup_git_sandbox
 
 GIT_NAME="Test User"
@@ -144,7 +103,7 @@ teardown_git_sandbox
 echo ""
 
 # ── Test 3: Default editor without $EDITOR ──
-echo "Test 3: Falls back to zed --wait without EDITOR"
+section "Test 3: Falls back to zed --wait without EDITOR"
 setup_git_sandbox
 
 GIT_NAME="Test User"
@@ -162,7 +121,7 @@ teardown_git_sandbox
 echo ""
 
 # ── Test 4: Personal identity from env vars ──
-echo "Test 4: Personal identity set from GIT_NAME and GIT_EMAIL"
+section "Test 4: Personal identity set from GIT_NAME and GIT_EMAIL"
 setup_git_sandbox
 
 GIT_NAME="Jane Doe"
@@ -181,7 +140,7 @@ teardown_git_sandbox
 echo ""
 
 # ── Test 5: Work identity from env vars ──
-echo "Test 5: Work identity configured from GIT_WORK_EMAIL"
+section "Test 5: Work identity configured from GIT_WORK_EMAIL"
 setup_git_sandbox
 
 GIT_NAME="Jane Doe"
@@ -195,7 +154,7 @@ setup_git >/dev/null 2>&1
 # shellcheck disable=SC2088
 assert_file_exists "$TEST_HOME/.gitconfig-work" \
     "~/.gitconfig-work created"  # tilde is display text
-assert_contains "$TEST_HOME/.gitconfig-work" "jane@work.com" \
+assert_file_contains "$TEST_HOME/.gitconfig-work" "jane@work.com" \
     "Work email in gitconfig-work"
 
 # Verify includeIf was set
@@ -216,7 +175,7 @@ teardown_git_sandbox
 echo ""
 
 # ── Test 6: Idempotent — run twice ──
-echo "Test 6: setup_git is idempotent"
+section "Test 6: setup_git is idempotent"
 setup_git_sandbox
 
 GIT_NAME="Test User"
@@ -247,7 +206,7 @@ teardown_git_sandbox
 echo ""
 
 # ── Test 7: No work email skips work setup ──
-echo "Test 7: No work email skips work identity setup"
+section "Test 7: No work email skips work identity setup"
 setup_git_sandbox
 
 GIT_NAME="Test User"
@@ -267,7 +226,7 @@ teardown_git_sandbox
 echo ""
 
 # ── Test 8: Tilde expansion in work dir ──
-echo "Test 8: Work directory handles tilde expansion"
+section "Test 8: Work directory handles tilde expansion"
 setup_git_sandbox
 
 GIT_NAME="Test User"
@@ -290,7 +249,7 @@ teardown_git_sandbox
 echo ""
 
 # ── Test 9: Projects directory created ──
-echo "Test 9: Personal projects directory created"
+section "Test 9: Personal projects directory created"
 setup_git_sandbox
 
 GIT_NAME="Test User"
@@ -311,7 +270,7 @@ teardown_git_sandbox
 echo ""
 
 # ── Test 10: Gitignore global symlinked ──
-echo "Test 10: Global gitignore symlink configured"
+section "Test 10: Global gitignore symlink configured"
 setup_git_sandbox
 
 GIT_NAME="Test User"
@@ -326,23 +285,3 @@ assert_eq "$excludes" "$TEST_HOME/.gitignore_global" \
 
 unset GIT_NAME GIT_EMAIL
 teardown_git_sandbox
-echo ""
-
-# ── Summary ───────────────────────────────────
-
-echo ""
-echo "════════════════════════════════════════════════════════════"
-echo -e "  \033[0;32mPassed: $PASS\033[0m  |  \033[0;31mFailed: $FAIL\033[0m"
-echo "════════════════════════════════════════════════════════════"
-
-if [[ ${#FAILURES[@]} -gt 0 ]]; then
-    echo ""
-    echo "  Failed tests:"
-    for f in "${FAILURES[@]}"; do
-        echo -e "    \033[0;31m✗\033[0m $f"
-    done
-fi
-
-echo ""
-
-[[ $FAIL -eq 0 ]]

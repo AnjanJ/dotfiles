@@ -24,12 +24,15 @@
 #                       otherwise skip. Force with --ssh 1password.
 #   --groups "a,b,c"    Package groups to install (comma-separated)
 #   --no-macos-defaults Skip macOS defaults
+#   --no-runtimes       Skip `mise install` (Erlang and Rust compile from
+#                       source; run `mise install` later)
 #   --force             Force reinstall even if already configured
 #   --help              Show this help
 #
 # Environment variables (flags take precedence):
 #   DOTFILES_GIT_NAME, DOTFILES_GIT_EMAIL, DOTFILES_WORK_EMAIL
-#   DOTFILES_WORK_DIR, DOTFILES_THEME, DOTFILES_SSH_MODE
+#   DOTFILES_WORK_DIR, DOTFILES_THEME, DOTFILES_SSH_MODE, DOTFILES_GROUPS
+#   DOTFILES_NO_SUDO=1 (never ask for a password), DOTFILES_NO_RUNTIMES=1
 # ============================================
 
 # ── Bootstrap: handle curl-pipe-bash ──────────
@@ -131,6 +134,8 @@ trap _on_interrupt INT TERM
 INTERACTIVE=false
 FORCE_INSTALL=false
 APPLY_MACOS_DEFAULTS=true
+INSTALL_RUNTIMES=true
+[[ -n "${DOTFILES_NO_RUNTIMES:-}" ]] && INSTALL_RUNTIMES=false
 
 # Env var defaults (flags override these)
 GIT_NAME="${DOTFILES_GIT_NAME:-}"
@@ -155,6 +160,7 @@ while [[ $# -gt 0 ]]; do
         --ssh) SSH_MODE="$2"; shift 2 ;;
         --groups) SELECTED_GROUPS="$2"; shift 2 ;;
         --no-macos-defaults) APPLY_MACOS_DEFAULTS=false; shift ;;
+        --no-runtimes) INSTALL_RUNTIMES=false; shift ;;
         --help)
             # Print the usage block from the header
             sed -n '/^# Usage:/,/^# ====/{ /^# ====/d; s/^# //; s/^#//; p; }' "$0"
@@ -687,7 +693,11 @@ if ! command -v mise &>/dev/null && [[ -x /opt/homebrew/bin/brew ]]; then
     hash -r
 fi
 
-if ! command -v mise &>/dev/null; then
+if [[ "$INSTALL_RUNTIMES" == false ]]; then
+    # The CI end-to-end install and anyone who wants configs now and
+    # compilers later. Symlinks and theme are already in place above.
+    print_warning "Skipping language runtimes (--no-runtimes). Later: mise install"
+elif ! command -v mise &>/dev/null; then
     print_warning "mise not on PATH — skipping runtime install"
     print_warning "  Restart your shell, then run: mise install"
     FAILED_PACKAGES+=("mise runtimes — mise itself was unavailable; run 'mise install' later")

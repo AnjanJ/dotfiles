@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+# ============================================
+# TEST RUNNER
+# ============================================
+# Usage:
+#   tests/run              # every tests/*-test.sh
+#   tests/run cli keys     # just tests/cli-test.sh and tests/keys-test.sh
+#
+# A suite exits at its first failed assertion (see base-test.sh), so the
+# runner must keep going: aborting the run at the first bad file would
+# hide every file after it. Failures are listed at the end and the exit
+# code is non-zero if any file failed.
+#
+# Each file runs under the same bash as the runner ($BASH), so
+# `/opt/homebrew/bin/bash tests/run` is how CI gets bash 5 into every
+# suite. Suites that need to prove 3.2 compatibility invoke /bin/bash
+# themselves.
+# ============================================
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+TEST_DIR="$ROOT/tests"
+
+tests=()
+if [[ $# -gt 0 ]]; then
+    for area in "$@"; do
+        area="${area#tests/}"; area="${area%-test.sh}"; area="${area#test-}"; area="${area%.sh}"
+        file="$TEST_DIR/$area-test.sh"
+        if [[ ! -f "$file" ]]; then
+            echo "No such suite: $area (expected $file)" >&2
+            exit 2
+        fi
+        tests+=("$file")
+    done
+else
+    for file in "$TEST_DIR"/*-test.sh; do
+        [[ "$(basename "$file")" == "base-test.sh" ]] && continue
+        tests+=("$file")
+    done
+fi
+
+if [[ ${#tests[@]} -eq 0 ]]; then
+    echo "No suites found in $TEST_DIR" >&2
+    exit 1
+fi
+
+failed=()
+for file in "${tests[@]}"; do
+    printf '==> %s\n' "${file#"$ROOT"/}"
+    "$BASH" "$file" || failed+=("${file#"$ROOT"/}")
+done
+
+if [[ ${#failed[@]} -gt 0 ]]; then
+    printf '\n%d of %d suites failed:\n' "${#failed[@]}" "${#tests[@]}" >&2
+    printf '  %s\n' "${failed[@]}" >&2
+    exit 1
+fi
+
+printf '\nAll %d suites passed.\n' "${#tests[@]}"

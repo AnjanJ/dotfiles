@@ -9,69 +9,15 @@
 # empty arrays, permission edge cases.
 #
 # Uses a temporary HOME directory — no real configs touched.
-# Usage: bash tests/test-ssh-adversarial.sh
+# Usage: tests/run ssh-adversarial   (or /opt/homebrew/bin/bash tests/ssh-adversarial-test.sh)
 # ============================================
 
 set -euo pipefail
 
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/base-test.sh"
+
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REAL_HOME="$HOME"
-
-# ── Test Framework ────────────────────────────
-
-PASS=0
-FAIL=0
-FAILURES=()
-
-pass() {
-    PASS=$((PASS + 1))
-    echo -e "  \033[0;32m✓\033[0m $1"
-}
-
-fail() {
-    FAIL=$((FAIL + 1))
-    FAILURES+=("$1")
-    echo -e "  \033[0;31m✗\033[0m $1"
-}
-
-assert_eq() {
-    local actual="$1" expected="$2" label="$3"
-    if [[ "$actual" == "$expected" ]]; then
-        pass "$label"
-    else
-        fail "$label (expected '$expected', got '$actual')"
-    fi
-}
-
-assert_count() {
-    local file="$1" pattern="$2" expected="$3" label="$4"
-    local count
-    count=$(/usr/bin/grep -c "$pattern" "$file" 2>/dev/null || echo 0)
-    count=$(echo "$count" | tr -d '[:space:]')
-    if [[ "$count" -eq "$expected" ]]; then
-        pass "$label"
-    else
-        fail "$label (expected $expected of '$pattern' in $(basename "$file"), found $count)"
-    fi
-}
-
-assert_perm() {
-    local file="$1" expected="$2" label="$3"
-    local actual=$(stat -f '%Lp' "$file" 2>/dev/null || echo "???")
-    if [[ "$actual" == "$expected" ]]; then
-        pass "$label"
-    else
-        fail "$label (expected $expected, got $actual)"
-    fi
-}
-
-assert_file_exists() {
-    if [[ -f "$1" ]]; then
-        pass "$2"
-    else
-        fail "$2 ($1 not found)"
-    fi
-}
 
 snapshot() {
     local dir="$1" out="$2"
@@ -85,17 +31,6 @@ snapshot() {
             local perm=$(stat -f '%Lp' "$f" 2>/dev/null || stat -c '%a' "$f" 2>/dev/null)
             echo "$perm $md5 $rel"
         done > "$out"
-}
-
-assert_snapshots_equal() {
-    local snap1="$1" snap2="$2" label="$3"
-    if diff -q "$snap1" "$snap2" &>/dev/null; then
-        pass "$label"
-    else
-        fail "$label"
-        echo "    --- Diff ---"
-        diff "$snap1" "$snap2" | head -20 | sed 's/^/    /'
-    fi
 }
 
 setup_sandbox() {
@@ -118,7 +53,7 @@ teardown_sandbox() {
 
 test_20_duplicate_host_blocks_overwrite() {
     echo ""
-    echo "Test 20: _build_ssh_config overwrites — no duplicate Host blocks"
+    section "Test 20: _build_ssh_config overwrites — no duplicate Host blocks"
     setup_sandbox
 
     unset _HELPERS_LOADED
@@ -138,7 +73,7 @@ test_20_duplicate_host_blocks_overwrite() {
 
 test_21_special_chars_in_hostnames() {
     echo ""
-    echo "Test 21: Host entries with special characters"
+    section "Test 21: Host entries with special characters"
     setup_sandbox
 
     unset _HELPERS_LOADED
@@ -164,7 +99,7 @@ test_21_special_chars_in_hostnames() {
 
 test_22_blank_lines_between_blocks() {
     echo ""
-    echo "Test 22: SSH config generation with blank lines between blocks"
+    section "Test 22: SSH config generation with blank lines between blocks"
     setup_sandbox
 
     unset _HELPERS_LOADED
@@ -197,7 +132,7 @@ test_22_blank_lines_between_blocks() {
 
 test_23_fix_permissions_symlinked_keys() {
     echo ""
-    echo "Test 23: _fix_ssh_permissions with symlinked key files"
+    section "Test 23: _fix_ssh_permissions with symlinked key files"
     setup_sandbox
 
     unset _HELPERS_LOADED
@@ -228,7 +163,7 @@ test_23_fix_permissions_symlinked_keys() {
 
 test_24_fix_permissions_no_keys() {
     echo ""
-    echo "Test 24: _fix_ssh_permissions with no keys at all"
+    section "Test 24: _fix_ssh_permissions with no keys at all"
     setup_sandbox
 
     unset _HELPERS_LOADED
@@ -247,7 +182,7 @@ test_24_fix_permissions_no_keys() {
 
 test_25_build_ssh_config_empty_hosts() {
     echo ""
-    echo "Test 25: _build_ssh_config with empty SSH_HOSTS array"
+    section "Test 25: _build_ssh_config with empty SSH_HOSTS array"
     setup_sandbox
 
     # Run in subshell to catch the unbound variable error from empty array
@@ -278,7 +213,7 @@ test_25_build_ssh_config_empty_hosts() {
 
 test_26_alias_collides_with_hostname() {
     echo ""
-    echo "Test 26: Host alias that matches a real hostname"
+    section "Test 26: Host alias that matches a real hostname"
     setup_sandbox
 
     unset _HELPERS_LOADED
@@ -322,21 +257,3 @@ test_23_fix_permissions_symlinked_keys
 test_24_fix_permissions_no_keys
 test_25_build_ssh_config_empty_hosts
 test_26_alias_collides_with_hostname
-
-# ── Summary ───────────────────────────────────
-
-echo ""
-echo "════════════════════════════════════════════════════════════"
-echo -e "  \033[0;32mPassed: $PASS\033[0m  |  \033[0;31mFailed: $FAIL\033[0m"
-echo "════════════════════════════════════════════════════════════"
-
-if [[ ${#FAILURES[@]} -gt 0 ]]; then
-    echo ""
-    echo "  Failed tests:"
-    for f in "${FAILURES[@]}"; do
-        echo -e "    \033[0;31m✗\033[0m $f"
-    done
-fi
-
-echo ""
-[[ $FAIL -eq 0 ]]

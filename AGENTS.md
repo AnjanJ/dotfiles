@@ -13,7 +13,7 @@ Guidance for anyone changing the dotfiles source, human or agent. End-user help 
 | `bin/dotfiles-*` | One command per file. |
 | `migrations/<unix-ts>-<slug>.sh` | One-off, idempotent per-machine repairs run by sync/update. |
 | `themes/` | `_templates/` plus one directory per theme. |
-| `tests/test-*.sh` | One suite per area, run by GitHub Actions on macOS. |
+| `tests/*-test.sh`, `tests/base-test.sh`, `tests/run` | One suite per area on the shared contract, discovered by the runner and by CI. `tests/e2e/` holds the real install run. |
 | `docs/` | Reference for users. `docs/KEYBINDINGS.md` has a generated block. |
 
 ## Commands
@@ -53,9 +53,12 @@ Colours belong in `themes/<name>/colors.toml`; app configs reference the rendere
 
 ## Tests
 
-- Suites live in `tests/test-<area>.sh`, use a temporary `HOME` and a mock `DOTFILES_DIR`, and never touch real configs. Run one with `/opt/homebrew/bin/bash tests/test-<area>.sh`; run them all as CI does in `.github/workflows/test.yml`.
-- Scripts on the install path must also pass `/bin/bash -n` and, where a suite covers them, run under `/bin/bash` 3.2 (`test-packages`, `test-theme-render`, `test-cli`, `test-toggle`, `test-keys` do this).
-- A new suite goes into the CI matrix and the counts in `README.md`, `docs/STRUCTURE.md`, `docs/MAINTENANCE.md`.
+- Suites live in `tests/<area>-test.sh` and start with `set -euo pipefail` then `source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/base-test.sh"`. The library gives them `ROOT` (the checkout), a fresh temporary `HOME` and `TMPDIR` (removed on exit), TAP `pass`/`fail`, and the `assert_*` helpers; a suite mocks `DOTFILES_DIR` when it needs a fake repo and never touches real configs.
+- `fail` exits the file: the first failed assertion ends that suite, and `tests/run` keeps going through the other files and lists the failures at the end. Do not add counters or continue-after-failure logic to a suite.
+- Text assertions are substring matches (`assert_contains`); use `assert_matches` for a regex and `assert_file_contains` for a file. Labels read as claims, `assert_eq "$rc" 0 "--help exits 0"`.
+- Run one suite with `tests/run <area>` (or `/opt/homebrew/bin/bash tests/<area>-test.sh`), all of them with `/opt/homebrew/bin/bash tests/run`. CI discovers `tests/*-test.sh` and runs each in its own job; nothing to register.
+- Scripts on the install path must also pass `/bin/bash -n` and, where a suite covers them, run under `/bin/bash` 3.2 (`packages`, `theme-render`, `cli`, `toggle`, `keys` do this). `tests/e2e/install-e2e.sh` runs the real `install.sh` under `/bin/bash` with `--groups core` from a copy of the checkout into a fresh `HOME`; CI runs it as its own job, and it is safe to run locally (it installs the core formulae if missing).
+- A new suite only needs the file; update the suite count in `README.md`, `docs/STRUCTURE.md` and the list in `docs/MAINTENANCE.md`.
 
 ## Commits
 

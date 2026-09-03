@@ -8,57 +8,15 @@
 # --dry-run modes.
 #
 # Uses a temporary directory — no real configs touched.
-# Usage: bash tests/test-doctor.sh
+# Usage: tests/run doctor   (or /opt/homebrew/bin/bash tests/doctor-test.sh)
 # ============================================
 
 set -euo pipefail
 
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/base-test.sh"
+
 REAL_DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REAL_HOME="$HOME"
-
-# ── Test Framework ────────────────────────────
-
-PASS=0
-FAIL=0
-FAILURES=()
-
-pass() {
-    PASS=$((PASS + 1))
-    echo -e "  \033[0;32m✓\033[0m $1"
-}
-
-fail() {
-    FAIL=$((FAIL + 1))
-    FAILURES+=("$1")
-    echo -e "  \033[0;31m✗\033[0m $1"
-}
-
-assert_eq() {
-    local actual="$1" expected="$2" label="$3"
-    if [[ "$actual" == "$expected" ]]; then
-        pass "$label"
-    else
-        fail "$label (expected '$expected', got '$actual')"
-    fi
-}
-
-assert_contains() {
-    local text="$1" pattern="$2" label="$3"
-    if echo "$text" | /usr/bin/grep -q "$pattern" 2>/dev/null; then
-        pass "$label"
-    else
-        fail "$label ('$pattern' not found)"
-    fi
-}
-
-assert_symlink() {
-    local target="$1" expected_source="$2" label="$3"
-    if [[ -L "$target" ]] && [[ "$(readlink "$target")" == "$expected_source" ]]; then
-        pass "$label"
-    else
-        fail "$label (not a symlink or wrong target)"
-    fi
-}
 
 # ── Mock Setup ────────────────────────────────
 
@@ -166,7 +124,7 @@ echo "╚═══════════════════════�
 echo ""
 
 # ── Test 1: fix_symlink creates missing symlink ──
-echo "Test 1: fix_symlink creates missing symlink"
+section "Test 1: fix_symlink creates missing symlink"
 setup_doctor_sandbox
 
 result=$(run_doctor_function "$MOCK_DOTFILES/.zshrc" "$TEST_HOME/.zshrc" ".zshrc")
@@ -180,7 +138,7 @@ teardown_doctor_sandbox
 echo ""
 
 # ── Test 2: fix_symlink skips correct symlink ──
-echo "Test 2: fix_symlink reports correct symlink as OK"
+section "Test 2: fix_symlink reports correct symlink as OK"
 setup_doctor_sandbox
 
 ln -sf "$MOCK_DOTFILES/.zshrc" "$TEST_HOME/.zshrc"
@@ -196,7 +154,7 @@ teardown_doctor_sandbox
 echo ""
 
 # ── Test 3: fix_symlink fixes wrong target ──
-echo "Test 3: fix_symlink fixes wrong symlink target"
+section "Test 3: fix_symlink fixes wrong symlink target"
 setup_doctor_sandbox
 
 # Create a symlink pointing to wrong location
@@ -213,7 +171,7 @@ teardown_doctor_sandbox
 echo ""
 
 # ── Test 4: fix_symlink backs up existing file ──
-echo "Test 4: fix_symlink backs up existing regular file"
+section "Test 4: fix_symlink backs up existing regular file"
 setup_doctor_sandbox
 
 echo "existing content" > "$TEST_HOME/.zshrc"
@@ -232,7 +190,7 @@ teardown_doctor_sandbox
 echo ""
 
 # ── Test 5: dry-run mode doesn't modify anything ──
-echo "Test 5: --dry-run mode doesn't create symlinks"
+section "Test 5: --dry-run mode doesn't create symlinks"
 setup_doctor_sandbox
 
 result=$(run_doctor_function --dry-run "$MOCK_DOTFILES/.zshrc" "$TEST_HOME/.zshrc" ".zshrc")
@@ -249,7 +207,7 @@ teardown_doctor_sandbox
 echo ""
 
 # ── Test 6: SSH permission detection ──
-echo "Test 6: SSH permission checking"
+section "Test 6: SSH permission checking"
 setup_doctor_sandbox
 
 # Set wrong permissions
@@ -268,7 +226,7 @@ teardown_doctor_sandbox
 echo ""
 
 # ── Test 7: fix_symlink handles directory sources ──
-echo "Test 7: fix_symlink works with directory sources"
+section "Test 7: fix_symlink works with directory sources"
 setup_doctor_sandbox
 
 result=$(run_doctor_function "$MOCK_DOTFILES/.config/nvim" "$TEST_HOME/.config/nvim" "nvim")
@@ -280,7 +238,7 @@ teardown_doctor_sandbox
 echo ""
 
 # ── Test 8: fix_symlink skips non-existent source ──
-echo "Test 8: fix_symlink skips non-existent source file"
+section "Test 8: fix_symlink skips non-existent source file"
 setup_doctor_sandbox
 
 result=$(run_doctor_function "$MOCK_DOTFILES/nonexistent" "$TEST_HOME/nonexistent" "missing")
@@ -291,24 +249,3 @@ assert_contains "$result" "OK=0" \
     "Not reported as OK"
 
 teardown_doctor_sandbox
-echo ""
-
-# ── Summary ───────────────────────────────────
-
-echo ""
-echo "════════════════════════════════════════════════════════════"
-echo -e "  \033[0;32mPassed: $PASS\033[0m  |  \033[0;31mFailed: $FAIL\033[0m"
-echo "════════════════════════════════════════════════════════════"
-
-if [[ ${#FAILURES[@]} -gt 0 ]]; then
-    echo ""
-    echo "  Failed tests:"
-    for f in "${FAILURES[@]}"; do
-        echo -e "    \033[0;31m✗\033[0m $f"
-    done
-fi
-
-echo ""
-
-# Exit with failure if any tests failed
-[[ $FAIL -eq 0 ]]

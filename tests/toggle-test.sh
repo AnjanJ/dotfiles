@@ -6,26 +6,17 @@
 # Tests bin/dotfiles-toggle: default-on semantics, on/off/toggle/status,
 # the --enabled exit code contract scripts rely on, --list, and name
 # validation. State is kept under a sandbox DOTFILES_STATE_DIR.
-# Usage: bash tests/test-toggle.sh
+# Usage: tests/run toggle   (or /opt/homebrew/bin/bash tests/toggle-test.sh)
 # ============================================
 
 set -euo pipefail
 
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/base-test.sh"
+
 REAL_DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 T="$REAL_DOTFILES_DIR/bin/dotfiles-toggle"
 
-PASS=0
-FAIL=0
-FAILURES=()
-pass() { PASS=$((PASS + 1)); echo -e "  \033[0;32m✓\033[0m $1"; }
-fail() { FAIL=$((FAIL + 1)); FAILURES+=("$1"); echo -e "  \033[0;31m✗\033[0m $1"; }
-assert_eq() {
-    local actual="$1" expected="$2" label="$3"
-    if [[ "$actual" == "$expected" ]]; then pass "$label"; else fail "$label (expected '$expected', got '$actual')"; fi
-}
-
 STATE=$(mktemp -d)
-trap 'rm -rf "$STATE"' EXIT
 export DOTFILES_STATE_DIR="$STATE"
 
 echo ""
@@ -34,14 +25,14 @@ echo "║   Toggle Tests                                            ║"
 echo "╚═══════════════════════════════════════════════════════════╝"
 echo ""
 
-echo "Test 1: Everything is on by default"
+section "Test 1: Everything is on by default"
 set +e; "$T" --enabled startup-apps; rc=$?; set -e
 assert_eq "$rc" "0" "--enabled exits 0 for an untouched flag"
 assert_eq "$("$T" startup-apps status)" "startup-apps: on" "status reports on"
 assert_eq "$("$T" never-seen-before status)" "never-seen-before: on" "unknown flags are on too"
 echo ""
 
-echo "Test 2: off / on / toggle"
+section "Test 2: off / on / toggle"
 assert_eq "$("$T" borders off)" "borders: off" "off reports off"
 if [[ -f "$STATE/toggles/borders.off" ]]; then pass "flag file created"; else fail "flag file missing"; fi
 set +e; "$T" --enabled borders; rc=$?; set -e
@@ -54,7 +45,7 @@ assert_eq "$("$T" borders toggle)" "borders: off" "explicit toggle"
 assert_eq "$("$T" borders off)" "borders: off" "off is idempotent"
 echo ""
 
-echo "Test 3: --list"
+section "Test 3: --list"
 out=$("$T" --list)
 if echo "$out" | /usr/bin/grep -q "borders *off"; then pass "--list shows borders off"; else fail "--list missing borders off"; fi
 if echo "$out" | /usr/bin/grep -q "startup-apps *on"; then pass "--list shows startup-apps on"; else fail "--list missing startup-apps"; fi
@@ -64,7 +55,7 @@ out=$("$T" --list)
 if echo "$out" | /usr/bin/grep -q "custom-thing *off"; then pass "--list includes ad-hoc flags that are off"; else fail "--list missing custom-thing"; fi
 echo ""
 
-echo "Test 4: Validation and usage"
+section "Test 4: Validation and usage"
 set +e; "$T" "Bad Name" off >/dev/null 2>&1; rc=$?; set -e
 assert_eq "$rc" "1" "invalid flag name rejected"
 set +e; "$T" >/dev/null 2>&1; rc=$?; set -e
@@ -75,14 +66,3 @@ set +e; "$T" borders sideways >/dev/null 2>&1; rc=$?; set -e
 assert_eq "$rc" "1" "unknown action rejected"
 set +e; /bin/bash "$T" startup-apps status >/dev/null; rc=$?; set -e
 assert_eq "$rc" "0" "runs under /bin/bash 3.2"
-echo ""
-
-echo "════════════════════════════════════════════════════════════"
-echo -e "  \033[0;32mPassed: $PASS\033[0m  |  \033[0;31mFailed: $FAIL\033[0m"
-echo "════════════════════════════════════════════════════════════"
-if [[ ${#FAILURES[@]} -gt 0 ]]; then
-    echo ""
-    for f in "${FAILURES[@]}"; do echo -e "    \033[0;31m✗\033[0m $f"; done
-fi
-echo ""
-[[ $FAIL -eq 0 ]]

@@ -7,48 +7,15 @@
 # and prunes backups correctly.
 #
 # Uses temporary directories — no real configs touched.
-# Usage: bash tests/test-backup.sh
+# Usage: tests/run backup   (or /opt/homebrew/bin/bash tests/backup-test.sh)
 # ============================================
 
 set -euo pipefail
 
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/base-test.sh"
+
 REAL_DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REAL_HOME="$HOME"
-
-# ── Test Framework ────────────────────────────
-
-PASS=0
-FAIL=0
-FAILURES=()
-
-pass() {
-    PASS=$((PASS + 1))
-    echo -e "  \033[0;32m✓\033[0m $1"
-}
-
-fail() {
-    FAIL=$((FAIL + 1))
-    FAILURES+=("$1")
-    echo -e "  \033[0;31m✗\033[0m $1"
-}
-
-assert_eq() {
-    local actual="$1" expected="$2" label="$3"
-    if [[ "$actual" == "$expected" ]]; then
-        pass "$label"
-    else
-        fail "$label (expected '$expected', got '$actual')"
-    fi
-}
-
-assert_contains() {
-    local text="$1" pattern="$2" label="$3"
-    if echo "$text" | /usr/bin/grep -qF -- "$pattern" 2>/dev/null; then
-        pass "$label"
-    else
-        fail "$label ('$pattern' not found)"
-    fi
-}
 
 # ── Mock Setup ────────────────────────────────
 
@@ -93,7 +60,7 @@ echo "╚═══════════════════════�
 echo ""
 
 # ── Test 1: --help shows usage ──
-echo "Test 1: --help shows usage"
+section "Test 1: --help shows usage"
 setup_backup_sandbox
 
 output=$(bash "$MOCK_DOTFILES/bin/dotfiles-backup" --help 2>&1)
@@ -106,7 +73,7 @@ teardown_backup_sandbox
 echo ""
 
 # ── Test 2: Backup creates timestamped directory ──
-echo "Test 2: Backup creates timestamped directory"
+section "Test 2: Backup creates timestamped directory"
 setup_backup_sandbox
 
 bash "$MOCK_DOTFILES/bin/dotfiles-backup" >/dev/null 2>&1
@@ -126,7 +93,7 @@ teardown_backup_sandbox
 echo ""
 
 # ── Test 3: Backup includes shell configs ──
-echo "Test 3: Backup includes shell configs"
+section "Test 3: Backup includes shell configs"
 setup_backup_sandbox
 
 bash "$MOCK_DOTFILES/bin/dotfiles-backup" >/dev/null 2>&1
@@ -156,7 +123,7 @@ teardown_backup_sandbox
 echo ""
 
 # ── Test 4: Backup includes .config directories ──
-echo "Test 4: Backup includes .config directories"
+section "Test 4: Backup includes .config directories"
 setup_backup_sandbox
 
 bash "$MOCK_DOTFILES/bin/dotfiles-backup" >/dev/null 2>&1
@@ -190,7 +157,7 @@ teardown_backup_sandbox
 echo ""
 
 # ── Test 5: Backup prunes old backups (keep 5) ──
-echo "Test 5: Backup prunes old backups (keep 5)"
+section "Test 5: Backup prunes old backups (keep 5)"
 setup_backup_sandbox
 
 # Create 5 existing "old" backups
@@ -216,7 +183,7 @@ teardown_backup_sandbox
 echo ""
 
 # ── Test 6: --list shows available backups ──
-echo "Test 6: --list shows available backups"
+section "Test 6: --list shows available backups"
 setup_backup_sandbox
 
 # Create a backup first
@@ -231,7 +198,7 @@ teardown_backup_sandbox
 echo ""
 
 # ── Test 7: --restore restores files correctly ──
-echo "Test 7: --restore restores files correctly"
+section "Test 7: --restore restores files correctly"
 setup_backup_sandbox
 
 # Create a backup
@@ -252,7 +219,7 @@ teardown_backup_sandbox
 echo ""
 
 # ── Test 8: --restore with invalid name errors ──
-echo "Test 8: --restore with invalid name errors"
+section "Test 8: --restore with invalid name errors"
 setup_backup_sandbox
 
 output=$(bash "$MOCK_DOTFILES/bin/dotfiles-backup" --restore "nonexistent_backup" 2>&1 || true)
@@ -260,24 +227,3 @@ output=$(bash "$MOCK_DOTFILES/bin/dotfiles-backup" --restore "nonexistent_backup
 assert_contains "$output" "Backup not found" "--restore with bad name shows error"
 
 teardown_backup_sandbox
-echo ""
-
-# ── Summary ───────────────────────────────────
-
-echo ""
-echo "════════════════════════════════════════════════════════════"
-echo -e "  \033[0;32mPassed: $PASS\033[0m  |  \033[0;31mFailed: $FAIL\033[0m"
-echo "════════════════════════════════════════════════════════════"
-
-if [[ ${#FAILURES[@]} -gt 0 ]]; then
-    echo ""
-    echo "  Failed tests:"
-    for f in "${FAILURES[@]}"; do
-        echo -e "    \033[0;31m✗\033[0m $f"
-    done
-fi
-
-echo ""
-
-# Exit with failure if any tests failed
-[[ $FAIL -eq 0 ]]

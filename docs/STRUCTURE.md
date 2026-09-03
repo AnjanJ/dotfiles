@@ -54,8 +54,12 @@ dotfiles/
 │   ├── theme-utils.sh          # Theme utility functions
 │   ├── theme-render.sh         # {{ token }} renderer (bash + awk)
 │   └── apply-theme.sh          # Render colors.toml through templates, swap into ~/.local/state, install
-├── tests/                      # 18 suites, run via GitHub Actions CI
-├── .github/workflows/test.yml  # CI: shellcheck + all test suites
+├── tests/
+│   ├── base-test.sh            # Shared contract: temp HOME, TAP pass/fail, assert_* helpers
+│   ├── run                     # Runs tests/*-test.sh, keeps going past a failing file
+│   ├── <area>-test.sh          # 18 suites, one per area, discovered by name
+│   └── e2e/install-e2e.sh      # Real install.sh into a fresh HOME (CI job, not a suite)
+├── .github/workflows/test.yml  # CI: shellcheck + discovered suites + end-to-end install
 └── docs/                       # This documentation
 ```
 

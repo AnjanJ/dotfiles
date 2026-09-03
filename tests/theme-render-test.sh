@@ -9,28 +9,17 @@
 #
 # Runs under stock bash 3.2 as well as bash 5 — the renderer is on the
 # curl-bootstrap path.
-# Usage: bash tests/test-theme-render.sh
+# Usage: tests/run theme-render   (or /opt/homebrew/bin/bash tests/theme-render-test.sh)
 # ============================================
 
 set -euo pipefail
 
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/base-test.sh"
+
 REAL_DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 RENDER="$REAL_DOTFILES_DIR/scripts/theme-render.sh"
 
-PASS=0
-FAIL=0
-FAILURES=()
-
-pass() { PASS=$((PASS + 1)); echo -e "  \033[0;32m✓\033[0m $1"; }
-fail() { FAIL=$((FAIL + 1)); FAILURES+=("$1"); echo -e "  \033[0;31m✗\033[0m $1"; }
-
-assert_eq() {
-    local actual="$1" expected="$2" label="$3"
-    if [[ "$actual" == "$expected" ]]; then pass "$label"; else fail "$label (expected '$expected', got '$actual')"; fi
-}
-
 WORK=$(mktemp -d)
-trap 'rm -rf "$WORK"' EXIT
 
 cat > "$WORK/colors.toml" <<'EOF'
 # a comment
@@ -61,7 +50,7 @@ echo "║   Theme Renderer Tests                                    ║"
 echo "╚═══════════════════════════════════════════════════════════╝"
 echo ""
 
-echo "Test 1: Token forms"
+section "Test 1: Token forms"
 assert_eq "$(render '{{ accent }}')" "#7aa2f7" "plain key"
 assert_eq "$(render '{{accent}}')" "#7aa2f7" "no inner spaces"
 assert_eq "$(render '{{   accent   }}')" "#7aa2f7" "extra inner spaces"
@@ -73,13 +62,13 @@ assert_eq "$(render 'literal & text {{ blue }} 50%')" "literal & text #7aa2f7 50
 assert_eq "$(render "$(printf 'l1 {{ red }}\nl2 {{ cyan }}')")" "$(printf 'l1 #f7768e\nl2 #7dcfff')" "multi-line template"
 echo ""
 
-echo "Test 2: Palette parsing"
+section "Test 2: Palette parsing"
 assert_eq "$(render '{{ foreground }}')" "#c0caf5" "single-quoted value"
 assert_eq "$(render '{{ background }}')" "#1a1b26" "trailing comment stripped"
 assert_eq "$(render '{{ mode }}')" "dark" "non-colour key"
 echo ""
 
-echo "Test 3: Colour maths"
+section "Test 3: Colour maths"
 assert_eq "$(render '{{ mix background foreground 50% }}')" "#6d738e" "mix 50% by percentage"
 assert_eq "$(render '{{ mix background foreground 0.5 }}')" "#6d738e" "mix 0.5 by fraction"
 assert_eq "$(render '{{ mix background foreground 0% }}')" "#1a1b26" "mix 0% is the first colour"
@@ -90,7 +79,7 @@ assert_eq "$(render '{{ mix_argb background foreground 50% }}')" "0xff6d738e" "m
 assert_eq "$(render '{{ mix background #ffffff 10% }}')" "#31323c" "mix with a literal hex"
 echo ""
 
-echo "Test 4: Derived keys for a minimal palette"
+section "Test 4: Derived keys for a minimal palette"
 cat > "$WORK/minimal.toml" <<'EOF'
 background = "#101010"
 foreground = "#e0e0e0"
@@ -129,14 +118,14 @@ printf '%s\n' '{{ mode }} {{ is_light }}' > "$WORK/l.tpl"
 assert_eq "$(bash "$RENDER" "$WORK/light.toml" "" "$WORK/l.tpl" 2>/dev/null)" "light true" "light mode from luminance"
 echo ""
 
-echo "Test 5: Vars file and precedence"
+section "Test 5: Vars file and precedence"
 assert_eq "$(render '{{ theme_name }}/{{ bat_theme }}')" "tokyo-night/TwoDark" "vars file keys are tokens"
 printf 'accent="#000000"\n' > "$WORK/override-vars"
 assert_eq "$(render '{{ accent }}' "$WORK/override-vars")" "#000000" "vars file can override a palette key"
 assert_eq "$(render '{{ accent }}' "")" "#7aa2f7" "empty vars file argument is allowed"
 echo ""
 
-echo "Test 6: Failure modes"
+section "Test 6: Failure modes"
 printf '%s\n' '{{ no_such_key }}' > "$WORK/bad.tpl"
 set +e; out=$(bash "$RENDER" "$WORK/colors.toml" "" "$WORK/bad.tpl" 2>"$WORK/err"); rc=$?; set -e
 assert_eq "$rc" "3" "unresolved token exits 3"
@@ -156,7 +145,7 @@ set +e; bash "$RENDER" "$WORK/empty.toml" "" "$WORK/bad.tpl" >/dev/null 2>&1; rc
 assert_eq "$rc" "2" "palette without background/foreground exits 2"
 echo ""
 
-echo "Test 7: Real templates render without unresolved tokens for every theme"
+section "Test 7: Real templates render without unresolved tokens for every theme"
 for theme_dir in "$REAL_DOTFILES_DIR"/themes/*/; do
     theme=$(basename "$theme_dir")
     [[ "$theme" == _* ]] && continue
@@ -176,14 +165,3 @@ for theme_dir in "$REAL_DOTFILES_DIR"/themes/*/; do
     done
     [[ "$ok" == true ]] && pass "$theme: all $(find "$REAL_DOTFILES_DIR/themes/_templates" -name '*.tpl' | wc -l | tr -d ' ') templates render"
 done
-echo ""
-
-echo "════════════════════════════════════════════════════════════"
-echo -e "  \033[0;32mPassed: $PASS\033[0m  |  \033[0;31mFailed: $FAIL\033[0m"
-echo "════════════════════════════════════════════════════════════"
-if [[ ${#FAILURES[@]} -gt 0 ]]; then
-    echo ""
-    for f in "${FAILURES[@]}"; do echo -e "    \033[0;31m✗\033[0m $f"; done
-fi
-echo ""
-[[ $FAIL -eq 0 ]]

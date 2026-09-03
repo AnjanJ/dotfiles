@@ -7,97 +7,15 @@
 # filters Brewfiles, persists state, and handles edge cases.
 #
 # Uses a temporary directory — no real configs touched.
-# Usage: bash tests/test-packages.sh
+# Usage: tests/run packages   (or /opt/homebrew/bin/bash tests/packages-test.sh)
 # ============================================
 
 set -euo pipefail
 
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/base-test.sh"
+
 REAL_DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REAL_HOME="$HOME"
-
-# ── Test Framework ────────────────────────────
-
-PASS=0
-FAIL=0
-FAILURES=()
-
-pass() {
-    PASS=$((PASS + 1))
-    echo -e "  \033[0;32m✓\033[0m $1"
-}
-
-fail() {
-    FAIL=$((FAIL + 1))
-    FAILURES+=("$1")
-    echo -e "  \033[0;31m✗\033[0m $1"
-}
-
-assert_eq() {
-    local actual="$1" expected="$2" label="$3"
-    if [[ "$actual" == "$expected" ]]; then
-        pass "$label"
-    else
-        fail "$label (expected '$expected', got '$actual')"
-    fi
-}
-
-assert_contains() {
-    local file="$1" pattern="$2" label="$3"
-    if /usr/bin/grep -q "$pattern" "$file" 2>/dev/null; then
-        pass "$label"
-    else
-        fail "$label ('$pattern' not found in $(basename "$file"))"
-    fi
-}
-
-assert_not_contains() {
-    local file="$1" pattern="$2" label="$3"
-    if ! /usr/bin/grep -q "$pattern" "$file" 2>/dev/null; then
-        pass "$label"
-    else
-        fail "$label ('$pattern' unexpectedly found in $(basename "$file"))"
-    fi
-}
-
-assert_file_exists() {
-    if [[ -f "$1" ]]; then
-        pass "$2"
-    else
-        fail "$2 ($1 not found)"
-    fi
-}
-
-# Assert that a string (output) contains a pattern
-assert_output_matches() {
-    local output="$1" pattern="$2" label="$3"
-    if echo "$output" | /usr/bin/grep -q "$pattern"; then
-        pass "$label"
-    else
-        fail "$label ('$pattern' not found in output)"
-    fi
-}
-
-# Assert a command succeeds (exit 0)
-assert_succeeds() {
-    local label="$1"
-    shift
-    if "$@"; then
-        pass "$label"
-    else
-        fail "$label"
-    fi
-}
-
-# Assert a command fails (exit non-zero)
-assert_fails() {
-    local label="$1"
-    shift
-    if "$@"; then
-        fail "$label"
-    else
-        pass "$label"
-    fi
-}
 
 # ── Test Setup ────────────────────────────────
 
@@ -168,12 +86,12 @@ test_parse_groups() {
     count=$(echo "$groups" | wc -l | tr -d ' ')
     assert_eq "$count" "6" "Brewfile has 6 groups"
 
-    assert_output_matches "$groups" "^taps$" "Found taps group"
-    assert_output_matches "$groups" "^core$" "Found core group"
-    assert_output_matches "$groups" "^editors$" "Found editors group"
-    assert_output_matches "$groups" "^work$" "Found work group"
-    assert_output_matches "$groups" "^databases$" "Found databases group"
-    assert_output_matches "$groups" "^fonts$" "Found fonts group"
+    assert_matches "$groups" "^taps$" "Found taps group"
+    assert_matches "$groups" "^core$" "Found core group"
+    assert_matches "$groups" "^editors$" "Found editors group"
+    assert_matches "$groups" "^work$" "Found work group"
+    assert_matches "$groups" "^databases$" "Found databases group"
+    assert_matches "$groups" "^fonts$" "Found fonts group"
 
     teardown_test_env
 }
@@ -193,7 +111,7 @@ test_get_group_entries() {
     core_count=$(echo "$core_entries" | wc -l | tr -d ' ')
     assert_eq "$core_count" "3" "Core group has 3 entries"
 
-    assert_output_matches "$core_entries" 'brew "git"' "Core contains git"
+    assert_matches "$core_entries" 'brew "git"' "Core contains git"
 
     local work_entries
     work_entries=$(_get_group_entries "$TEST_DOTFILES/Brewfile" "work")
@@ -201,9 +119,9 @@ test_get_group_entries() {
     work_count=$(echo "$work_entries" | wc -l | tr -d ' ')
     assert_eq "$work_count" "3" "Work group has 3 entries"
 
-    assert_output_matches "$work_entries" 'cask "slack"' "Work contains slack"
-    assert_output_matches "$work_entries" 'cask "zoom"' "Work contains zoom"
-    assert_output_matches "$work_entries" 'mas "Okta Verify"' "Work contains Okta Verify"
+    assert_matches "$work_entries" 'cask "slack"' "Work contains slack"
+    assert_matches "$work_entries" 'cask "zoom"' "Work contains zoom"
+    assert_matches "$work_entries" 'mas "Okta Verify"' "Work contains Okta Verify"
 
     local editors_entries
     editors_entries=$(_get_group_entries "$TEST_DOTFILES/Brewfile" "editors")
@@ -299,15 +217,15 @@ test_filtered_brewfile_all_selected() {
     assert_file_exists "$filtered" "Filtered Brewfile created"
 
     # Required groups always included
-    assert_contains "$filtered" 'tap "example/tap"' "Taps included (required)"
-    assert_contains "$filtered" 'brew "git"' "Core git included (required)"
-    assert_contains "$filtered" 'brew "fzf"' "Core fzf included (required)"
+    assert_file_contains "$filtered" 'tap "example/tap"' "Taps included (required)"
+    assert_file_contains "$filtered" 'brew "git"' "Core git included (required)"
+    assert_file_contains "$filtered" 'brew "fzf"' "Core fzf included (required)"
 
     # Selected groups included
-    assert_contains "$filtered" 'brew "neovim"' "Editors neovim included"
-    assert_contains "$filtered" 'cask "slack"' "Work slack included"
-    assert_contains "$filtered" 'brew "postgresql@14"' "Databases postgresql included"
-    assert_contains "$filtered" 'cask "font-jetbrains-mono"' "Fonts jetbrains-mono included"
+    assert_file_contains "$filtered" 'brew "neovim"' "Editors neovim included"
+    assert_file_contains "$filtered" 'cask "slack"' "Work slack included"
+    assert_file_contains "$filtered" 'brew "postgresql@14"' "Databases postgresql included"
+    assert_file_contains "$filtered" 'cask "font-jetbrains-mono"' "Fonts jetbrains-mono included"
 
     rm -f "$filtered"
     teardown_test_env
@@ -329,17 +247,17 @@ test_filtered_brewfile_some_excluded() {
     assert_file_exists "$filtered" "Filtered Brewfile created"
 
     # Required groups always present
-    assert_contains "$filtered" 'brew "git"' "Core git always included"
+    assert_file_contains "$filtered" 'brew "git"' "Core git always included"
 
     # Selected groups present
-    assert_contains "$filtered" 'brew "neovim"' "Editors included"
-    assert_contains "$filtered" 'brew "postgresql@14"' "Databases included"
+    assert_file_contains "$filtered" 'brew "neovim"' "Editors included"
+    assert_file_contains "$filtered" 'brew "postgresql@14"' "Databases included"
 
     # Excluded groups absent
-    assert_not_contains "$filtered" 'cask "slack"' "Work slack excluded"
-    assert_not_contains "$filtered" 'cask "zoom"' "Work zoom excluded"
-    assert_not_contains "$filtered" 'Okta Verify' "Work Okta excluded"
-    assert_not_contains "$filtered" 'font-jetbrains-mono' "Fonts excluded"
+    assert_file_not_contains "$filtered" 'cask "slack"' "Work slack excluded"
+    assert_file_not_contains "$filtered" 'cask "zoom"' "Work zoom excluded"
+    assert_file_not_contains "$filtered" 'Okta Verify' "Work Okta excluded"
+    assert_file_not_contains "$filtered" 'font-jetbrains-mono' "Fonts excluded"
 
     rm -f "$filtered"
     teardown_test_env
@@ -361,9 +279,9 @@ test_filtered_brewfile_individual_exclusion() {
     assert_file_exists "$filtered" "Filtered Brewfile created"
 
     # Work group included but zoom excluded
-    assert_contains "$filtered" 'cask "slack"' "Work slack still included"
-    assert_not_contains "$filtered" 'cask "zoom"' "Zoom individually excluded"
-    assert_contains "$filtered" 'Okta Verify' "Okta Verify still included"
+    assert_file_contains "$filtered" 'cask "slack"' "Work slack still included"
+    assert_file_not_contains "$filtered" 'cask "zoom"' "Zoom individually excluded"
+    assert_file_contains "$filtered" 'Okta Verify' "Okta Verify still included"
 
     rm -f "$filtered"
     teardown_test_env
@@ -384,14 +302,14 @@ test_filtered_brewfile_only_core() {
     assert_file_exists "$filtered" "Filtered Brewfile created"
 
     # Only required groups
-    assert_contains "$filtered" 'tap "example/tap"' "Taps present"
-    assert_contains "$filtered" 'brew "git"' "Core git present"
+    assert_file_contains "$filtered" 'tap "example/tap"' "Taps present"
+    assert_file_contains "$filtered" 'brew "git"' "Core git present"
 
     # Everything else absent
-    assert_not_contains "$filtered" 'brew "neovim"' "Editors absent"
-    assert_not_contains "$filtered" 'cask "slack"' "Work absent"
-    assert_not_contains "$filtered" 'brew "postgresql@14"' "Databases absent"
-    assert_not_contains "$filtered" 'font-jetbrains-mono' "Fonts absent"
+    assert_file_not_contains "$filtered" 'brew "neovim"' "Editors absent"
+    assert_file_not_contains "$filtered" 'cask "slack"' "Work absent"
+    assert_file_not_contains "$filtered" 'brew "postgresql@14"' "Databases absent"
+    assert_file_not_contains "$filtered" 'font-jetbrains-mono' "Fonts absent"
 
     rm -f "$filtered"
     teardown_test_env
@@ -416,11 +334,11 @@ test_state_persistence() {
     local loaded
     loaded=$(get_saved_groups)
 
-    assert_output_matches "$loaded" "^+editors$" "Loaded +editors"
-    assert_output_matches "$loaded" "^-work$" "Loaded -work"
-    assert_output_matches "$loaded" "^+databases$" "Loaded +databases"
-    assert_output_matches "$loaded" "^-fonts$" "Loaded -fonts"
-    assert_output_matches "$loaded" "^-work:zoom$" "Loaded -work:zoom exclusion"
+    assert_matches "$loaded" "^+editors$" "Loaded +editors"
+    assert_matches "$loaded" "^-work$" "Loaded -work"
+    assert_matches "$loaded" "^+databases$" "Loaded +databases"
+    assert_matches "$loaded" "^-fonts$" "Loaded -fonts"
+    assert_matches "$loaded" "^-work:zoom$" "Loaded -work:zoom exclusion"
 
     teardown_test_env
 }
@@ -493,30 +411,30 @@ test_real_brewfile_groups() {
     local expected_groups=("taps" "core" "editors" "window-mgmt" "terminal-tools" "ai" "databases" "cloud-deploy" "media" "communication" "productivity" "work" "languages" "browsers" "utilities" "fonts" "vscode-ext" "extras")
 
     for g in "${expected_groups[@]}"; do
-        assert_output_matches "$groups" "^${g}$" "Real Brewfile has group: $g"
+        assert_matches "$groups" "^${g}$" "Real Brewfile has group: $g"
     done
 
     # Verify work group contains expected enterprise apps
     local work_entries
     work_entries=$(_get_group_entries "$real_brewfile" "work")
 
-    assert_output_matches "$work_entries" "slack" "Work group contains slack"
-    assert_output_matches "$work_entries" "zoom" "Work group contains zoom"
+    assert_matches "$work_entries" "slack" "Work group contains slack"
+    assert_matches "$work_entries" "zoom" "Work group contains zoom"
 
     # Verify browsers group (mixes casks and mas entries)
     local browser_entries
     browser_entries=$(_get_group_entries "$real_brewfile" "browsers")
 
-    assert_output_matches "$browser_entries" "firefox" "Browsers group contains firefox"
-    assert_output_matches "$browser_entries" "DuckDuckGo" "Browsers group contains DuckDuckGo (mas)"
+    assert_matches "$browser_entries" "firefox" "Browsers group contains firefox"
+    assert_matches "$browser_entries" "DuckDuckGo" "Browsers group contains DuckDuckGo (mas)"
 
     # Verify core group has essential tools
     local core_entries
     core_entries=$(_get_group_entries "$real_brewfile" "core")
 
-    assert_output_matches "$core_entries" '"git"' "Core group contains git"
-    assert_output_matches "$core_entries" '"fzf"' "Core group contains fzf"
-    assert_output_matches "$core_entries" '"mise"' "Core group contains mise"
+    assert_matches "$core_entries" '"git"' "Core group contains git"
+    assert_matches "$core_entries" '"fzf"' "Core group contains fzf"
+    assert_matches "$core_entries" '"mise"' "Core group contains mise"
 
     export DOTFILES_DIR=""
 }
@@ -540,19 +458,3 @@ test_state_persistence
 test_state_no_file
 test_idempotency
 test_real_brewfile_groups
-
-echo ""
-echo "  =========================================="
-echo "  Results: $PASS passed, $FAIL failed"
-echo "  =========================================="
-
-if [[ ${#FAILURES[@]} -gt 0 ]]; then
-    echo ""
-    echo "  Failures:"
-    for f in "${FAILURES[@]}"; do
-        echo "    - $f"
-    done
-fi
-
-echo ""
-exit "$FAIL"

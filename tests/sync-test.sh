@@ -7,57 +7,15 @@
 # handles broken links, dry-run mode, and --help.
 #
 # Uses temporary directories — no real configs touched.
-# Usage: bash tests/test-sync.sh
+# Usage: tests/run sync   (or /opt/homebrew/bin/bash tests/sync-test.sh)
 # ============================================
 
 set -euo pipefail
 
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/base-test.sh"
+
 REAL_DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REAL_HOME="$HOME"
-
-# ── Test Framework ────────────────────────────
-
-PASS=0
-FAIL=0
-FAILURES=()
-
-pass() {
-    PASS=$((PASS + 1))
-    echo -e "  \033[0;32m✓\033[0m $1"
-}
-
-fail() {
-    FAIL=$((FAIL + 1))
-    FAILURES+=("$1")
-    echo -e "  \033[0;31m✗\033[0m $1"
-}
-
-assert_eq() {
-    local actual="$1" expected="$2" label="$3"
-    if [[ "$actual" == "$expected" ]]; then
-        pass "$label"
-    else
-        fail "$label (expected '$expected', got '$actual')"
-    fi
-}
-
-assert_contains() {
-    local text="$1" pattern="$2" label="$3"
-    if echo "$text" | /usr/bin/grep -qF -- "$pattern" 2>/dev/null; then
-        pass "$label"
-    else
-        fail "$label ('$pattern' not found)"
-    fi
-}
-
-assert_symlink() {
-    local target="$1" expected_source="$2" label="$3"
-    if [[ -L "$target" ]] && [[ "$(readlink "$target")" == "$expected_source" ]]; then
-        pass "$label"
-    else
-        fail "$label (not a symlink or wrong target)"
-    fi
-}
 
 # ── Mock Setup ────────────────────────────────
 
@@ -153,8 +111,7 @@ echo "╚═══════════════════════�
 echo ""
 
 # ── Test 1: --help shows usage ──
-echo "Test 1: --help shows usage"
-
+section "Test 1: --help shows usage"
 output=$(bash "$REAL_DOTFILES_DIR/bin/dotfiles-sync" --help 2>&1)
 
 assert_contains "$output" "Usage:" "--help shows usage line"
@@ -163,7 +120,7 @@ assert_contains "$output" "--dry-run" "--help mentions --dry-run"
 echo ""
 
 # ── Test 2: Symlink refresh creates missing links ──
-echo "Test 2: Symlink refresh creates missing links"
+section "Test 2: Symlink refresh creates missing links"
 setup_sync_sandbox
 
 # No symlinks exist yet — sync should create them
@@ -178,7 +135,7 @@ teardown_sync_sandbox
 echo ""
 
 # ── Test 3: Symlink refresh fixes broken links ──
-echo "Test 3: Symlink refresh fixes broken links"
+section "Test 3: Symlink refresh fixes broken links"
 setup_sync_sandbox
 
 # Create a broken symlink
@@ -201,7 +158,7 @@ teardown_sync_sandbox
 echo ""
 
 # ── Test 4: Symlink refresh skips correct links ──
-echo "Test 4: Symlink refresh skips correct links"
+section "Test 4: Symlink refresh skips correct links"
 setup_sync_sandbox
 
 # Create correct symlinks first
@@ -221,7 +178,7 @@ teardown_sync_sandbox
 echo ""
 
 # ── Test 5: Missing source file skipped gracefully ──
-echo "Test 5: Missing source file skipped gracefully"
+section "Test 5: Missing source file skipped gracefully"
 setup_sync_sandbox
 
 # Remove a source file that sync checks for
@@ -248,7 +205,7 @@ teardown_sync_sandbox
 echo ""
 
 # ── Test 6: --dry-run mode reports without changes ──
-echo "Test 6: --dry-run mode reports without changes"
+section "Test 6: --dry-run mode reports without changes"
 setup_sync_sandbox
 
 # Run in dry-run mode
@@ -268,7 +225,7 @@ teardown_sync_sandbox
 echo ""
 
 # ── Test 7: Theme reapply triggered when theme state exists ──
-echo "Test 7: Theme state file detection"
+section "Test 7: Theme state file detection"
 setup_sync_sandbox
 
 # Create a theme state file
@@ -286,24 +243,3 @@ theme=$(get_current_theme)
 assert_eq "$theme" "tokyo-night" "Theme state file read correctly"
 
 teardown_sync_sandbox
-echo ""
-
-# ── Summary ───────────────────────────────────
-
-echo ""
-echo "════════════════════════════════════════════════════════════"
-echo -e "  \033[0;32mPassed: $PASS\033[0m  |  \033[0;31mFailed: $FAIL\033[0m"
-echo "════════════════════════════════════════════════════════════"
-
-if [[ ${#FAILURES[@]} -gt 0 ]]; then
-    echo ""
-    echo "  Failed tests:"
-    for f in "${FAILURES[@]}"; do
-        echo -e "    \033[0;31m✗\033[0m $f"
-    done
-fi
-
-echo ""
-
-# Exit with failure if any tests failed
-[[ $FAIL -eq 0 ]]

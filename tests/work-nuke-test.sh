@@ -8,83 +8,15 @@
 # dry-run, symlinked dirs, malformed markers.
 #
 # Uses a temporary HOME directory — no real configs touched.
-# Usage: bash tests/test-work-nuke.sh
+# Usage: tests/run work-nuke   (or /opt/homebrew/bin/bash tests/work-nuke-test.sh)
 # ============================================
 
 set -euo pipefail
 
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/base-test.sh"
+
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REAL_HOME="$HOME"
-
-# ── Test Framework ────────────────────────────
-
-PASS=0
-FAIL=0
-FAILURES=()
-
-pass() {
-    PASS=$((PASS + 1))
-    echo -e "  \033[0;32m✓\033[0m $1"
-}
-
-fail() {
-    FAIL=$((FAIL + 1))
-    FAILURES+=("$1")
-    echo -e "  \033[0;31m✗\033[0m $1"
-}
-
-assert_eq() {
-    local actual="$1" expected="$2" label="$3"
-    if [[ "$actual" == "$expected" ]]; then
-        pass "$label"
-    else
-        fail "$label (expected '$expected', got '$actual')"
-    fi
-}
-
-assert_file_exists() {
-    if [[ -f "$1" ]]; then
-        pass "$2"
-    else
-        fail "$2 ($1 not found)"
-    fi
-}
-
-assert_file_not_exists() {
-    if [[ ! -f "$1" ]]; then
-        pass "$2"
-    else
-        fail "$2 ($1 still exists)"
-    fi
-}
-
-assert_dir_exists() {
-    if [[ -d "$1" ]]; then
-        pass "$2"
-    else
-        fail "$2 ($1 not found)"
-    fi
-}
-
-assert_dir_not_exists() {
-    if [[ ! -d "$1" ]]; then
-        pass "$2"
-    else
-        fail "$2 ($1 still exists)"
-    fi
-}
-
-assert_count() {
-    local file="$1" pattern="$2" expected="$3" label="$4"
-    local count
-    count=$(/usr/bin/grep -c "$pattern" "$file" 2>/dev/null || echo 0)
-    count=$(echo "$count" | tr -d '[:space:]')
-    if [[ "$count" -eq "$expected" ]]; then
-        pass "$label"
-    else
-        fail "$label (expected $expected of '$pattern' in $(basename "$file"), found $count)"
-    fi
-}
 
 snapshot() {
     local dir="$1" out="$2"
@@ -99,17 +31,6 @@ snapshot() {
             local perm=$(stat -f '%Lp' "$f" 2>/dev/null || stat -c '%a' "$f" 2>/dev/null)
             echo "$perm $md5 $rel"
         done > "$out"
-}
-
-assert_snapshots_equal() {
-    local snap1="$1" snap2="$2" label="$3"
-    if diff -q "$snap1" "$snap2" &>/dev/null; then
-        pass "$label"
-    else
-        fail "$label"
-        echo "    --- Diff ---"
-        diff "$snap1" "$snap2" | head -20 | sed 's/^/    /'
-    fi
 }
 
 setup_sandbox() {
@@ -167,7 +88,7 @@ EOF
 
 test_01_nuke_removes_all_work_config() {
     echo ""
-    echo "Test 1: work-nuke removes all work config with --yes"
+    section "Test 1: work-nuke removes all work config with --yes"
     setup_sandbox
 
     unset _HELPERS_LOADED
@@ -206,7 +127,7 @@ test_01_nuke_removes_all_work_config() {
 
 test_02_nuke_creates_backup() {
     echo ""
-    echo "Test 2: work-nuke creates backup before removing"
+    section "Test 2: work-nuke creates backup before removing"
     setup_sandbox
 
     unset _HELPERS_LOADED
@@ -236,7 +157,7 @@ test_02_nuke_creates_backup() {
 
 test_03_nuke_dry_run() {
     echo ""
-    echo "Test 3: work-nuke --dry-run changes nothing"
+    section "Test 3: work-nuke --dry-run changes nothing"
     setup_sandbox
 
     unset _HELPERS_LOADED
@@ -262,7 +183,7 @@ test_03_nuke_dry_run() {
 
 test_04_confirm_rejects_wrong_input() {
     echo ""
-    echo "Test 4: confirm_destructive rejects partial/wrong input"
+    section "Test 4: confirm_destructive rejects partial/wrong input"
     setup_sandbox
 
     unset _HELPERS_LOADED
@@ -283,7 +204,7 @@ test_04_confirm_rejects_wrong_input() {
 
 test_05_confirm_accepts_exact_match() {
     echo ""
-    echo "Test 5: confirm_destructive accepts exact match"
+    section "Test 5: confirm_destructive accepts exact match"
     setup_sandbox
 
     unset _HELPERS_LOADED
@@ -306,7 +227,7 @@ test_05_confirm_accepts_exact_match() {
 
 test_06_nuke_symlinked_work_dir() {
     echo ""
-    echo "Test 6: work-nuke with symlinked work directory"
+    section "Test 6: work-nuke with symlinked work directory"
     setup_sandbox
 
     unset _HELPERS_LOADED
@@ -354,7 +275,7 @@ EOF
 
 test_07_nuke_preserves_personal_ssh() {
     echo ""
-    echo "Test 7: work-nuke preserves personal SSH config outside WORK markers"
+    section "Test 7: work-nuke preserves personal SSH config outside WORK markers"
     setup_sandbox
 
     unset _HELPERS_LOADED
@@ -399,7 +320,7 @@ EOF
 
 test_08_nuke_dirty_repos_backup() {
     echo ""
-    echo "Test 8: work-nuke with dirty repos still creates backup"
+    section "Test 8: work-nuke with dirty repos still creates backup"
     setup_sandbox
 
     unset _HELPERS_LOADED
@@ -435,7 +356,7 @@ test_08_nuke_dirty_repos_backup() {
 
 test_09_malformed_work_markers() {
     echo ""
-    echo "Test 9: SSH config with nested/malformed WORK markers"
+    section "Test 9: SSH config with nested/malformed WORK markers"
     setup_sandbox
 
     unset _HELPERS_LOADED
@@ -503,21 +424,3 @@ test_06_nuke_symlinked_work_dir
 test_07_nuke_preserves_personal_ssh
 test_08_nuke_dirty_repos_backup
 test_09_malformed_work_markers
-
-# ── Summary ───────────────────────────────────
-
-echo ""
-echo "════════════════════════════════════════════════════════════"
-echo -e "  \033[0;32mPassed: $PASS\033[0m  |  \033[0;31mFailed: $FAIL\033[0m"
-echo "════════════════════════════════════════════════════════════"
-
-if [[ ${#FAILURES[@]} -gt 0 ]]; then
-    echo ""
-    echo "  Failed tests:"
-    for f in "${FAILURES[@]}"; do
-        echo -e "    \033[0;31m✗\033[0m $f"
-    done
-fi
-
-echo ""
-[[ $FAIL -eq 0 ]]

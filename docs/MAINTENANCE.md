@@ -99,7 +99,7 @@ dotfiles install --force            # Force reinstall everything
 
 ## Testing
 
-Every push and PR runs 18 test suites plus shellcheck, `dotfiles commands --check` and `dotfiles keys --check` via GitHub Actions:
+Every push and PR runs 18 test suites, an end-to-end install, shellcheck, `dotfiles commands --check` and `dotfiles keys --check` via GitHub Actions. The suites are discovered from `tests/*-test.sh`, so a new file is in CI the moment it exists:
 
 - **Shellcheck** — lints all shell scripts
 - **Idempotency** — install/setup can run repeatedly with identical results (sandboxed)
@@ -119,11 +119,14 @@ Every push and PR runs 18 test suites plus shellcheck, `dotfiles commands --chec
 - **Sync** — symlink refresh, broken link repair, dry-run mode
 - **Packages** — Brewfile group parsing, filtering, saved selections
 - **Uninstall** — removes every mapped symlink, leaves foreign links alone
+- **End-to-end install** (`tests/e2e/install-e2e.sh`) — the real `install.sh` under `/bin/bash` 3.2 into a fresh `HOME` with `--groups core`: every mapped symlink, rendered theme, core formulae, a clean interactive zsh, and an idempotent second run
 
-Run locally (needs bash 4+, i.e. `brew install bash` — macOS ships 3.2):
+Every suite sources `tests/base-test.sh`: it gets a fresh temporary `HOME`, TAP `ok`/`not ok` output, and `fail` ends the file at the first broken assertion while `tests/run` continues with the next file. Run locally (needs bash 4+, i.e. `brew install bash` — macOS ships 3.2):
 
 ```bash
-/opt/homebrew/bin/bash tests/test-idempotency.sh   # or any suite in tests/
+/opt/homebrew/bin/bash tests/run                # every suite
+/opt/homebrew/bin/bash tests/run theme keys     # just these
+/bin/bash tests/e2e/install-e2e.sh              # the real install from a copy of the checkout, minutes
 ```
 
 ## Troubleshooting

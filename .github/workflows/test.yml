@@ -36,36 +36,39 @@ jobs:
             .config/sketchybar/plugins/*.sh \
             .config/borders/bordersrc \
             .config/claude/statusline-command.sh \
-            tests/test-*.sh
+            tests/base-test.sh \
+            tests/run \
+            tests/*-test.sh \
+            tests/e2e/*.sh
       - name: Command metadata headers
         run: bin/dotfiles commands --check
       - name: Keybinding cheatsheet is current
         run: bin/dotfiles keys --check
 
+  # The suite list is discovered from tests/*-test.sh so a new suite is
+  # covered the moment it exists; nothing here to keep in step.
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      suites: ${{ steps.list.outputs.suites }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: list
+        run: |
+          suites=$(ls tests/*-test.sh \
+            | sed -E 's|^tests/||; s|-test\.sh$||' \
+            | grep -vx base \
+            | jq -R . | jq -sc .)
+          echo "suites=$suites" >> "$GITHUB_OUTPUT"
+          echo "Discovered: $suites"
+
   tests:
+    needs: discover
     runs-on: macos-latest
     strategy:
       fail-fast: false
       matrix:
-        suite:
-          - idempotency
-          - work-nuke
-          - repos-clone
-          - ssh-adversarial
-          - theme
-          - update
-          - doctor
-          - setup-git
-          - work-status
-          - backup
-          - sync
-          - packages
-          - uninstall
-          - theme-render
-          - cli
-          - toggle
-          - keys
-          - agent
+        suite: ${{ fromJson(needs.discover.outputs.suites) }}
     steps:
       - uses: actions/checkout@v4
       - name: Install bash 5.x
@@ -74,5 +77,16 @@ jobs:
         # bash 4+ features. Brew installs bash 5+ at /opt/homebrew/bin which
         # we then call explicitly below.
         run: brew install bash
-      - name: Run ${{ matrix.suite }} tests
-        run: /opt/homebrew/bin/bash tests/test-${{ matrix.suite }}.sh
+      - name: Run ${{ matrix.suite }} suite
+        run: /opt/homebrew/bin/bash tests/run ${{ matrix.suite }}
+
+  # The real install.sh, under stock /bin/bash 3.2, into a fresh HOME with
+  # only the core package group. Slow and stateful, so it is its own job
+  # rather than a discovered suite.
+  install-e2e:
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fresh install with --groups core
+        run: /bin/bash tests/e2e/install-e2e.sh

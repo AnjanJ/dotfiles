@@ -6,48 +6,15 @@
 # Tests work-status and work-switch scripts.
 #
 # Uses a temporary HOME — no real configs touched.
-# Usage: bash tests/test-work-status.sh
+# Usage: tests/run work-status   (or /opt/homebrew/bin/bash tests/work-status-test.sh)
 # ============================================
 
 set -euo pipefail
 
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/base-test.sh"
+
 REAL_DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REAL_HOME="$HOME"
-
-# ── Test Framework ────────────────────────────
-
-PASS=0
-FAIL=0
-FAILURES=()
-
-pass() {
-    PASS=$((PASS + 1))
-    echo -e "  \033[0;32m✓\033[0m $1"
-}
-
-fail() {
-    FAIL=$((FAIL + 1))
-    FAILURES+=("$1")
-    echo -e "  \033[0;31m✗\033[0m $1"
-}
-
-assert_contains() {
-    local text="$1" pattern="$2" label="$3"
-    if echo "$text" | /usr/bin/grep -q "$pattern" 2>/dev/null; then
-        pass "$label"
-    else
-        fail "$label ('$pattern' not found)"
-    fi
-}
-
-assert_not_contains() {
-    local text="$1" pattern="$2" label="$3"
-    if ! echo "$text" | /usr/bin/grep -q "$pattern" 2>/dev/null; then
-        pass "$label"
-    else
-        fail "$label ('$pattern' unexpectedly found)"
-    fi
-}
 
 # ── Mock Setup ────────────────────────────────
 
@@ -105,7 +72,7 @@ echo "╚═══════════════════════�
 echo ""
 
 # ── Test 1: work-status with no work config ──
-echo "Test 1: work-status shows warning when no work config"
+section "Test 1: work-status shows warning when no work config"
 setup_work_sandbox
 
 output=$(bash "$TEST_HOME/bin/work-status" 2>&1) || true
@@ -119,7 +86,7 @@ teardown_work_sandbox
 echo ""
 
 # ── Test 2: work-status with work identity ──
-echo "Test 2: work-status shows configured identity"
+section "Test 2: work-status shows configured identity"
 setup_work_sandbox
 setup_work_identity
 
@@ -138,7 +105,7 @@ teardown_work_sandbox
 echo ""
 
 # ── Test 3: work-status shows SSH hosts ──
-echo "Test 3: work-status shows SSH host configuration"
+section "Test 3: work-status shows SSH host configuration"
 setup_work_sandbox
 setup_work_identity
 setup_work_ssh
@@ -152,7 +119,7 @@ teardown_work_sandbox
 echo ""
 
 # ── Test 4: work-status shows .zshrc-work presence ──
-echo "Test 4: work-status detects .zshrc-work"
+section "Test 4: work-status detects .zshrc-work"
 setup_work_sandbox
 setup_work_identity
 
@@ -171,7 +138,7 @@ teardown_work_sandbox
 echo ""
 
 # ── Test 5: work-status counts repos ──
-echo "Test 5: work-status counts repos in work directory"
+section "Test 5: work-status counts repos in work directory"
 setup_work_sandbox
 setup_work_identity
 
@@ -189,7 +156,7 @@ teardown_work_sandbox
 echo ""
 
 # ── Test 6: _work-helpers functions ──
-echo "Test 6: _work-helpers config reader functions"
+section "Test 6: _work-helpers config reader functions"
 setup_work_sandbox
 setup_work_identity
 
@@ -216,7 +183,7 @@ teardown_work_sandbox
 echo ""
 
 # ── Test 7: _work-helpers when not configured ──
-echo "Test 7: _work-helpers returns empty when no work config"
+section "Test 7: _work-helpers returns empty when no work config"
 setup_work_sandbox
 
 result=$(bash -c "
@@ -234,7 +201,7 @@ teardown_work_sandbox
 echo ""
 
 # ── Test 8: get_work_ssh_hosts extracts hosts ──
-echo "Test 8: get_work_ssh_hosts parses SSH config markers"
+section "Test 8: get_work_ssh_hosts parses SSH config markers"
 setup_work_sandbox
 setup_work_ssh
 
@@ -250,7 +217,7 @@ teardown_work_sandbox
 echo ""
 
 # ── Test 9: get_work_ssh_hosts with no markers ──
-echo "Test 9: get_work_ssh_hosts returns empty without markers"
+section "Test 9: get_work_ssh_hosts returns empty without markers"
 setup_work_sandbox
 
 cat > "$TEST_HOME/.ssh/config" <<EOF
@@ -271,7 +238,7 @@ teardown_work_sandbox
 echo ""
 
 # ── Test 10: count_repos and list_dirty_repos ──
-echo "Test 10: count_repos and list_dirty_repos"
+section "Test 10: count_repos and list_dirty_repos"
 setup_work_sandbox
 
 mkdir -p "$TEST_HOME/projects/clean-repo/.git"
@@ -299,7 +266,7 @@ teardown_work_sandbox
 echo ""
 
 # ── Test 11: work-switch --help ──
-echo "Test 11: work-switch --help shows usage"
+section "Test 11: work-switch --help shows usage"
 setup_work_sandbox
 
 output=$(bash "$TEST_HOME/bin/work-switch" --help 2>&1) || true
@@ -310,23 +277,3 @@ assert_contains "$output" "Change employer" \
     "Describes purpose"
 
 teardown_work_sandbox
-echo ""
-
-# ── Summary ───────────────────────────────────
-
-echo ""
-echo "════════════════════════════════════════════════════════════"
-echo -e "  \033[0;32mPassed: $PASS\033[0m  |  \033[0;31mFailed: $FAIL\033[0m"
-echo "════════════════════════════════════════════════════════════"
-
-if [[ ${#FAILURES[@]} -gt 0 ]]; then
-    echo ""
-    echo "  Failed tests:"
-    for f in "${FAILURES[@]}"; do
-        echo -e "    \033[0;31m✗\033[0m $f"
-    done
-fi
-
-echo ""
-
-[[ $FAIL -eq 0 ]]

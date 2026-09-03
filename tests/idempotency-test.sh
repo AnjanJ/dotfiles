@@ -8,78 +8,15 @@
 # when run twice with the same inputs.
 #
 # Uses a temporary HOME directory — no real configs touched.
-# Usage: bash tests/test-idempotency.sh
+# Usage: tests/run idempotency   (or /opt/homebrew/bin/bash tests/idempotency-test.sh)
 # ============================================
 
 set -euo pipefail
 
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/base-test.sh"
+
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REAL_HOME="$HOME"
-
-# ── Test Framework ────────────────────────────
-
-PASS=0
-FAIL=0
-FAILURES=()
-
-pass() {
-    PASS=$((PASS + 1))
-    echo -e "  \033[0;32m✓\033[0m $1"
-}
-
-fail() {
-    FAIL=$((FAIL + 1))
-    FAILURES+=("$1")
-    echo -e "  \033[0;31m✗\033[0m $1"
-}
-
-assert_eq() {
-    local actual="$1" expected="$2" label="$3"
-    if [[ "$actual" == "$expected" ]]; then
-        pass "$label"
-    else
-        fail "$label (expected '$expected', got '$actual')"
-    fi
-}
-
-assert_file_exists() {
-    if [[ -f "$1" ]]; then
-        pass "$2"
-    else
-        fail "$2 ($1 not found)"
-    fi
-}
-
-assert_file_not_exists() {
-    if [[ ! -f "$1" ]]; then
-        pass "$2"
-    else
-        fail "$2 ($1 still exists)"
-    fi
-}
-
-assert_count() {
-    local file="$1" pattern="$2" expected="$3" label="$4"
-    local count
-    count=$(/usr/bin/grep -c "$pattern" "$file" 2>/dev/null || echo 0)
-    # Trim whitespace/newlines from count
-    count=$(echo "$count" | tr -d '[:space:]')
-    if [[ "$count" -eq "$expected" ]]; then
-        pass "$label"
-    else
-        fail "$label (expected $expected of '$pattern' in $(basename "$file"), found $count)"
-    fi
-}
-
-assert_perm() {
-    local file="$1" expected="$2" label="$3"
-    local actual=$(stat -f '%Lp' "$file" 2>/dev/null || echo "???")
-    if [[ "$actual" == "$expected" ]]; then
-        pass "$label"
-    else
-        fail "$label (expected $expected, got $actual)"
-    fi
-}
 
 # Snapshot: capture file list + checksums under HOME
 snapshot() {
@@ -96,17 +33,6 @@ snapshot() {
             local perm=$(stat -f '%Lp' "$f" 2>/dev/null || stat -c '%a' "$f" 2>/dev/null)
             echo "$perm $md5 $rel"
         done > "$out"
-}
-
-assert_snapshots_equal() {
-    local snap1="$1" snap2="$2" label="$3"
-    if diff -q "$snap1" "$snap2" &>/dev/null; then
-        pass "$label"
-    else
-        fail "$label"
-        echo "    --- Diff ---"
-        diff "$snap1" "$snap2" | head -20 | sed 's/^/    /'
-    fi
 }
 
 # Sandbox: create a temporary HOME
@@ -132,7 +58,7 @@ teardown_sandbox() {
 
 test_01_helpers_source_guard() {
     echo ""
-    echo "Test 1: _helpers.sh source guard"
+    section "Test 1: _helpers.sh source guard"
     setup_sandbox
 
     unset _HELPERS_LOADED
@@ -152,7 +78,7 @@ test_01_helpers_source_guard() {
 
 test_02_setup_git_personal_only() {
     echo ""
-    echo "Test 2: setup_git — personal identity only"
+    section "Test 2: setup_git — personal identity only"
     setup_sandbox
 
     # Need a .gitignore_global to symlink to
@@ -194,7 +120,7 @@ test_02_setup_git_personal_only() {
 
 test_03_setup_git_with_work() {
     echo ""
-    echo "Test 3: setup_git — with work identity"
+    section "Test 3: setup_git — with work identity"
     setup_sandbox
 
     touch "$DOTFILES_DIR/.gitignore_global" 2>/dev/null || true
@@ -233,7 +159,7 @@ test_03_setup_git_with_work() {
 
 test_04_setup_git_custom_work_dir() {
     echo ""
-    echo "Test 4: setup_git — custom work directory"
+    section "Test 4: setup_git — custom work directory"
     setup_sandbox
 
     touch "$DOTFILES_DIR/.gitignore_global" 2>/dev/null || true
@@ -267,7 +193,7 @@ test_04_setup_git_custom_work_dir() {
 
 test_05_ssh_config_overwrite() {
     echo ""
-    echo "Test 5: _build_ssh_config — overwrite not append"
+    section "Test 5: _build_ssh_config — overwrite not append"
     setup_sandbox
 
     unset _HELPERS_LOADED
@@ -293,7 +219,7 @@ test_05_ssh_config_overwrite() {
 
 test_06_ssh_config_1password() {
     echo ""
-    echo "Test 6: _build_ssh_config — 1Password mode"
+    section "Test 6: _build_ssh_config — 1Password mode"
     setup_sandbox
 
     unset _HELPERS_LOADED
@@ -319,7 +245,7 @@ test_06_ssh_config_1password() {
 
 test_07_ssh_config_multi_host() {
     echo ""
-    echo "Test 7: _build_ssh_config — multiple hosts with aliases"
+    section "Test 7: _build_ssh_config — multiple hosts with aliases"
     setup_sandbox
 
     unset _HELPERS_LOADED
@@ -357,7 +283,7 @@ test_07_ssh_config_multi_host() {
 
 test_08_ssh_permissions() {
     echo ""
-    echo "Test 8: _fix_ssh_permissions"
+    section "Test 8: _fix_ssh_permissions"
     setup_sandbox
 
     unset _HELPERS_LOADED
@@ -393,7 +319,7 @@ test_08_ssh_permissions() {
 
 test_09_zprofile_guard() {
     echo ""
-    echo "Test 9: .zprofile Homebrew PATH guard"
+    section "Test 9: .zprofile Homebrew PATH guard"
     setup_sandbox
 
     # Simulate the guard from install.sh
@@ -423,7 +349,7 @@ test_09_zprofile_guard() {
 
 test_10_work_setup_sentinel_markers() {
     echo ""
-    echo "Test 10: work-setup SSH sentinel markers"
+    section "Test 10: work-setup SSH sentinel markers"
     setup_sandbox
 
     unset _HELPERS_LOADED
@@ -510,7 +436,7 @@ EOF
 
 test_11_work_nuke_no_work() {
     echo ""
-    echo "Test 11: work-nuke when no work configured"
+    section "Test 11: work-nuke when no work configured"
     setup_sandbox
 
     unset _HELPERS_LOADED
@@ -544,7 +470,7 @@ test_11_work_nuke_no_work() {
 
 test_12_includeif_no_duplicates() {
     echo ""
-    echo "Test 12: includeIf — no duplicates across 5 runs"
+    section "Test 12: includeIf — no duplicates across 5 runs"
     setup_sandbox
 
     touch "$DOTFILES_DIR/.gitignore_global" 2>/dev/null || true
@@ -573,7 +499,7 @@ test_12_includeif_no_duplicates() {
 
 test_13_zshrc_work_preserved() {
     echo ""
-    echo "Test 13: ~/.zshrc-work customizations preserved"
+    section "Test 13: ~/.zshrc-work customizations preserved"
     setup_sandbox
 
     # Create initial .zshrc-work with the template
@@ -600,7 +526,7 @@ EOF
 
 test_14_git_config_defaults_idempotent() {
     echo ""
-    echo "Test 14: git config defaults — values unchanged on re-run"
+    section "Test 14: git config defaults — values unchanged on re-run"
     setup_sandbox
 
     unset _HELPERS_LOADED
@@ -627,7 +553,7 @@ test_14_git_config_defaults_idempotent() {
 
 test_15_nuke_setup_cycle() {
     echo ""
-    echo "Test 15: work-nuke + work-setup cycle"
+    section "Test 15: work-nuke + work-setup cycle"
     setup_sandbox
 
     unset _HELPERS_LOADED
@@ -719,7 +645,7 @@ EOF
 
 test_16_ssh_config_no_key_field() {
     echo ""
-    echo "Test 16: _build_ssh_config — host with no key (1Password)"
+    section "Test 16: _build_ssh_config — host with no key (1Password)"
     setup_sandbox
 
     unset _HELPERS_LOADED
@@ -749,7 +675,7 @@ test_16_ssh_config_no_key_field() {
 
 test_17_work_helpers_functions_with_no_config() {
     echo ""
-    echo "Test 17: _work-helpers functions — graceful with no config"
+    section "Test 17: _work-helpers functions — graceful with no config"
     setup_sandbox
 
     unset _HELPERS_LOADED
@@ -784,7 +710,7 @@ test_17_work_helpers_functions_with_no_config() {
 
 test_18_work_helpers_functions_with_config() {
     echo ""
-    echo "Test 18: _work-helpers functions — correct with config"
+    section "Test 18: _work-helpers functions — correct with config"
     setup_sandbox
 
     unset _HELPERS_LOADED
@@ -838,7 +764,7 @@ echo "╚═══════════════════════�
 
 test_19_llm_ollama_plugin_idempotent() {
     echo ""
-    echo "Test 19: install.sh step 7b — llm-ollama plugin install is idempotent"
+    section "Test 19: install.sh step 7b — llm-ollama plugin install is idempotent"
     setup_sandbox
 
     # Stub `llm` so the test never touches the real CLI
@@ -917,23 +843,3 @@ test_16_ssh_config_no_key_field
 test_17_work_helpers_functions_with_no_config
 test_18_work_helpers_functions_with_config
 test_19_llm_ollama_plugin_idempotent
-
-# ── Summary ───────────────────────────────────
-
-echo ""
-echo "════════════════════════════════════════════════════════════"
-echo -e "  \033[0;32mPassed: $PASS\033[0m  |  \033[0;31mFailed: $FAIL\033[0m"
-echo "════════════════════════════════════════════════════════════"
-
-if [[ ${#FAILURES[@]} -gt 0 ]]; then
-    echo ""
-    echo "  Failed tests:"
-    for f in "${FAILURES[@]}"; do
-        echo -e "    \033[0;31m✗\033[0m $f"
-    done
-fi
-
-echo ""
-
-# Exit with failure if any tests failed
-[[ $FAIL -eq 0 ]]
