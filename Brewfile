@@ -55,6 +55,7 @@ cask "aerospace"
 brew "sketchybar"
 brew "borders"
 brew "dark-mode"                 # `dotfiles theme` flips macOS appearance to the theme's mode
+cask "desktoppr"                 # `dotfiles theme bg` sets the desktop picture (pkg: asks for sudo once)
 
 # @group terminal-tools — Terminal enhancements & TUI tools
 brew "cliclick"

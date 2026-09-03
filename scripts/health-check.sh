@@ -247,6 +247,7 @@ if [[ -f "$HOME/.dotfiles-theme" ]]; then
             [[ -f "$tpl" ]] || continue
             check_file "$theme_state/theme/$(basename "$tpl" .tpl)" "rendered $(basename "$tpl" .tpl)"
         done
+        check_file "$theme_state/theme/background.png" "generated background.png"
         check_file "$DOTFILES_DIR/.config/ghostty/theme.generated" "Ghostty theme.generated"
         check_file "$DOTFILES_DIR/.config/zellij/themes/dotfiles.kdl" "Zellij themes/dotfiles.kdl"
         check_file "$DOTFILES_DIR/.config/sketchybar/colors.sh" "sketchybar colors.sh"

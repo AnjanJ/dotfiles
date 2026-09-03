@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+# dotfiles:summary=Desktop background for the active theme: cycle, set, list, regenerate
+# dotfiles:args=next | set <image> | current | list | generate | dir
+#
+#   dotfiles theme bg next            # cycle to the next background for this theme
+#   dotfiles theme bg set ~/pic.jpg   # use a specific image (recorded, survives sync)
+#   dotfiles theme bg list            # every candidate, * marks the current one
+#   dotfiles theme bg dir             # open ~/.config/dotfiles/backgrounds/<theme>/
+#
+# Candidates, in cycling order: themes/<theme>/backgrounds/*, then
+# ~/.config/dotfiles/backgrounds/<theme>/* (your own, never committed),
+# then the gradient `dotfiles theme` generates from the palette. The
+# desktop is set with desktoppr (Brewfile) or System Events; leave it
+# alone with `dotfiles toggle background off`.
+
+set -euo pipefail
+
+DOTFILES_DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+source "$DOTFILES_DIR/scripts/theme-utils.sh"
+source "$DOTFILES_DIR/scripts/theme-render.sh"
+source "$DOTFILES_DIR/scripts/theme-background.sh"
+
+THEME="$(get_current_theme)"
+usage() {
+    echo "Usage: dotfiles theme bg next | set <image> | current | list | generate | dir" >&2
+}
+
+report_set() {
+    # $1 = theme_background_set exit code, $2 = image
+    case "$1" in
+        0) echo "Background → $2" ;;
+        2) echo "Background recorded, but the desktop was not updated: osascript timed out (allow Automation for System Events, or brew install --cask desktoppr)" >&2; return 1 ;;
+        *) echo "Background recorded, but the desktop was not updated (setter failed)" >&2; return 1 ;;
+    esac
+}
+
+case "${1:-}" in
+    next)
+        [[ -n "$(theme_background_sources "$THEME")" ]] || { echo "No background found for theme '$THEME' (run: dotfiles theme $THEME)" >&2; exit 1; }
+        rc=0
+        theme_background_next "$THEME" || rc=$?
+        report_set "$rc" "$(theme_background_current)"
+        ;;
+    set)
+        img="${2:-}"
+        [[ -n "$img" ]] || { usage; exit 1; }
+        [[ -f "$img" ]] || { echo "Not a file: $img" >&2; exit 1; }
+        rc=0
+        theme_background_set "$img" || rc=$?
+        report_set "$rc" "$(theme_background_current)"
+        ;;
+    current)
+        cur="$(theme_background_current)"
+        [[ -n "$cur" ]] || { echo "No background set (run: dotfiles theme bg next)" >&2; exit 1; }
+        echo "$cur"
+        ;;
+    list)
+        cur="$(theme_background_current)"
+        found=false
+        while IFS= read -r f; do
+            [[ -n "$f" ]] || continue
+            found=true
+            if [[ "$f" == "$cur" ]]; then echo "* $f"; else echo "  $f"; fi
+        done <<EOF_SOURCES
+$(theme_background_sources "$THEME")
+EOF_SOURCES
+        [[ "$found" == true ]] || { echo "No background found for theme '$THEME' (run: dotfiles theme $THEME)" >&2; exit 1; }
+        ;;
+    generate)
+        out="$THEME_BG_STATE_DIR/current/theme/background.png"
+        colors="$THEME_BG_STATE_DIR/current/theme/colors.toml"
+        [[ -f "$colors" ]] || { echo "No rendered theme (run: dotfiles theme $THEME)" >&2; exit 1; }
+        if theme_background_generate "$colors" "$out"; then
+            echo "Generated $out"
+        else
+            echo "Could not generate a background from $colors" >&2
+            exit 1
+        fi
+        ;;
+    dir)
+        mkdir -p "$THEME_BG_USER_DIR/$THEME"
+        echo "$THEME_BG_USER_DIR/$THEME"
+        if [[ -z "${DOTFILES_NO_OPEN:-}" ]] && command -v open >/dev/null 2>&1; then
+            open "$THEME_BG_USER_DIR/$THEME"
+        fi
+        ;;
+    *)
+        usage
+        exit 1
+        ;;
+esac

@@ -103,7 +103,7 @@ dotfiles install --force            # Force reinstall everything
 
 ## Testing
 
-Every push and PR runs 21 test suites, an end-to-end install, shellcheck, `dotfiles commands --check` and `dotfiles keys --check` via GitHub Actions. The suites are discovered from `tests/*-test.sh`, so a new file is in CI the moment it exists:
+Every push and PR runs 22 test suites, an end-to-end install, shellcheck, `dotfiles commands --check` and `dotfiles keys --check` via GitHub Actions. The suites are discovered from `tests/*-test.sh`, so a new file is in CI the moment it exists:
 
 - **Shellcheck** — lints all shell scripts
 - **Idempotency** — install/setup can run repeatedly with identical results (sandboxed)
@@ -114,7 +114,8 @@ Every push and PR runs 21 test suites, an end-to-end install, shellcheck, `dotfi
 - **Restart** — `dotfiles restart` now/later/pending/list, the AeroSpace process-name case, borders relaunch honouring its toggle
 - **Web apps** — `dotfiles webapp install/remove`: bundle, plist, icon conversion, AeroSpace rule placement and removal, URL and name validation
 - **TUIs** — `dotfiles tui install/remove`: Ghostty launch line, default float, Ghostty icon fallback, rule lifecycle
-- **Theme system** — render, overrides, atomic swap, failure leaves previous theme, scaffolding
+- **Theme system** — render, overrides, atomic swap, failure leaves previous theme, scaffolding, light-theme mode outputs and the macOS appearance switch
+- **Theme backgrounds** — generated palette gradient, candidate order and cycling, `dotfiles theme bg` verbs, desktoppr/osascript setters, the toggle, set-on-switch-only from apply-theme
 - **Theme renderer** — token forms, colour maths, derived keys, error exits
 - **CLI router** — route resolution, `--help` never executes, required-arg guard, metadata lint, JSON
 - **Toggles** — flag files, `--enabled` exit codes, listing

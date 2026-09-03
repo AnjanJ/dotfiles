@@ -27,6 +27,7 @@ DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 source "$DOTFILES_DIR/scripts/theme-utils.sh"
 source "$DOTFILES_DIR/scripts/theme-render.sh"
+source "$DOTFILES_DIR/scripts/theme-background.sh"
 
 # Rendered-theme state root. Tests point HOME at a sandbox, so derive
 # from HOME rather than hard-coding the user's path.
@@ -211,15 +212,37 @@ apply_theme() {
         fi
         rendered=$((rendered + 1))
     done
+    # A desktop picture from the palette, so the theme has a background
+    # even with no image in themes/<name>/backgrounds/. Cosmetic: a
+    # machine without sips just has no generated one.
+    if theme_background_generate "$next/colors.toml" "$next/background.png" "$vars"; then
+        rendered=$((rendered + 1))
+    fi
     rm -f "$vars"
     echo "$THEME" > "$next/theme.name"
     _theme_success "Rendered $rendered templates ($overridden overridden by themes/$THEME/overrides), mode: $theme_mode"
 
     # ── Swap ─────────────────────────────────────────────
+    local previous_theme
+    previous_theme="$(cat "$CURRENT_DIR/theme.name" 2>/dev/null || true)"
     rm -rf "$RENDERED"
     mv "$next" "$RENDERED"
     echo "$THEME" > "$CURRENT_DIR/theme.name"
     _theme_success "Active theme → $RENDERED"
+
+    # ── Desktop background ───────────────────────────────
+    # Only when the theme actually changed (or nothing is set yet), so a
+    # `dotfiles sync` re-apply never clobbers a background you picked
+    # with `dotfiles theme bg set`.
+    if [[ "$previous_theme" != "$THEME" || ! -L "$THEME_BG_LINK" ]]; then
+        local bg_rc=0
+        theme_background_next "$THEME" || bg_rc=$?
+        case "$bg_rc" in
+            0) _theme_success "Background → $(basename "$(theme_background_current)")" ;;
+            2) _theme_warning "Background not set: osascript timed out (allow Automation for System Events, or brew install --cask desktoppr)" ;;
+            *) _theme_warning "Background not set (no image and no generated gradient, or the setter failed)" ;;
+        esac
+    fi
 
     # ── Install into apps ─────────────────────────────────
     # Apps that can include the rendered file need nothing here: ghostty

@@ -35,6 +35,7 @@ setup_theme_sandbox() {
     mkdir -p "$MOCK_DOTFILES/scripts" "$MOCK_DOTFILES/bin"
     cp "$REAL_DOTFILES_DIR/scripts/theme-utils.sh" "$MOCK_DOTFILES/scripts/"
     cp "$REAL_DOTFILES_DIR/scripts/theme-render.sh" "$MOCK_DOTFILES/scripts/"
+    cp "$REAL_DOTFILES_DIR/scripts/theme-background.sh" "$MOCK_DOTFILES/scripts/"
     cp "$REAL_DOTFILES_DIR/scripts/apply-theme.sh" "$MOCK_DOTFILES/scripts/"
     cp "$REAL_DOTFILES_DIR/scripts/_helpers.sh" "$MOCK_DOTFILES/scripts/"
     cp "$REAL_DOTFILES_DIR/bin/dotfiles-hook" "$MOCK_DOTFILES/bin/"

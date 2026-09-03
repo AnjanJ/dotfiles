@@ -25,6 +25,7 @@ themes/
     ├── theme.conf            # what a palette can't say: editor theme names, bat theme
     ├── nvim/<name>-theme.lua # lazy.nvim plugin spec for the colorscheme
     ├── overrides/            # optional hand-written file replacing a template's output
+    ├── backgrounds/          # optional desktop pictures (a gradient is generated otherwise)
     └── bat/ zed/ warp/ …     # optional per-app assets (custom .tmTheme, Zed theme JSON)
 ```
 
@@ -76,6 +77,19 @@ Every palette declares `mode = "light"` or `"dark"` (derived from the background
 `dotfiles theme` also switches macOS between light and dark appearance to match, using the `dark-mode` CLI from the Brewfile (instant, no permission dialog) or, without it, System Events through `osascript` under a 5-second watchdog (macOS asks once to allow Automation for your terminal). Leave the appearance alone with `dotfiles toggle appearance off`; scripts and tests can set `DOTFILES_NO_APPEARANCE=1`.
 
 The light themes keep dark ANSI black and grey white slots (the values Ghostty ships for the same themes), so `ls` and prompts stay readable on a pale background. Their editor themes come from extensions listed in the Brewfile (`catppuccin.catppuccin-vsc`, `shadesofbuntu.flexoki-light`) and Zed's `auto_install_extensions` (`catppuccin`, `flexoki-themes`).
+
+## Backgrounds
+
+Every theme gets a desktop picture. `dotfiles theme` renders a gradient from the palette (background toward the accent, darkening downward) into `~/.local/state/dotfiles/current/theme/background.png`, so no image has to live in git; drop your own into `themes/<name>/backgrounds/` (tracked) or `~/.config/dotfiles/backgrounds/<name>/` (`dotfiles theme bg dir` opens it, never committed) and they come first.
+
+```bash
+dotfiles theme bg next          # cycle: theme images, your images, the generated gradient
+dotfiles theme bg set ~/pic.jpg # use a specific image
+dotfiles theme bg list          # candidates, * marks the current one
+dotfiles theme bg current
+```
+
+The choice is a symlink at `~/.local/state/dotfiles/current/background`. A theme *switch* moves to that theme's next candidate; re-applying the same theme (`dotfiles sync`) leaves whatever you set alone. The desktop is set with [desktoppr](https://github.com/scriptingosx/desktoppr) from the Brewfile (a pkg, so the first `brew bundle` asks for sudo) or, without it, System Events through `osascript` under a 5-second watchdog. `dotfiles toggle background off` keeps the desktop alone while still recording the choice; scripts and tests set `DOTFILES_NO_BACKGROUND=1`.
 
 ## Adding a theme
 

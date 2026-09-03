@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# dotfiles:summary=Turn a feature on or off with a flag file (startup-apps, borders, auto-commit, appearance)
+# dotfiles:summary=Turn a feature on or off with a flag file (startup-apps, borders, auto-commit, appearance, background)
 # dotfiles:args=<flag> [on|off|toggle|status] | --list | --enabled <flag>
 #
 # Toggle features without editing a config file — can be run from anywhere
@@ -15,13 +15,14 @@
 #   borders        JankyBorders launch from aerospace after-startup-command
 #   auto-commit    update.sh committing and pushing "snapshot: system state"
 #   appearance     `dotfiles theme` switching macOS light/dark to the theme's mode
+#   background     `dotfiles theme` / `dotfiles theme bg` setting the desktop picture
 #
 # Any other name works too; consumers just have to ask.
 
 set -euo pipefail
 
 TOGGLES_DIR="${DOTFILES_STATE_DIR:-$HOME/.local/state/dotfiles}/toggles"
-KNOWN_FLAGS=(startup-apps borders auto-commit appearance)
+KNOWN_FLAGS=(startup-apps borders auto-commit appearance background)
 
 usage() {
     echo "Usage: dotfiles toggle <flag> [on|off|toggle|status]"
