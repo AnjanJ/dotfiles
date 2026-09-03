@@ -214,6 +214,8 @@ Effects: theme switches no longer dirty the repo, `snapshot: system state` noise
 
 **8. Keybinding conflict test.** Extend `tests/keys-test.sh` with the check `test/shell.d/hyprland-binding-conflicts-test.sh` does for Hyprland: no key bound twice within a mode of `aerospace.toml`, every launcher rule references a bundle that the map or `dotfiles webapp`/`tui install` can produce, and every binding whose command is not self-explanatory carries a `# desc:` line. Small.
 
+> **Item 9 done (2026-09-03):** `~/.config/dotfiles/menu.d/*.tsv` rows (`label<TAB>command`) are merged into `dotfiles menu`: un-nested labels join the root menu, `Prefix/Label` rows appear under one `Prefix ▸` submenu reachable as `dotfiles menu <prefix>` (lowercased, dashed), and a label equal to a built-in row replaces its command in place. Comments and malformed lines are ignored; `--list` and `--run` see the merged tree.
+
 **9. Menu extensions.** `~/.config/dotfiles/menu.d/*.tsv` with `label<TAB>command` rows, a slash in the label nesting under a submenu, merged into `dotfiles menu --list` after the built-in tree; reusing a built-in label overrides that row, as `omarchy-menu.jsonc` does. Small.
 
 **10. Shell functions worth porting.** From `default/bash/fns/`: `ga <branch>` and `gd` for git worktrees next to the repo with `mise trust` (this repo's Rails and Phoenix work is where worktrees pay off), `compress`/`decompress`, and `fip`/`dip`/`lip` SSH port forwards. Into `.zshrc-terminal-enhancements` with a mention in `docs/DAILY_WORKFLOWS.md`. Skip the tmux dev layouts (Zellij layouts exist) and the rsync watchers. Small.

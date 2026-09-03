@@ -99,6 +99,8 @@ dotfiles install --force            # Force reinstall everything
 
 **Migrations** are one-off, idempotent repairs for changes a relink cannot express: a symlink that moved, a generated file that changed location, a stale config to remove. They live in `migrations/<unix-ts>-<slug>.sh`, run in order during `dotfiles sync` and `dotfiles update` with `DOTFILES_DIR` exported, and are marked done per machine in `~/.local/state/dotfiles/migrations/`. A failing migration stays pending and is retried next time; `dotfiles health` warns when any are pending. Create one with `dotfiles migrate --new <slug>`.
 
+**Menu rows** of your own live in `~/.config/dotfiles/menu.d/*.tsv`, one `label<TAB>command` per line: an un-nested label joins the root of `dotfiles menu`, `Personal/Notes` appears under a `Personal ▸` submenu (`dotfiles menu personal`), and a label equal to a built-in row replaces that row's command.
+
 **Hooks** let you attach your own scripts to events without editing the repo. Put executable scripts in `~/.config/dotfiles/hooks/<event>.d/` (or a single `~/.config/dotfiles/hooks/<event>` file). Events: `theme-set <theme>` after a theme switch, `post-sync`, `post-update`, `post-install` (once, at the end of `install.sh`), `font-set <family>` after `dotfiles font set`. A failing hook is reported and never stops the caller. The repo's `hooks/<event>.d/*.sample` files are seeded into that directory by install and doctor and stay inert until renamed without `.sample`; `dotfiles hook --list` shows what is installed and `dotfiles hook install <event> <file>` adds your own.
 
 ## Unattended installs
@@ -123,7 +125,7 @@ Every push and PR runs 32 test suites, an end-to-end install, shellcheck, `dotfi
 - **Theme system** (`theme`) — render, overrides, atomic swap, render lock, palette preview, failure leaves previous theme, editor settings generated from `settings.base.json` with in-app edits adopted, scaffolding, light-theme mode outputs and the macOS appearance switch
 - **Theme backgrounds** (`theme-bg`) — generated palette gradient, candidate order and cycling, `dotfiles theme bg` verbs, desktoppr/osascript setters, the toggle, set-on-switch-only from apply-theme
 - **Reminder** (`reminder`) — `dotfiles reminder`: the launchd agent plist, scheduling via a launchctl stub, show/clear, the `--fire` path (notification, self-removal, unload), validation
-- **Menu** (`menu`) — `dotfiles menu`: rows per route, active theme and toggle state, launcher rows from installed bundles, the commands route, `--run`, prompt rows, the numbered fallback picker
+- **Menu** (`menu`) — `dotfiles menu`: rows per route, active theme and toggle state, launcher rows from installed bundles, user rows from `menu.d/*.tsv` (root rows, nested submenus, overrides, malformed lines), the commands route, `--run`, prompt rows, the numbered fallback picker
 - **Font** (`font`) — `dotfiles font`: current/default, list via a fontconfig stub, set with verification, the state file, the re-render carrying `{{ font_family }}` into Ghostty, WezTerm, Zed and VS Code, the `font-set` hook, reset, `/bin/bash` 3.2
 - **Hooks** (`hook`) — sample hooks per event, `--seed` never overwriting, samples inert, `--list`, `dotfiles hook install`, every fired event known and sampled, `/bin/bash` 3.2
 - **Install answers** (`install-answers`) — `scripts/install-answers.sh`: every key, flag/env precedence, arrays and booleans, unknown-key warnings, missing and invalid files, install.sh's `--answers` / `DOTFILES_ANSWERS` / `~/.dotfiles-answers.json` handling

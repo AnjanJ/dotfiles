@@ -7,6 +7,10 @@
 #   dotfiles menu toggle --list   # print the rows: label<TAB>command
 #   dotfiles menu theme --run "Switch to aura"
 #
+# Your own rows: ~/.config/dotfiles/menu.d/*.tsv, one label<TAB>command per
+# line; "Personal/Notes" nests under a "Personal ▸" submenu (dotfiles menu
+# personal); a label matching a built-in row replaces its command.
+#
 # Every row is a shell command, so anything the menu can do you can
 # script; a row ending in ▸ opens a submenu. Ctrl+Shift+Space opens it
 # in a Ghostty window (aerospace.toml); `dotfiles tui install Menu
@@ -100,16 +104,68 @@ rows_commands() {
     done < <("$DOTFILES_DIR/bin/dotfiles" commands --plain)
 }
 
+# ── User rows: ~/.config/dotfiles/menu.d/*.tsv ────────────────
+# Each line is label<TAB>command. "Personal/Notes" nests Notes under a
+# "Personal ▸" submenu reached as `dotfiles menu personal`; a label that
+# matches a built-in row in the same menu replaces its command, the way
+# omarchy-menu.jsonc extensions override by id. Files stay outside the
+# repo so updates never touch them.
+MENU_DIR="${DOTFILES_MENU_DIR:-$HOME/.config/dotfiles/menu.d}"
+
+user_rows() {
+    # all user rows as label<TAB>command, comments and malformed lines dropped
+    local f
+    for f in "$MENU_DIR"/*.tsv; do
+        [[ -f "$f" ]] || continue
+        awk -F'\t' 'NF >= 2 && $1 !~ /^[[:space:]]*#/ && $1 != "" && $2 != "" { print $1 "\t" $2 }' "$f"
+    done
+}
+
+# Submenu route for a prefix: "Personal Tools" -> personal-tools
+route_of() {
+    printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9\n' '-' | sed 's/^-*//; s/-*$//'
+}
+
+user_rows_for() {
+    # rows for one route: root gets the un-nested labels plus one "Name ▸"
+    # per prefix; a prefix route gets the labels under it
+    local route="$1" label cmd prefix
+    while IFS=$'\t' read -r label cmd; do
+        if [[ "$label" == */* ]]; then
+            prefix="${label%%/*}"
+            if [[ "$route" == "root" ]]; then
+                printf '%s\t%s\n' "$prefix $SUB" "menu:$(route_of "$prefix")"
+            elif [[ "$(route_of "$prefix")" == "$route" ]]; then
+                printf '%s\t%s\n' "${label#*/}" "$cmd"
+            fi
+        elif [[ "$route" == "root" ]]; then
+            printf '%s\t%s\n' "$label" "$cmd"
+        fi
+    done < <(user_rows)
+}
+
+# Built-in rows then user rows; the last command for a label wins and
+# the first position is kept, so an override sits where the row was.
+merge_rows() {
+    awk -F'\t' '{ if (!($1 in cmd)) order[++n] = $1; cmd[$1] = $2 } END { for (i = 1; i <= n; i++) print order[i] "\t" cmd[order[i]] }'
+}
+
 rows_for() {
-    case "$1" in
-        root|"") rows_root ;;
-        theme) rows_theme ;;
-        toggle|toggles) rows_toggle ;;
-        launchers) rows_launchers ;;
-        reminder) rows_reminder ;;
-        commands) rows_commands ;;
-        *) return 1 ;;
+    local route="$1" builtin
+    case "$route" in
+        root|"") route="root"; builtin=rows_root ;;
+        theme) builtin=rows_theme ;;
+        toggle|toggles) route="toggle"; builtin=rows_toggle ;;
+        launchers) builtin=rows_launchers ;;
+        reminder) builtin=rows_reminder ;;
+        commands) builtin=rows_commands ;;
+        *)
+            # a user submenu exists only if some row nests under it
+            [[ -n "$(user_rows_for "$route")" ]] || return 1
+            builtin=true
+            ;;
     esac
+    { "$builtin"; user_rows_for "$route"; } | merge_rows
 }
 
 # ── Prompts for the few rows that need input ──────────────────
@@ -224,7 +280,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-rows_for "$ROUTE" >/dev/null 2>&1 || { echo "Unknown menu '$ROUTE' (root, theme, toggle, launchers, reminder, commands)" >&2; exit 1; }
+rows_for "$ROUTE" >/dev/null 2>&1 || { echo "Unknown menu '$ROUTE' (root, theme, toggle, launchers, reminder, commands, or a submenu from ~/.config/dotfiles/menu.d/*.tsv)" >&2; exit 1; }
 
 case "$MODE" in
     list) rows_for "$ROUTE" ;;
