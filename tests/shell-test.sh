@@ -46,7 +46,7 @@ assert_eq "$rc" "1" "gwa without a branch is a usage error"
 out=$(z "cd '$TEST_TMP/proj--feature-x' && GWR_YES=1 gwr && pwd && git branch --list feature-x")
 assert_contains "$out" "$TEST_TMP/proj" "gwr returns to the main checkout"
 assert_dir_not_exists "$TEST_TMP/proj--feature-x" "worktree removed"
-assert_not_contains "$out" "feature-x" "branch deleted"
+assert_eq "$(z "cd '$REPO' && git branch --list feature-x")" "" "branch deleted"
 set +e; out=$(z "cd '$REPO' && GWR_YES=1 gwr"); rc=$?; set -e
 assert_eq "$rc" "1" "gwr refuses a directory that is not <repo>--<branch>"
 assert_contains "$out" "is not a gwa worktree" "and says why"
