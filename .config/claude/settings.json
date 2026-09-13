@@ -12,7 +12,7 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "sonnet",
+  "model": "claude-fable-5-1[1m]",
   "statusLine": {
     "type": "command",
     "command": "bash ~/.claude/statusline-command.sh"
