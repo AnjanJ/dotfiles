@@ -53,5 +53,10 @@
   "skipDangerousModePermissionPrompt": true,
   "theme": "custom:dotfiles",
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true,
+  "modelSettings": {
+    "claude-opus-5-5": {
+      "effortLevel": "xhigh"
+    }
+  }
 }
