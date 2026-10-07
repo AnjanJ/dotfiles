@@ -12,7 +12,7 @@
     ],
     "defaultMode": "auto"
   },
-  "model": "opus[1m]",
+  "model": "opus",
   "statusLine": {
     "type": "command",
     "command": "bash ~/.claude/statusline-command.sh"
@@ -49,14 +49,14 @@
   },
   "alwaysThinkingEnabled": false,
   "effortLevel": "high",
-  "tui": "fullscreen",
-  "skipDangerousModePermissionPrompt": true,
-  "theme": "custom:dotfiles",
-  "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true,
   "modelSettings": {
     "claude-opus-5-5": {
       "effortLevel": "xhigh"
     }
-  }
+  },
+  "tui": "fullscreen",
+  "skipDangerousModePermissionPrompt": true,
+  "theme": "custom:dotfiles",
+  "agentPushNotifEnabled": true,
+  "skipAutoPermissionPrompt": true
 }
