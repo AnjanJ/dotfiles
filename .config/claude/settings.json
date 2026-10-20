@@ -18,13 +18,16 @@
     "command": "bash ~/.claude/statusline-command.sh"
   },
   "enabledPlugins": {
-    "typescript-lsp@claude-plugins-official": false,
-    "clangd-lsp@claude-plugins-official": false,
     "shipkit@shipkit": true,
-    "ruby-lsp@claude-plugins-official": false,
-    "frontend-design@claude-plugins-official": true,
     "bodhikit@bodhikit": true,
-    "shipkit-workflows@shipkit": true
+    "shipkit-workflows@shipkit": true,
+    "marketing@synced": false,
+    "engineering@synced": false,
+    "sales@synced": false,
+    "design@synced": false,
+    "legal@synced": false,
+    "product-management@synced": false,
+    "cowork-plugin-management@synced": false
   },
   "extraKnownMarketplaces": {
     "shipkit": {
