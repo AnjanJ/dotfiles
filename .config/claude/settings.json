@@ -28,7 +28,8 @@
     "design@synced": false,
     "legal@synced": false,
     "product-management@synced": false,
-    "cowork-plugin-management@synced": false
+    "cowork-plugin-management@synced": false,
+    "ruby-lsp@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "shipkit": {
@@ -55,7 +56,7 @@
   "skipDangerousModePermissionPrompt": true,
   "theme": "custom:dotfiles",
   "idleCompaction": false,
+  "switchModelsOnFlag": true,
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true,
-  "switchModelsOnFlag": true
+  "skipAutoPermissionPrompt": true
 }
