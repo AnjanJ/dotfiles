@@ -17,7 +17,7 @@
     "CLAUDE_CODE_AUTO_COMPACT_WINDOW": "300000",
     "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
   },
-  "model": "fable",
+  "model": "opus",
   "statusLine": {
     "type": "command",
     "command": "bash ~/.claude/statusline-command.sh"
