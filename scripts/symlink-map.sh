@@ -63,6 +63,7 @@ DOTFILES_LINKS=(
     # lives beside llm's machine state (logs.db etc.), so only the one
     # file is linked, not the directory.
     ".config/claude/settings.json:$HOME/.claude/settings.json"
+    ".config/claude/CLAUDE.md:$HOME/.claude/CLAUDE.md"
     ".config/claude/statusline-command.sh:$HOME/.claude/statusline-command.sh"
     # The end-user skill: how to manage this machine, for Claude Code (agents/skills/dotfiles/SKILL.md)
     "agents/skills/dotfiles:$HOME/.claude/skills/dotfiles"
