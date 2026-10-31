@@ -13,6 +13,10 @@
     ],
     "defaultMode": "auto"
   },
+  "env": {
+    "CLAUDE_CODE_AUTO_COMPACT_WINDOW": "300000",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
+  },
   "model": "fable",
   "statusLine": {
     "type": "command",
@@ -49,13 +53,12 @@
   "effortLevel": "high",
   "modelSettings": {
     "claude-opus-5-5": {
-      "effortLevel": "xhigh"
+      "effortLevel": "medium"
     }
   },
   "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
   "theme": "custom:dotfiles",
-  "idleCompaction": false,
   "switchModelsOnFlag": true,
   "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true
