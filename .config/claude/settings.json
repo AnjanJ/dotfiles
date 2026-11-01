@@ -26,6 +26,7 @@
     "shipkit@shipkit": true,
     "bodhikit@bodhikit": false,
     "bodhikit@synced": false,
+    "shipkit@synced": false,
     "shipkit-workflows@shipkit": true,
     "marketing@synced": false,
     "engineering@synced": false,

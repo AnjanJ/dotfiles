@@ -234,6 +234,18 @@ a() {
   eval "$cmd" '"$@"'
 }
 
+# Claude Code with no plugins, for quick work with a smaller startup context.
+# The @synced entries matter: turning off a plugin alone lets its claude.ai
+# copy load instead.
+claude-bare() {
+  claude --settings '{"enabledPlugins":{"shipkit@shipkit":false,"shipkit@synced":false,"shipkit-workflows@shipkit":false,"bodhikit@bodhikit":false,"bodhikit@synced":false,"ruby-lsp@claude-plugins-official":false}}' "$@"
+}
+
+# Claude Code with the browser tools, which add to every request when on.
+claude-web() {
+  claude --chrome "$@"
+}
+
 # ── Update notice ─────────────────────────────
 # One line at login when commits, brew upgrades, migrations or restarts are
 # waiting. The check itself (a git fetch, seconds) never runs in the prompt
