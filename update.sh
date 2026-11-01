@@ -397,39 +397,32 @@ if ! bash "$DOTFILES_DIR/bin/dotfiles-toggle" --enabled auto-commit; then
 elif [[ "$CURRENT_BRANCH" != "main" ]]; then
     print_warning "On branch '$CURRENT_BRANCH' — skipping auto-commit/push (only runs on main)"
 elif [[ -n $(git status -s) ]]; then
-    # Stage tracked changes only (Brewfile.backup is gitignored — local safety net only)
-    git add Brewfile .config/mise/config.toml 2>/dev/null || true
-    git add -u
-
-    # Skip commit when the only diff is whitespace, comment, or ordering churn
-    # in Brewfile/mise config (no functional package changes).
-    MEANINGFUL=false
-    if ! git diff --cached --quiet; then
-        # Any change outside Brewfile/mise config = meaningful by default
-        if git diff --cached --name-only | grep -vE '^(Brewfile|\.config/mise/config\.toml)$' | grep -q .; then
-            MEANINGFUL=true
-        else
-            # Only Brewfile/mise diffs — check for actual package adds/removes
-            # (ignore comment-only and whitespace-only lines)
-            for f in Brewfile .config/mise/config.toml; do
-                if git diff --cached -- "$f" | grep -E '^[+-][^+-]' | grep -vE '^[+-]\s*(#|$)' | grep -q .; then
-                    MEANINGFUL=true
-                    break
-                fi
-            done
+    # Publish only the files this script updates itself. Anything else in the
+    # tree is someone's unfinished work, and this repo is public. The commit
+    # names its paths so that work stays put even if it is already staged.
+    # Comment-only or whitespace-only package edits are churn, not a snapshot.
+    SNAPSHOT_FILES=()
+    for f in Brewfile .config/mise/config.toml; do
+        if git diff HEAD -- "$f" | grep -E '^[+-][^+-]' | grep -vE '^[+-]\s*(#|$)' | grep -q .; then
+            SNAPSHOT_FILES+=("$f")
         fi
-    fi
+    done
 
-    if [[ "$MEANINGFUL" == true ]]; then
-        CHANGES=$(git diff --cached --stat | tail -1)
+    if [[ ${#SNAPSHOT_FILES[@]} -gt 0 ]]; then
+        CHANGES=$(git diff HEAD --stat -- "${SNAPSHOT_FILES[@]}" | tail -1)
         git commit -m "snapshot: system state
 
-$CHANGES"
+$CHANGES" -- "${SNAPSHOT_FILES[@]}"
         git push origin main
         print_success "Changes pushed to repo"
     else
-        print_success "No meaningful changes — skipping snapshot commit"
-        git reset HEAD -- . >/dev/null 2>&1 || true
+        print_success "No package changes — skipping snapshot commit"
+    fi
+
+    LEFT_BEHIND=$(git status --short)
+    if [[ -n "$LEFT_BEHIND" ]]; then
+        print_warning "Left uncommitted, commit these yourself:"
+        echo "$LEFT_BEHIND"
     fi
 else
     print_success "Repo already in sync"

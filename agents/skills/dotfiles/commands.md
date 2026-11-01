@@ -44,7 +44,7 @@ Flag files under `~/.local/state/dotfiles/toggles/<flag>.off`; everything is on 
 
 - `startup-apps` — the login session restore (`startup-apps.sh`)
 - `borders` — launching JankyBorders from AeroSpace
-- `auto-commit` — `dotfiles update` committing and pushing `snapshot: system state`
+- `auto-commit` — `dotfiles update` committing and pushing `snapshot: system state` (Brewfile and mise config only)
 - `appearance` — `dotfiles theme` switching macOS light/dark to match the theme
 - `background` — `dotfiles theme` setting the desktop picture
 - `update-notice` — the one-line "updates waiting" notice at shell login

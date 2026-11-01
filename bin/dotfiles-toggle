@@ -13,7 +13,7 @@
 #
 #   startup-apps   .config/aerospace/scripts/startup-apps.sh session restore
 #   borders        JankyBorders launch from aerospace after-startup-command
-#   auto-commit    update.sh committing and pushing "snapshot: system state"
+#   auto-commit    update.sh committing and pushing "snapshot: system state" (Brewfile and mise config only)
 #   appearance     `dotfiles theme` switching macOS light/dark to the theme's mode
 #   background     `dotfiles theme` / `dotfiles theme bg` setting the desktop picture
 #   update-notice  the one-line "updates waiting" notice .zshrc prints at login

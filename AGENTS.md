@@ -65,4 +65,4 @@ Colours belong in `themes/<name>/colors.toml`; app configs reference the rendere
 
 ## Commits
 
-Atomic commits, imperative subject with a type prefix (`feat`, `fix`, `docs`, `test`, `chore`), body with what/why/how and an honest test plan. `update.sh` commits `snapshot: system state` on main when Brewfile or mise config change; `dotfiles toggle auto-commit off` stops that.
+Atomic commits, imperative subject with a type prefix (`feat`, `fix`, `docs`, `test`, `chore`), body with what/why/how and an honest test plan. `update.sh` commits `snapshot: system state` on main when Brewfile or mise config change, and commits only those files, so anything else stays uncommitted with a warning; `dotfiles toggle auto-commit off` stops that.

@@ -373,6 +373,41 @@ test_37c_failed_pull_restores_stash() {
     assert_eq "$(git -C "$MOCK" stash list | wc -l | tr -d ' ')" "0" "no stash left behind"
 }
 
+test_37d_snapshot_publishes_only_packages() {
+    echo ""
+    section "Test 37d: the snapshot publishes package files and nothing else"
+
+    setup_pipeline_sandbox
+    echo "# half-done edit" >> "$MOCK/.zshrc"
+    local before out
+    before=$(git -C "$MOCK" rev-parse HEAD)
+    out=$(run_update --no-snapshot)
+    assert_eq "$(git -C "$MOCK" rev-parse HEAD)" "$before" "an edit outside the package files is not committed"
+    assert_eq "$(git -C "$ORIGIN" rev-parse main)" "$before" "and not pushed"
+    assert_contains "$out" "Left uncommitted" "the run warns about it"
+    assert_contains "$out" ".zshrc" "and names the file"
+    assert_file_contains "$MOCK/.zshrc" "# half-done edit" "the edit stays in the working tree"
+
+    setup_pipeline_sandbox
+    echo 'brew "ripgrep"' >> "$MOCK/Brewfile"
+    echo "# half-done edit" >> "$MOCK/.zshrc"
+    echo "# staged edit" >> "$MOCK/.config/aerospace/aerospace.toml"
+    git -C "$MOCK" add .config/aerospace/aerospace.toml
+    out=$(run_update --no-snapshot)
+    assert_eq "$(git -C "$MOCK" log -1 --format=%s)" "snapshot: system state" "a package change is committed"
+    assert_eq "$(git -C "$MOCK" show --name-only --format= HEAD)" "Brewfile" "the commit holds only the package file"
+    assert_eq "$(git -C "$ORIGIN" rev-parse main)" "$(git -C "$MOCK" rev-parse HEAD)" "and is pushed"
+    assert_contains "$(git -C "$MOCK" status --short)" ".zshrc" "the unrelated edit stays uncommitted"
+    assert_contains "$(git -C "$MOCK" status --short)" "aerospace.toml" "work staged by hand stays uncommitted too"
+    assert_contains "$out" "Left uncommitted" "the run warns about what it left"
+
+    setup_pipeline_sandbox
+    echo "# just a comment" >> "$MOCK/Brewfile"
+    before=$(git -C "$MOCK" rev-parse HEAD)
+    run_update --no-snapshot >/dev/null
+    assert_eq "$(git -C "$MOCK" rev-parse HEAD)" "$before" "a comment-only Brewfile edit is not committed"
+}
+
 test_38_transcript() {
     echo ""
     section "Test 38: Transcript"
@@ -409,4 +444,5 @@ test_36_no_snapshot_and_yes
 test_37_lock
 test_37b_stay_awake_and_failure_hint
 test_37c_failed_pull_restores_stash
+test_37d_snapshot_publishes_only_packages
 test_38_transcript
