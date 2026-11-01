@@ -17,7 +17,7 @@
     "defaultMode": "auto"
   },
   "env": {
-    "CLAUDE_CODE_AUTO_COMPACT_WINDOW": "300000",
+    "CLAUDE_CODE_AUTO_COMPACT_WINDOW": "200000",
     "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
   },
   "model": "opus",
