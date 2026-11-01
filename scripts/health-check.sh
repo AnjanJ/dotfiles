@@ -173,8 +173,9 @@ print_header "3. Window Management"
 check_brew_package aerospace "Aerospace"
 check_file ~/.config/aerospace/aerospace.toml "Aerospace config"
 
-# Check if Aerospace is running
-if pgrep -x "Aerospace" > /dev/null; then
+# Check if Aerospace is running. pgrep -x is case-sensitive and the process
+# is named AeroSpace, with a capital S.
+if pgrep -x "AeroSpace" > /dev/null; then
     echo -e "${GREEN}✓${NC} Aerospace: ${GREEN}running${NC}"
     PASSED=$((PASSED + 1))
 else
