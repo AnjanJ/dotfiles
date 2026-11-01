@@ -133,12 +133,13 @@ dotfiles install --no-macos-defaults --no-runtimes                  # Skip the m
 
 ## Testing
 
-Every push and PR runs 34 test suites, an end-to-end install, shellcheck, `dotfiles commands --check`, `dotfiles keys --check` and `dotfiles keys --lint` via GitHub Actions. The suites are discovered from `tests/*-test.sh`, so a new file is in CI the moment it exists:
+Every push and PR runs 35 test suites, an end-to-end install, shellcheck, `dotfiles commands --check`, `dotfiles keys --check` and `dotfiles keys --lint` via GitHub Actions. The suites are discovered from `tests/*-test.sh`, so a new file is in CI the moment it exists:
 
 - **Shellcheck** — lints all shell scripts
 - **Idempotency** (`idempotency`) — install/setup can run repeatedly with identical results (sandboxed)
 - **Work identity** (`work-nuke`) — setup, nuke and switch lifecycle
 - **Work status** (`work-status`) — status diagnostics for the work identity
+- **Claude handoff** (`claude-handoff`) — the status line records context usage per session, and the Stop hook offers a handoff prompt once at 45%
 - **Shell helpers** (`shell`) — the zsh functions in `.zshrc-terminal-enhancements` run under zsh: `gwa`/`gwr` worktrees against a temp repo with a mise stub, `compress`/`decompress` round trip, `fip`/`dip`/`lip` against ssh/pkill/pgrep stubs, usage errors
 - **SSH config** (`ssh-adversarial`) — adversarial inputs and edge cases
 - **Repo cloner** (`repos-clone`) — SSH alias detection and URL rewriting

@@ -36,6 +36,13 @@ used_pct=$(echo "$input" | jq -r '.context_window.used_percentage // empty')
 context_display=""
 if [ -n "$used_pct" ]; then
   context_display=$(printf '%.0f%% ctx' "$used_pct")
+
+  # Hooks cannot see this number, so leave it for handoff-check.sh.
+  session_id=$(echo "$input" | jq -r '.session_id // empty' | tr -cd 'A-Za-z0-9_-')
+  if [ -n "$session_id" ]; then
+    handoff_state="${TMPDIR:-/tmp}/claude-handoff"
+    mkdir -p "$handoff_state" && printf '%.0f\n' "$used_pct" >"$handoff_state/$session_id.pct"
+  fi
 fi
 
 # --- Assemble ---

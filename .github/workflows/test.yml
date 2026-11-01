@@ -36,6 +36,7 @@ jobs:
             .config/sketchybar/plugins/*.sh \
             .config/borders/bordersrc \
             .config/claude/statusline-command.sh \
+            .config/claude/handoff-check.sh \
             tests/base-test.sh \
             tests/run \
             tests/*-test.sh \

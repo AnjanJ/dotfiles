@@ -65,6 +65,7 @@ DOTFILES_LINKS=(
     ".config/claude/settings.json:$HOME/.claude/settings.json"
     ".config/claude/CLAUDE.md:$HOME/.claude/CLAUDE.md"
     ".config/claude/statusline-command.sh:$HOME/.claude/statusline-command.sh"
+    ".config/claude/handoff-check.sh:$HOME/.claude/handoff-check.sh"
     # The end-user skill: how to manage this machine, for Claude Code (agents/skills/dotfiles/SKILL.md)
     "agents/skills/dotfiles:$HOME/.claude/skills/dotfiles"
     ".config/llm/default_model.txt:$HOME/Library/Application Support/io.datasette.llm/default_model.txt"
