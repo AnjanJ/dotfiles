@@ -9,7 +9,10 @@
       "Read(**/secrets/**)",
       "Read(**/credentials/**)",
       "Read(**/.aws/**)",
-      "Read(**/.ssh/**)"
+      "Read(**/.ssh/**)",
+      "SendFeedback",
+      "ScheduleWakeup",
+      "ListAgents"
     ],
     "defaultMode": "auto"
   },
@@ -69,7 +72,8 @@
   "enableWorkflows": false,
   "syncClaudeAiSkills": false,
   "deniedMcpServers": [
-    { "serverName": "computer-use" }
+    { "serverName": "computer-use" },
+    { "serverName": "claude.ai Claude Docs" }
   ],
   "skillOverrides": {
     "claude-api": "user-invocable-only",
