@@ -930,7 +930,7 @@ The shell-native AI stack is layered: **`llm`** is the daily-driver client, **`o
 ### llm (Simon Willison) — daily-driver pipe
 **What**: Pipe stdin through any LLM (local or hosted), get text back. Plugin-based.
 **When**: Quick LLM queries from the shell (`cat err.log | llm "explain"`), commit messages from diffs, code reviews, format conversions.
-**Default model**: `qwen2.5-coder:7b` running locally via Ollama (set with `llm models default`).
+**Default model**: `ollama/qwen3.8:27b-dflash2-nvfp4` running locally via Ollama (set with `llm models default`).
 **Common flags**: `-m <model>` switch model, `-s "..."` system prompt, `-c` continue last conversation, `-t <name>` use saved template.
 **Usage**:
 ```bash
@@ -948,11 +948,11 @@ llm logs                                   # browse history
 **When**: Offline / private workflows, sensitive code/logs, cheap experimentation.
 **Usage**:
 ```bash
-ollama pull qwen2.5-coder:7b      # download once (~5 GB)
+ollama pull qwen3.8:27b-dflash2-nvfp4  # download once (~19 GB)
 ollama list                        # what's on disk
-ollama run qwen2.5-coder:7b "..."  # direct (rarely needed; prefer `llm`)
+ollama run qwen3.8:27b-dflash2-nvfp4 "..."  # direct (rarely needed; prefer `llm`)
 ```
-**Recommended models**: `qwen2.5-coder:7b` (default, fast), `qwen3:14b` (harder reasoning), `llama3.1:8b` (general).
+**Local model**: `qwen3.8:27b-dflash2-nvfp4` is the single local model. See `docs/AI_TOOLS.md` for which tool uses what.
 
 ### gh copilot — GitHub Copilot CLI
 **What**: Built into `gh ≥ 2.49`. Suggests + explains shell commands.

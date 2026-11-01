@@ -350,7 +350,7 @@ llm install llm-anthropic    # Optional
 
 ### AI Shell Tooling
 ```bash
-# Pipe text through an LLM (defaults to local qwen2.5-coder:7b via ollama)
+# Pipe text through an LLM (defaults to local qwen3.8:27b-dflash2-nvfp4 via ollama)
 cat error.log | llm "explain this"
 git diff --staged | llm -s "write a conventional-commit message"
 llm -m gpt-4o "switch model per call"      # needs OPENAI_API_KEY or `llm keys set openai`
@@ -363,17 +363,17 @@ ghce "git rebase -i HEAD~5"                # explain a command
 
 # Local LLM management
 ollama list                                 # what's downloaded
-ollama pull qwen3:14b                       # add a heavier model
-ollama run qwen2.5-coder:7b "..."           # direct invoke (rare; prefer `llm`)
+ollama pull qwen3.8:27b-dflash2-nvfp4  # the single local model
+ollama run qwen3.8:27b-dflash2-nvfp4 "..."  # direct invoke (rare; prefer `llm`)
 
 # Custom helper
 explain-last                                # explain the last shell command via llm
 
 # Coding agents
 a                                           # launch the default agent (claude unless `dotfiles default agent <name>` says otherwise)
-oclaude                                     # Claude Code through Ollama, default model glm-5.2:cloud, --permission-mode auto
+oclaude                                     # Claude Code through Ollama, default model qwen3.8:27b-dflash2-nvfp4, --permission-mode auto
 oclaude -m kimi-k3:cloud                    # pick a model; bare `-m` lists cloud + local models and asks
-oq "explain SIGPIPE"                        # local qwen3.8:27b via `ollama run`, thinking off for speed
+oq "explain SIGPIPE"                        # local qwen3.8:27b-dflash2-nvfp4 via `ollama run`, thinking off for speed
 ```
 
 ## 🔧 Environment
