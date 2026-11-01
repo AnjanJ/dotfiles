@@ -131,14 +131,9 @@
       "api_url": "http://localhost:11434",
       "available_models": [
         {
-          "name": "qwen2.5-coder:7b-base",
-          "display_name": "Qwen2.5 Coder 7B (local, FIM)",
-          "max_tokens": 32768
-        },
-        {
-          "name": "qwen3-coder:30b",
-          "display_name": "Qwen3 Coder 30B (local, agent)",
-          "max_tokens": 131072,
+          "name": "qwen3.8:27b-dflash2-nvfp4",
+          "display_name": "qwen3.8:27b-dflash2-nvfp4 (local)",
+          "max_tokens": 32768,
           "supports_tools": true
         }
       ]
@@ -164,15 +159,15 @@
     },
     "inline_assistant_model": {
       "provider": "ollama",
-      "model": "qwen3-coder:30b"
+      "model": "qwen3.8:27b-dflash2-nvfp4"
     },
     "commit_message_model": {
       "provider": "ollama",
-      "model": "qwen2.5-coder:7b-base"
+      "model": "qwen3.8:27b-dflash2-nvfp4"
     },
     "thread_summary_model": {
       "provider": "ollama",
-      "model": "qwen2.5-coder:7b-base"
+      "model": "qwen3.8:27b-dflash2-nvfp4"
     },
     "enabled": true,
     "button": true,
@@ -182,11 +177,7 @@
     "inline_alternatives": [
       {
         "provider": "ollama",
-        "model": "qwen3-coder:30b"
-      },
-      {
-        "provider": "ollama",
-        "model": "qwen2.5-coder:7b-base"
+        "model": "qwen3.8:27b-dflash2-nvfp4"
       },
       {
         "provider": "zed.dev",

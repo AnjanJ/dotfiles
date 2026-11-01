@@ -90,15 +90,13 @@ export RUBY_YJIT_ENABLE=1               # Enable YJIT JIT compiler (Ruby 3.1+)
 [[ -d "$HOME/.maestro/bin" ]] && export PATH="$PATH:$HOME/.maestro/bin"
 
 # Ollama settings (local AI for Rails dev)
-# MAX_LOADED_MODELS=1 — 36GB unified can't hold 7B + 30B together; explicit single-model swap is cleaner
-export OLLAMA_MAX_LOADED_MODELS=1
-export OLLAMA_KEEP_ALIVE=24h
+# The macOS Ollama app manages the server and its settings.
 
-# start claude code with ollama and default model as GLM 5.2
+# Start Claude Code with the single local model; -m can select a cloud model.
 oclaude() {
   emulate -L zsh
 
-  local model="glm-5.2:cloud"
+  local model="qwen3.8:27b-dflash2-nvfp4"
   local choose_model=0
   local list_output name choice
   local -a claude_args cloud_models local_preferred local_models models labels
@@ -113,10 +111,9 @@ oclaude() {
     "deepseek-v4-pro:cloud"
   )
 
-  # Local models to surface above the rest of `ollama list`
+  # The single local model is the picker default.
   local_preferred=(
-    "qwen3.8-cc:27b"
-    "qwen3.8:27b"
+    "qwen3.8:27b-dflash2-nvfp4"
   )
 
   # Process arguments
@@ -153,14 +150,7 @@ oclaude() {
       )
     fi
 
-    # Add recommended cloud models first
-    for name in "${cloud_models[@]}"; do
-      models+=("$name")
-      labels+=("$name  [cloud]")
-      seen[$name]=1
-    done
-
-    # Add preferred local models next
+    # Put the installed local model first
     for name in "${local_preferred[@]}"; do
       [[ -n "${seen[$name]-}" ]] && continue
       # only offer it if it is actually installed
@@ -170,6 +160,13 @@ oclaude() {
         labels+=("$name  [local]")
         seen[$name]=1
       fi
+    done
+
+    # Keep explicit cloud choices available
+    for name in "${cloud_models[@]}"; do
+      models+=("$name")
+      labels+=("$name  [cloud]")
+      seen[$name]=1
     done
 
     # Add locally available models, avoiding duplicates
@@ -270,12 +267,12 @@ if [[ -o interactive && ! -f "$HOME/.local/state/dotfiles/toggles/update-notice.
   unset _dotfiles_ua _dotfiles_ua_line
 fi
 
-# Local Qwen3.8-27B for quick coding queries, thinking off for speed.
+# Local qwen3.8:27b-dflash2-nvfp4 for quick coding queries, thinking off for speed.
 # (Claude Code via `ollama launch` has no way to pass Ollama's per-request
 # `think` field, so thinking-off only applies to this direct path.)
 oq() {
   emulate -L zsh
-  ollama run qwen3.8:27b --think=false "$@"
+  ollama run qwen3.8:27b-dflash2-nvfp4 --think=false "$@"
 }
 
 # ============================================

@@ -18,7 +18,7 @@ A modern shell needs AI tooling. This setup wires LLMs into the daily flow witho
 
 ## `llm` — your everyday LLM pipe
 
-`llm` reads stdin and prints the model's response. The unix way to use AI.
+`llm` reads stdin and prints the model's response. The unix way to use AI. The `llm-ollama` plugin registers model IDs with an `ollama/` prefix; direct `ollama` commands use the bare model tag.
 
 ```bash
 # Diagnose an error
@@ -39,7 +39,7 @@ llm "explain SIGPIPE in 3 sentences"
 
 The `-s` flag sends the next argument as a system prompt. The `-m` flag picks a specific model. `-c` continues the previous conversation. `--no-stream` returns the full response at once instead of streaming.
 
-**First-time setup** (already done by `install.sh`):
+**First-time setup** (`install.sh` wires the plugin; use these commands to repair it after an `llm` upgrade):
 
 ```bash
 # Plugin for local Ollama models (one-time)
@@ -48,9 +48,9 @@ llm install llm-ollama
 # Optional: add hosted-API plugins
 llm install llm-anthropic llm-gemini
 
-# Set a default model — qwen2.5-coder:7b is local, fast, private
+# Set the single local model as the default
 # (Each tool has its own model setting; see "Which model where" below.)
-llm models default qwen2.5-coder:7b
+llm models default ollama/qwen3.8:27b-dflash2-nvfp4
 
 # Set API keys when you want hosted models
 llm keys set openai           # paste key when prompted
@@ -60,7 +60,7 @@ llm keys set anthropic
 **Switch models per call:**
 
 ```bash
-llm -m qwen2.5-coder:7b "..."   # local, default
+llm -m ollama/qwen3.8:27b-dflash2-nvfp4 "..."   # local, default
 llm -m gpt-4o "..."             # OpenAI, hosted
 llm -m claude-sonnet-4-5 "..."  # Anthropic, hosted
 llm models                      # list everything available
@@ -111,14 +111,14 @@ Local models run on your Mac. No data leaves your machine. Great for:
 
 **Architecture:**
 
-- **Ollama** is the *server* — it loads `.gguf` weights, runs them on Apple Silicon GPU, exposes an HTTP API at `localhost:11434`. Internally it uses [llama.cpp](https://github.com/ggerganov/llama.cpp).
+- **Ollama** is the *server* — it loads model weights, runs them on Apple Silicon, and exposes an HTTP API at `localhost:11434`. The model format determines the supported inference backend.
 - **`llm` + `llm-ollama` plugin** is the *client* — pipes stdin to the server. You don't talk to ollama directly except to `pull` / `list` / `rm` models.
 
 **Setup:**
 
 ```bash
-# Pull a coding-tuned model (~5GB) — recommended default
-ollama pull qwen2.5-coder:7b
+# Pull the single local model
+ollama pull qwen3.8:27b-dflash2-nvfp4
 
 # List what you have on disk
 ollama list
@@ -130,28 +130,20 @@ llm models | grep -i ollama
 **Use directly (occasional):**
 
 ```bash
-ollama run qwen2.5-coder:7b "write a bash function that retries N times"
+ollama run qwen3.8:27b-dflash2-nvfp4 "write a bash function that retries N times"
 ```
 
 **Use via `llm` (the daily driver):**
 
 ```bash
-cat error.log | llm -m qwen2.5-coder:7b "explain"
-# Or, if you set qwen2.5-coder:7b as default:
+cat error.log | llm -m ollama/qwen3.8:27b-dflash2-nvfp4 "explain"
+# Or, if you set qwen3.8:27b-dflash2-nvfp4 as default:
 cat error.log | llm "explain"
 ```
 
-**Recommended models** (download once, use forever):
+**Single local model:** `qwen3.8:27b-dflash2-nvfp4`. The shell, Zed local features, and DSH use this same model. The bundled DFlash helper accelerates decoding; the model's underlying capabilities stay the same. It is included in this one Ollama entry. Zed and DSH client context is set to 32,768 tokens; DSH reserves up to 8,192 tokens for output. Increase context only after measuring memory use with your normal development apps open.
 
-| Model | Size | Best for |
-|-------|------|----------|
-| `qwen2.5-coder:7b` | 4.7 GB | **Recommended default.** Code review, refactoring, explanations |
-| `qwen2.5-coder:14b` | 9 GB | Stronger code reasoning, larger refactors |
-| `qwen3:14b` | ~9 GB | General reasoning / harder thinking tasks (when 7b isn't enough) |
-| `llama3.1:8b` | 4.7 GB | General Q&A, summarization |
-| `nomic-embed-text` | 274 MB | Embeddings (RAG, semantic search) |
-
-> Two-model strategy: keep `qwen2.5-coder:7b` as default for fast coding tasks, and a larger general model (e.g. `qwen3:14b`) for harder reasoning. Switch per call: `llm -m qwen3:14b "..."`.
+Hosted models remain available through explicit selection; they do not occupy local model-weight storage.
 
 ## `explain-last` — instant context
 
@@ -194,18 +186,22 @@ The figures come from the endpoint behind Claude Code's own `/usage` screen, rea
 
 `dotfiles default-agent [claude|oclaude|gemini|copilot|llm]` picks which agent the `a` shell function launches; the choice lives in `~/.local/state/dotfiles/default-agent` and each agent runs with a scoped permission mode (`--permission-mode auto` for Claude Code, `--approval-mode auto_edit` for Gemini), matching `"defaultMode": "auto"` in Claude Code's settings. Those settings are the repo's `.config/claude/settings.json`, symlinked to `~/.claude/settings.json` by `scripts/symlink-map.sh`; the two paths are the same file.
 
-`oclaude` runs Claude Code against Ollama: `ollama launch claude --model <model> -- --permission-mode auto`, so it uses the same permission mode (add `--dangerously-skip-permissions` yourself for a run that needs it) and any other argument is passed through to `claude`. With no flag the model is `glm-5.2:cloud`. `-m <model>` names one directly; a bare `-m` opens a numbered picker that lists the hard-coded cloud models first (`glm-5.3:cloud`, `glm-5.2:cloud`, `kimi-k3:cloud`, `deepseek-v4-pro:cloud`), then the preferred local models `qwen3.8-cc:27b` and `qwen3.8:27b` when `ollama list` has them, then everything else `ollama list` reports; Enter takes the first entry and `q` cancels. `oq` is the quick, non-agent path: `ollama run qwen3.8:27b --think=false`, thinking off for speed, with your arguments appended.
+`oclaude` runs Claude Code against Ollama: `ollama launch claude --model <model> -- --permission-mode auto`. With no flag it uses the single local model, `qwen3.8:27b-dflash2-nvfp4`. `-m <model>` selects a model explicitly, including cloud models. A bare `-m` opens a picker with the installed local model first, followed by cloud choices; Enter takes the first entry and `q` cancels. `oq` is the quick, non-agent path: `ollama run qwen3.8:27b-dflash2-nvfp4 --think=false`, with your arguments appended.
+
+The macOS Ollama app manages the server and its settings. The shell has no server-setting overrides; Zed and DSH explicitly advertise the client context shown above.
 
 ## Which model where
 
-Each tool picks its own model, on purpose: small and fast for one-shot shell use, larger for editor agents.
+All local Ollama paths use the same installed model. Existing hosted-agent and edit-prediction settings remain separate.
 
 | Tool | Setting | Model |
 |------|---------|-------|
-| `llm` (shell, `explain-last`) | `.config/llm/default_model.txt` | `qwen2.5-coder:7b` |
-| `oq` (quick chat, no thinking) | `.zshrc` | `qwen3.8:27b` |
-| `oclaude` (Claude Code via Ollama) | `.zshrc` (`-m`, or the picker) | `glm-5.2:cloud` by default; any Ollama cloud or installed local model |
+| `llm` (shell, `explain-last`) | `.config/llm/default_model.txt` | `ollama/qwen3.8:27b-dflash2-nvfp4` |
+| `oq` (quick chat, no thinking) | `.zshrc` | `qwen3.8:27b-dflash2-nvfp4` |
+| `oclaude` (Claude Code via Ollama) | `.zshrc` (`-m`, or the picker) | `qwen3.8:27b-dflash2-nvfp4` by default; explicit cloud choices remain available |
 | Zed agent panel (`default_model`) | `.config/zed/settings.base.json` | `deepseek-v4-pro` (DeepSeek, cloud; thinking on, effort high) |
-| Zed inline assistant (`inline_assistant_model`) | `.config/zed/settings.base.json` | `qwen3-coder:30b` (local); alternatives offered: `qwen2.5-coder:7b-base`, Claude via zed.dev |
-| Zed commit messages / thread summaries | `.config/zed/settings.base.json` | `qwen2.5-coder:7b-base` (local) |
+| Zed inline assistant (`inline_assistant_model`) | `.config/zed/settings.base.json` | `qwen3.8:27b-dflash2-nvfp4` (local); Claude alternatives via zed.dev |
+| Zed commit messages / thread summaries | `.config/zed/settings.base.json` | `qwen3.8:27b-dflash2-nvfp4` (local) |
+| Zed edit predictions | `.config/zed/settings.base.json` | `zed` provider (hosted) |
+| DSH local agent / search | `~/.ollama/launch/dsh/settings.yaml` | `qwen3.8:27b-dflash2-nvfp4`; explicit hosted choices remain available |
 | Claude Code | `.config/claude/settings.json` (= `~/.claude/settings.json`) | `claude-fable-5-1[1m]`: Claude Fable 5.1 with the 1M context |

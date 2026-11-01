@@ -219,7 +219,7 @@ fi
 # ============================================
 # `llm` (Simon Willison): pipe text through an LLM. Replaces mods (charm sunset
 #         that tool 2026-03-09 with an unfixed ollama streaming bug).
-#         First run: set a default model with `llm models default qwen2.5-coder:7b`.
+#         First run: set a default model with `llm models default ollama/qwen3.8:27b-dflash2-nvfp4`.
 #         Examples:
 #           cat error.log | llm "what does this error mean?"
 #           git diff | llm -s "summarize for a commit message"
@@ -232,9 +232,9 @@ fi
 # `ollama`: local LLM runtime backing `llm` for offline / private workflows.
 #         Pull a model once, llm picks it up automatically.
 #         Example:
-#           ollama pull qwen2.5-coder:7b
+#           ollama pull qwen3.8:27b-dflash2-nvfp4
 #           llm install llm-ollama
-#           cat script.sh | llm -m qwen2.5-coder:7b "review this"
+#           cat script.sh | llm -m ollama/qwen3.8:27b-dflash2-nvfp4 "review this"
 #
 # `gh copilot`: GitHub Copilot CLI (built-in to gh ≥ 2.49; requires Copilot subscription).
 #         Examples:
