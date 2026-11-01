@@ -241,6 +241,12 @@ claude-bare() {
   claude --settings '{"enabledPlugins":{"shipkit@shipkit":false,"shipkit@synced":false,"shipkit-workflows@shipkit":false,"bodhikit@bodhikit":false,"bodhikit@synced":false,"ruby-lsp@claude-plugins-official":false}}' "$@"
 }
 
+# Claude Code with Shipkit, for one session outside the projects that turn it
+# on in .claude/settings.local.json.
+claude-ship() {
+  claude --settings '{"enabledPlugins":{"shipkit@shipkit":true,"shipkit-workflows@shipkit":true}}' "$@"
+}
+
 # Claude Code with the browser tools, which add to every request when on.
 claude-web() {
   claude --chrome "$@"

@@ -18,6 +18,7 @@ Search first when a task touches an earlier decision, a past bug, or anything al
 - These skills start only when I type them, so ask me to: `/claude-api`, `/code-review`, `/dataviz`, `/init`, `/loop`, `/run`, `/schedule`, `/security-review`, `/simplify`.
 - Claude API or Anthropic SDK work: ask me to run `/claude-api` first. Don't state model ids, prices or parameters from recollection.
 - Bodhikit is on only in my learning folder. Elsewhere it needs `/plugin`, then `/reload-plugins`.
+- Shipkit is on only in projects whose `.claude/settings.local.json` enables it. Elsewhere it needs `claude-ship`.
 - The Artifact and Workflow tools are off in settings. Say so if a task needs one.
 
 ## Always

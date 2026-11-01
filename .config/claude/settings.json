@@ -26,11 +26,11 @@
     "command": "bash ~/.claude/statusline-command.sh"
   },
   "enabledPlugins": {
-    "shipkit@shipkit": true,
+    "shipkit@shipkit": false,
     "bodhikit@bodhikit": false,
     "bodhikit@synced": false,
     "shipkit@synced": false,
-    "shipkit-workflows@shipkit": true,
+    "shipkit-workflows@shipkit": false,
     "marketing@synced": false,
     "engineering@synced": false,
     "sales@synced": false,
