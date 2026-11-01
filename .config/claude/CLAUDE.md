@@ -1,15 +1,16 @@
 # Global instructions
 
-Auto memory is off, so past notes stay out of context until you look them up. Look them up when they matter.
+Auto memory is off and there are no memory files. Past notes and conversations live in MemPalace, so look them up when they matter.
 
 ## Past context
 
 Search first when a task touches an earlier decision, a past bug, or anything already tried. Skip this for self-contained work.
 
-- Notes: `rg -il '<word>' ~/.claude/projects/<slug>/memory/`, then read the matching file. The slug is the working directory with every non-alphanumeric character replaced by `-`, so `/Users/anjan/code/RED` is `-Users-anjan-code-RED`. Notes that span projects are under `-Users-anjan-code`. A folder's `MEMORY.md` is its index and can run to 17K characters, so search it rather than read it whole.
-- MemPalace: load `mempalace_search` with ToolSearch. `mempalace_list_wings` names the wings; RED's is `rails_error_dashboard`. It was last mined 2026-10-22, so a miss says nothing about recent work. Check the notes, `git log` and the repo as well.
-- Before committing in a repo, run that search for `commit` in its notes. Some repos have rules about what stays out of git.
-- Asked to remember something: write one file in that project's memory folder and add one line to its `MEMORY.md`.
+- Rules and decisions: load `mempalace_search` with ToolSearch and use a short topic query with the project's `wing` and `room: "general"`, where the old notes live. Leave `room` off to search conversations. `mempalace_list_wings` names the wings; RED's is `rails_error_dashboard`.
+- Exact word or error string: `sqlite3 -readonly ~/.mempalace/palace/chroma.sqlite3 "select string_value from embedding_metadata where key='chroma:document' and string_value like '%<word>%' limit 5"`. Semantic search misses details deep inside a note.
+- MemPalace was last mined 2026-11-01 and nothing is scheduled, so a miss says nothing about recent work. Check `git log` and the repo as well.
+- Before committing in a repo, search that wing's `general` room for `commit rules`. Some repos have rules about what stays out of git.
+- Asked to remember something: `mempalace_add_drawer` in the project's wing, room `general`.
 
 ## Turned off
 
@@ -23,7 +24,7 @@ Search first when a task touches an earlier decision, a past bug, or anything al
 
 - GitHub is the only host. Codeberg was abandoned in August 2026: never clone from it or push to it.
 - Related repos sit under plain non-git parent folders.
-- Before cloning a repo, check `phased-out-repos.md` in the `-Users-anjan-code` notes.
+- Before cloning a repo, search MemPalace for `phased-out repos` in wing `code`.
 - Never uninstall or disable bodhikit, shipkit, shipkit-workflows or mempalace unless I ask.
 - SSH keys come from the 1Password agent.
 - Never run `osascript` against an application. It waits on a macOS permission dialog and hangs the session. `display notification` is fine.
