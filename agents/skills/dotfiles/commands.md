@@ -27,6 +27,7 @@
 | `dotfiles restart <aerospace\|sketchybar\|borders>` | reload/relaunch one component now; `--later <c>` marks it for the end of the next update or sync; `--pending` consumes markers | safe |
 | `dotfiles export [--json]` | portable summary of this machine's setup (tools, runtimes, theme) for reproducing it elsewhere | yes |
 | `dotfiles default agent [name] [--command]` | show or set which CLI the `a` shell function launches | showing: yes; setting: when asked |
+| `dotfiles agent model [--force] [--keep-import]` | build the single local Ollama model (`qwen3.6-35b-a3b:iq4xs`) from its Hugging Face GGUF with Ollama's built-in Qwen renderer; does nothing if already built | when asked (downloads ~18 GB the first time) |
 | `dotfiles agent usage [--json\|--bar\|--notify] [--refresh] [--max-age <s>]` | Claude plan usage from the endpoint behind Claude Code's `/usage`: the 5-hour session and 7-day windows with reset times (the weekly figure is the fullest weekly limit, per-model ones included), cached for a minute in `~/.cache/dotfiles`; `--bar` feeds the sketchybar item, `--notify` posts the summary; exit 2 without a Claude Code login, 3 when the endpoint is unreachable and nothing is cached | yes |
 | `dotfiles hook <event> [args]` / `--list` / `--seed` | run the user's hooks for an event by hand; list what is installed; copy the repo's sample hooks into place (see Hooks below) | yes |
 | `dotfiles hook install <event> <file>` | copy a script into `~/.config/dotfiles/hooks/<event>.d/` and make it executable | when asked |

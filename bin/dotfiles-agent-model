@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# dotfiles:summary=Build the local Qwen model used by oq, oclaude, llm, Zed and DSH
+# dotfiles:args=[--force] [--keep-import]
+#
+# Pulls unsloth's Qwen3.6-35B-A3B UD-IQ4_XS GGUF from Hugging Face and
+# rebuilds it as qwen3.6-35b-a3b:iq4xs with Ollama's built-in qwen3.5
+# renderer and parser. The template Ollama generates for the Hugging Face
+# import drops the conversation history (the model re-read the same files
+# until its deadline) and adds a "<think>" stop sequence, so the import is
+# never used directly. The rebuild starts FROM the weight blobs, not the
+# import, so none of its template or stop sequences are inherited.
+#
+#   --force        rebuild even if the local model already exists
+#   --keep-import  keep the hf.co/... name afterwards (the weights are shared
+#                  either way; removing the name frees no disk)
+set -euo pipefail
+
+SOURCE="hf.co/unsloth/Qwen3.6-35B-A3B-GGUF:UD-IQ4_XS"
+NAME="qwen3.6-35b-a3b:iq4xs"
+FORCE=0
+KEEP_IMPORT=0
+
+for arg in "$@"; do
+    case "$arg" in
+        --force) FORCE=1 ;;
+        --keep-import) KEEP_IMPORT=1 ;;
+        -h|--help) sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        *) echo "Unknown option: $arg" >&2; exit 2 ;;
+    esac
+done
+
+command -v ollama >/dev/null 2>&1 || { echo "ollama is not installed" >&2; exit 1; }
+
+if [[ "$FORCE" -eq 0 ]] && ollama show --modelfile "$NAME" 2>/dev/null | grep -q '^RENDERER qwen3.5'; then
+    echo "$NAME is already built"
+    exit 0
+fi
+
+if ! ollama show --modelfile "$SOURCE" >/dev/null 2>&1; then
+    echo "Pulling $SOURCE (about 18 GB)"
+    ollama pull "$SOURCE"
+fi
+
+blobs="$(ollama show --modelfile "$SOURCE" | grep '^FROM /' || true)"
+[[ -n "$blobs" ]] || { echo "Could not find the weight files for $SOURCE" >&2; exit 1; }
+
+modelfile="$(mktemp)"
+trap 'rm -f "$modelfile"' EXIT
+{
+    printf '%s\n' "$blobs"
+    cat <<'EOF'
+RENDERER qwen3.5
+PARSER qwen3.5
+PARAMETER temperature 0.6
+PARAMETER top_p 0.95
+PARAMETER top_k 20
+PARAMETER min_p 0
+PARAMETER presence_penalty 0
+PARAMETER repeat_penalty 1
+EOF
+} > "$modelfile"
+
+ollama create "$NAME" -f "$modelfile"
+
+if ! ollama show --modelfile "$NAME" | grep -q '^RENDERER qwen3.5'; then
+    echo "$NAME was created without the qwen3.5 renderer" >&2
+    exit 1
+fi
+if [[ "$KEEP_IMPORT" -eq 0 ]]; then
+    ollama rm "$SOURCE" >/dev/null
+fi
+echo "Built $NAME"
