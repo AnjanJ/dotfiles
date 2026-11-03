@@ -96,7 +96,7 @@ export RUBY_YJIT_ENABLE=1               # Enable YJIT JIT compiler (Ruby 3.1+)
 oclaude() {
   emulate -L zsh
 
-  local model="qwen3.8:27b-dflash2-nvfp4"
+  local model="qwen3.6-35b-a3b:iq4xs"
   local choose_model=0
   local list_output name choice
   local -a claude_args cloud_models local_preferred local_models models labels
@@ -113,7 +113,7 @@ oclaude() {
 
   # The single local model is the picker default.
   local_preferred=(
-    "qwen3.8:27b-dflash2-nvfp4"
+    "qwen3.6-35b-a3b:iq4xs"
   )
 
   # Process arguments
@@ -267,12 +267,12 @@ if [[ -o interactive && ! -f "$HOME/.local/state/dotfiles/toggles/update-notice.
   unset _dotfiles_ua _dotfiles_ua_line
 fi
 
-# Local qwen3.8:27b-dflash2-nvfp4 for quick coding queries, thinking off for speed.
+# Local qwen3.6-35b-a3b:iq4xs for quick coding queries, thinking off for speed.
 # (Claude Code via `ollama launch` has no way to pass Ollama's per-request
 # `think` field, so thinking-off only applies to this direct path.)
 oq() {
   emulate -L zsh
-  ollama run qwen3.8:27b-dflash2-nvfp4 --think=false "$@"
+  ollama run qwen3.6-35b-a3b:iq4xs --think=false "$@"
 }
 
 # ============================================

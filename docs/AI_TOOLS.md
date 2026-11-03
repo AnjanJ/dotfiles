@@ -1,5 +1,7 @@
 # AI-Augmented Shell
 
+For the explicit frontier-plan → local-Qwen-implementation → frontier-review workflow, see [AGENT_FLOW.md](AGENT_FLOW.md). It uses separate CLI processes, pinned task contracts, independent validation, and bounded frontier takeover after three verified local failures. Ordinary `a`, `oclaude`, and `oq` launchers remain independent.
+
 A modern shell needs AI tooling. This setup wires LLMs into the daily flow without taking over the terminal.
 
 ## Quick reference
@@ -50,7 +52,7 @@ llm install llm-anthropic llm-gemini
 
 # Set the single local model as the default
 # (Each tool has its own model setting; see "Which model where" below.)
-llm models default ollama/qwen3.8:27b-dflash2-nvfp4
+llm models default ollama/qwen3.6-35b-a3b:iq4xs
 
 # Set API keys when you want hosted models
 llm keys set openai           # paste key when prompted
@@ -60,7 +62,7 @@ llm keys set anthropic
 **Switch models per call:**
 
 ```bash
-llm -m ollama/qwen3.8:27b-dflash2-nvfp4 "..."   # local, default
+llm -m ollama/qwen3.6-35b-a3b:iq4xs "..."   # local, default
 llm -m gpt-4o "..."             # OpenAI, hosted
 llm -m claude-sonnet-4-5 "..."  # Anthropic, hosted
 llm models                      # list everything available
@@ -118,7 +120,7 @@ Local models run on your Mac. No data leaves your machine. Great for:
 
 ```bash
 # Pull the single local model
-ollama pull qwen3.8:27b-dflash2-nvfp4
+dotfiles agent model
 
 # List what you have on disk
 ollama list
@@ -130,18 +132,18 @@ llm models | grep -i ollama
 **Use directly (occasional):**
 
 ```bash
-ollama run qwen3.8:27b-dflash2-nvfp4 "write a bash function that retries N times"
+ollama run qwen3.6-35b-a3b:iq4xs "write a bash function that retries N times"
 ```
 
 **Use via `llm` (the daily driver):**
 
 ```bash
-cat error.log | llm -m ollama/qwen3.8:27b-dflash2-nvfp4 "explain"
-# Or, if you set qwen3.8:27b-dflash2-nvfp4 as default:
+cat error.log | llm -m ollama/qwen3.6-35b-a3b:iq4xs "explain"
+# Or, if you set qwen3.6-35b-a3b:iq4xs as default:
 cat error.log | llm "explain"
 ```
 
-**Single local model:** `qwen3.8:27b-dflash2-nvfp4`. The shell, Zed local features, and DSH use this same model. The bundled DFlash helper accelerates decoding; the model's underlying capabilities stay the same. It is included in this one Ollama entry. Zed and DSH client context is set to 32,768 tokens; DSH reserves up to 8,192 tokens for output. Increase context only after measuring memory use with your normal development apps open.
+**Single local model:** `qwen3.6-35b-a3b:iq4xs`. The shell, Zed local features, and DSH use this same model. It is a mixture-of-experts model (3B parameters active per token) quantised to IQ4_XS, so it holds about 17 GiB with a 32K context. It replaced `qwen3.8:27b-dflash2-nvfp4`, which held about 31.5 GiB and pushed this 36 GB Mac into swap; of the models tried for local agentic coding, it was the only one to pass a task. The weights are unsloth's Qwen3.6-35B-A3B UD-IQ4_XS GGUF from Hugging Face, rebuilt by `dotfiles agent model` under a local name with Ollama's built-in Qwen renderer. Do not use the `hf.co/...` import directly: the chat template Ollama generates for it drops the conversation history, so multi-turn chats and agents lose track of what they already did. Zed and DSH client context is set to 32,768 tokens; DSH reserves up to 8,192 tokens for output. Increase context only after measuring memory use with your normal development apps open.
 
 Hosted models remain available through explicit selection; they do not occupy local model-weight storage.
 
@@ -186,7 +188,7 @@ The figures come from the endpoint behind Claude Code's own `/usage` screen, rea
 
 `dotfiles default-agent [claude|oclaude|gemini|copilot|llm]` picks which agent the `a` shell function launches; the choice lives in `~/.local/state/dotfiles/default-agent` and each agent runs with a scoped permission mode (`--permission-mode auto` for Claude Code, `--approval-mode auto_edit` for Gemini), matching `"defaultMode": "auto"` in Claude Code's settings. Those settings are the repo's `.config/claude/settings.json`, symlinked to `~/.claude/settings.json` by `scripts/symlink-map.sh`; the two paths are the same file.
 
-`oclaude` runs Claude Code against Ollama: `ollama launch claude --model <model> -- --permission-mode auto`. With no flag it uses the single local model, `qwen3.8:27b-dflash2-nvfp4`. `-m <model>` selects a model explicitly, including cloud models. A bare `-m` opens a picker with the installed local model first, followed by cloud choices; Enter takes the first entry and `q` cancels. `oq` is the quick, non-agent path: `ollama run qwen3.8:27b-dflash2-nvfp4 --think=false`, with your arguments appended.
+`oclaude` runs Claude Code against Ollama: `ollama launch claude --model <model> -- --permission-mode auto`. With no flag it uses the single local model, `qwen3.6-35b-a3b:iq4xs`. `-m <model>` selects a model explicitly, including cloud models. A bare `-m` opens a picker with the installed local model first, followed by cloud choices; Enter takes the first entry and `q` cancels. `oq` is the quick, non-agent path: `ollama run qwen3.6-35b-a3b:iq4xs --think=false`, with your arguments appended.
 
 The macOS Ollama app manages the server and its settings. The shell has no server-setting overrides; Zed and DSH explicitly advertise the client context shown above.
 
@@ -196,12 +198,12 @@ All local Ollama paths use the same installed model. Existing hosted-agent and e
 
 | Tool | Setting | Model |
 |------|---------|-------|
-| `llm` (shell, `explain-last`) | `.config/llm/default_model.txt` | `ollama/qwen3.8:27b-dflash2-nvfp4` |
-| `oq` (quick chat, no thinking) | `.zshrc` | `qwen3.8:27b-dflash2-nvfp4` |
-| `oclaude` (Claude Code via Ollama) | `.zshrc` (`-m`, or the picker) | `qwen3.8:27b-dflash2-nvfp4` by default; explicit cloud choices remain available |
+| `llm` (shell, `explain-last`) | `.config/llm/default_model.txt` | `ollama/qwen3.6-35b-a3b:iq4xs` |
+| `oq` (quick chat, no thinking) | `.zshrc` | `qwen3.6-35b-a3b:iq4xs` |
+| `oclaude` (Claude Code via Ollama) | `.zshrc` (`-m`, or the picker) | `qwen3.6-35b-a3b:iq4xs` by default; explicit cloud choices remain available |
 | Zed agent panel (`default_model`) | `.config/zed/settings.base.json` | `deepseek-v4-pro` (DeepSeek, cloud; thinking on, effort high) |
-| Zed inline assistant (`inline_assistant_model`) | `.config/zed/settings.base.json` | `qwen3.8:27b-dflash2-nvfp4` (local); Claude alternatives via zed.dev |
-| Zed commit messages / thread summaries | `.config/zed/settings.base.json` | `qwen3.8:27b-dflash2-nvfp4` (local) |
+| Zed inline assistant (`inline_assistant_model`) | `.config/zed/settings.base.json` | `qwen3.6-35b-a3b:iq4xs` (local); Claude alternatives via zed.dev |
+| Zed commit messages / thread summaries | `.config/zed/settings.base.json` | `qwen3.6-35b-a3b:iq4xs` (local) |
 | Zed edit predictions | `.config/zed/settings.base.json` | `zed` provider (hosted) |
-| DSH local agent / search | `~/.ollama/launch/dsh/settings.yaml` | `qwen3.8:27b-dflash2-nvfp4`; explicit hosted choices remain available |
+| DSH local agent / search | `~/.ollama/launch/dsh/settings.yaml` | `qwen3.6-35b-a3b:iq4xs`; explicit hosted choices remain available |
 | Claude Code | `.config/claude/settings.json` (= `~/.claude/settings.json`) | `claude-fable-5-1[1m]`: Claude Fable 5.1 with the 1M context |
