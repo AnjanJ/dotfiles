@@ -386,7 +386,7 @@ oq "explain SIGPIPE"                        # local qwen3.8:27b-dflash2-nvfp4 vi
 | `DOTFILES_CODE_DIRS` | Space-separated directories `dotfiles health` scans for mise toolchain drift (default: `~/code ~/work/code`) |
 | `DOTFILES_THEME_DIR` | Where `dotfiles theme` renders app configs (`~/.local/state/dotfiles/current/theme`); starship, lazygit and others read from it |
 | `RAILS_TEMPLATES_DIR` | Your `.rubocop.yml` / `lefthook.yml` / `ci.yml` templates for `rails-setup-*` (not shipped; set it in `~/.zshrc.local`) |
-| `OLLAMA_MAX_LOADED_MODELS=1` / `OLLAMA_KEEP_ALIVE=24h` | One model resident at a time (36 GB cannot hold two large ones), kept loaded for a day |
+| `OLLAMA_MAX_LOADED_MODELS` / `OLLAMA_KEEP_ALIVE` | Not exported by the shell: the Ollama app runs the server and reads them from `launchctl setenv` (e.g. `launchctl setenv OLLAMA_KEEP_ALIVE 10m`, then quit and reopen Ollama). Unset, a model unloads 5 minutes after its last request. `open -a Ollama` passes the calling shell's environment to the app, so a long-running shell that still exports old values overrides `launchctl`; start it from the Dock or Spotlight, or with `env -u OLLAMA_KEEP_ALIVE -u OLLAMA_MAX_LOADED_MODELS open -a Ollama` |
 | `DOTFILES_UPDATE_UNATTENDED=1` | Exported by `dotfiles update --yes`; hooks and migrations read it to skip their own prompts |
 | `DOTFILES_NO_APPEARANCE=1` | Stops `dotfiles theme` switching macOS light/dark mode (tests, CI); `dotfiles toggle appearance off` is the persistent form |
 
