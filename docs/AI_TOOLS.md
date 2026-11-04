@@ -1,7 +1,5 @@
 # AI-Augmented Shell
 
-For the explicit frontier-plan → local-Qwen-implementation → frontier-review workflow, see [AGENT_FLOW.md](AGENT_FLOW.md). It uses separate CLI processes, pinned task contracts, independent validation, and bounded frontier takeover after three verified local failures. Ordinary `a`, `oclaude`, and `oq` launchers remain independent.
-
 A modern shell needs AI tooling. This setup wires LLMs into the daily flow without taking over the terminal.
 
 ## Quick reference
