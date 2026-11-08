@@ -1,5 +1,10 @@
 {
   "cleanupPeriodDays": 365,
+  "syncClaudeAiSkills": false,
+  "env": {
+    "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet",
+    "CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY": "1"
+  },
   "permissions": {
     "allow": [],
     "deny": [
@@ -16,16 +21,33 @@
     ],
     "defaultMode": "auto"
   },
-  "env": {
-    "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet",
-    "CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY": "1"
-  },
-  "feedbackSurveyRate": 0,
   "model": "opus",
-  "statusLine": {
-    "type": "command",
-    "command": "bash ~/.claude/statusline-command.sh"
+  "skillOverrides": {
+    "claude-api": "user-invocable-only",
+    "dataviz": "user-invocable-only",
+    "artifact-capabilities": "user-invocable-only",
+    "artifact-design": "user-invocable-only",
+    "artifact-diagramming": "user-invocable-only",
+    "schedule": "user-invocable-only",
+    "run": "user-invocable-only",
+    "loop": "user-invocable-only",
+    "plugin-authoring": "user-invocable-only",
+    "keybindings-help": "user-invocable-only",
+    "fewer-permission-prompts": "user-invocable-only",
+    "simplify": "user-invocable-only",
+    "security-review": "user-invocable-only",
+    "init": "user-invocable-only",
+    "code-review": "user-invocable-only",
+    "workflow-authoring": "user-invocable-only"
   },
+  "deniedMcpServers": [
+    {
+      "serverName": "computer-use"
+    },
+    {
+      "serverName": "claude.ai Claude Docs"
+    }
+  ],
   "hooks": {
     "Stop": [
       {
@@ -37,6 +59,12 @@
         ]
       }
     ]
+  },
+  "enableArtifact": false,
+  "enableWorkflows": false,
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline-command.sh"
   },
   "enabledPlugins": {
     "shipkit@shipkit": false,
@@ -67,43 +95,20 @@
       }
     }
   },
+  "feedbackSurveyRate": 0,
   "alwaysThinkingEnabled": false,
   "effortLevel": "high",
   "modelSettings": {
     "claude-opus-5-5": {
-      "effortLevel": "medium"
+      "effortLevel": "high"
     }
   },
   "tui": "fullscreen",
+  "autoMemoryEnabled": false,
   "skipDangerousModePermissionPrompt": true,
   "theme": "custom:dotfiles",
   "switchModelsOnFlag": true,
   "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true,
-  "autoMemoryEnabled": false,
-  "enableArtifact": false,
-  "enableWorkflows": false,
-  "syncClaudeAiSkills": false,
-  "deniedMcpServers": [
-    { "serverName": "computer-use" },
-    { "serverName": "claude.ai Claude Docs" }
-  ],
-  "skillOverrides": {
-    "claude-api": "user-invocable-only",
-    "dataviz": "user-invocable-only",
-    "artifact-capabilities": "user-invocable-only",
-    "artifact-design": "user-invocable-only",
-    "artifact-diagramming": "user-invocable-only",
-    "schedule": "user-invocable-only",
-    "run": "user-invocable-only",
-    "loop": "user-invocable-only",
-    "plugin-authoring": "user-invocable-only",
-    "keybindings-help": "user-invocable-only",
-    "fewer-permission-prompts": "user-invocable-only",
-    "simplify": "user-invocable-only",
-    "security-review": "user-invocable-only",
-    "init": "user-invocable-only",
-    "code-review": "user-invocable-only",
-    "workflow-authoring": "user-invocable-only"
-  }
+  "idleCompaction": false
 }

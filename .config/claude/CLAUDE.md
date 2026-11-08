@@ -20,6 +20,7 @@ Search first when a task touches an earlier decision, a past bug, or anything al
 - Bodhikit is on only in my learning folder. Elsewhere it needs `/plugin`, then `/reload-plugins`.
 - Shipkit is on only in projects whose `.claude/settings.local.json` enables it. Elsewhere it needs `claude-ship`.
 - The Artifact and Workflow tools are off in settings. Say so if a task needs one.
+- Compacting while idle is off (`"idleCompaction": false` in user settings). Never set it to true, or remove it, in any settings file of any project or repo.
 
 ## Always
 
