@@ -64,6 +64,7 @@ dotfiles/
 │   ├── setup-ssh.sh            # SSH key & config setup
 │   ├── install-answers.sh      # JSON answers file for unattended installs
 │   ├── package-utils.sh        # Brewfile @group parsing and selection
+│   ├── personal-tap.sh         # Your own Homebrew tap for packages Homebrew dropped (dotfiles tap)
 │   ├── health-check.sh         # Verify installation (sweeps the symlink map)
 │   ├── theme-utils.sh          # Theme utility functions
 │   ├── theme-render.sh         # {{ token }} renderer (bash + awk)
@@ -73,7 +74,7 @@ dotfiles/
 ├── tests/
 │   ├── base-test.sh            # Shared contract: temp HOME, TAP pass/fail, assert_* helpers
 │   ├── run                     # Runs tests/*-test.sh, keeps going past a failing file; `tests/run <area> [<area>…]` runs just those
-│   ├── <area>-test.sh          # 36 suites, one per area, discovered by name
+│   ├── <area>-test.sh          # 37 suites, one per area, discovered by name
 │   └── e2e/install-e2e.sh      # Real install.sh into a fresh HOME (CI job, not a suite)
 └── docs/                       # This documentation
 ```

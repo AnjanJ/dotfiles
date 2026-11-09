@@ -18,6 +18,7 @@ dotfiles theme install <git-url> # Install a theme from a repo; also theme remov
 dotfiles add theme x  # Scaffold a new theme directory with all required files (dotfiles add-theme x works too)
 dotfiles font         # The monospace font every terminal and editor uses: current | list | set <family> | reset
 dotfiles cleanup      # Find/remove Homebrew packages not in Brewfile (--force)
+dotfiles tap list     # Your personal Homebrew tap: packages kept after Homebrew dropped them; tap check, tap update
 dotfiles backup       # Snapshot dotfiles state (--list, --restore <name>)
 dotfiles profile      # Measure shell startup time (--detailed for per-component)
 dotfiles export       # Export setup snapshot (--json for machine-readable)
@@ -133,7 +134,7 @@ dotfiles install --no-macos-defaults --no-runtimes                  # Skip the m
 
 ## Testing
 
-Every push and PR runs 36 test suites, an end-to-end install, shellcheck, `dotfiles commands --check`, `dotfiles keys --check` and `dotfiles keys --lint` via GitHub Actions. The suites are discovered from `tests/*-test.sh`, so a new file is in CI the moment it exists:
+Every push and PR runs 37 test suites, an end-to-end install, shellcheck, `dotfiles commands --check`, `dotfiles keys --check` and `dotfiles keys --lint` via GitHub Actions. The suites are discovered from `tests/*-test.sh`, so a new file is in CI the moment it exists:
 
 - **Shellcheck** — lints all shell scripts
 - **Idempotency** (`idempotency`) — install/setup can run repeatedly with identical results (sandboxed)
@@ -168,6 +169,7 @@ Every push and PR runs 36 test suites, an end-to-end install, shellcheck, `dotfi
 - **Git setup** (`setup-git`) — identity configuration, work/personal split, smart defaults
 - **Backup** (`backup`) — create, list, restore, prune cycle
 - **Sync** (`sync`) — symlink refresh, broken link repair, dry-run mode
+- **Personal tap** (`tap`) — `dotfiles tap check/update/list` against stub brew and curl: dropped casks and formulae found (the install receipt beating the short name, dependencies left out), keep/remove/skip, `--yes` only listing, download before uninstall, a failed download or fetch changing nothing, version bumps committed, a failed bump rolled back, recipe cleaning, Brewfile line removal, `/bin/bash` 3.2
 - **Packages** (`packages`) — Brewfile group parsing, filtering, saved selections
 - **Uninstall** (`uninstall`) — removes every mapped symlink, leaves foreign links alone
 - **Style** (`style`) — the AGENTS.md rules shellcheck cannot express: shebang and strict mode, no `((VAR++))`, bash 3.2 builtins only on the install path, osascript never aimed at an app outside the watchdogged helpers

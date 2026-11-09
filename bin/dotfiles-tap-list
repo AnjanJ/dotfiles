@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# dotfiles:summary=List the packages kept in your personal tap and any dropped ones still waiting for an answer
+#
+# Shows the tap's name, where it lives and its remote, then every package
+# it carries with the installed version. Packages Homebrew dropped that you
+# skipped (or that an unattended update only listed) follow; the next
+# `dotfiles update` in a terminal asks about them.
+
+set -euo pipefail
+
+DOTFILES_DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+source "$DOTFILES_DIR/scripts/personal-tap.sh"
+
+STATE_DIR="${DOTFILES_STATE_DIR:-$HOME/.local/state/dotfiles}"
+PENDING="$STATE_DIR/tap-pending"
+
+for arg in "$@"; do
+    echo "Unknown option: $arg" >&2
+    exit 2
+done
+
+TAP=$(ptap_name)
+if ptap_exists; then
+    DIR=$(ptap_dir)
+    remote=$(git -C "$DIR" remote get-url origin 2>/dev/null || echo "none (local only)")
+    echo "Tap:    $TAP"
+    echo "Path:   $DIR"
+    echo "Remote: $remote"
+    packages=$(ptap_packages)
+    if [[ -z "$packages" ]]; then
+        echo "No packages kept yet"
+    else
+        while read -r kind name; do
+            if [[ "$kind" == cask ]]; then
+                version=$(brew list --cask --versions "$name" 2>/dev/null | awk '{print $2}' || true)
+            else
+                version=$(brew list --formula --versions "$name" 2>/dev/null | awk '{print $2}' || true)
+            fi
+            printf '  %-8s %-28s %s\n' "$kind" "$name" "${version:-not installed}"
+        done <<<"$packages"
+    fi
+else
+    echo "No personal tap yet ($TAP); dotfiles update creates it the first time you keep a package Homebrew dropped"
+fi
+
+if [[ -s "$PENDING" ]]; then
+    echo ""
+    echo "Dropped by Homebrew, waiting for keep or remove (run: dotfiles update):"
+    sed 's/^/  /' "$PENDING"
+fi
+exit 0

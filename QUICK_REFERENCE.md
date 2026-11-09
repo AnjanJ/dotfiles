@@ -29,6 +29,7 @@ dotfiles reminder 15 "Tea"   # macOS notification in 15 minutes; `show` lists pe
 dotfiles restart <aerospace|sketchybar|borders>   # Restart a component now (--later defers it to the next update)
 dotfiles add-theme x  # Scaffold a new theme directory
 dotfiles cleanup      # Find/remove unlisted Homebrew packages (--force)
+dotfiles tap list     # Packages kept in your own tap after Homebrew dropped them (tap check / tap update run inside dotfiles update)
 dotfiles backup       # Snapshot dotfiles state (--list, --restore)
 dotfiles profile      # Measure shell startup time (--detailed)
 dotfiles export       # Export setup snapshot (--json)

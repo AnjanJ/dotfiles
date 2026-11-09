@@ -1,0 +1,211 @@
+#!/usr/bin/env bash
+# dotfiles:summary=Find packages Homebrew dropped and keep them in your own tap or remove them
+# dotfiles:args=[--yes]
+#
+# Run by `dotfiles update` right after `brew update`. Lists every package
+# you installed whose Homebrew recipe is deprecated or disabled (qBittorrent
+# failing the Gatekeeper check, a formula upstream stopped supporting), says
+# why, and asks once per package:
+#
+#   k  keep    copy Homebrew's last recipe into your personal tap, switch
+#              the install over to it, and let `dotfiles tap update` keep it
+#              current from then on
+#   r  remove  uninstall it (settings in ~/Library stay) and drop it from
+#              the Brewfile
+#   s  skip    ask again next run
+#
+# With --yes, or without a terminal, it only lists them and records them in
+# ~/.local/state/dotfiles/tap-pending for the login notice. Dependencies
+# nobody asked for are not listed; Homebrew retires them with their parents.
+# The tap is set in ~/.config/dotfiles/personal-tap (see scripts/personal-tap.sh).
+
+set -euo pipefail
+
+DOTFILES_DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+source "$DOTFILES_DIR/scripts/_helpers.sh"
+source "$DOTFILES_DIR/scripts/personal-tap.sh"
+
+STATE_DIR="${DOTFILES_STATE_DIR:-$HOME/.local/state/dotfiles}"
+PENDING="$STATE_DIR/tap-pending"
+BREWFILE="${DOTFILES_BREWFILE:-$DOTFILES_DIR/Brewfile}"
+
+ASK=true
+for arg in "$@"; do
+    case "$arg" in
+        --yes|-y) ASK=false ;;
+        *) echo "Unknown option: $arg" >&2; exit 2 ;;
+    esac
+done
+[[ -n "${DOTFILES_UPDATE_UNATTENDED:-}" ]] && ASK=false
+# Tests answer through a pipe; everyone else needs a terminal to be asked.
+[[ -t 0 || -n "${DOTFILES_TAP_ASK:-}" ]] || ASK=false
+
+command -v brew >/dev/null 2>&1 || exit 0
+if ! command -v jq >/dev/null 2>&1; then
+    print_warning "jq is missing, so packages Homebrew dropped were not checked"
+    exit 0
+fi
+
+TAP=$(ptap_name)
+SEP=$'\x1f'
+
+# One record per dropped package, fields joined by \x1f (a tab would let
+# `read` collapse an empty field): kind name tap path status reason date
+# disable_date replacement.
+JQ_FIELDS='[
+    (if .disabled then "disabled" else "deprecated" end),
+    ((if .disabled then .disable_reason else .deprecation_reason end) // "" | tostring),
+    ((if .disabled then .disable_date else .deprecation_date end) // ""),
+    (if .disabled then "" else (.disable_date // "") end),
+    (.deprecation_replacement_cask // .disable_replacement_cask
+        // .deprecation_replacement_formula // .disable_replacement_formula // "")
+]'
+
+dropped_casks() {
+    local tokens json token receipt from
+    tokens=$(brew list --cask 2>/dev/null || true)
+    [[ -n "$tokens" ]] || return 0
+    # `brew info --installed` leaves disabled casks out, so ask by name.
+    # shellcheck disable=SC2086 # one token per word
+    if ! json=$(brew info --cask --json=v2 $tokens 2>/dev/null); then
+        # One cask brew cannot load (its tap was removed) fails the whole
+        # call; ask one by one so the rest are still checked.
+        json=$(for token in $tokens; do brew info --cask --json=v2 "$token" 2>/dev/null || true; done |
+            jq -s '{casks: (map(.casks) | add // [])}' 2>/dev/null) || json=""
+    fi
+    [[ -n "$json" ]] || return 0
+    jq -r --arg sep "$SEP" '.casks[] | select(.deprecated or .disabled)
+        | ["cask", .token, .tap, (.ruby_source_path // "")] + '"$JQ_FIELDS"'
+        | join($sep)' <<<"$json" |
+    while IFS= read -r line; do
+        token="${line#cask"$SEP"}"
+        token="${token%%"$SEP"*}"
+        # A short name resolves to the official cask even when the installed
+        # copy came from your tap, so the install receipt has the last word.
+        receipt="$(brew --caskroom 2>/dev/null)/$token/.metadata/INSTALL_RECEIPT.json"
+        from=$(jq -r '.source.tap // ""' "$receipt" 2>/dev/null || true)
+        [[ "$from" == "$TAP" ]] && continue
+        printf '%s\n' "$line"
+    done
+}
+
+dropped_formulae() {
+    local json
+    json=$(brew info --json=v2 --installed --formula 2>/dev/null) || json=""
+    [[ -n "$json" ]] || return 0
+    jq -r --arg sep "$SEP" --arg tap "$TAP" '.formulae[]
+        | select((.deprecated or .disabled) and .tap != $tap
+                 and ((.installed[0].installed_on_request) // false))
+        | ["formula", .name, .tap, (.ruby_source_path // "")] + '"$JQ_FIELDS"'
+        | join($sep)' <<<"$json"
+}
+
+# Copies the official recipe into the tap, then swaps the install over. The
+# download happens first: the swap uninstalls the official copy, and a
+# download failing after that would leave nothing installed.
+keep() {
+    local kind="$1" name="$2" from="$3" path="$4" status="$5" reason="$6"
+    local dir sub file recipe flag dropped_line
+    if ! ptap_ensure; then
+        print_error "Could not set up your tap $TAP"
+        return 1
+    fi
+    dir=$(ptap_dir)
+    if [[ "$kind" == cask ]]; then sub=Casks; flag=--cask; else sub=Formula; flag=--formula; fi
+    file="$dir/$sub/$name.rb"
+    [[ -n "$path" ]] || path="$sub/$name.rb"
+    if ! recipe=$(ptap_fetch_recipe "$from" "$path") || [[ -z "$recipe" ]]; then
+        print_error "Could not fetch $from's recipe for $name ($path)"
+        return 1
+    fi
+    printf '%s\n' "$recipe" | ptap_clean_recipe "$kind" > "$file"
+
+    if ! brew fetch "$flag" "$TAP/$name"; then
+        rm -f "$file"
+        print_error "Could not download $name from its recipe; nothing changed"
+        return 1
+    fi
+    ptap_commit "$name: keep after $from $status it ($reason)"
+    # A formula other packages depend on is swapped in place, not refused.
+    if [[ "$kind" == cask ]]; then
+        brew uninstall --cask "$name"
+    else
+        brew uninstall --formula --ignore-dependencies "$name"
+    fi
+    if ! brew install "$flag" "$TAP/$name"; then
+        print_error "$name is in your tap but did not install; retry: brew install $flag $TAP/$name"
+        return 1
+    fi
+    if dropped_line=$(ptap_brewfile_drop "$BREWFILE" "$kind" "$name"); then
+        echo "    Removed from the Brewfile (your tap tracks it now): $dropped_line"
+    fi
+    print_success "Kept $name: installed from $TAP, updated by dotfiles update"
+}
+
+remove() {
+    local kind="$1" name="$2" flag dropped_line
+    if [[ "$kind" == cask ]]; then flag=--cask; else flag=--formula; fi
+    if ! brew uninstall "$flag" "$name"; then
+        print_error "Could not uninstall $name (see above); left as it is"
+        return 1
+    fi
+    if dropped_line=$(ptap_brewfile_drop "$BREWFILE" "$kind" "$name"); then
+        echo "    Removed from the Brewfile: $dropped_line"
+    fi
+    if [[ "$kind" == cask ]]; then
+        print_success "Removed $name (its settings in ~/Library stay; brew uninstall --zap would clear them)"
+    else
+        print_success "Removed $name"
+    fi
+}
+
+records=$( { dropped_casks; dropped_formulae; } || true)
+pending=""
+mkdir -p "$STATE_DIR"
+
+if [[ -z "$records" ]]; then
+    rm -f "$PENDING"
+    exit 0
+fi
+
+count=$(grep -c . <<<"$records" || true)
+print_warning "Homebrew dropped $count package(s) you installed:"
+
+while IFS="$SEP" read -r -u 3 kind name from path status reason date disable_date replacement; do
+    [[ -n "$name" ]] || continue
+    why=$(ptap_humanize "${reason:-no reason given}")
+    echo "  $name ($kind) — $status${date:+ on $date}: $why"
+    [[ -n "$replacement" ]] && echo "    Homebrew suggests $replacement instead"
+    [[ "$status" == deprecated ]] && echo "    It still works until Homebrew disables it${disable_date:+ on $disable_date}"
+
+    if [[ "$ASK" != true ]]; then
+        pending+="$kind $name"$'\n'
+        continue
+    fi
+
+    answer=""
+    while [[ -z "$answer" ]]; do
+        read -r -p "    Keep $name (move it to your tap $TAP and keep it updated), remove it, or skip for now? [k/r/s] " reply || reply=s
+        case "$reply" in
+            k|K|keep) answer=keep ;;
+            r|R|remove) answer=remove ;;
+            s|S|skip|"") answer=skip ;;
+            *) echo "    Type k, r or s" ;;
+        esac
+    done
+    case "$answer" in
+        keep) keep "$kind" "$name" "$from" "$path" "$status" "$reason" || pending+="$kind $name"$'\n' ;;
+        remove) remove "$kind" "$name" || pending+="$kind $name"$'\n' ;;
+        skip) pending+="$kind $name"$'\n'; echo "    Skipped; dotfiles update asks again next time" ;;
+    esac
+done 3<<<"$records"
+
+if [[ -n "$pending" ]]; then
+    printf '%s' "$pending" > "$PENDING"
+    if [[ "$ASK" != true ]]; then
+        echo "  Run dotfiles update in a terminal to keep or remove them"
+    fi
+else
+    rm -f "$PENDING"
+fi
+exit 0

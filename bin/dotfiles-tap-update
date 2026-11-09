@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+# dotfiles:summary=Move the packages kept in your personal tap to their newest upstream versions
+#
+# Run by `dotfiles update` before `brew upgrade` (unless `dotfiles toggle
+# tap-auto-update off`). For each package in your tap it asks the recipe's
+# own livecheck for the newest upstream version; when that is newer it
+# rewrites the version and checksum with `brew bump-*-pr --write-only`,
+# commits the tap (and pushes it when it has a remote), and leaves the
+# install to the `brew upgrade` that follows.
+#
+# The checksum is taken from whatever the download site serves, the way
+# Homebrew's own bump bots do it: nobody reviews it. A cask that is not
+# notarized needs System Settings → Privacy & Security → Open Anyway the
+# first time each new version runs; nothing here gets around that.
+
+set -euo pipefail
+
+DOTFILES_DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+source "$DOTFILES_DIR/scripts/_helpers.sh"
+source "$DOTFILES_DIR/scripts/personal-tap.sh"
+
+for arg in "$@"; do
+    echo "Unknown option: $arg" >&2
+    exit 2
+done
+
+command -v brew >/dev/null 2>&1 || exit 0
+ptap_exists || exit 0
+if ! command -v jq >/dev/null 2>&1; then
+    print_warning "jq is missing, so your tap's packages were not checked for new versions"
+    exit 0
+fi
+
+TAP=$(ptap_name)
+DIR=$(ptap_dir)
+packages=$(ptap_packages)
+[[ -n "$packages" ]] || exit 0
+
+# Homebrew's output (gem installs, rubocop) is noise unless a step fails.
+LOG=$(mktemp)
+trap 'rm -f "$LOG"' EXIT
+
+ptap_ensure >/dev/null 2>&1 || true
+updated=0
+gatekeeper_note=false
+while read -r kind name; do
+    full="$TAP/$name"
+    if ! json=$(brew livecheck --json --newer-only --quiet "--$kind" "$full" 2>"$LOG"); then
+        print_warning "Could not check $name for a new version: $(tail -1 "$LOG")"
+        continue
+    fi
+    latest=$(jq -r '.[0].version.latest // empty' <<<"${json:-[]}" 2>/dev/null || true)
+    current=$(jq -r '.[0].version.current // empty' <<<"${json:-[]}" 2>/dev/null || true)
+    [[ -n "$latest" && "$latest" != "$current" ]] || continue
+
+    echo "  Updating $name $current → $latest in your tap"
+    if [[ "$kind" == cask ]]; then
+        bump=(brew bump-cask-pr --write-only --no-audit --no-browse --version "$latest" "$full")
+    else
+        bump=(brew bump-formula-pr --write-only --no-audit --no-browse --version "$latest" "$full")
+    fi
+    if ! "${bump[@]}" >"$LOG" 2>&1; then
+        git -C "$DIR" checkout -q -- . 2>/dev/null || true
+        print_warning "Could not update $name's recipe; it stays at $current. Last lines from Homebrew:"
+        tail -5 "$LOG" | sed 's/^/    /'
+        continue
+    fi
+    ptap_commit "$name $latest"
+    updated=$((updated + 1))
+    [[ "$kind" == cask ]] && gatekeeper_note=true
+done <<<"$packages"
+
+if [[ "$updated" -gt 0 ]]; then
+    print_success "Your tap has $updated new version(s); brew upgrade installs them"
+    if [[ "$gatekeeper_note" == true ]]; then
+        echo "  If macOS blocks an updated app, open System Settings → Privacy & Security → Open Anyway"
+    fi
+fi
+exit 0

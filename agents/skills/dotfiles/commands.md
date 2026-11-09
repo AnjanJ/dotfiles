@@ -32,6 +32,9 @@
 | `dotfiles hook <event> [args]` / `--list` / `--seed` | run the user's hooks for an event by hand; list what is installed; copy the repo's sample hooks into place (see Hooks below) | yes |
 | `dotfiles hook install <event> <file>` | copy a script into `~/.config/dotfiles/hooks/<event>.d/` and make it executable | when asked |
 | `dotfiles cleanup [--force]` | remove Homebrew packages that are not in the Brewfile | **ask first** |
+| `dotfiles tap list` | the personal Homebrew tap (name and remote from `~/.config/dotfiles/personal-tap`, default `<user>/tap`): packages kept after Homebrew deprecated or disabled them, with versions, plus dropped ones still awaiting an answer | yes |
+| `dotfiles tap check [--yes]` | find installed packages Homebrew deprecated or disabled and ask per package: keep (copy Homebrew's last recipe into the tap, swap the install over, drop the Brewfile line) or remove (uninstall, drop the Brewfile line); `--yes` or no terminal only lists them | listing (`--yes`): yes; answering: **the user decides** |
+| `dotfiles tap update` | move the tap's packages to their newest upstream versions (livecheck, then `brew bump-*-pr --write-only`), commit the tap and push it when it has a remote; `brew upgrade` installs them | when asked |
 | `dotfiles install` | full installer (idempotent, but slow and sudo) | **ask first** |
 | `dotfiles uninstall` | remove every managed symlink | **ask first** |
 | `dotfiles work setup\|status\|nuke\|switch` | work git identity, SSH hosts, repos | `status` yes; others ask |

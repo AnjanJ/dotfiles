@@ -20,7 +20,7 @@ Guidance for anyone changing the dotfiles source, human or agent. End-user help 
 ## Commands
 
 - Every `bin/dotfiles-*` starts with `# dotfiles:summary=…` and, when it takes arguments, `# dotfiles:args=…` (bracket optional parts: `[--yes]`). `# dotfiles:hidden=true` keeps plumbing out of listings. `dotfiles commands --check` runs in CI and fails on a missing summary.
-- Name commands `dotfiles-<group>-<verb>` so they route as `dotfiles <group> <verb>`. Groups with verbs today: `add`, `agent`, `default`, `hook`, `repos`, `theme`, `tui`, `update`, `webapp`, `work`. Single-word commands in use: `sync`, `update`, `health`, `doctor`, `debug`, `backup`, `theme`, `font`, `toggle`, `keys`, `hook`, `migrate`, `menu`, `reminder`, `restart`, `export`, `profile`, `cleanup`, `install`, `uninstall`. `dotfiles commands --plain` is the live list.
+- Name commands `dotfiles-<group>-<verb>` so they route as `dotfiles <group> <verb>`. Groups with verbs today: `add`, `agent`, `default`, `hook`, `repos`, `tap`, `theme`, `tui`, `update`, `webapp`, `work`. Single-word commands in use: `sync`, `update`, `health`, `doctor`, `debug`, `backup`, `theme`, `font`, `toggle`, `keys`, `hook`, `migrate`, `menu`, `reminder`, `restart`, `export`, `profile`, `cleanup`, `install`, `uninstall`. `dotfiles commands --plain` is the live list.
 - `--help` is handled by the router from the header; a script's own `--help` is a bonus, not a requirement.
 - Completions come from `dotfiles commands --plain`; do not add commands to `.zshrc-work-completions` by hand.
 
