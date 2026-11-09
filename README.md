@@ -65,12 +65,12 @@ bash install.sh --groups "core,editors"  # Install only specific Brewfile groups
 bash install.sh --help                   # All options
 ```
 
-It installs Homebrew + the [Brewfile](Brewfile) packages, links every config via the [symlink map](scripts/symlink-map.sh), applies your theme, sets up git/SSH/macOS defaults, and runs a health check.
+It installs Homebrew + the [Brewfile](Brewfile) packages (and, if you say so, the apps kept in [homebrew-tap/](homebrew-tap) after Homebrew dropped them), links every config via the [symlink map](scripts/symlink-map.sh), applies your theme, sets up git/SSH/macOS defaults, and runs a health check.
 
 ## Daily driving
 
 ```bash
-dotfiles update       # Upgrade everything & sync the repo
+dotfiles update       # Upgrade everything & sync the repo; asks keep-or-remove when Homebrew drops an app you use
 dotfiles sync         # Quick refresh: pull, relink, reapply theme
 dotfiles health       # Verify tools, symlinks, runtimes, services
 dotfiles doctor       # Auto-fix symlinks, permissions, SSH

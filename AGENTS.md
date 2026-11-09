@@ -13,7 +13,7 @@ Guidance for anyone changing the dotfiles source, human or agent. End-user help 
 | `bin/dotfiles-*` | One command per file. |
 | `migrations/<unix-ts>-<slug>.sh` | One-off, idempotent per-machine repairs run by sync/update. |
 | `themes/` | `_templates/` plus one directory per theme. |
-| `homebrew-tap/` | Personal Homebrew tap: recipes for packages kept after Homebrew dropped them. Written by `dotfiles tap check`/`tap update` and committed by `update.sh`'s snapshot; Homebrew reads a mirrored working copy under its `Library/Taps` (see `scripts/personal-tap.sh`). Do not hand-edit a version or checksum. |
+| `homebrew-tap/` | Personal Homebrew tap: recipes for packages kept after Homebrew dropped them. Written by `dotfiles tap check`/`tap update`, installed per machine by `dotfiles tap install` (asks once), and committed by `update.sh`'s snapshot; Homebrew reads a mirrored working copy under its `Library/Taps` (see `scripts/personal-tap.sh`). Do not hand-edit a version or checksum. |
 | `hooks/` | Sample user hooks, one `<event>.d/<name>.sample` per event; `dotfiles hook --seed` copies them to `~/.config/dotfiles/hooks/` without overwriting. Fire a new event with `bash "$DOTFILES_DIR/bin/dotfiles-hook" <event>` and list it in `bin/dotfiles-hook`'s header. |
 | `tests/*-test.sh`, `tests/base-test.sh`, `tests/run` | One suite per area on the shared contract, discovered by the runner and by CI. `tests/e2e/` holds the real install run. |
 | `docs/` | Reference for users. `docs/KEYBINDINGS.md` has a generated block. |

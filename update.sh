@@ -8,12 +8,14 @@
 # What it does:
 #   1. Pull latest dotfiles from git (marks aerospace/sketchybar for restart
 #      when their configs changed)
-#   2. Take a local APFS snapshot, then upgrade Homebrew packages & snapshot
-#      diff (preserves organized Brewfile)
+#   2. Take a local APFS snapshot, brew update, ask keep-or-remove for any
+#      package Homebrew dropped and install/update what homebrew-tap/ keeps
+#      (dotfiles tap check/install/update), then upgrade Homebrew packages &
+#      snapshot diff (preserves organized Brewfile)
 #   3. Refresh symlinks, run pending migrations
 #   4. Upgrade mise tools (config auto-syncs via symlink)
 #   5. Restart only what was marked (dotfiles restart --pending), run hooks
-#   6. Commit & push any changes back to repo
+#   6. Commit & push package changes (Brewfile, mise config, homebrew-tap/)
 #
 # Around all of that: a transcript in ~/.local/state/dotfiles/update.log
 # (previous run kept as update.log.1) and a lock so two updates cannot
@@ -144,10 +146,11 @@ echo ""
 echo "  This will:"
 echo "    - Pull latest changes from git"
 echo "    - Take a local APFS snapshot, then upgrade Homebrew & snapshot Brewfile"
+echo "    - Ask about packages Homebrew dropped; install and update homebrew-tap/"
 echo "    - Refresh symlinks, run migrations"
 echo "    - Upgrade mise tools"
 echo "    - Restart whatever changed (aerospace, sketchybar, borders)"
-echo "    - Push changes back to repo"
+echo "    - Push package changes back to repo"
 echo ""
 echo "  Transcript: $UPDATE_LOG"
 echo ""

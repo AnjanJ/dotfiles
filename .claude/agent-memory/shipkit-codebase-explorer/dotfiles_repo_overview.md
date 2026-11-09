@@ -68,15 +68,14 @@ Not just a dotfiles repository — a **complete macOS development environment in
 **Purpose**: Keep system and dotfiles repo in sync  
 **Trigger**: `dotfiles update` or `bash update.sh`
 
-**Flow**:
-1. Git pull (with auto-stash of local changes)
-2. Brew update/upgrade/cleanup
-3. **Brewfile snapshot** — captures any new manual installs, shows diff
-4. Refresh all symlinks
+**Flow** (refreshed 2026-11-09):
+1. Git pull (with auto-stash of local changes); a pulled aerospace/sketchybar/borders change marks a restart
+2. Local APFS snapshot (`tmutil localsnapshot`, skip with `--no-snapshot`), `brew update`, then the personal tap steps: `dotfiles tap check` (keep or remove each package Homebrew deprecated or disabled), `dotfiles tap install` (asks once per machine whether to install what `homebrew-tap/` holds), `dotfiles tap update` (bumps kept packages installed here; `tap-auto-update` toggle), then `brew upgrade` + `brew cleanup`
+3. **Brewfile snapshot** — diff of installed packages against the Brewfile (the tap's packages count as listed)
+4. Refresh all symlinks and run pending migrations
 5. Upgrade mise tools
-6. Update tmux plugins
-7. Reload configs (tmux, aerospace)
-8. Auto-commit & push (only on main branch)
+6. Restart only what was marked (`dotfiles restart --pending`), then the `post-update` hook
+7. Auto-commit & push `snapshot: system state` with Brewfile, mise config and `homebrew-tap/` only (main branch, `auto-commit` toggle)
 
 ## Directory Structure (46 directories)
 

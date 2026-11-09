@@ -83,7 +83,7 @@ A single file `~/.config/dotfiles/hooks/<event>` also works. Failing hooks are r
 0. `dotfiles debug --print` — everything below in one report; read it before poking at files.
 1. `dotfiles health` — read the ✗ lines.
 2. `dotfiles doctor --dry-run` — see what it would fix, then run it without the flag if that is what the user wants.
-3. `dotfiles update available` — commits behind origin, outdated packages, pending migrations and restarts in one place; a pending migration means the repo moved ahead of this machine.
+3. `dotfiles update available` — commits behind origin, outdated packages, packages Homebrew dropped and kept packages awaiting an answer, pending migrations and restarts in one place; a pending migration means the repo moved ahead of this machine.
 4. Theme looks wrong: `dotfiles theme "$(cat ~/.dotfiles-theme)"` re-renders; `theming.md` explains what reads what.
 5. A symlink points somewhere odd: check `scripts/symlink-map.sh` in the repo; `dotfiles sync` relinks.
 6. Shell slow: `dotfiles profile --detailed`.

@@ -250,8 +250,9 @@ claude-web() {
 }
 
 # ── Update notice ─────────────────────────────
-# One line at login when commits, brew upgrades, migrations or restarts are
-# waiting. The check itself (a git fetch, seconds) never runs in the prompt
+# One line at login when commits, brew upgrades, packages Homebrew dropped,
+# kept packages not installed here, migrations or restarts are waiting. The
+# check itself (a git fetch, seconds) never runs in the prompt
 # path: once a day a detached job refreshes the cache and the shell only
 # reads it. `dotfiles update` refreshes it too, so the notice clears at
 # once. Silence it with: dotfiles toggle update-notice off

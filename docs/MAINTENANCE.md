@@ -5,7 +5,7 @@ All commands work from anywhere — no need to `cd ~/dotfiles` first.
 ## Dotfiles CLI
 
 ```bash
-dotfiles update       # Upgrade system & sync repo (pull → brew upgrade → snapshot → push); --yes, --no-snapshot
+dotfiles update       # Upgrade system & sync repo (pull → dropped/kept packages → brew upgrade → snapshot → push); --yes, --no-snapshot
 dotfiles update available # What is waiting: commits, brew upgrades, dropped and kept packages, migrations, restarts (--cached, --short)
 dotfiles sync         # Quick refresh: pull, relink, reapply theme (no upgrades)
 dotfiles health       # Verify all tools are installed and configured
@@ -18,7 +18,7 @@ dotfiles theme install <git-url> # Install a theme from a repo; also theme remov
 dotfiles add theme x  # Scaffold a new theme directory with all required files (dotfiles add-theme x works too)
 dotfiles font         # The monospace font every terminal and editor uses: current | list | set <family> | reset
 dotfiles cleanup      # Find/remove Homebrew packages not in Brewfile (--force)
-dotfiles tap list     # Your personal Homebrew tap: packages kept after Homebrew dropped them; tap check, tap update
+dotfiles tap list     # Your personal Homebrew tap (homebrew-tap/): packages kept after Homebrew dropped them; tap check, tap install, tap update
 dotfiles backup       # Snapshot dotfiles state (--list, --restore <name>)
 dotfiles profile      # Measure shell startup time (--detailed for per-component)
 dotfiles export       # Export setup snapshot (--json for machine-readable)
@@ -61,7 +61,7 @@ Around the whole run: a lock in `~/.local/state/dotfiles/update.lock` refuses a 
 
 **Restart markers.** `dotfiles restart <aerospace|sketchybar|borders>` restarts a component now. `dotfiles restart --later <component>` drops `~/.local/state/dotfiles/restart-<component>-required` for `dotfiles update` and `dotfiles sync` to consume at their end; a migration that edits a live config should do this rather than restart mid-run. `dotfiles restart --list` prints what is pending, exiting 0 when a marker exists and 1 when none does, and `dotfiles health` warns about it. Rolling back a bad upgrade: `tmutil listlocalsnapshots /` shows the snapshot the update took; mount it with `tmutil mount` or browse it in Time Machine.
 
-**Your Brewfile stays organized.** The Brewfile is organized into `@group` sections (core, editors, work, databases, etc.) and `dotfiles update` never overwrites it. The snapshot step shows you what's new or missing compared to your system.
+**Your Brewfile stays organized.** The Brewfile is organized into `@group` sections (core, editors, work, databases, etc.) and `dotfiles update` never overwrites it; it only removes the line of a package Homebrew dropped once you answer keep (the package moves to `homebrew-tap/`) or remove. The snapshot step shows you what's new or missing compared to your system, counting what `homebrew-tap/` holds as listed.
 
 ## Brewfile recovery
 
@@ -146,8 +146,8 @@ Every push and PR runs 37 test suites, an end-to-end install, shellcheck, `dotfi
 - **Shell helpers** (`shell`) — the zsh functions in `.zshrc-terminal-enhancements` run under zsh: `gwa`/`gwr` worktrees against a temp repo with a mise stub, `compress`/`decompress` round trip, `fip`/`dip`/`lip` against ssh/pkill/pgrep stubs, usage errors
 - **SSH config** (`ssh-adversarial`) — adversarial inputs and edge cases
 - **Repo cloner** (`repos-clone`) — SSH alias detection and URL rewriting
-- **Update available** (`update-available`) — `dotfiles update available`: behind-origin count against a local bare origin, brew outdated via a stub, migrations and restart markers, the cache file, `--cached`, `--short`, `--quiet`, exit codes, a fetch that cannot reach origin
-- **Update flow** (`update`) — symlink creation and refresh, plus the whole pipeline against stubs: lock, transcript, snapshot before upgrade, restart markers, `--yes`
+- **Update available** (`update-available`) — `dotfiles update available`: behind-origin count against a local bare origin, brew outdated via a stub, dropped packages and kept packages awaiting an answer, migrations and restart markers, the cache file, `--cached`, `--short`, `--quiet`, exit codes, a fetch that cannot reach origin
+- **Update flow** (`update`) — symlink creation and refresh, plus the whole pipeline against stubs: lock, transcript, snapshot before upgrade, restart markers, `--yes`, the personal tap steps between `brew update` and `brew upgrade` (no drift for a kept package, `homebrew-tap/` committed alone, the `tap-auto-update` toggle)
 - **Restart** (`restart`) — `dotfiles restart` now/later/pending/list, the AeroSpace process-name case, borders relaunch honouring its toggle
 - **Web apps** (`webapp`) — `dotfiles webapp install/remove`: bundle, plist, icon conversion, AeroSpace rule placement and removal, URL and name validation
 - **TUIs** (`tui`) — `dotfiles tui install/remove`: Ghostty launch line, default float, Ghostty icon fallback, rule lifecycle
@@ -171,7 +171,7 @@ Every push and PR runs 37 test suites, an end-to-end install, shellcheck, `dotfi
 - **Git setup** (`setup-git`) — identity configuration, work/personal split, smart defaults
 - **Backup** (`backup`) — create, list, restore, prune cycle
 - **Sync** (`sync`) — symlink refresh, broken link repair, dry-run mode
-- **Personal tap** (`tap`) — `dotfiles tap check/update/list` against stub brew and curl: dropped casks and formulae found (the install receipt beating the short name, dependencies left out), keep/remove/skip, `--yes` only listing, download before uninstall, a failed download or fetch changing nothing, `dotfiles tap install` asking once per machine (yes, no, an answer given ahead of time, later additions installed unattended, a failed install retried), bumps limited to packages installed from the tap, a recipe another machine kept reused, version bumps written back to `homebrew-tap/`, a failed bump rolled back, the folder mirrored into Homebrew's working copy, recipe cleaning, Brewfile line removal, `/bin/bash` 3.2
+- **Personal tap** (`tap`) — `dotfiles tap check/install/update/list` against stub brew and curl: dropped casks and formulae found (the install receipt beating the short name, dependencies left out), keep/remove/skip, `--yes` only listing, download before uninstall, a failed download or fetch changing nothing, `dotfiles tap install` asking once per machine (yes, no, an answer given ahead of time, later additions installed unattended, a failed install retried), bumps limited to packages installed from the tap, a recipe another machine kept reused, version bumps written back to `homebrew-tap/`, a failed bump rolled back, the folder mirrored into Homebrew's working copy, recipe cleaning, Brewfile line removal, `/bin/bash` 3.2
 - **Packages** (`packages`) — Brewfile group parsing, filtering, saved selections
 - **Uninstall** (`uninstall`) — removes every mapped symlink, leaves foreign links alone
 - **Style** (`style`) — the AGENTS.md rules shellcheck cannot express: shebang and strict mode, no `((VAR++))`, bash 3.2 builtins only on the install path, osascript never aimed at an app outside the watchdogged helpers

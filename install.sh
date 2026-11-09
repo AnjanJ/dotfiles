@@ -37,6 +37,8 @@
 #   DOTFILES_WORK_DIR, DOTFILES_THEME, DOTFILES_SSH_MODE, DOTFILES_GROUPS
 #   DOTFILES_NO_SUDO=1 (never ask for a password), DOTFILES_NO_RUNTIMES=1
 #   DOTFILES_ANSWERS=<file>
+#   DOTFILES_TAP_INSTALL=yes|no (install the apps kept in homebrew-tap/;
+#                       unset, the first `dotfiles update` asks once)
 #
 # Precedence: flags, then environment, then the answers file, then defaults.
 # ============================================

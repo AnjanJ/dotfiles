@@ -831,6 +831,11 @@ pandoc input.html -o output.md                         # HTML to Markdown
 **What**: Universal media player.
 **When**: Playing any audio/video format.
 
+### qBittorrent (`homebrew-tap/`)
+**What**: BitTorrent client with built-in search plugins.
+**When**: Downloading torrents, searching from inside the app.
+**Note**: Homebrew disabled its cask on 2026-09-01 (not notarized, fails Gatekeeper), so it lives in the repo's `homebrew-tap/` and `dotfiles update` keeps it current. After an update macOS may ask for System Settings → Privacy & Security → Open Anyway.
+
 ---
 
 ## 16. macOS Productivity

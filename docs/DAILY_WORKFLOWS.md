@@ -248,8 +248,11 @@ The window manager is half the setup; the other half is `dotfiles`, one command 
 ```bash
 # The login notice already said "dotfiles: 3 commits, 2 brew upgrades…" in yellow if anything waits.
 # .zshrc refreshes that once a day in a detached job; the shell only reads the cache.
-dotfiles update available        # The same check, live: commits, brew upgrades, migrations, restarts
-dotfiles update                  # Apply it all (pull → brew upgrade → relink → migrate → mise → restart what changed)
+dotfiles update available        # The same check, live: commits, brew upgrades, dropped and kept packages, migrations, restarts
+dotfiles update                  # Apply it all (pull → dropped/kept packages → brew upgrade → relink → migrate → mise → restart what changed)
+# If Homebrew deprecated or disabled something you installed, update asks once: keep it (moves to homebrew-tap/,
+# updated from then on) or remove it. A new machine is asked once whether to install the kept ones.
+dotfiles tap list                # What homebrew-tap/ holds and whether this machine installs it
 dotfiles toggle update-notice off   # If the login line annoys you
 
 dotfiles agent usage             # Claude plan usage: the 5-hour session and the 7-day window, with reset times
