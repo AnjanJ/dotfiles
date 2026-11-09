@@ -3,19 +3,21 @@
 # or disables it and you choose to keep it. Sourced by bin/dotfiles-tap-*,
 # update.sh (its Brewfile drift report) and bin/dotfiles-cleanup.
 #
-# The tap's name and optional git remote live outside the repo, in
-# ~/.config/dotfiles/personal-tap, because the repo is public and the list
-# of apps you kept is yours:
+# The recipes live in the repo, in homebrew-tap/{Casks,Formula}/, so every
+# machine that clones dotfiles has them and `dotfiles update` commits
+# changes with its package snapshot. Homebrew cannot use that folder
+# directly: `brew bump-*-pr` refuses a tap that is not its own git repo.
+# So Homebrew gets a working copy, a small local git repo under its Taps
+# directory, and the two are synced: the folder is copied in before each
+# step (ptap_ensure) and a changed recipe is copied back after (ptap_save).
+# The working copy's history is scratch; the repo is the record.
+#
+# The tap's name is per machine, in ~/.config/dotfiles/personal-tap:
 #
 #   name=<user>/tap                                  default: $(id -un)/tap
-#   remote=git@github.com:<user>/homebrew-tap.git    optional
 #
-# Without a remote the tap is a local git repo under Homebrew's Taps
-# directory. With one, every change is pushed and a fresh machine taps it
-# from there. Packages kept here are left out of the public Brewfile; the
-# tap itself is their record.
-#
-# Library: no `set -e`, bash 3.2 compatible.
+# Packages kept here are left out of the Brewfile; the folder is their
+# record. Library: no `set -e`, bash 3.2 compatible; callers set DOTFILES_DIR.
 
 PTAP_CONFIG="${DOTFILES_CONFIG_DIR:-$HOME/.config/dotfiles}/personal-tap"
 
@@ -32,6 +34,11 @@ ptap_name() {
     printf '%s\n' "$name"
 }
 
+# The recipes' home in the repo.
+ptap_src() {
+    printf '%s\n' "${DOTFILES_TAP_SRC:-${DOTFILES_DIR:-}/homebrew-tap}"
+}
+
 # Where Homebrew keeps a tap's checkout: <user>/<repo> lives in
 # Library/Taps/<user>/homebrew-<repo>.
 ptap_tap_dir() {
@@ -39,6 +46,7 @@ ptap_tap_dir() {
     printf '%s/Library/Taps/%s/homebrew-%s\n' "$(brew --repository 2>/dev/null)" "${tap%%/*}" "${tap#*/}"
 }
 
+# Homebrew's working copy of the tap.
 ptap_dir() {
     if [[ -n "${DOTFILES_TAP_DIR:-}" ]]; then
         printf '%s\n' "$DOTFILES_TAP_DIR"
@@ -47,41 +55,60 @@ ptap_dir() {
     fi
 }
 
+# True when the repo carries at least one kept package.
 ptap_exists() {
-    [[ -d "$(ptap_dir)/.git" ]]
+    [[ -n "$(ptap_packages)" ]]
 }
 
-# Taps the remote on a machine that has none yet, or starts an empty local
-# tap, then trusts it: Homebrew 7 refuses to load casks and formulae from
-# a tap nobody trusted.
+# Makes Homebrew's working copy match the repo folder: starts it as a
+# local git repo when missing, mirrors Casks/ and Formula/ (a recipe
+# deleted from the folder goes from the working copy too), commits, and
+# trusts the tap, since Homebrew 7 refuses to load an untrusted one.
 ptap_ensure() {
-    local name dir remote
+    local name src dir sub f
     name=$(ptap_name)
+    src=$(ptap_src)
     dir=$(ptap_dir)
-    remote=$(ptap_conf remote)
     if [[ ! -d "$dir/.git" ]]; then
-        if [[ -n "$remote" && -z "${DOTFILES_TAP_DIR:-}" ]]; then
-            brew tap "$name" "$remote" || return 1
-        else
-            mkdir -p "$dir" && git -C "$dir" init -q -b main || return 1
-        fi
+        mkdir -p "$dir" && git -C "$dir" init -q -b main || return 1
     fi
-    mkdir -p "$dir/Casks" "$dir/Formula"
-    if [[ -n "$remote" ]] && ! git -C "$dir" remote get-url origin >/dev/null 2>&1; then
-        git -C "$dir" remote add origin "$remote"
-    fi
+    for sub in Casks Formula; do
+        mkdir -p "$dir/$sub"
+        for f in "$dir/$sub"/*.rb; do
+            [[ -f "$f" && ! -f "$src/$sub/$(basename "$f")" ]] && rm -f "$f"
+        done
+        for f in "$src/$sub"/*.rb; do
+            [[ -f "$f" ]] && cp "$f" "$dir/$sub/"
+        done
+    done
+    ptap_commit "sync from $(basename "$(dirname "$src")")/$(basename "$src")"
     # Older Homebrew has no trust command and loads any tap.
     brew trust --tap "$name" >/dev/null 2>&1 || true
 }
 
-# One line per package: "cask <token>" or "formula <name>".
-ptap_packages() {
-    local dir f
+# Copies a recipe the working copy changed back into the repo folder, or
+# removes it there when the working copy no longer has it.
+ptap_save() {
+    local kind="$1" name="$2" sub src dir
+    if [[ "$kind" == cask ]]; then sub=Casks; else sub=Formula; fi
+    src=$(ptap_src)
     dir=$(ptap_dir)
-    for f in "$dir"/Casks/*.rb; do
+    if [[ -f "$dir/$sub/$name.rb" ]]; then
+        mkdir -p "$src/$sub"
+        cp "$dir/$sub/$name.rb" "$src/$sub/$name.rb"
+    else
+        rm -f "$src/$sub/$name.rb"
+    fi
+}
+
+# One line per package in the repo folder: "cask <token>" or "formula <name>".
+ptap_packages() {
+    local src f
+    src=$(ptap_src)
+    for f in "$src"/Casks/*.rb; do
         [[ -f "$f" ]] && printf 'cask %s\n' "$(basename "$f" .rb)"
     done
-    for f in "$dir"/Formula/*.rb; do
+    for f in "$src"/Formula/*.rb; do
         [[ -f "$f" ]] && printf 'formula %s\n' "$(basename "$f" .rb)"
     done
     return 0
@@ -90,8 +117,9 @@ ptap_packages() {
 # Brewfile lines for what the tap holds, so the drift report and
 # `dotfiles cleanup` treat kept packages as wanted.
 ptap_brewfile_lines() {
-    ptap_exists || return 0
-    local name kind pkg
+    local name kind pkg packages
+    packages=$(ptap_packages)
+    [[ -n "$packages" ]] || return 0
     name=$(ptap_name)
     printf 'tap "%s"\n' "$name"
     while read -r kind pkg; do
@@ -99,7 +127,7 @@ ptap_brewfile_lines() {
             cask) printf 'cask "%s/%s"\n' "$name" "$pkg" ;;
             formula) printf 'brew "%s/%s"\n' "$name" "$pkg" ;;
         esac
-    done < <(ptap_packages)
+    done <<<"$packages"
 }
 
 # A Brewfile followed by the tap's lines, for readers that should count
@@ -112,8 +140,7 @@ ptap_with_brewfile() {
     ptap_brewfile_lines
 }
 
-# Commits everything in the tap and pushes when it has a remote. A failed
-# push is a warning: the commit is safe locally and the next run retries.
+# Commits the working copy, so Homebrew's tools see a clean tap.
 ptap_commit() {
     local msg="$1" dir
     dir=$(ptap_dir)
@@ -124,17 +151,6 @@ ptap_commit() {
     else
         git -C "$dir" -c user.name=dotfiles -c user.email=dotfiles@localhost commit -q -m "$msg"
     fi
-    ptap_push
-}
-
-ptap_push() {
-    local dir
-    dir=$(ptap_dir)
-    git -C "$dir" remote get-url origin >/dev/null 2>&1 || return 0
-    if ! GIT_TERMINAL_PROMPT=0 git -C "$dir" push -q origin HEAD 2>/dev/null; then
-        echo "  Could not push the tap to its remote; the change is committed locally and the next update retries" >&2
-    fi
-    return 0
 }
 
 # Prints the recipe a tap last shipped for a package: from the tap's local

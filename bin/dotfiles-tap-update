@@ -4,9 +4,11 @@
 # Run by `dotfiles update` before `brew upgrade` (unless `dotfiles toggle
 # tap-auto-update off`). For each package in your tap it asks the recipe's
 # own livecheck for the newest upstream version; when that is newer it
-# rewrites the version and checksum with `brew bump-*-pr --write-only`,
-# commits the tap (and pushes it when it has a remote), and leaves the
-# install to the `brew upgrade` that follows.
+# rewrites the version and checksum with `brew bump-*-pr --write-only` in
+# Homebrew's working copy of the tap, copies the recipe back into the
+# repo's homebrew-tap/ folder (which `dotfiles update` then commits and
+# pushes with its package snapshot), and leaves the install to the
+# `brew upgrade` that follows.
 #
 # The checksum is taken from whatever the download site serves, the way
 # Homebrew's own bump bots do it: nobody reviews it. A cask that is not
@@ -40,7 +42,10 @@ packages=$(ptap_packages)
 LOG=$(mktemp)
 trap 'rm -f "$LOG"' EXIT
 
-ptap_ensure >/dev/null 2>&1 || true
+if ! ptap_ensure >/dev/null 2>&1; then
+    print_warning "Could not set up Homebrew's copy of your tap $TAP; versions not checked"
+    exit 0
+fi
 updated=0
 gatekeeper_note=false
 while read -r kind name; do
@@ -66,6 +71,7 @@ while read -r kind name; do
         continue
     fi
     ptap_commit "$name $latest"
+    ptap_save "$kind" "$name"
     updated=$((updated + 1))
     [[ "$kind" == cask ]] && gatekeeper_note=true
 done <<<"$packages"

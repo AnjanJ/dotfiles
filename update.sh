@@ -423,6 +423,13 @@ elif [[ -n $(git status -s) ]]; then
             SNAPSHOT_FILES+=("$f")
         fi
     done
+    # The personal tap's recipes are written by `dotfiles tap check` and
+    # `dotfiles tap update` (step 2). A newly kept package is a new file, so
+    # stage the folder first: a commit naming an untracked path fails.
+    if [[ -n $(git status --porcelain -- homebrew-tap) ]]; then
+        git add -A -- homebrew-tap
+        SNAPSHOT_FILES+=(homebrew-tap)
+    fi
 
     if [[ ${#SNAPSHOT_FILES[@]} -gt 0 ]]; then
         CHANGES=$(git diff HEAD --stat -- "${SNAPSHOT_FILES[@]}" | tail -1)

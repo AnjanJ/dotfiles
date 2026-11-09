@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # dotfiles:summary=List the packages kept in your personal tap and any dropped ones still waiting for an answer
 #
-# Shows the tap's name, where it lives and its remote, then every package
+# Shows the tap's name, the repo folder holding its recipes and Homebrew's
+# working copy, then every package
 # it carries with the installed version. Packages Homebrew dropped that you
 # skipped (or that an unattended update only listed) follow; the next
 # `dotfiles update` in a terminal asks about them.
@@ -21,11 +22,9 @@ done
 
 TAP=$(ptap_name)
 if ptap_exists; then
-    DIR=$(ptap_dir)
-    remote=$(git -C "$DIR" remote get-url origin 2>/dev/null || echo "none (local only)")
-    echo "Tap:    $TAP"
-    echo "Path:   $DIR"
-    echo "Remote: $remote"
+    echo "Tap:     $TAP"
+    echo "Recipes: $(ptap_src)"
+    echo "Homebrew's copy: $(ptap_dir)"
     packages=$(ptap_packages)
     if [[ -z "$packages" ]]; then
         echo "No packages kept yet"

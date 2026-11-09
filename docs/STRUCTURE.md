@@ -46,6 +46,7 @@ dotfiles/
 │   ├── _shared/                # Palette-driven Neovim colorscheme, the fallback for any theme without an nvim/ spec
 │   ├── tokyo-night/  aura/  catppuccin/       # dark: colors.toml, theme.conf, nvim spec, optional overrides/
 │   └── catppuccin-latte/  flexoki-light/     # light (flip macOS appearance)
+├── homebrew-tap/               # Personal tap: Casks/ and Formula/ kept after Homebrew dropped them (dotfiles tap; written by dotfiles update)
 ├── migrations/                 # One-off per-machine repairs, run by sync/update (bin/dotfiles-migrate)
 ├── agents/skills/dotfiles/     # Claude Code skill for managing this machine (linked to ~/.claude/skills; also into ~/.agents, ~/.codex and ~/.gemini/config skills dirs when those tools exist)
 ├── bin/                        # CLI commands, linked file-by-file into ~/bin

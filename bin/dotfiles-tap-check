@@ -7,9 +7,9 @@
 # failing the Gatekeeper check, a formula upstream stopped supporting), says
 # why, and asks once per package:
 #
-#   k  keep    copy Homebrew's last recipe into your personal tap, switch
-#              the install over to it, and let `dotfiles tap update` keep it
-#              current from then on
+#   k  keep    copy Homebrew's last recipe into your personal tap (the
+#              repo's homebrew-tap/ folder), switch the install over to it,
+#              and let `dotfiles tap update` keep it current from then on
 #   r  remove  uninstall it (settings in ~/Library stay) and drop it from
 #              the Brewfile
 #   s  skip    ask again next run
@@ -17,7 +17,8 @@
 # With --yes, or without a terminal, it only lists them and records them in
 # ~/.local/state/dotfiles/tap-pending for the login notice. Dependencies
 # nobody asked for are not listed; Homebrew retires them with their parents.
-# The tap is set in ~/.config/dotfiles/personal-tap (see scripts/personal-tap.sh).
+# The tap's name is set in ~/.config/dotfiles/personal-tap (see
+# scripts/personal-tap.sh); `dotfiles update` commits the folder.
 
 set -euo pipefail
 
@@ -105,27 +106,28 @@ dropped_formulae() {
 # download failing after that would leave nothing installed.
 keep() {
     local kind="$1" name="$2" from="$3" path="$4" status="$5" reason="$6"
-    local dir sub file recipe flag dropped_line
-    if ! ptap_ensure; then
-        print_error "Could not set up your tap $TAP"
-        return 1
-    fi
-    dir=$(ptap_dir)
+    local sub file recipe flag dropped_line
     if [[ "$kind" == cask ]]; then sub=Casks; flag=--cask; else sub=Formula; flag=--formula; fi
-    file="$dir/$sub/$name.rb"
     [[ -n "$path" ]] || path="$sub/$name.rb"
     if ! recipe=$(ptap_fetch_recipe "$from" "$path") || [[ -z "$recipe" ]]; then
         print_error "Could not fetch $from's recipe for $name ($path)"
         return 1
     fi
+    file="$(ptap_src)/$sub/$name.rb"
+    mkdir -p "$(dirname "$file")"
     printf '%s\n' "$recipe" | ptap_clean_recipe "$kind" > "$file"
+    if ! ptap_ensure; then
+        rm -f "$file"
+        print_error "Could not set up your tap $TAP"
+        return 1
+    fi
 
     if ! brew fetch "$flag" "$TAP/$name"; then
         rm -f "$file"
+        ptap_ensure >/dev/null 2>&1 || true
         print_error "Could not download $name from its recipe; nothing changed"
         return 1
     fi
-    ptap_commit "$name: keep after $from $status it ($reason)"
     # A formula other packages depend on is swapped in place, not refused.
     if [[ "$kind" == cask ]]; then
         brew uninstall --cask "$name"

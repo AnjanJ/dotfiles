@@ -8,8 +8,10 @@
 # install receipt beating the short name, dependencies left out), keep,
 # remove and skip, --yes only listing, the download-before-uninstall
 # order, version bumps and a failed bump, recipe cleaning, Brewfile line
-# removal, and bash 3.2. The tap is a temporary git repo set through
-# DOTFILES_TAP_DIR; nothing touches Homebrew or the real Brewfile.
+# removal, the repo folder mirrored into Homebrew's working copy and
+# back, and bash 3.2. The folder (DOTFILES_TAP_SRC) and the working copy
+# (DOTFILES_TAP_DIR) are temporary; nothing touches Homebrew, the repo's
+# homebrew-tap/ or the real Brewfile.
 # Usage: tests/run tap   (or /opt/homebrew/bin/bash tests/tap-test.sh)
 # ============================================
 
@@ -28,6 +30,8 @@ mkdir -p "$STUB" "$FIX"
 
 export DOTFILES_TAP="me/tap"
 export DOTFILES_TAP_DIR="$TEST_TMP/tap"
+export DOTFILES_TAP_SRC="$TEST_TMP/repo/homebrew-tap"
+SRC="$DOTFILES_TAP_SRC"
 export DOTFILES_STATE_DIR="$TEST_TMP/state"
 export DOTFILES_BREWFILE="$TEST_TMP/Brewfile"
 export DOTFILES_CONFIG_DIR="$TEST_TMP/config"
@@ -49,13 +53,14 @@ case "$*" in
     fetch*) exit "${FETCH_RC:-0}" ;;
     livecheck*) cat "$FIX/livecheck.json" ;;
     bump-*)
-        [[ "${BUMP_RC:-0}" == 0 ]] || { echo "bump went wrong"; exit 1; }
         version=""; prev=""
         for a in "$@"; do [[ "$prev" == --version ]] && version="$a"; prev="$a"; done
         name="${*: -1}"; name="${name##*/}"
         for f in "$DOTFILES_TAP_DIR"/Casks/"$name".rb "$DOTFILES_TAP_DIR"/Formula/"$name".rb; do
             [[ -f "$f" ]] && sed -i '' -E "s/version \"[^\"]+\"/version \"$version\"/" "$f"
         done
+        # A failing bump may have half-written the recipe already.
+        [[ "${BUMP_RC:-0}" == 0 ]] || { echo "bump went wrong"; exit 1; }
         exit 0 ;;
 esac
 exit 0
@@ -70,7 +75,7 @@ EOF
 chmod +x "$STUB/brew" "$STUB/curl"
 
 reset() {
-    rm -rf "$DOTFILES_TAP_DIR" "$DOTFILES_STATE_DIR" "$FIX"
+    rm -rf "$DOTFILES_TAP_DIR" "$SRC" "$DOTFILES_STATE_DIR" "$FIX"
     mkdir -p "$FIX/brew-repo" "$FIX/caskroom" "$DOTFILES_STATE_DIR"
     : > "$CALLS"
     printf 'qbittorrent\nfirefox\n' > "$FIX/casks"
@@ -120,9 +125,9 @@ section "Library: name, recipe cleaning, Brewfile edits"
 source "$ROOT/scripts/personal-tap.sh"
 assert_eq "$(ptap_name)" "me/tap" "DOTFILES_TAP names the tap"
 mkdir -p "$DOTFILES_CONFIG_DIR"
-printf 'name=from/config\nremote=git@example.com:x/homebrew-tap.git\n' > "$DOTFILES_CONFIG_DIR/personal-tap"
+printf 'name=from/config\n' > "$DOTFILES_CONFIG_DIR/personal-tap"
 assert_eq "$(DOTFILES_TAP='' ptap_name)" "from/config" "the config file names the tap when the env does not"
-assert_eq "$(ptap_conf remote)" "git@example.com:x/homebrew-tap.git" "the config file holds the remote"
+assert_eq "$(DOTFILES_TAP_SRC='' DOTFILES_DIR=/x ptap_src)" "/x/homebrew-tap" "the recipes live in the repo's homebrew-tap/"
 rm -f "$DOTFILES_CONFIG_DIR/personal-tap"
 assert_matches "$(DOTFILES_TAP='' ptap_name)" '^[a-z0-9-][a-z0-9-]*/tap$' "the default is <user>/tap"
 
@@ -166,12 +171,13 @@ printf 'cask "a"\ncask "b"' > "$TEST_TMP/no-eol"
 ptap_brewfile_drop "$TEST_TMP/no-eol" cask a >/dev/null
 assert_eq "$(cat "$TEST_TMP/no-eol")" 'cask "b"' "the other line stays"
 assert_eq "$(tail -c 1 "$TEST_TMP/no-eol")" '"' "a file without a final newline keeps having none"
-mkdir -p "$DOTFILES_TAP_DIR/.git" "$DOTFILES_TAP_DIR/Casks"
-touch "$DOTFILES_TAP_DIR/Casks/kept.rb"
+mkdir -p "$SRC/Casks"
+touch "$SRC/Casks/kept.rb"
 assert_eq "$(ptap_with_brewfile "$TEST_TMP/no-eol")" $'cask "b"\ntap "me/tap"\ncask "me/tap/kept"' "the tap's lines start on their own line after a Brewfile with no final newline"
 printf 'cask "b"\n' > "$TEST_TMP/eol"
 assert_eq "$(ptap_with_brewfile "$TEST_TMP/eol")" $'cask "b"\ntap "me/tap"\ncask "me/tap/kept"' "and no blank line is added after one that has it"
-rm -rf "$DOTFILES_TAP_DIR"
+rm -rf "$SRC"
+assert_eq "$(ptap_brewfile_lines)" "" "no tap lines when the folder holds nothing"
 assert_eq "$(ptap_humanize fails_gatekeeper_check)" "fails gatekeeper check" "reasons read as words"
 echo ""
 
@@ -219,13 +225,14 @@ section "Keep: recipe into the tap, download, swap, Brewfile line out"
 reset
 out=$(printf 'k\ns\n' | DOTFILES_TAP_ASK=1 "$CHECK" 2>&1)
 assert_contains "$out" "Kept qbittorrent: installed from me/tap" "keep reports success"
-assert_file_exists "$DOTFILES_TAP_DIR/Casks/qbittorrent.rb" "recipe written into the tap"
-assert_file_not_contains "$DOTFILES_TAP_DIR/Casks/qbittorrent.rb" "disable!" "without its disable! line"
+assert_file_exists "$SRC/Casks/qbittorrent.rb" "recipe written into the repo folder"
+assert_file_not_contains "$SRC/Casks/qbittorrent.rb" "disable!" "without its disable! line"
+assert_eq "$(cat "$DOTFILES_TAP_DIR/Casks/qbittorrent.rb")" "$(cat "$SRC/Casks/qbittorrent.rb")" "and mirrored into Homebrew's working copy"
+assert_eq "$(git -C "$DOTFILES_TAP_DIR" status --short)" "" "which is committed, so Homebrew sees a clean tap"
 assert_file_contains "$CALLS" "^curl https://raw.githubusercontent.com/Homebrew/homebrew-cask/HEAD/Casks/q/qbittorrent.rb$" "fetched from homebrew-cask by its source path"
 assert_file_contains "$CALLS" "^brew trust --tap me/tap$" "the tap is trusted"
 order=$(/usr/bin/grep -nE '^brew (fetch|uninstall|install) ' "$CALLS" | cut -d: -f2- | tr '\n' '|')
 assert_eq "$order" "brew fetch --cask me/tap/qbittorrent|brew uninstall --cask qbittorrent|brew install --cask me/tap/qbittorrent|" "download first, then swap the install"
-assert_contains "$(git -C "$DOTFILES_TAP_DIR" log --format=%s)" "qbittorrent: keep after homebrew/cask disabled it (fails_gatekeeper_check)" "the tap commit says why"
 assert_file_not_contains "$DOTFILES_BREWFILE" "qbittorrent" "the public Brewfile no longer lists it"
 assert_eq "$(cat "$DOTFILES_STATE_DIR/tap-pending")" "formula gemini-cli" "the skipped formula stays pending"
 
@@ -234,7 +241,8 @@ reset
 out=$(printf 'k\ns\n' | FETCH_RC=1 DOTFILES_TAP_ASK=1 "$CHECK" 2>&1)
 assert_contains "$out" "Could not download qbittorrent" "the failure is reported"
 assert_file_not_contains "$CALLS" "uninstall" "nothing uninstalled"
-assert_file_not_exists "$DOTFILES_TAP_DIR/Casks/qbittorrent.rb" "the recipe is taken back out"
+assert_file_not_exists "$SRC/Casks/qbittorrent.rb" "the recipe is taken back out of the folder"
+assert_file_not_exists "$DOTFILES_TAP_DIR/Casks/qbittorrent.rb" "and out of the working copy"
 assert_file_contains "$DOTFILES_BREWFILE" "qbittorrent" "the Brewfile is untouched"
 assert_file_contains "$DOTFILES_STATE_DIR/tap-pending" "cask qbittorrent" "it stays pending"
 
@@ -254,6 +262,7 @@ assert_file_contains "$CALLS" "^brew uninstall --formula gemini-cli$" "the formu
 assert_file_not_contains "$DOTFILES_BREWFILE" "gemini-cli" "and dropped from the Brewfile"
 assert_eq "$(cat "$DOTFILES_STATE_DIR/tap-pending")" "cask qbittorrent" "only the skipped cask is pending"
 assert_dir_not_exists "$DOTFILES_TAP_DIR" "no tap is created when nothing is kept"
+assert_dir_not_exists "$SRC" "and no folder"
 
 section "A wrong key asks again"
 reset
@@ -272,8 +281,9 @@ assert_contains "$out" "Updating qbittorrent 5.2.3 → 5.2.4 in your tap" "the b
 assert_contains "$out" "Open Anyway" "the Gatekeeper step is named"
 assert_file_contains "$CALLS" "^brew livecheck --json --newer-only --quiet --cask me/tap/qbittorrent$" "livecheck asked about the tap's cask"
 assert_file_contains "$CALLS" "^brew bump-cask-pr --write-only --no-audit --no-browse --version 5.2.4 me/tap/qbittorrent$" "the recipe is bumped in place"
-assert_file_contains "$DOTFILES_TAP_DIR/Casks/qbittorrent.rb" 'version "5.2.4"' "the tap carries the new version"
-assert_eq "$(git -C "$DOTFILES_TAP_DIR" log -1 --format=%s)" "qbittorrent 5.2.4" "and commits it"
+assert_file_contains "$SRC/Casks/qbittorrent.rb" 'version "5.2.4"' "the repo folder carries the new version"
+assert_file_contains "$DOTFILES_TAP_DIR/Casks/qbittorrent.rb" 'version "5.2.4"' "so does Homebrew's working copy"
+assert_eq "$(git -C "$DOTFILES_TAP_DIR" log -1 --format=%s)" "qbittorrent 5.2.4" "which is committed"
 
 section "Update: nothing newer, nothing done"
 echo '[]' > "$FIX/livecheck.json"
@@ -284,15 +294,27 @@ assert_file_not_contains "$CALLS" "bump" "no bump attempted"
 
 section "Update: a failed bump leaves the recipe as it was"
 echo '[{"cask": "qbittorrent", "version": {"current": "5.2.4", "latest": "5.2.5"}}]' > "$FIX/livecheck.json"
-echo "# local edit" >> "$DOTFILES_TAP_DIR/Casks/qbittorrent.rb"
 out=$(BUMP_RC=1 "$UPDATE" 2>&1)
 assert_contains "$out" "Could not update qbittorrent's recipe; it stays at 5.2.4" "the failure is reported"
 assert_contains "$out" "bump went wrong" "with Homebrew's own words"
-assert_file_contains "$DOTFILES_TAP_DIR/Casks/qbittorrent.rb" 'version "5.2.4"' "the version is unchanged"
-assert_eq "$(git -C "$DOTFILES_TAP_DIR" status --short)" "" "the working tree is clean again"
+assert_file_contains "$DOTFILES_TAP_DIR/Casks/qbittorrent.rb" 'version "5.2.4"' "a half-written recipe is rolled back"
+assert_file_contains "$SRC/Casks/qbittorrent.rb" 'version "5.2.4"' "the repo folder is untouched"
+assert_eq "$(git -C "$DOTFILES_TAP_DIR" status --short)" "" "the working copy is clean again"
+
+section "Update: the folder wins over the working copy"
+echo '[]' > "$FIX/livecheck.json"
+rm -rf "$DOTFILES_TAP_DIR"
+"$UPDATE" >/dev/null 2>&1
+assert_file_contains "$DOTFILES_TAP_DIR/Casks/qbittorrent.rb" 'version "5.2.4"' "a machine without a working copy builds it from the folder"
+assert_file_contains "$CALLS" "^brew trust --tap me/tap$" "and trusts it"
+echo 'cask "gone" do; end' > "$DOTFILES_TAP_DIR/Casks/gone.rb"
+sed -i '' 's/version "5.2.4"/version "5.2.6"/' "$SRC/Casks/qbittorrent.rb"
+"$UPDATE" >/dev/null 2>&1
+assert_file_not_exists "$DOTFILES_TAP_DIR/Casks/gone.rb" "a recipe the folder does not have leaves the working copy"
+assert_file_contains "$DOTFILES_TAP_DIR/Casks/qbittorrent.rb" 'version "5.2.6"' "a recipe pulled from another machine reaches the working copy"
 
 section "Update: no tap, nothing to do"
-rm -rf "$DOTFILES_TAP_DIR"
+rm -rf "$DOTFILES_TAP_DIR" "$SRC"
 : > "$CALLS"
 out=$("$UPDATE" 2>&1)
 assert_eq "$out" "" "silent without a tap"
@@ -306,8 +328,8 @@ out=$("$LIST" 2>&1)
 assert_contains "$out" "No personal tap yet (me/tap)" "says when there is no tap"
 printf 'k\ns\n' | DOTFILES_TAP_ASK=1 "$CHECK" >/dev/null 2>&1
 out=$("$LIST" 2>&1)
-assert_contains "$out" "Tap:    me/tap" "names the tap"
-assert_contains "$out" "none (local only)" "says it has no remote"
+assert_contains "$out" "Tap:     me/tap" "names the tap"
+assert_contains "$out" "Recipes: $SRC" "names the repo folder"
 assert_matches "$out" 'cask  *qbittorrent  *1\.0' "lists the kept cask with its version"
 assert_contains "$out" "formula gemini-cli" "lists what is still waiting for an answer"
 echo ""
