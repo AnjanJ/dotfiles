@@ -38,7 +38,6 @@ fribidi	Implementation of the Unicode BiDi algorithm	https://github.com/fribidi/
 fzf	Command-line fuzzy finder written in Go	https://junegunn.github.io/fzf/
 fzf-tab	Replace zsh completion selection menu with fzf	https://github.com/Aloxaf/fzf-tab
 gdk-pixbuf	Toolkit for image loading and pixel buffer manipulation	https://gtk.org
-gemini-cli	Interact with Google Gemini AI models from the command-line	https://geminicli.com
 gettext	GNU internationalization (i18n) and localization (l10n) library	https://www.gnu.org/software/gettext/
 ggml	Tensor library for machine learning	https://github.com/ggml-org/ggml
 gh	GitHub command-line tool	https://cli.github.com/

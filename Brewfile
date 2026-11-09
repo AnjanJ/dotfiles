@@ -75,7 +75,6 @@ brew "weasyprint"
 brew "zellij"
 
 # @group ai — AI/LLM CLI tooling
-brew "gemini-cli"
 brew "llm"
 brew "summarize"                 # steipete/tap
 cask "chatgpt"

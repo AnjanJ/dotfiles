@@ -10,7 +10,6 @@ A modern shell needs AI tooling. This setup wires LLMs into the daily flow witho
 | **GitHub Copilot CLI** | Suggests/explains shell commands | `ghcs` / `ghce` |
 | **llm** | Pipe text → LLM, get text back | `\| llm "..."` |
 | **ollama** | Run LLMs locally (offline + private) | `ollama run <model>` or via `llm` |
-| **Gemini CLI** | Google's terminal LLM | `gemini` |
 | **explain-last** | "What did that command do?" | `explain-last` |
 | **`a`** | Launches whichever agent `dotfiles default-agent` names (Claude Code unless changed) | `a` |
 

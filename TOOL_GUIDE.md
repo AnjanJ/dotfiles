@@ -974,11 +974,6 @@ ghce "git rebase --interactive HEAD~5"
 **What**: Anthropic's coding agent — can read, edit, and run code in your repo.
 **When**: Multi-file refactors, debugging hard issues, architecture decisions, anything bigger than a one-shot query.
 
-### Gemini CLI
-**What**: Google's Gemini AI from the terminal.
-**When**: Quick AI queries when you specifically want Gemini's perspective.
-**Usage**: `gemini "explain this error: ..."` (note: just `gemini`, not `gemini-cli`).
-
 ### Perplexity (Mac App Store)
 **What**: AI-powered search engine.
 **When**: Research questions that need sourced/cited answers.

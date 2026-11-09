@@ -16,16 +16,16 @@ Homebrew ships no description for taps or font casks, so those two columns state
 more useful instead: what the tap actually gives you, and whether a font is really in use.
 Taps flagged **REDUNDANT** supply nothing you use — their formulae moved into homebrew/core.
 
-Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py` · last built 2026-08-01
+Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py` · last built 2026-11-09
 
 ## Contents
 
 - [Taps](#taps) — 5
 - [Core CLI](#core-cli) — 20
 - [Editors & Terminals](#editors--terminals) — 6
-- [Window Management](#window-management) — 3
+- [Window Management](#window-management) — 5
 - [Terminal Tools](#terminal-tools) — 15
-- [AI Tooling](#ai-tooling) — 7
+- [AI Tooling](#ai-tooling) — 6
 - [Databases](#databases) — 11
 - [Cloud & Deploy](#cloud--deploy) — 4
 - [Media](#media) — 8
@@ -37,7 +37,7 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 - [Utilities](#utilities) — 20
 - [Extras](#extras) — 3
 - [Fonts](#fonts) — 8
-- [VS Code Extensions](#vs-code-extensions) — 27
+- [VS Code Extensions](#vs-code-extensions) — 29
 
 ## Taps
 
@@ -97,13 +97,15 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 
 ## Window Management
 
-`@group window-mgmt` · 3 entries
+`@group window-mgmt` · 5 entries
 
 | Package | What it is | Learn more |
 |---|---|---|
 | `aerospace` | AeroSpace is an i3-like tiling window manager for macOS | [docs](https://github.com/nikitabobko/AeroSpace) |
 | `sketchybar` |  |  |
 | `borders` |  |  |
+| `dark-mode` |  |  |
+| `desktoppr` |  |  |
 
 ## Terminal Tools
 
@@ -129,11 +131,10 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 
 ## AI Tooling
 
-`@group ai` · 7 entries
+`@group ai` · 6 entries
 
 | Package | What it is | Learn more |
 |---|---|---|
-| `gemini-cli` | Interact with Google Gemini AI models from the command-line | [docs](https://geminicli.com) |
 | `llm` | Access large language models from the command-line | [docs](https://llm.datasette.io/) |
 | `summarize` | Multi-modal AI tool to extract and summarize content | [docs](https://summarize.sh) |
 | `chatgpt` | OpenAI's official ChatGPT desktop app | [docs](https://chatgpt.com/) |
@@ -304,7 +305,7 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 
 ## VS Code Extensions
 
-`@group vscode-ext` · 27 entries
+`@group vscode-ext` · 29 entries
 
 | Package | What it is | Learn more |
 |---|---|---|
@@ -332,7 +333,9 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 | `redhat.vscode-yaml` | YAML Language Support by Red Hat, with built-in Kubernetes syntax support | [docs](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) |
 | `tamasfe.even-better-toml` | Fully-featured TOML support | [docs](https://marketplace.visualstudio.com/items?itemName=tamasfe.even-better-toml) |
 | `mechatroner.rainbow-csv` | Highlight CSV and TSV files, Run SQL-like queries | [docs](https://marketplace.visualstudio.com/items?itemName=mechatroner.rainbow-csv) |
+| `catppuccin.catppuccin-vsc` |  |  |
 | `daltonmenezes.aura-theme` | A beautiful dark theme for Visual Studio Code | [docs](https://marketplace.visualstudio.com/items?itemName=daltonmenezes.aura-theme) |
 | `enkia.tokyo-night` | A clean Visual Studio Code theme that celebrates the lights of Downtown Tokyo at night. | [docs](https://marketplace.visualstudio.com/items?itemName=enkia.tokyo-night) |
+| `shadesofbuntu.flexoki-light` |  |  |
 | `pkief.material-icon-theme` | Material Design Icons for Visual Studio Code | [docs](https://marketplace.visualstudio.com/items?itemName=pkief.material-icon-theme) |
 
