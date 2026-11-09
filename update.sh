@@ -222,6 +222,19 @@ fi
 # Update Homebrew itself
 brew update
 
+# Packages Homebrew deprecated or disabled: ask once whether to keep each
+# (it moves to your personal tap) or remove it, then move what the tap
+# holds to its newest upstream versions so the upgrade below installs
+# them. --yes never asks; it lists them and the login notice remembers.
+_tap_args=()
+[[ "$UNATTENDED" == true ]] && _tap_args+=(--yes)
+bash "$DOTFILES_DIR/bin/dotfiles-tap-check" ${_tap_args[@]+"${_tap_args[@]}"} \
+    || print_warning "Could not check for packages Homebrew dropped; continuing"
+if bash "$DOTFILES_DIR/bin/dotfiles-toggle" --enabled tap-auto-update; then
+    bash "$DOTFILES_DIR/bin/dotfiles-tap-update" \
+        || print_warning "Could not update your tap's packages; continuing"
+fi
+
 # Upgrade already-installed packages
 brew upgrade
 brew cleanup
@@ -252,15 +265,18 @@ if [[ -f "$DOTFILES_DIR/Brewfile.snapshot" ]]; then
     #   - strip trailing inline comments (`brew "jq"  # …`  →  `brew "jq"`)
     #   - resolve `brew "owner/tap/pkg"` → `brew "pkg"` to match what
     #     `brew bundle dump` writes when the tap is already declared
+    # Packages kept in the personal tap count as listed: the tap is their
+    # record, and they stay out of the public Brewfile on purpose.
     _normalize_brewfile() {
         sed -E \
             -e 's/[[:space:]]*#.*$//' \
             -e 's/[[:space:]]+$//' \
             -e 's/^(brew |cask )"[^"/]+\/[^"/]+\/([^"]+)"/\1"\2"/' \
-            "$1" | grep -v '^[[:space:]]*$' | sort -u
+            | grep -v '^[[:space:]]*$' | sort -u
     }
-    _brewfile_pkgs=$(_normalize_brewfile "$DOTFILES_DIR/Brewfile")
-    _snapshot_pkgs=$(_normalize_brewfile "$DOTFILES_DIR/Brewfile.snapshot")
+    source "$DOTFILES_DIR/scripts/personal-tap.sh"
+    _brewfile_pkgs=$(ptap_with_brewfile "$DOTFILES_DIR/Brewfile" | _normalize_brewfile)
+    _snapshot_pkgs=$(_normalize_brewfile < "$DOTFILES_DIR/Brewfile.snapshot")
 
     BREW_ADDED_LINES=$(comm -13 <(echo "$_brewfile_pkgs") <(echo "$_snapshot_pkgs") || true)
     BREW_REMOVED_LINES=$(comm -23 <(echo "$_brewfile_pkgs") <(echo "$_snapshot_pkgs") || true)

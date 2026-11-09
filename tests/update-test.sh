@@ -210,7 +210,11 @@ setup_pipeline_sandbox() {
 #!/bin/bash
 echo "brew \$*" >> "$CALLS"
 if [[ "\$1" == "bundle" && "\$2" == "dump" ]]; then
-    for a in "\$@"; do [[ "\$a" == --file=* ]] && cp "$MOCK/Brewfile" "\${a#--file=}"; done
+    for a in "\$@"; do
+        [[ "\$a" == --file=* ]] || continue
+        cp "$MOCK/Brewfile" "\${a#--file=}"
+        [[ -n "\${DUMP_EXTRA:-}" ]] && printf '%s\n' "\$DUMP_EXTRA" >> "\${a#--file=}"
+    done
 fi
 exit 0
 EOF
@@ -408,6 +412,30 @@ test_37d_snapshot_publishes_only_packages() {
     assert_eq "$(git -C "$MOCK" rev-parse HEAD)" "$before" "a comment-only Brewfile edit is not committed"
 }
 
+test_37e_personal_tap() {
+    echo ""
+    section "Test 37e: dropped packages are checked, the tap updated, before brew upgrade"
+
+    setup_pipeline_sandbox
+    local out order tap="$TEST_TMP/tap"
+    rm -rf "$tap"
+    mkdir -p "$tap/Casks"
+    git -C "$tap" init -q -b main
+    echo 'cask "kept" do; end' > "$tap/Casks/kept.rb"
+    out=$(DOTFILES_TAP=me/tap DOTFILES_TAP_DIR="$tap" DUMP_EXTRA=$'tap "me/tap"\ncask "me/tap/kept"' run_update --yes)
+    order=$(/usr/bin/grep -nE '^brew (update|list --cask|livecheck .*|upgrade)$' "$CALLS" | cut -d: -f2 | sed 's/ --json.*//' | tr '\n' '|')
+    assert_eq "$order" "brew update|brew list --cask|brew livecheck|brew upgrade|" "check, then tap update, between brew update and brew upgrade"
+    assert_contains "$out" "No changes since last snapshot" "a package kept in the tap is not reported as drift"
+    assert_not_contains "$out" "kept" "nor named anywhere in the run"
+
+    setup_pipeline_sandbox
+    mkdir -p "$STATE/toggles"
+    touch "$STATE/toggles/tap-auto-update.off"
+    DOTFILES_TAP=me/tap DOTFILES_TAP_DIR="$tap" run_update --yes >/dev/null
+    assert_file_not_contains "$CALLS" "livecheck" "tap-auto-update off skips the version check"
+    assert_file_contains "$CALLS" "^brew list --cask$" "but dropped packages are still checked"
+}
+
 test_38_transcript() {
     echo ""
     section "Test 38: Transcript"
@@ -445,4 +473,5 @@ test_37_lock
 test_37b_stay_awake_and_failure_hint
 test_37c_failed_pull_restores_stash
 test_37d_snapshot_publishes_only_packages
+test_37e_personal_tap
 test_38_transcript

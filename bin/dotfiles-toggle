@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# dotfiles:summary=Turn a feature on or off with a flag file (startup-apps, borders, auto-commit, appearance, background, update-notice, agent-usage)
+# dotfiles:summary=Turn a feature on or off with a flag file (startup-apps, borders, auto-commit, appearance, background, update-notice, agent-usage, tap-auto-update)
 # dotfiles:args=<flag> [on|off|toggle|status] | --list | --enabled <flag>
 #
 # Toggle features without editing a config file — can be run from anywhere
@@ -18,13 +18,14 @@
 #   background     `dotfiles theme` / `dotfiles theme bg` setting the desktop picture
 #   update-notice  the one-line "updates waiting" notice .zshrc prints at login
 #   agent-usage    the Claude usage item in sketchybarrc (restart sketchybar to apply)
+#   tap-auto-update  `dotfiles update` moving your personal tap's packages to new upstream versions
 #
 # Any other name works too; consumers just have to ask.
 
 set -euo pipefail
 
 TOGGLES_DIR="${DOTFILES_STATE_DIR:-$HOME/.local/state/dotfiles}/toggles"
-KNOWN_FLAGS=(startup-apps borders auto-commit appearance background update-notice agent-usage)
+KNOWN_FLAGS=(startup-apps borders auto-commit appearance background update-notice agent-usage tap-auto-update)
 
 usage() {
     echo "Usage: dotfiles toggle <flag> [on|off|toggle|status]"

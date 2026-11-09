@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
-# dotfiles:summary=What is waiting to be applied: repo commits, Homebrew upgrades, migrations, restarts
+# dotfiles:summary=What is waiting to be applied: repo commits, Homebrew upgrades, dropped packages, migrations, restarts
 # dotfiles:args=[--cached] [--short] [--quiet]
 #
 # The one check behind the login notice in .zshrc, the Updates section of
 # `dotfiles health`, and the end of `dotfiles update`. A live run fetches
 # origin (under a 10s alarm, so a dead network cannot hang a caller), asks
-# brew for outdated packages, and counts pending migrations and restart
-# markers, then writes the result to ~/.local/state/dotfiles/update-available
-# so the shell can print it without paying for the fetch.
+# brew for outdated packages, and counts packages Homebrew dropped that
+# await a keep-or-remove answer, pending migrations and restart markers,
+# then writes the result to ~/.local/state/dotfiles/update-available so
+# the shell can print it without paying for the fetch.
 #
 #   dotfiles update available            live check; prints one line per item
 #   dotfiles update available --cached   print the last result, no network
@@ -33,7 +34,7 @@ for arg in "$@"; do
         --short) SHORT=true ;;
         --quiet) QUIET=true ;;
         -h|--help)
-            sed -n '4,19p' "$0" | sed 's/^# \{0,1\}//'
+            sed -n '4,20p' "$0" | sed 's/^# \{0,1\}//'
             exit 0
             ;;
         *)
@@ -98,6 +99,13 @@ else
     pending=$(bash "$DOTFILES_DIR/bin/dotfiles-migrate" --pending 2>/dev/null | grep -c . || true)
     if [[ "$pending" -gt 0 ]]; then
         lines+=("migrations: $(plural "$pending" migration) pending (run: dotfiles migrate)")
+    fi
+
+    # Packages Homebrew dropped that nobody has kept or removed yet; the
+    # file is written by dotfiles tap check, so this costs no brew call.
+    dropped=$(grep -c . "$STATE_DIR/tap-pending" 2>/dev/null || true)
+    if [[ "${dropped:-0}" -gt 0 ]]; then
+        lines+=("dropped: $(plural "$dropped" package) Homebrew dropped, keep or remove (run: dotfiles update)")
     fi
 
     # Restart markers left by an interrupted update or a migration.

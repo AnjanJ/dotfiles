@@ -8,11 +8,10 @@ set -euo pipefail
 
 DOTFILES_DIR="${DOTFILES_DIR:-$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)}"
 source "$DOTFILES_DIR/scripts/_helpers.sh"
+source "$DOTFILES_DIR/scripts/personal-tap.sh"
 
-BREWFILE="$DOTFILES_DIR/Brewfile"
-
-if [[ ! -f "$BREWFILE" ]]; then
-    echo "Error: Brewfile not found at $BREWFILE"
+if [[ ! -f "$DOTFILES_DIR/Brewfile" ]]; then
+    echo "Error: Brewfile not found at $DOTFILES_DIR/Brewfile"
     exit 1
 fi
 
@@ -20,6 +19,12 @@ if ! command -v brew &>/dev/null; then
     echo "Error: Homebrew not installed"
     exit 1
 fi
+
+# Packages kept in the personal tap are wanted even though the public
+# Brewfile leaves them out, so cleanup reads the two together.
+BREWFILE=$(mktemp)
+trap 'rm -f "$BREWFILE"' EXIT
+ptap_with_brewfile "$DOTFILES_DIR/Brewfile" > "$BREWFILE"
 
 echo ""
 echo "╔═══════════════════════════════════════════════════════════╗"

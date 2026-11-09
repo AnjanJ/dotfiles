@@ -17,11 +17,11 @@
 | `dotfiles reminder <min> [msg]\|show\|clear` | macOS notification in N minutes via a self-removing launchd agent | yes |
 | `dotfiles font current\|list\|set <family>\|reset` | the monospace family shared by Ghostty, WezTerm, Zed and VS Code (default Fira Code); `set` verifies the family with fontconfig, re-renders the theme and fires `font-set` | `current`/`list` yes; `set`: when asked |
 | `dotfiles keys [--update\|--check\|--lint]` | keybinding cheatsheet; `--update` regenerates the doc; `--lint` fails on a chord bound twice in a mode, a binding with no readable description, or a script the repo does not ship (run it after editing aerospace.toml) | yes |
-| `dotfiles toggle <flag> [on\|off]` | flip `startup-apps`, `borders`, `auto-commit`, `appearance`, `background`, `update-notice`, `agent-usage` (or any name) | yes, when asked |
+| `dotfiles toggle <flag> [on\|off]` | flip `startup-apps`, `borders`, `auto-commit`, `appearance`, `background`, `update-notice`, `agent-usage`, `tap-auto-update` (or any name) | yes, when asked |
 | `dotfiles migrate [--pending]` | run one-off repairs shipped with the repo | yes |
 | `dotfiles backup [--list\|--restore <n> [--yes]]` | snapshot every managed file to `~/.dotfiles-backups` | creating: yes; restoring: ask |
-| `dotfiles update` | upgrade Homebrew, mise, relink, **commit and push** Brewfile changes to GitHub; `--yes` never prompts, `--no-snapshot` skips the Time Machine local snapshot taken before `brew upgrade`; transcript in `~/.local/state/dotfiles/update.log` | **ask first** |
-| `dotfiles update available [--cached\|--short]` | what is waiting: commits behind origin, outdated brew packages, pending migrations, restart markers; `--cached` reads the last result without a fetch; exit 1 means nothing is waiting | yes |
+| `dotfiles update` | upgrade Homebrew, mise, relink, **commit and push** Brewfile changes to GitHub; after `brew update` it asks keep-or-remove for each package Homebrew deprecated or disabled (`dotfiles tap check`) and moves the personal tap's packages to new versions (`dotfiles tap update`) before `brew upgrade`; `--yes` never prompts, `--no-snapshot` skips the Time Machine local snapshot taken before `brew upgrade`; transcript in `~/.local/state/dotfiles/update.log` | **ask first** |
+| `dotfiles update available [--cached\|--short]` | what is waiting: commits behind origin, outdated brew packages, packages Homebrew dropped awaiting keep-or-remove, pending migrations, restart markers; `--cached` reads the last result without a fetch; exit 1 means nothing is waiting | yes |
 | `dotfiles webapp install <name> <url> [--workspace N] [--float] [--title-regex R] [--icon <url\|path>] [--no-icon]` | Chrome `--app` launcher in `~/Applications` plus an AeroSpace rule between the `DOTFILES_LAUNCHERS` markers in `aerospace.toml`; `dotfiles webapp remove <name>` undoes it | safe |
 | `dotfiles tui install <name> <cmd> [--workspace N] [--tile] [--title-regex R] [--icon <url\|path>] [--no-icon]` | Ghostty launcher for a terminal program, floats by default; `dotfiles tui remove <name>` undoes it | safe |
 | `dotfiles restart <aerospace\|sketchybar\|borders>` | reload/relaunch one component now; `--later <c>` marks it for the end of the next update or sync; `--pending` consumes markers | safe |
@@ -31,7 +31,7 @@
 | `dotfiles agent usage [--json\|--bar\|--notify] [--refresh] [--max-age <s>]` | Claude plan usage from the endpoint behind Claude Code's `/usage`: the 5-hour session and 7-day windows with reset times (the weekly figure is the fullest weekly limit, per-model ones included), cached for a minute in `~/.cache/dotfiles`; `--bar` feeds the sketchybar item, `--notify` posts the summary; exit 2 without a Claude Code login, 3 when the endpoint is unreachable and nothing is cached | yes |
 | `dotfiles hook <event> [args]` / `--list` / `--seed` | run the user's hooks for an event by hand; list what is installed; copy the repo's sample hooks into place (see Hooks below) | yes |
 | `dotfiles hook install <event> <file>` | copy a script into `~/.config/dotfiles/hooks/<event>.d/` and make it executable | when asked |
-| `dotfiles cleanup [--force]` | remove Homebrew packages that are not in the Brewfile | **ask first** |
+| `dotfiles cleanup [--force]` | remove Homebrew packages that are not in the Brewfile (packages kept in the personal tap count as listed) | **ask first** |
 | `dotfiles tap list` | the personal Homebrew tap (name and remote from `~/.config/dotfiles/personal-tap`, default `<user>/tap`): packages kept after Homebrew deprecated or disabled them, with versions, plus dropped ones still awaiting an answer | yes |
 | `dotfiles tap check [--yes]` | find installed packages Homebrew deprecated or disabled and ask per package: keep (copy Homebrew's last recipe into the tap, swap the install over, drop the Brewfile line) or remove (uninstall, drop the Brewfile line); `--yes` or no terminal only lists them | listing (`--yes`): yes; answering: **the user decides** |
 | `dotfiles tap update` | move the tap's packages to their newest upstream versions (livecheck, then `brew bump-*-pr --write-only`), commit the tap and push it when it has a remote; `brew upgrade` installs them | when asked |
@@ -53,6 +53,7 @@ Flag files under `~/.local/state/dotfiles/toggles/<flag>.off`; everything is on 
 - `background` — `dotfiles theme` setting the desktop picture
 - `update-notice` — the one-line "updates waiting" notice at shell login
 - `agent-usage` — the Claude usage item in sketchybar (`dotfiles restart sketchybar` to apply)
+- `tap-auto-update` — `dotfiles update` moving the personal tap's packages to new upstream versions (`dotfiles tap update`)
 
 `dotfiles toggle --list` shows state; scripts check `dotfiles-toggle --enabled <flag>`.
 

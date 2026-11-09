@@ -14,7 +14,7 @@ git clone https://github.com/AnjanJ/dotfiles.git ~/dotfiles && bash ~/dotfiles/i
 
 ```bash
 dotfiles update       # Upgrade system & sync repo (--yes never asks)
-dotfiles update available   # What is waiting: repo commits, brew upgrades, migrations, restarts
+dotfiles update available   # What is waiting: repo commits, brew upgrades, dropped packages, migrations, restarts
 dotfiles sync         # Quick refresh: pull, relink, migrate, reapply theme
 dotfiles health       # Verify all tools are installed
 dotfiles doctor       # Auto-fix common issues
@@ -33,7 +33,7 @@ dotfiles tap list     # Packages kept in your own tap after Homebrew dropped the
 dotfiles backup       # Snapshot dotfiles state (--list, --restore)
 dotfiles profile      # Measure shell startup time (--detailed)
 dotfiles export       # Export setup snapshot (--json)
-dotfiles toggle <f>   # Flip startup-apps / borders / auto-commit / appearance / background / update-notice / agent-usage
+dotfiles toggle <f>   # Flip startup-apps / borders / auto-commit / appearance / background / update-notice / agent-usage / tap-auto-update
 dotfiles keys         # AeroSpace keybinding cheatsheet (fzf); --update after editing aerospace.toml, --lint to check it
 dotfiles hook --list  # User hooks in ~/.config/dotfiles/hooks/; --seed copies the samples there
 dotfiles migrate --pending   # One-off per-machine repairs not yet run (sync and update run them)

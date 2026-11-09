@@ -80,6 +80,14 @@ assert_contains "$out" "restarts: sketchybar to restart (run: dotfiles restart -
 out=$(run --short)
 assert_eq "$out" "2 commits behind origin/main, 3 packages outdated, 1 migration pending, sketchybar to restart (run: dotfiles update)" "--short summarises every item"
 
+section "packages Homebrew dropped"
+printf 'cask qbittorrent\nformula gemini-cli\n' > "$STATE/tap-pending"
+out=$(run)
+assert_contains "$out" "dropped: 2 packages Homebrew dropped, keep or remove (run: dotfiles update)" "counts dropped packages awaiting an answer"
+rm -f "$STATE/tap-pending"
+out=$(run)
+assert_not_contains "$out" "dropped" "no line once they are answered"
+
 section "cached reads"
 out=$(run --cached)
 assert_contains "$out" "brew: 3 packages outdated" "--cached prints the last result"
