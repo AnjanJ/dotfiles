@@ -447,6 +447,18 @@ test_37e_personal_tap() {
     assert_file_contains "$CALLS" "^brew list --cask$" "but dropped packages are still checked"
 }
 
+test_37f_trusts_brewfile_taps() {
+    echo ""
+    section "Test 37f: taps in the Brewfile are trusted before brew upgrade"
+
+    setup_pipeline_sandbox
+    push_to_origin "Brewfile" $'tap "new/tap"\nbrew "jq"'
+    local order
+    run_update --yes >/dev/null
+    order=$(/usr/bin/grep -nE '^brew (update|trust --tap .*|upgrade)$' "$CALLS" | cut -d: -f2 | tr '\n' '|')
+    assert_eq "$order" "brew update|brew trust --tap new/tap|brew upgrade|" "a tap pulled into the Brewfile is trusted after brew update, before brew upgrade"
+}
+
 test_38_transcript() {
     echo ""
     section "Test 38: Transcript"
@@ -485,4 +497,5 @@ test_37b_stay_awake_and_failure_hint
 test_37c_failed_pull_restores_stash
 test_37d_snapshot_publishes_only_packages
 test_37e_personal_tap
+test_37f_trusts_brewfile_taps
 test_38_transcript

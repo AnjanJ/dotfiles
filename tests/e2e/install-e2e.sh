@@ -58,6 +58,7 @@ fi
 
 assert_file_contains "$LOG" "Every selected package installed cleanly" "no package in the core group failed"
 assert_file_contains "$LOG" "Theme: $THEME" "theme $THEME selected without a prompt"
+assert_file_contains "$LOG" "Trusted taps: " "the Brewfile's third-party taps are trusted before the bundle"
 assert_file_contains "$LOG" "All symlinks processed" "symlink step ran"
 assert_file_not_contains "$LOG" "Warning: unknown option" "every flag was recognised"
 

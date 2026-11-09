@@ -483,14 +483,11 @@ _CURRENT_STEP="Step 2a: trusting third-party taps"
 echo ""
 print_step "Step 2a: Trusting third-party taps declared in the Brewfile..."
 
-while IFS= read -r _tap; do
-    [[ -z "$_tap" ]] && continue
-    if brew trust "$_tap" &>/dev/null; then
-        print_success "Trusted tap: $_tap"
-    else
-        print_warning "Could not trust tap: $_tap (its packages may be skipped)"
-    fi
-done < <(grep -E '^tap "' "$_INSTALL_BREWFILE" | sed 's/^tap "\([^"]*\)".*/\1/' || true)
+if _untrusted=$(trust_brewfile_taps "$_INSTALL_BREWFILE"); then
+    print_success "Trusted taps: $(brewfile_taps "$_INSTALL_BREWFILE" | paste -sd, - | sed 's/,/, /g')"
+else
+    print_warning "Could not trust: $_untrusted (their packages may be skipped)"
+fi
 
 # Always drop Xcode from the bundle — it's handled separately.
 _CURRENT_STEP="Step 2: installing Homebrew packages"

@@ -46,7 +46,7 @@ There is no command table to maintain: every executable `bin/dotfiles-*` is a co
 ## What `dotfiles update` does
 
 1. Pull latest changes from git. A pulled change under `.config/aerospace`, `.config/sketchybar` or `.config/borders` marks that component for a restart in step 6.
-2. Take a local APFS snapshot with `tmutil localsnapshot` (`--no-snapshot` skips it), then `brew update`, the personal tap steps below, `brew upgrade` + `brew cleanup`
+2. Take a local APFS snapshot with `tmutil localsnapshot` (`--no-snapshot` skips it), then `brew update`, trust the Brewfile's third-party taps (Homebrew 7 refuses packages from an untrusted tap, and one refusal fails `brew bundle` and `dotfiles cleanup`; `install.sh` does the same before its bundle), the personal tap steps below, `brew upgrade` + `brew cleanup`
 3. Snapshot installed packages and show diff against Brewfile (without overwriting the organized Brewfile)
 4. Refresh all symlinks (from `scripts/symlink-map.sh`) and run pending migrations
 5. Upgrade mise tools
@@ -147,7 +147,7 @@ Every push and PR runs 37 test suites, an end-to-end install, shellcheck, `dotfi
 - **SSH config** (`ssh-adversarial`) — adversarial inputs and edge cases
 - **Repo cloner** (`repos-clone`) — SSH alias detection and URL rewriting
 - **Update available** (`update-available`) — `dotfiles update available`: behind-origin count against a local bare origin, brew outdated via a stub, dropped packages and kept packages awaiting an answer, migrations and restart markers, the cache file, `--cached`, `--short`, `--quiet`, exit codes, a fetch that cannot reach origin
-- **Update flow** (`update`) — symlink creation and refresh, plus the whole pipeline against stubs: lock, transcript, snapshot before upgrade, restart markers, `--yes`, the personal tap steps between `brew update` and `brew upgrade` (no drift for a kept package, `homebrew-tap/` committed alone, the `tap-auto-update` toggle)
+- **Update flow** (`update`) — symlink creation and refresh, plus the whole pipeline against stubs: lock, transcript, snapshot before upgrade, restart markers, `--yes`, Brewfile taps trusted before `brew upgrade`, the personal tap steps between `brew update` and `brew upgrade` (no drift for a kept package, `homebrew-tap/` committed alone, the `tap-auto-update` toggle)
 - **Restart** (`restart`) — `dotfiles restart` now/later/pending/list, the AeroSpace process-name case, borders relaunch honouring its toggle
 - **Web apps** (`webapp`) — `dotfiles webapp install/remove`: bundle, plist, icon conversion, AeroSpace rule placement and removal, URL and name validation
 - **TUIs** (`tui`) — `dotfiles tui install/remove`: Ghostty launch line, default float, Ghostty icon fallback, rule lifecycle
@@ -172,11 +172,11 @@ Every push and PR runs 37 test suites, an end-to-end install, shellcheck, `dotfi
 - **Backup** (`backup`) — create, list, restore, prune cycle
 - **Sync** (`sync`) — symlink refresh, broken link repair, dry-run mode
 - **Personal tap** (`tap`) — `dotfiles tap check/install/update/list` against stub brew and curl: dropped casks and formulae found (the install receipt beating the short name, dependencies left out), keep/remove/skip, `--yes` only listing, download before uninstall, a failed download or fetch changing nothing, `dotfiles tap install` asking once per machine (yes, no, an answer given ahead of time, later additions installed unattended, a failed install retried), bumps limited to packages installed from the tap, a recipe another machine kept reused, version bumps written back to `homebrew-tap/`, a failed bump rolled back, the folder mirrored into Homebrew's working copy, recipe cleaning, Brewfile line removal, `/bin/bash` 3.2
-- **Packages** (`packages`) — Brewfile group parsing, filtering, saved selections
+- **Packages** (`packages`) — Brewfile group parsing, filtering, saved selections, tap trust (one `brew trust` call, a tap that cannot be trusted named, Homebrew without `brew trust`, `/bin/bash` 3.2)
 - **Uninstall** (`uninstall`) — removes every mapped symlink, leaves foreign links alone
 - **Style** (`style`) — the AGENTS.md rules shellcheck cannot express: shebang and strict mode, no `((VAR++))`, bash 3.2 builtins only on the install path, osascript never aimed at an app outside the watchdogged helpers
 - **Docs** (`docs`) — suite counts in README/STRUCTURE/MAINTENANCE, this list, the THEMES.md app table, the skill's command table, toggles and hook events, all derived from the code
-- **End-to-end install** (`tests/e2e/install-e2e.sh`) — the real `install.sh` under `/bin/bash` 3.2 into a fresh `HOME` with `--groups core`: every mapped symlink, rendered theme, core formulae, a clean interactive zsh, and an idempotent second run
+- **End-to-end install** (`tests/e2e/install-e2e.sh`) — the real `install.sh` under `/bin/bash` 3.2 into a fresh `HOME` with `--groups core`: the Brewfile's taps trusted, every mapped symlink, rendered theme, core formulae, a clean interactive zsh, and an idempotent second run
 
 Every suite sources `tests/base-test.sh`: it gets a fresh temporary `HOME`, TAP `ok`/`not ok` output, and `fail` ends the file at the first broken assertion while `tests/run` continues with the next file. Run locally (needs bash 4+, i.e. `brew install bash` — macOS ships 3.2):
 

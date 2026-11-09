@@ -369,3 +369,36 @@ generate_filtered_brewfile() {
 
     echo "$tmp_brewfile"
 }
+
+# ── Tap trust ────────────────────────────────
+
+# brewfile_taps <brewfile> — the tap names a Brewfile declares, one per
+# line (`tap "user/repo"` and `tap "user/repo", "<url>"` alike).
+brewfile_taps() {
+    grep -E '^tap "' "$1" 2>/dev/null | sed 's/^tap "\([^"]*\)".*/\1/' || true
+}
+
+# trust_brewfile_taps <brewfile> — Homebrew 7 refuses to load a formula or
+# cask from a third-party tap nobody trusted, and one such package fails a
+# whole `brew bundle` or `brew bundle cleanup`. Trusting is idempotent and
+# works before the tap is tapped, so install.sh runs this before the
+# bundle and update.sh on every run (a tap added to the Brewfile later, or
+# a machine set up before Homebrew 7). Prints the taps it could not trust
+# and returns 1 when there are any; Homebrew without `brew trust` loads any
+# tap, so there it does nothing.
+trust_brewfile_taps() {
+    local taps tap failed=""
+    taps=$(brewfile_taps "$1")
+    [[ -n "$taps" ]] || return 0
+    brew trust --help >/dev/null 2>&1 || return 0
+    # One call for all of them; a single bad name fails the batch, so then
+    # go one by one to name the culprit.
+    # shellcheck disable=SC2086 # tap names have no spaces
+    brew trust --tap $taps >/dev/null 2>&1 && return 0
+    for tap in $taps; do
+        brew trust --tap "$tap" >/dev/null 2>&1 || failed="${failed:+$failed }$tap"
+    done
+    [[ -z "$failed" ]] && return 0
+    echo "$failed"
+    return 1
+}

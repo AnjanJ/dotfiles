@@ -385,6 +385,56 @@ test_idempotency() {
     teardown_test_env
 }
 
+# ── Tests: tap trust ─────────────────────────
+
+test_trust_brewfile_taps() {
+    echo ""
+    echo "Tap trust"
+    echo "─────────────────────────────────────"
+
+    local stub="$TEST_TMP/trust-stub" calls="$TEST_TMP/trust-calls" bf="$TEST_TMP/trust-Brewfile" out rc
+    mkdir -p "$stub"
+    # brew trust fails for any tap named in $BAD_TAP, alone or in a batch.
+    cat > "$stub/brew" <<STUB
+#!/bin/bash
+echo "brew \$*" >> "$calls"
+[[ "\$*" == "trust --help" ]] && exit "\${NO_TRUST:-0}"
+[[ -n "\${BAD_TAP:-}" && "\$*" == *"\$BAD_TAP"* ]] && exit 1
+exit 0
+STUB
+    chmod +x "$stub/brew"
+    printf 'tap "a/one"\ntap "b/two", "https://example.com/homebrew-two"\nbrew "jq"\n' > "$bf"
+
+    source "$REAL_DOTFILES_DIR/scripts/package-utils.sh"
+    assert_eq "$(brewfile_taps "$bf" | tr '\n' ' ')" "a/one b/two " "brewfile_taps reads plain and URL tap lines"
+    assert_eq "$(brewfile_taps "$TEST_TMP/missing")" "" "a missing Brewfile has no taps"
+
+    : > "$calls"
+    set +e; out=$(PATH="$stub:$PATH" trust_brewfile_taps "$bf"); rc=$?; set -e
+    assert_eq "$rc$out" "0" "all taps trusted, nothing printed"
+    assert_eq "$(grep -c '^brew trust --tap' "$calls")" "1" "in one brew call"
+    assert_file_contains "$calls" "^brew trust --tap a/one b/two$" "naming every tap"
+
+    : > "$calls"
+    set +e; out=$(PATH="$stub:$PATH" BAD_TAP=b/two trust_brewfile_taps "$bf"); rc=$?; set -e
+    assert_eq "$rc" "1" "a tap that cannot be trusted returns 1"
+    assert_eq "$out" "b/two" "and is named"
+    assert_file_contains "$calls" "^brew trust --tap a/one$" "the others are still trusted one by one"
+
+    : > "$calls"
+    set +e; out=$(PATH="$stub:$PATH" NO_TRUST=1 trust_brewfile_taps "$bf"); rc=$?; set -e
+    assert_eq "$rc$out" "0" "Homebrew without brew trust: nothing to do"
+    assert_file_not_contains "$calls" "trust --tap" "and nothing tried"
+
+    printf 'brew "jq"\n' > "$bf"
+    : > "$calls"
+    PATH="$stub:$PATH" trust_brewfile_taps "$bf"
+    assert_eq "$(cat "$calls")" "" "a Brewfile without taps never calls brew"
+
+    set +e; out=$(PATH="$stub:$PATH" /bin/bash -c "source '$REAL_DOTFILES_DIR/scripts/package-utils.sh'; printf 'tap \"a/one\"\n' > '$bf'; trust_brewfile_taps '$bf'; echo rc=\$?"); set -e
+    assert_eq "$out" "rc=0" "runs under /bin/bash 3.2 (install.sh)"
+}
+
 # ── Tests: Real Brewfile ─────────────────────
 
 test_real_brewfile_groups() {
@@ -458,3 +508,4 @@ test_state_persistence
 test_state_no_file
 test_idempotency
 test_real_brewfile_groups
+test_trust_brewfile_taps

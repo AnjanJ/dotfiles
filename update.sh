@@ -225,6 +225,15 @@ fi
 # Update Homebrew itself
 brew update
 
+# Homebrew 7 refuses packages from untrusted third-party taps, and one
+# refusal fails `brew bundle` and `dotfiles cleanup` outright. install.sh
+# trusts the Brewfile's taps once; a tap added since, or a machine set up
+# before Homebrew 7, needs it here.
+source "$DOTFILES_DIR/scripts/package-utils.sh"
+if ! _untrusted=$(trust_brewfile_taps "$DOTFILES_DIR/Brewfile"); then
+    print_warning "Could not trust these Brewfile taps: $_untrusted (brew bundle may refuse their packages)"
+fi
+
 # Packages Homebrew deprecated or disabled: ask once whether to keep each
 # (it moves to your personal tap) or remove it, then move what the tap
 # holds to its newest upstream versions so the upgrade below installs
