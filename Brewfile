@@ -33,7 +33,9 @@ brew "jq"
 brew "mas"
 brew "mise"
 brew "ripgrep"
+brew "actionlint"                # GitHub Actions workflow linter
 brew "shellcheck"
+brew "zizmor"                    # GitHub Actions security audit
 brew "starship"
 brew "tree"
 brew "wget"
@@ -80,6 +82,7 @@ brew "summarize"                 # steipete/tap
 cask "chatgpt"
 cask "claude"
 cask "claude-code@latest"
+cask "codex"
 cask "ollama-app"
 
 # @group databases — Database engines & GUI clients
@@ -125,6 +128,8 @@ cask "1password"
 cask "1password-cli"
 cask "notion"
 cask "obsidian"
+cask "ente-auth"
+cask "proton-drive"
 cask "proton-mail"
 cask "protonvpn"
 cask "proton-pass"
@@ -142,11 +147,15 @@ cask "zoom"
 # Runtimes themselves are mise-managed (.config/mise/config.toml).
 # Java is mise temurin-17 — required by android-commandlinetools & Flutter.
 brew "cargo-nextest"
+brew "cocoapods"                 # Flutter iOS builds; pulls in Homebrew ruby
+brew "gradle"                    # pulls in Homebrew openjdk, used only by gradle
 brew "uv"
 brew "zig"
 cask "android-commandlinetools"
+cask "android-ndk"
 # cask "android-platform-tools"  # checksum mismatch upstream 2026-07-31 — adb comes from sdkmanager instead
 cask "flutter"
+mas "TestFlight", id: 899247664
 
 # @group browsers — Web browsers
 cask "firefox"
@@ -197,6 +206,8 @@ vscode "anthropic.claude-code"
 
 # Language servers — the diagnostics you review against
 vscode "shopify.ruby-extensions-pack"
+vscode "shopify.ruby-lsp"                    # part of the Ruby pack
+vscode "sorbet.sorbet-vscode-extension"      # part of the Ruby pack
 vscode "jakebecker.elixir-ls"
 vscode "phoenixframework.phoenix"
 vscode "rust-lang.rust-analyzer"
@@ -204,6 +215,8 @@ vscode "dart-code.dart-code"
 vscode "dart-code.flutter"
 vscode "ms-python.python"
 vscode "ms-python.vscode-pylance"
+vscode "ms-python.debugpy"                   # installed with ms-python.python
+vscode "ms-python.vscode-python-envs"        # installed with ms-python.python
 vscode "ms-vscode.vscode-typescript-next"
 vscode "koichisasada.vscode-rdbg"
 
@@ -223,6 +236,7 @@ vscode "mikestead.dotenv"
 vscode "redhat.vscode-yaml"
 vscode "tamasfe.even-better-toml"
 vscode "mechatroner.rainbow-csv"
+vscode "shd101wyy.markdown-preview-enhanced"
 
 # Themes — must match your theme switcher
 vscode "catppuccin.catppuccin-vsc"     # Catppuccin Mocha + Latte

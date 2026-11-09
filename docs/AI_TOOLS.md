@@ -7,6 +7,7 @@ A modern shell needs AI tooling. This setup wires LLMs into the daily flow witho
 | Tool | What it does | Trigger |
 |------|--------------|---------|
 | **Claude Code** | Full coding agent (CLI + IDE) | `claude` or VS Code/Zed extension |
+| **Codex** | OpenAI's terminal coding agent | `codex` |
 | **GitHub Copilot CLI** | Suggests/explains shell commands | `ghcs` / `ghce` |
 | **llm** | Pipe text → LLM, get text back | `\| llm "..."` |
 | **ollama** | Run LLMs locally (offline + private) | `ollama run <model>` or via `llm` |

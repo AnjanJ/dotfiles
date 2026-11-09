@@ -21,23 +21,23 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 ## Contents
 
 - [Taps](#taps) — 5
-- [Core CLI](#core-cli) — 20
+- [Core CLI](#core-cli) — 22
 - [Editors & Terminals](#editors--terminals) — 6
 - [Window Management](#window-management) — 5
 - [Terminal Tools](#terminal-tools) — 15
-- [AI Tooling](#ai-tooling) — 6
+- [AI Tooling](#ai-tooling) — 7
 - [Databases](#databases) — 11
 - [Cloud & Deploy](#cloud--deploy) — 4
 - [Media](#media) — 8
 - [Communication](#communication) — 4
-- [Productivity](#productivity) — 15
+- [Productivity](#productivity) — 17
 - [Work](#work) — 2
-- [Languages](#languages) — 5
+- [Languages](#languages) — 9
 - [Browsers](#browsers) — 4
 - [Utilities](#utilities) — 20
 - [Extras](#extras) — 3
 - [Fonts](#fonts) — 8
-- [VS Code Extensions](#vs-code-extensions) — 29
+- [VS Code Extensions](#vs-code-extensions) — 34
 
 ## Taps
 
@@ -55,7 +55,7 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 
 ## Core CLI
 
-`@group core` · 20 entries
+`@group core` · 22 entries
 
 > Always installed — cannot be deselected.
 
@@ -74,7 +74,9 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 | `mas` | Mac App Store command-line interface | [docs](https://github.com/mas-cli/mas) |
 | `mise` | Polyglot runtime manager (asdf rust clone) | [docs](https://mise.jdx.dev/) |
 | `ripgrep` | Search tool like grep and The Silver Searcher | [docs](https://github.com/BurntSushi/ripgrep) |
+| `actionlint` | Static checker for GitHub Actions workflow files | [docs](https://rhysd.github.io/actionlint/) |
 | `shellcheck` | Static analysis and lint tool, for (ba)sh scripts | [docs](https://www.shellcheck.net/) |
+| `zizmor` | Find security issues in GitHub Actions setups | [docs](https://docs.zizmor.sh/) |
 | `starship` | Cross-shell prompt for astronauts | [docs](https://starship.rs/) |
 | `tree` | Display directories as trees (with optional color/HTML output) | [docs](https://oldmanprogrammer.net/source.php?dir=projects/tree) |
 | `wget` | Internet file retriever | [docs](https://www.gnu.org/software/wget/) |
@@ -131,7 +133,7 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 
 ## AI Tooling
 
-`@group ai` · 6 entries
+`@group ai` · 7 entries
 
 | Package | What it is | Learn more |
 |---|---|---|
@@ -140,6 +142,7 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 | `chatgpt` | OpenAI's official ChatGPT desktop app | [docs](https://chatgpt.com/) |
 | `claude` | Anthropic's official Claude AI desktop app | [docs](https://claude.com/download) |
 | `claude-code@latest` | Terminal-based AI coding assistant | [docs](https://claude.com/product/claude-code) |
+| `codex` | OpenAI's coding agent that runs in your terminal | [docs](https://github.com/openai/codex) |
 | `ollama-app` | Get up and running with large language models locally | [docs](https://ollama.com/) |
 
 ## Databases
@@ -199,7 +202,7 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 
 ## Productivity
 
-`@group productivity` · 15 entries
+`@group productivity` · 17 entries
 
 | Package | What it is | Learn more |
 |---|---|---|
@@ -210,6 +213,8 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 | `1password-cli` | Command-line interface for 1Password | [docs](https://developer.1password.com/docs/cli) |
 | `notion` | App to write, plan, collaborate, and get organised | [docs](https://www.notion.com/) |
 | `obsidian` | Knowledge base that works on top of a local folder of plain text Markdown files | [docs](https://obsidian.md/) |
+| `ente-auth` | Desktop client for Ente Auth | [docs](https://ente.io/auth/) |
+| `proton-drive` | Client for Proton Drive | [docs](https://proton.me/drive) |
 | `proton-mail` | Client for Proton Mail and Proton Calendar | [docs](https://proton.me/mail) |
 | `protonvpn` | VPN client focusing on security | [docs](https://protonvpn.com/) |
 | `proton-pass` | Desktop client for Proton Pass | [docs](https://proton.me/pass) |
@@ -230,15 +235,19 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 
 ## Languages
 
-`@group languages` · 5 entries
+`@group languages` · 9 entries
 
 | Package | What it is | Learn more |
 |---|---|---|
 | `cargo-nextest` | Next-generation test runner for Rust | [docs](https://nexte.st) |
+| `cocoapods` | Dependency manager for Cocoa projects | [docs](https://cocoapods.org/) |
+| `gradle` | Open-source build automation tool based on the Groovy and Kotlin DSL | [docs](https://www.gradle.org/) |
 | `uv` | Extremely fast Python package installer and resolver, written in Rust | [docs](https://docs.astral.sh/uv/) |
 | `zig` | Programming language designed for robustness, optimality, and clarity | [docs](https://ziglang.org/) |
 | `android-commandlinetools` | Command-line tools for building and debugging Android apps | [docs](https://developer.android.com/studio) |
+| `android-ndk` | Toolset to implement parts of Android apps in native code | [docs](https://developer.android.com/ndk/index.html) |
 | `flutter` | UI toolkit for building applications for mobile, web and desktop | [docs](https://flutter.dev/) |
+| `TestFlight` | TestFlight — by Apple Distribution International | [docs](https://apps.apple.com/in/app/testflight/id899247664?uo=4) |
 
 ## Browsers
 
@@ -305,12 +314,14 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 
 ## VS Code Extensions
 
-`@group vscode-ext` · 29 entries
+`@group vscode-ext` · 34 entries
 
 | Package | What it is | Learn more |
 |---|---|---|
 | `anthropic.claude-code` | Claude Code for VS Code: Harness the power of Claude Code without leaving your IDE | [docs](https://marketplace.visualstudio.com/items?itemName=anthropic.claude-code) |
 | `shopify.ruby-extensions-pack` | An opinionated and auto-configured set of extensions for Ruby development | [docs](https://marketplace.visualstudio.com/items?itemName=shopify.ruby-extensions-pack) |
+| `shopify.ruby-lsp` | VS Code plugin for connecting with the Ruby LSP | [docs](https://marketplace.visualstudio.com/items?itemName=shopify.ruby-lsp) |
+| `sorbet.sorbet-vscode-extension` | Ruby IDE features, powered by Sorbet. | [docs](https://marketplace.visualstudio.com/items?itemName=sorbet.sorbet-vscode-extension) |
 | `jakebecker.elixir-ls` | Elixir support with debugger, autocomplete, and more - Powered by ElixirLS. | [docs](https://marketplace.visualstudio.com/items?itemName=jakebecker.elixir-ls) |
 | `phoenixframework.phoenix` | Syntax highlighting support for HEEx | [docs](https://marketplace.visualstudio.com/items?itemName=phoenixframework.phoenix) |
 | `rust-lang.rust-analyzer` | Rust language support for Visual Studio Code | [docs](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer) |
@@ -318,6 +329,8 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 | `dart-code.flutter` | Flutter support and debugger for Visual Studio Code. | [docs](https://marketplace.visualstudio.com/items?itemName=dart-code.flutter) |
 | `ms-python.python` | Python language support with extension access points for IntelliSense (Pylance), Debugging (Python Debugger), linting, formatting, refactoring, unit tests, and more. | [docs](https://marketplace.visualstudio.com/items?itemName=ms-python.python) |
 | `ms-python.vscode-pylance` | A performant, feature-rich language server for Python in VS Code | [docs](https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance) |
+| `ms-python.debugpy` | Python Debugger extension using debugpy. | [docs](https://marketplace.visualstudio.com/items?itemName=ms-python.debugpy) |
+| `ms-python.vscode-python-envs` | Provides a unified python environment experience | [docs](https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-python-envs) |
 | `ms-vscode.vscode-typescript-next` | Enables typescript@next to power VS Code's built-in JavaScript and TypeScript support | [docs](https://marketplace.visualstudio.com/items?itemName=ms-vscode.vscode-typescript-next) |
 | `koichisasada.vscode-rdbg` | Ruby's rdbg debugger support for VSCode | [docs](https://marketplace.visualstudio.com/items?itemName=koichisasada.vscode-rdbg) |
 | `usernamehw.errorlens` | Improve highlighting of errors, warnings and other language diagnostics. | [docs](https://marketplace.visualstudio.com/items?itemName=usernamehw.errorlens) |
@@ -333,6 +346,7 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 | `redhat.vscode-yaml` | YAML Language Support by Red Hat, with built-in Kubernetes syntax support | [docs](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) |
 | `tamasfe.even-better-toml` | Fully-featured TOML support | [docs](https://marketplace.visualstudio.com/items?itemName=tamasfe.even-better-toml) |
 | `mechatroner.rainbow-csv` | Highlight CSV and TSV files, Run SQL-like queries | [docs](https://marketplace.visualstudio.com/items?itemName=mechatroner.rainbow-csv) |
+| `shd101wyy.markdown-preview-enhanced` | Markdown Preview Enhanced ported to vscode | [docs](https://marketplace.visualstudio.com/items?itemName=shd101wyy.markdown-preview-enhanced) |
 | `catppuccin.catppuccin-vsc` | Soothing pastel theme for VSCode | [docs](https://marketplace.visualstudio.com/items?itemName=catppuccin.catppuccin-vsc) |
 | `daltonmenezes.aura-theme` | A beautiful dark theme for Visual Studio Code | [docs](https://marketplace.visualstudio.com/items?itemName=daltonmenezes.aura-theme) |
 | `enkia.tokyo-night` | A clean Visual Studio Code theme that celebrates the lights of Downtown Tokyo at night. | [docs](https://marketplace.visualstudio.com/items?itemName=enkia.tokyo-night) |

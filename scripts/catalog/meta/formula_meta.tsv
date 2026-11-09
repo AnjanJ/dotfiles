@@ -263,3 +263,7 @@ zsh-autosuggestions	Fish-like fast/unobtrusive autosuggestions for zsh	https://g
 zsh-syntax-highlighting	Fish shell like syntax highlighting for zsh	https://github.com/zsh-users/zsh-syntax-highlighting
 zstd	Zstandard is a real-time compression algorithm	https://facebook.github.io/zstd/
 dark-mode	Control the macOS dark mode from the command-line	https://github.com/sindresorhus/dark-mode
+actionlint	Static checker for GitHub Actions workflow files	https://rhysd.github.io/actionlint/
+zizmor	Find security issues in GitHub Actions setups	https://docs.zizmor.sh/
+cocoapods	Dependency manager for Cocoa projects	https://cocoapods.org/
+gradle	Open-source build automation tool based on the Groovy and Kotlin DSL	https://www.gradle.org/

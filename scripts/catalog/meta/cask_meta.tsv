@@ -130,3 +130,7 @@ tuta-mail	Email client	https://tuta.com/
 desktoppr	Command-line tool to set the desktop picture	https://github.com/scriptingosx/desktoppr
 font-bitter		https://fonts.google.com/specimen/Bitter
 font-literata		https://fonts.google.com/specimen/Literata
+codex	OpenAI's coding agent that runs in your terminal	https://github.com/openai/codex
+ente-auth	Desktop client for Ente Auth	https://ente.io/auth/
+proton-drive	Client for Proton Drive	https://proton.me/drive
+android-ndk	Toolset to implement parts of Android apps in native code	https://developer.android.com/ndk/index.html

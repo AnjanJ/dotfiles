@@ -979,6 +979,10 @@ ghce "git rebase --interactive HEAD~5"
 **What**: Anthropic's coding agent — can read, edit, and run code in your repo.
 **When**: Multi-file refactors, debugging hard issues, architecture decisions, anything bigger than a one-shot query.
 
+### Codex (`codex` cask)
+**What**: OpenAI's coding agent that runs in your terminal.
+**When**: A second opinion from a different model on a change or a bug.
+
 ### Perplexity (Mac App Store)
 **What**: AI-powered search engine.
 **When**: Research questions that need sourced/cited answers.
@@ -1014,6 +1018,8 @@ These are specialized tools you might forget about:
 | `goplaces` | Google Places API | Location lookups |
 | `remindctl` | Apple Reminders from terminal | Quick reminders without opening app |
 | `shellcheck` | Bash script linter | Lint your shell scripts before committing |
+| `actionlint` | GitHub Actions workflow checker | Before pushing a change to `.github/workflows/` |
+| `zizmor` | GitHub Actions security audit | Same moment: injection, over-broad permissions, unpinned actions |
 | `updatebrew` | `brew update && brew upgrade && brew cleanup` | Manual Homebrew refresh outside `dotfiles update` |
 | `criterion` | Benchmarking library | Performance testing |
 | `poppler` | PDF rendering library | Used by other tools for PDF support |
