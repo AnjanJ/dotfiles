@@ -102,10 +102,10 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 | Package | What it is | Learn more |
 |---|---|---|
 | `aerospace` | AeroSpace is an i3-like tiling window manager for macOS | [docs](https://github.com/nikitabobko/AeroSpace) |
-| `sketchybar` |  |  |
-| `borders` |  |  |
-| `dark-mode` |  |  |
-| `desktoppr` |  |  |
+| `sketchybar` | Custom macOS statusbar with shell plugin, interaction and graph support | [docs](https://github.com/FelixKratz/SketchyBar) |
+| `borders` | A window border system for macOS | [docs](https://github.com/FelixKratz/JankyBorders) |
+| `dark-mode` | Control the macOS dark mode from the command-line | [docs](https://github.com/sindresorhus/dark-mode) |
+| `desktoppr` | Command-line tool to set the desktop picture | [docs](https://github.com/scriptingosx/desktoppr) |
 
 ## Terminal Tools
 
@@ -294,14 +294,14 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 
 | Package | What it is | Learn more |
 |---|---|---|
-| `font-fira-code` | **IN USE** — Ghostty (`.config/ghostty/config`) and Zed buffer font | [docs](https://github.com/tonsky/FiraCode) |
-| `font-fira-code-nerd-font` | **IN USE** — Nerd-patched Fira Code (ligatures + icons) | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-jetbrains-mono` | **IN USE** — Zed terminal font (`.config/zed/settings.json:66`) | [docs](https://www.jetbrains.com/lp/mono) |
-| `font-jetbrains-mono-nerd-font` | **IN USE** — wezterm's primary font (`.config/wezterm/wezterm.lua:17`) | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-symbols-only-nerd-font` | **IN USE** — wezterm icon fallback (`.config/wezterm/wezterm.lua:21`); required for glyphs | [docs](https://github.com/ryanoasis/nerd-fonts) |
-| `font-ibm-plex-mono` | Nerd Font — patched with icon glyphs. Not referenced by any config here | [docs](https://github.com/IBM/plex) |
-| `font-bitter` | Nerd Font — patched with icon glyphs. Not referenced by any config here |  |
-| `font-literata` | Nerd Font — patched with icon glyphs. Not referenced by any config here |  |
+| `font-fira-code` | **IN USE** — the default family `dotfiles font` renders into Ghostty, WezTerm, Zed and VS Code (`bin/dotfiles-font`) | [docs](https://github.com/tonsky/FiraCode) |
+| `font-fira-code-nerd-font` | **IN USE** — sketchybar icons and labels (`.config/sketchybar/sketchybarrc`) | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-jetbrains-mono` | **IN USE** — Zed's terminal font (`.config/zed/settings.base.json`) | [docs](https://www.jetbrains.com/lp/mono) |
+| `font-jetbrains-mono-nerd-font` | Optional family for `dotfiles font set`; no config uses it by default | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-symbols-only-nerd-font` | **IN USE** — WezTerm's icon fallback (`.config/wezterm/wezterm.lua`); required for glyphs | [docs](https://github.com/ryanoasis/nerd-fonts) |
+| `font-ibm-plex-mono` | E-ink reading font (sturdy stems, open apertures, per the Brewfile); not referenced by any config here | [docs](https://github.com/IBM/plex) |
+| `font-bitter` | E-ink reading font (per the Brewfile); not referenced by any config here | [docs](https://fonts.google.com/specimen/Bitter) |
+| `font-literata` | Ebook reading font (per the Brewfile); not referenced by any config here | [docs](https://fonts.google.com/specimen/Literata) |
 
 ## VS Code Extensions
 
@@ -333,9 +333,9 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 | `redhat.vscode-yaml` | YAML Language Support by Red Hat, with built-in Kubernetes syntax support | [docs](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) |
 | `tamasfe.even-better-toml` | Fully-featured TOML support | [docs](https://marketplace.visualstudio.com/items?itemName=tamasfe.even-better-toml) |
 | `mechatroner.rainbow-csv` | Highlight CSV and TSV files, Run SQL-like queries | [docs](https://marketplace.visualstudio.com/items?itemName=mechatroner.rainbow-csv) |
-| `catppuccin.catppuccin-vsc` |  |  |
+| `catppuccin.catppuccin-vsc` | Soothing pastel theme for VSCode | [docs](https://marketplace.visualstudio.com/items?itemName=catppuccin.catppuccin-vsc) |
 | `daltonmenezes.aura-theme` | A beautiful dark theme for Visual Studio Code | [docs](https://marketplace.visualstudio.com/items?itemName=daltonmenezes.aura-theme) |
 | `enkia.tokyo-night` | A clean Visual Studio Code theme that celebrates the lights of Downtown Tokyo at night. | [docs](https://marketplace.visualstudio.com/items?itemName=enkia.tokyo-night) |
-| `shadesofbuntu.flexoki-light` |  |  |
+| `shadesofbuntu.flexoki-light` | Flexoki Light theme, a fork of kepano's Flexoki | [docs](https://marketplace.visualstudio.com/items?itemName=shadesofbuntu.flexoki-light) |
 | `pkief.material-icon-theme` | Material Design Icons for Visual Studio Code | [docs](https://marketplace.visualstudio.com/items?itemName=pkief.material-icon-theme) |
 

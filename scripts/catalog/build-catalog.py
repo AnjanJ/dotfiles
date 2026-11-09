@@ -52,17 +52,20 @@ TAP_INFO = {
  'yakitrak/yakitrak':     "Supplies `obsidian-cli` (drive Obsidian from the shell)",
 }
 
-# Homebrew ships no `desc` for font casks, so all 78 would render blank.
-# The useful fact is which ones this setup actually REFERENCES — verified by
-# grepping the configs, with the file:line that names each one.
+# Homebrew ships no `desc` for font casks, so they would render blank.
+# The useful fact is which ones this setup actually REFERENCES, verified by
+# grepping the configs. File names only: line numbers went stale before.
 FONT_INFO = {
- 'font-jetbrains-mono-nerd-font': "**IN USE** — wezterm's primary font (`.config/wezterm/wezterm.lua:17`)",
- 'font-symbols-only-nerd-font':   "**IN USE** — wezterm icon fallback (`.config/wezterm/wezterm.lua:21`); required for glyphs",
- 'font-fira-code':                "**IN USE** — Ghostty (`.config/ghostty/config`) and Zed buffer font",
- 'font-fira-code-nerd-font':      "**IN USE** — Nerd-patched Fira Code (ligatures + icons)",
- 'font-jetbrains-mono':           "**IN USE** — Zed terminal font (`.config/zed/settings.json:66`)",
+ 'font-fira-code':                "**IN USE** — the default family `dotfiles font` renders into Ghostty, WezTerm, Zed and VS Code (`bin/dotfiles-font`)",
+ 'font-fira-code-nerd-font':      "**IN USE** — sketchybar icons and labels (`.config/sketchybar/sketchybarrc`)",
+ 'font-jetbrains-mono':           "**IN USE** — Zed's terminal font (`.config/zed/settings.base.json`)",
+ 'font-jetbrains-mono-nerd-font': "Optional family for `dotfiles font set`; no config uses it by default",
+ 'font-symbols-only-nerd-font':   "**IN USE** — WezTerm's icon fallback (`.config/wezterm/wezterm.lua`); required for glyphs",
+ 'font-ibm-plex-mono':            "E-ink reading font (sturdy stems, open apertures, per the Brewfile); not referenced by any config here",
+ 'font-bitter':                   "E-ink reading font (per the Brewfile); not referenced by any config here",
+ 'font-literata':                 "Ebook reading font (per the Brewfile); not referenced by any config here",
 }
-FONT_DEFAULT = "Nerd Font — patched with icon glyphs. Not referenced by any config here"
+FONT_DEFAULT = "Font cask; not referenced by any config here"
 
 groups, cur = [], None
 for line in open(BF, encoding='utf-8'):
@@ -72,6 +75,49 @@ for line in open(BF, encoding='utf-8'):
         cur = {'name': g.group(1), 'items': []}; groups.append(cur); continue
     m = re.match(r'^(tap|brew|cask|mas|vscode) "([^"]+)"(.*)$', line)
     if m and cur: cur['items'].append((m.group(1), m.group(2), m.group(3)))
+
+# --fetch: add metadata for packages that have none, from the same sources
+# the existing rows came from (`brew info --json=v2`, each VS Code
+# extension's local package.json). Rows are appended with CRLF endings like
+# the rest of the files. Anything it cannot find stays blank, and --check
+# names it.
+def fetch_missing():
+    import glob, json, subprocess
+    def brew_json(args):
+        try:
+            out = subprocess.run(['brew', 'info', '--json=v2'] + args, capture_output=True, text=True, timeout=120).stdout
+            return json.loads(out) if out.strip() else {}
+        except (OSError, ValueError, subprocess.SubprocessError):
+            return {}
+    def append(fname, row):
+        with open(os.path.join(META, fname), 'a', encoding='utf-8', newline='') as f:
+            f.write('\t'.join(row) + '\r\n')
+    added = []
+    for g in groups:
+        for kind, name, rest in g['items']:
+            short = name.split('/')[-1]
+            if kind == 'brew' and short not in fm and short not in tm:
+                d = (brew_json(['--formula', name]).get('formulae') or [{}])[0]
+                if d.get('desc') or d.get('homepage'):
+                    row = [short, d.get('desc') or '', d.get('homepage') or '']
+                    append('tap_meta.tsv' if '/' in name else 'formula_meta.tsv', row)
+                    (tm if '/' in name else fm)[short] = row; added.append(name)
+            elif kind == 'cask' and short not in cm:
+                d = (brew_json(['--cask', name]).get('casks') or [{}])[0]
+                if d.get('desc') or d.get('homepage'):
+                    row = [short, d.get('desc') or '', d.get('homepage') or '']
+                    append('cask_meta.tsv', row); cm[short] = row; added.append(name)
+            elif kind == 'vscode' and name.lower() not in vm:
+                found = sorted(glob.glob(os.path.expanduser(f'~/.vscode/extensions/{name.lower()}-*/package.json')))
+                if found:
+                    try:
+                        m = json.load(open(found[-1], encoding='utf-8'))
+                    except (OSError, ValueError):
+                        continue
+                    row = [name.lower(), m.get('displayName') or '', m.get('description') or '']
+                    append('vscode_meta.tsv', row); vm[name.lower()] = row; added.append(name)
+    for a in added:
+        print('metadata added:', a)
 
 def md_escape(s):
     return (s or '').replace('|', '\\|').strip()
@@ -105,6 +151,9 @@ def info(kind, name, rest):
         return (TAP_INFO.get(name, 'Third-party formula repository'),
                 f"https://github.com/{name.split('/')[0]}/homebrew-{name.split('/')[-1]}")
     return '', ''
+
+if '--fetch' in sys.argv[1:]:
+    fetch_missing()
 
 now = datetime.date.today().isoformat()
 L = []
@@ -153,6 +202,27 @@ for g in groups:
         A(f"| `{name}` | {desc} | {link} |")
     A('')
 
-open(OUT,'w',encoding='utf-8').write('\n'.join(L)+'\n')
+text = '\n'.join(L)+'\n'
+
+# --check: fail when the committed catalog no longer matches the Brewfile
+# and metadata (ignoring the build date), or when a row has no description
+# or link. tests/docs-test.sh runs it, so the catalog cannot go stale again.
+if '--check' in sys.argv[1:]:
+    def undated(t):
+        return re.sub(r'last built \d{4}-\d{2}-\d{2}', 'last built DATE', t)
+    problems = []
+    current = open(OUT, encoding='utf-8').read() if os.path.exists(OUT) else ''
+    if undated(current) != undated(text):
+        problems.append('docs/PACKAGE_CATALOG.md is out of date: run python3 scripts/catalog/build-catalog.py')
+    for g in groups:
+        for kind, name, rest in g['items']:
+            desc, url = info(kind, name, rest)
+            if not desc or not url:
+                problems.append(f'{kind} "{name}" has no {"description" if not desc else "link"}: add it to scripts/catalog/meta/')
+    for p in problems:
+        print(p, file=sys.stderr)
+    sys.exit(1 if problems else 0)
+
+open(OUT,'w',encoding='utf-8').write(text)
 print('wrote', OUT)
 print('groups:', len(groups), 'items:', sum(len(g['items']) for g in groups))

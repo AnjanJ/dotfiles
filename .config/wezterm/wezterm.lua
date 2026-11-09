@@ -11,7 +11,7 @@ config.native_macos_fullscreen_mode = true
 config.audible_bell = 'Disabled'
 config.scrollback_lines = 50000
 
--- ── Font (JetBrains Mono Nerd Font + ligatures) ───────────────────────────────
+-- ── Font (family from `dotfiles font`, Nerd Font symbols fallback, ligatures) ──
 -- Family from `dotfiles font set` (rendered next to the palette); the
 -- Nerd Font symbols fallback below keeps icons whatever the family.
 local font_ok, font_family = pcall(dofile, os.getenv('HOME') .. '/.local/state/dotfiles/current/theme/wezterm-font.lua')

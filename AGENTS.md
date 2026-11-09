@@ -32,7 +32,7 @@ Guidance for anyone changing the dotfiles source, human or agent. End-user help 
 - `~/.zshrc-theme-env`, `~/.config/lsd/colors.yaml`, `~/.config/bat/config`, `~/.claude/themes/dotfiles.json` — written into `$HOME` by `dotfiles theme` from the same rendered set; an edit there is lost on the next theme apply.
 - `.config/zed/settings.json`, `.config/vscode/settings.json` — generated from the tracked `settings.base.json` next to each with the theme filled in; edit the base (or the editor's own settings UI, which `dotfiles theme` copies back into the base), never the generated file.
 - The block between `<!-- AEROSPACE_KEYS_START -->` and `<!-- AEROSPACE_KEYS_END -->` in `docs/KEYBINDINGS.md` — run `dotfiles keys --update` after changing `aerospace.toml`.
-- `docs/PACKAGE_CATALOG.md` — built by `scripts/catalog/build-catalog.py` from the Brewfile.
+- `docs/PACKAGE_CATALOG.md` — built by `scripts/catalog/build-catalog.py` from the Brewfile and `scripts/catalog/meta/`. After adding a package run it with `--fetch`, which adds the missing description from `brew info` or the VS Code extension's manifest. `tests/docs-test.sh` runs `--check` and fails when the catalog lags or a package has no description or link; `update.sh` rebuilds it with `--fetch` whenever its snapshot commits a Brewfile change.
 
 Colours belong in `themes/<name>/colors.toml`; app configs reference the rendered files. If an app needs a colour, add a token to its template in `themes/_templates/`, never a hex value in the tracked config.
 

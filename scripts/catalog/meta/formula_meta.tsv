@@ -262,3 +262,4 @@ zoxide	Shell extension to navigate your filesystem faster	https://github.com/aje
 zsh-autosuggestions	Fish-like fast/unobtrusive autosuggestions for zsh	https://github.com/zsh-users/zsh-autosuggestions
 zsh-syntax-highlighting	Fish shell like syntax highlighting for zsh	https://github.com/zsh-users/zsh-syntax-highlighting
 zstd	Zstandard is a real-time compression algorithm	https://facebook.github.io/zstd/
+dark-mode	Control the macOS dark mode from the command-line	https://github.com/sindresorhus/dark-mode

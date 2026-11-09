@@ -137,3 +137,15 @@ for tpl in themes/_templates/*.tpl; do
     /usr/bin/grep -q "$(basename "$tpl")" docs/THEMES.md || fail "docs/THEMES.md lists every template" "$(basename "$tpl") is missing"
 done
 pass "docs/THEMES.md lists every template"
+
+section "package catalog"
+
+# docs/PACKAGE_CATALOG.md is generated from the Brewfile and the metadata in
+# scripts/catalog/meta/. It went months without a rebuild once; --check
+# rebuilds it in memory and fails when it differs (build date aside) or a
+# package has no description or link.
+if out=$(python3 scripts/catalog/build-catalog.py --check 2>&1); then
+    pass "docs/PACKAGE_CATALOG.md matches the Brewfile and every package is described"
+else
+    fail "docs/PACKAGE_CATALOG.md matches the Brewfile and every package is described" "$out"
+fi

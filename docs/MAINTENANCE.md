@@ -61,7 +61,7 @@ Around the whole run: a lock in `~/.local/state/dotfiles/update.lock` refuses a 
 
 **Restart markers.** `dotfiles restart <aerospace|sketchybar|borders>` restarts a component now. `dotfiles restart --later <component>` drops `~/.local/state/dotfiles/restart-<component>-required` for `dotfiles update` and `dotfiles sync` to consume at their end; a migration that edits a live config should do this rather than restart mid-run. `dotfiles restart --list` prints what is pending, exiting 0 when a marker exists and 1 when none does, and `dotfiles health` warns about it. Rolling back a bad upgrade: `tmutil listlocalsnapshots /` shows the snapshot the update took; mount it with `tmutil mount` or browse it in Time Machine.
 
-**Your Brewfile stays organized.** The Brewfile is organized into `@group` sections (core, editors, work, databases, etc.) and `dotfiles update` never overwrites it; it only removes the line of a package Homebrew dropped once you answer keep (the package moves to `homebrew-tap/`) or remove. The snapshot step shows you what's new or missing compared to your system, counting what `homebrew-tap/` holds as listed.
+**Your Brewfile stays organized.** The Brewfile is organized into `@group` sections (core, editors, work, databases, etc.) and `dotfiles update` never overwrites it; it only removes the line of a package Homebrew dropped once you answer keep (the package moves to `homebrew-tap/`) or remove. The snapshot step shows you what's new or missing compared to your system, counting what `homebrew-tap/` holds as listed. When the snapshot commits a Brewfile change it also rebuilds `docs/PACKAGE_CATALOG.md` with `scripts/catalog/build-catalog.py --fetch`, which looks up descriptions for new packages; after editing the Brewfile by hand, run that yourself, because CI fails when the catalog lags.
 
 ## Brewfile recovery
 
@@ -147,7 +147,7 @@ Every push and PR runs 37 test suites, an end-to-end install, shellcheck, `dotfi
 - **SSH config** (`ssh-adversarial`) — adversarial inputs and edge cases
 - **Repo cloner** (`repos-clone`) — SSH alias detection and URL rewriting
 - **Update available** (`update-available`) — `dotfiles update available`: behind-origin count against a local bare origin, brew outdated via a stub, dropped packages and kept packages awaiting an answer, migrations and restart markers, the cache file, `--cached`, `--short`, `--quiet`, exit codes, a fetch that cannot reach origin
-- **Update flow** (`update`) — symlink creation and refresh, plus the whole pipeline against stubs: lock, transcript, snapshot before upgrade, restart markers, `--yes`, Brewfile taps trusted before `brew upgrade`, the personal tap steps between `brew update` and `brew upgrade` (no drift for a kept package, `homebrew-tap/` committed alone, the `tap-auto-update` toggle)
+- **Update flow** (`update`) — symlink creation and refresh, plus the whole pipeline against stubs: lock, transcript, snapshot before upgrade, restart markers, `--yes`, Brewfile taps trusted before `brew upgrade`, a Brewfile change committed with a rebuilt catalog, the personal tap steps between `brew update` and `brew upgrade` (no drift for a kept package, `homebrew-tap/` committed alone, the `tap-auto-update` toggle)
 - **Restart** (`restart`) — `dotfiles restart` now/later/pending/list, the AeroSpace process-name case, borders relaunch honouring its toggle
 - **Web apps** (`webapp`) — `dotfiles webapp install/remove`: bundle, plist, icon conversion, AeroSpace rule placement and removal, URL and name validation
 - **TUIs** (`tui`) — `dotfiles tui install/remove`: Ghostty launch line, default float, Ghostty icon fallback, rule lifecycle
@@ -175,7 +175,7 @@ Every push and PR runs 37 test suites, an end-to-end install, shellcheck, `dotfi
 - **Packages** (`packages`) — Brewfile group parsing, filtering, saved selections, tap trust (one `brew trust` call, a tap that cannot be trusted named, Homebrew without `brew trust`, `/bin/bash` 3.2)
 - **Uninstall** (`uninstall`) — removes every mapped symlink, leaves foreign links alone
 - **Style** (`style`) — the AGENTS.md rules shellcheck cannot express: shebang and strict mode, no `((VAR++))`, bash 3.2 builtins only on the install path, osascript never aimed at an app outside the watchdogged helpers
-- **Docs** (`docs`) — suite counts in README/STRUCTURE/MAINTENANCE, this list, the THEMES.md app table, the skill's command table, toggles and hook events, all derived from the code
+- **Docs** (`docs`) — suite counts in README/STRUCTURE/MAINTENANCE, this list, the THEMES.md app table, the skill's command table, toggles and hook events, all derived from the code, and `docs/PACKAGE_CATALOG.md` matching the Brewfile with every package described (`build-catalog.py --check`)
 - **End-to-end install** (`tests/e2e/install-e2e.sh`) — the real `install.sh` under `/bin/bash` 3.2 into a fresh `HOME` with `--groups core`: the Brewfile's taps trusted, every mapped symlink, rendered theme, core formulae, a clean interactive zsh, and an idempotent second run
 
 Every suite sources `tests/base-test.sh`: it gets a fresh temporary `HOME`, TAP `ok`/`not ok` output, and `fail` ends the file at the first broken assertion while `tests/run` continues with the next file. Run locally (needs bash 4+, i.e. `brew install bash` — macOS ships 3.2):

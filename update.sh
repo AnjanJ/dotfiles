@@ -447,6 +447,21 @@ elif [[ -n $(git status -s) ]]; then
         git add -A -- homebrew-tap
         SNAPSHOT_FILES+=(homebrew-tap)
     fi
+    # docs/PACKAGE_CATALOG.md is generated from the Brewfile and CI fails
+    # when it lags, so a Brewfile change ships with a rebuilt catalog;
+    # --fetch adds descriptions for packages that have none yet.
+    if [[ " ${SNAPSHOT_FILES[*]} " == *" Brewfile "* && -f scripts/catalog/build-catalog.py \
+        && -f docs/PACKAGE_CATALOG.md ]] && command -v python3 >/dev/null 2>&1; then
+        if python3 scripts/catalog/build-catalog.py --fetch >/dev/null 2>&1; then
+            for f in docs/PACKAGE_CATALOG.md scripts/catalog/meta; do
+                if [[ -n $(git status --porcelain -- "$f") ]]; then
+                    SNAPSHOT_FILES+=("$f")
+                fi
+            done
+        else
+            print_warning "Could not rebuild docs/PACKAGE_CATALOG.md; run: python3 scripts/catalog/build-catalog.py --fetch"
+        fi
+    fi
 
     if [[ ${#SNAPSHOT_FILES[@]} -gt 0 ]]; then
         CHANGES=$(git diff HEAD --stat -- "${SNAPSHOT_FILES[@]}" | tail -1)

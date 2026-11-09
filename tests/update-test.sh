@@ -459,6 +459,23 @@ test_37f_trusts_brewfile_taps() {
     assert_eq "$order" "brew update|brew trust --tap new/tap|brew upgrade|" "a tap pulled into the Brewfile is trusted after brew update, before brew upgrade"
 }
 
+test_37g_brewfile_change_rebuilds_catalog() {
+    echo ""
+    section "Test 37g: a Brewfile change is committed with a rebuilt catalog"
+
+    setup_pipeline_sandbox
+    mkdir -p "$MOCK/docs"
+    # The catalog lists packages under a `# @group` header only.
+    printf '# @group core — Essential CLI tools\nbrew "jq"\n' > "$MOCK/Brewfile"
+    (cd "$MOCK" && python3 scripts/catalog/build-catalog.py >/dev/null)
+    git -C "$MOCK" add -A && git -C "$MOCK" commit -qm "catalog" && git -C "$MOCK" push -q origin main
+    echo 'brew "zz-not-described"' >> "$MOCK/Brewfile"
+    run_update --yes --no-snapshot >/dev/null
+    assert_eq "$(git -C "$MOCK" show --name-only --format= HEAD | sort | tr '\n' ' ')" "Brewfile docs/PACKAGE_CATALOG.md " "the snapshot commit carries the rebuilt catalog"
+    assert_file_contains "$MOCK/docs/PACKAGE_CATALOG.md" 'zz-not-described' "which lists the new package"
+    assert_file_contains "$CALLS" "^brew info --json=v2 --formula zz-not-described$" "metadata was looked up for it"
+}
+
 test_38_transcript() {
     echo ""
     section "Test 38: Transcript"
@@ -498,4 +515,5 @@ test_37c_failed_pull_restores_stash
 test_37d_snapshot_publishes_only_packages
 test_37e_personal_tap
 test_37f_trusts_brewfile_taps
+test_37g_brewfile_change_rebuilds_catalog
 test_38_transcript
