@@ -23,7 +23,7 @@ source "$LIB"
 
 reset_vars() {
     GIT_NAME="" GIT_EMAIL="" GIT_WORK_EMAIL="" WORK_DIR="" SELECTED_THEME="" SSH_MODE="" SELECTED_GROUPS=""
-    APPLY_MACOS_DEFAULTS=true INSTALL_RUNTIMES=true
+    APPLY_MACOS_DEFAULTS=true INSTALL_RUNTIMES=true PERSONAL_TAP_INSTALL=""
 }
 
 FULL="$TEST_TMP/full.json"
@@ -37,7 +37,8 @@ cat > "$FULL" <<'EOF'
   "ssh": "skip",
   "groups": ["core", "editors"],
   "macos_defaults": false,
-  "runtimes": false
+  "runtimes": false,
+  "personal_tap_install": true
 }
 EOF
 
@@ -61,7 +62,16 @@ assert_eq "$SSH_MODE" "skip" "ssh"
 assert_eq "$SELECTED_GROUPS" "core,editors" "groups array joined with commas"
 assert_eq "$APPLY_MACOS_DEFAULTS" "false" "macos_defaults false"
 assert_eq "$INSTALL_RUNTIMES" "false" "runtimes false"
-assert_contains "$out" "Answers from $FULL: name, email, work_email, work_dir, theme, ssh, groups, macos_defaults=false, runtimes=false" "reports what it applied"
+assert_eq "$PERSONAL_TAP_INSTALL" "yes" "personal_tap_install true"
+assert_contains "$out" "Answers from $FULL: name, email, work_email, work_dir, theme, ssh, groups, macos_defaults=false, runtimes=false, personal_tap_install=yes" "reports what it applied"
+reset_vars
+printf '{"personal_tap_install": false}\n' > "$TEST_TMP/tap-no.json"
+install_answers_load "$TEST_TMP/tap-no.json" >/dev/null 2>&1
+assert_eq "$PERSONAL_TAP_INSTALL" "no" "personal_tap_install false"
+reset_vars
+PERSONAL_TAP_INSTALL=yes
+install_answers_load "$TEST_TMP/tap-no.json" >/dev/null 2>&1
+assert_eq "$PERSONAL_TAP_INSTALL" "yes" "the environment wins over personal_tap_install"
 echo ""
 
 section "Test 2: Flags and environment win over the file"

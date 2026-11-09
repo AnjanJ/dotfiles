@@ -87,6 +87,10 @@ assert_contains "$out" "dropped: 2 packages Homebrew dropped, keep or remove (ru
 rm -f "$STATE/tap-pending"
 out=$(run)
 assert_not_contains "$out" "dropped" "no line once they are answered"
+printf 'cask qbittorrent\n' > "$STATE/tap-install-pending"
+out=$(run)
+assert_contains "$out" "kept: 1 package in homebrew-tap/ not installed here, install or not (run: dotfiles update)" "counts kept packages awaiting this machine's answer"
+rm -f "$STATE/tap-install-pending"
 
 section "cached reads"
 out=$(run --cached)

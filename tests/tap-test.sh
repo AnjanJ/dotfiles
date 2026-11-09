@@ -22,6 +22,7 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/base-test.sh"
 CHECK="$ROOT/bin/dotfiles-tap-check"
 UPDATE="$ROOT/bin/dotfiles-tap-update"
 LIST="$ROOT/bin/dotfiles-tap-list"
+INSTALL="$ROOT/bin/dotfiles-tap-install"
 
 STUB="$TEST_TMP/stub"
 FIX="$TEST_TMP/fixtures"
@@ -45,11 +46,28 @@ echo "brew $*" >> "$CALLS"
 case "$*" in
     --repository) echo "$FIX/brew-repo" ;;
     --caskroom) echo "$FIX/caskroom" ;;
+    --cellar) echo "$FIX/cellar" ;;
     "list --cask") cat "$FIX/casks" 2>/dev/null ;;
-    "list --cask --versions "*|"list --formula --versions "*) echo "${*: -1} 1.0" ;;
+    "list --cask --versions "*|"list --formula --versions "*)
+        /usr/bin/grep -qx "${*: -1}" "$FIX/installed" 2>/dev/null && echo "${*: -1} 1.0"
+        exit 0 ;;
     "info --cask --json=v2 "*) cat "$FIX/casks.json" ;;
     "info --json=v2 --installed --formula") cat "$FIX/formulae.json" ;;
-    trust*|uninstall*|install*) exit 0 ;;
+    trust*) exit 0 ;;
+    uninstall*)
+        /usr/bin/grep -vx "${*: -1}" "$FIX/installed" > "$FIX/installed.tmp" 2>/dev/null || true
+        mv "$FIX/installed.tmp" "$FIX/installed"
+        rm -rf "$FIX/caskroom/${*: -1}"
+        exit 0 ;;
+    install*)
+        [[ "${INSTALL_RC:-0}" == 0 ]] || exit 1
+        full="${*: -1}"; name="${full##*/}"
+        echo "$name" >> "$FIX/installed"
+        if [[ "$*" == *--cask* && "$full" == */*/* ]]; then
+            mkdir -p "$FIX/caskroom/$name/.metadata"
+            echo "{\"source\": {\"tap\": \"${full%/*}\"}}" > "$FIX/caskroom/$name/.metadata/INSTALL_RECEIPT.json"
+        fi
+        exit 0 ;;
     fetch*) exit "${FETCH_RC:-0}" ;;
     livecheck*) cat "$FIX/livecheck.json" ;;
     bump-*)
@@ -79,6 +97,7 @@ reset() {
     mkdir -p "$FIX/brew-repo" "$FIX/caskroom" "$DOTFILES_STATE_DIR"
     : > "$CALLS"
     printf 'qbittorrent\nfirefox\n' > "$FIX/casks"
+    printf 'qbittorrent\nfirefox\ngemini-cli\njq\n' > "$FIX/installed"
     cat > "$FIX/casks.json" <<'EOF'
 {"casks": [
  {"token": "qbittorrent", "tap": "homebrew/cask", "ruby_source_path": "Casks/q/qbittorrent.rb",
@@ -280,6 +299,7 @@ out=$("$UPDATE" 2>&1)
 assert_contains "$out" "Updating qbittorrent 5.2.3 → 5.2.4 in your tap" "the bump is announced"
 assert_contains "$out" "Open Anyway" "the Gatekeeper step is named"
 assert_file_contains "$CALLS" "^brew livecheck --json --newer-only --quiet --cask me/tap/qbittorrent$" "livecheck asked about the tap's cask"
+assert_eq "$(/usr/bin/grep -c '^brew livecheck' "$CALLS")" "1" "once per package, never for a blank name"
 assert_file_contains "$CALLS" "^brew bump-cask-pr --write-only --no-audit --no-browse --version 5.2.4 me/tap/qbittorrent$" "the recipe is bumped in place"
 assert_file_contains "$SRC/Casks/qbittorrent.rb" 'version "5.2.4"' "the repo folder carries the new version"
 assert_file_contains "$DOTFILES_TAP_DIR/Casks/qbittorrent.rb" 'version "5.2.4"' "so does Homebrew's working copy"
@@ -321,6 +341,96 @@ assert_eq "$out" "" "silent without a tap"
 assert_file_not_contains "$CALLS" "livecheck" "no livecheck without a tap"
 echo ""
 
+section "Update: a recipe nobody here installed from the tap is not bumped"
+reset
+mkdir -p "$SRC/Casks"
+ptap_clean_recipe cask < "$FIX/recipe.rb" > "$SRC/Casks/qbittorrent.rb"
+echo '[{"cask": "qbittorrent", "version": {"current": "5.2.3", "latest": "5.2.4"}}]' > "$FIX/livecheck.json"
+out=$("$UPDATE" 2>&1)
+assert_eq "$out" "" "silent when the installed copy is the official one"
+assert_file_not_contains "$CALLS" "livecheck" "no livecheck"
+assert_dir_not_exists "$DOTFILES_TAP_DIR" "and no Homebrew copy of the tap"
+assert_file_contains "$SRC/Casks/qbittorrent.rb" 'version "5.2.3"' "the folder is untouched"
+
+section "Keep: a recipe another machine already kept is reused"
+reset
+mkdir -p "$SRC/Casks"
+ptap_clean_recipe cask < "$FIX/recipe.rb" | sed 's/version "5.2.3"/version "5.9.0"/' > "$SRC/Casks/qbittorrent.rb"
+out=$(printf 'k\ns\n' | FETCH_RC=1 DOTFILES_TAP_ASK=1 "$CHECK" 2>&1)
+assert_contains "$out" "Already kept in homebrew-tap/ by another machine" "says it is already kept"
+assert_file_not_contains "$CALLS" "^curl" "Homebrew's older recipe is not fetched"
+assert_file_exists "$SRC/Casks/qbittorrent.rb" "a failed download does not delete another machine's recipe"
+out=$(printf 'k\ns\n' | DOTFILES_TAP_ASK=1 "$CHECK" 2>&1)
+assert_contains "$out" "Kept qbittorrent" "the switch then succeeds"
+assert_file_contains "$SRC/Casks/qbittorrent.rb" 'version "5.9.0"' "with the newer kept recipe"
+echo ""
+
+# ── Install on this machine ───────────────────
+seed_kept() {
+    reset
+    mkdir -p "$SRC/Casks"
+    ptap_clean_recipe cask < "$FIX/recipe.rb" > "$SRC/Casks/qbittorrent.rb"
+    printf 'firefox\n' > "$FIX/installed"
+}
+
+section "Install: --yes lists what is missing and installs nothing"
+seed_kept
+out=$("$INSTALL" --yes 2>&1)
+assert_contains "$out" "keeps 1 package(s) in homebrew-tap/ not installed here: qbittorrent" "names what is missing"
+assert_eq "$(cat "$DOTFILES_STATE_DIR/tap-install-pending")" "cask qbittorrent" "pending for the login notice"
+assert_file_not_contains "$CALLS" "^brew install" "nothing installed"
+assert_dir_not_exists "$DOTFILES_TAP_DIR" "no Homebrew copy before this machine says yes"
+assert_file_not_exists "$DOTFILES_STATE_DIR/tap-install" "no answer recorded"
+
+section "Install: yes installs now and every later addition without asking"
+out=$(printf 'y\n' | DOTFILES_TAP_ASK=1 "$INSTALL" 2>&1)
+assert_contains "$out" "that are not installed here: qbittorrent" "says what it is asking about"
+assert_file_contains "$CALLS" "^brew install --cask me/tap/qbittorrent$" "installs from the tap"
+assert_eq "$(cat "$DOTFILES_STATE_DIR/tap-install")" "yes" "the answer is remembered"
+assert_file_not_exists "$DOTFILES_STATE_DIR/tap-install-pending" "nothing pending"
+assert_file_exists "$DOTFILES_TAP_DIR/Casks/qbittorrent.rb" "Homebrew's copy is built"
+echo 'cask "other" do; end' > "$SRC/Casks/other.rb"
+: > "$CALLS"
+out=$("$INSTALL" --yes 2>&1)
+assert_not_contains "$out" "that are not installed here" "a later addition is not asked about"
+assert_file_contains "$CALLS" "^brew install --cask me/tap/other$" "it is installed, even unattended"
+assert_file_not_contains "$CALLS" "me/tap/qbittorrent" "what is installed is left alone"
+: > "$CALLS"
+out=$("$INSTALL" --yes 2>&1)
+assert_eq "$out" "" "silent when nothing is missing"
+
+section "Install: Homebrew's copy follows the folder even with nothing missing"
+sed -i '' 's/version "5.2.3"/version "5.2.7"/' "$SRC/Casks/qbittorrent.rb"
+"$INSTALL" --yes >/dev/null 2>&1
+assert_file_contains "$DOTFILES_TAP_DIR/Casks/qbittorrent.rb" 'version "5.2.7"' "a recipe bumped elsewhere reaches Homebrew"
+
+section "Install: no means never, and never asking again"
+seed_kept
+out=$(printf 'n\n' | DOTFILES_TAP_ASK=1 "$INSTALL" 2>&1)
+assert_eq "$(cat "$DOTFILES_STATE_DIR/tap-install")" "no" "the answer is remembered"
+assert_file_not_contains "$CALLS" "^brew install" "nothing installed"
+out=$(printf 'y\n' | DOTFILES_TAP_ASK=1 "$INSTALL" 2>&1)
+assert_eq "$out" "" "not asked again"
+assert_file_not_exists "$DOTFILES_STATE_DIR/tap-install-pending" "nothing pending"
+
+section "Install: an answer given ahead of time"
+seed_kept
+out=$(DOTFILES_TAP_INSTALL=yes "$INSTALL" --yes 2>&1)
+assert_file_contains "$CALLS" "^brew install --cask me/tap/qbittorrent$" "DOTFILES_TAP_INSTALL=yes installs unattended"
+assert_eq "$(cat "$DOTFILES_STATE_DIR/tap-install")" "yes" "and holds for later runs"
+seed_kept
+DOTFILES_TAP_INSTALL=false "$INSTALL" --yes >/dev/null 2>&1
+assert_eq "$(cat "$DOTFILES_STATE_DIR/tap-install")" "no" "false means no"
+
+section "Install: a failed install is retried next run"
+seed_kept
+echo yes > "$DOTFILES_STATE_DIR/tap-install"
+out=$(INSTALL_RC=1 "$INSTALL" --yes 2>&1)
+assert_contains "$out" "Could not install qbittorrent; dotfiles update tries again next run" "the failure is reported"
+out=$("$INSTALL" --yes 2>&1)
+assert_contains "$out" "Installed qbittorrent" "and the next run installs it"
+echo ""
+
 # ── List ──────────────────────────────────────
 section "List"
 reset
@@ -330,13 +440,14 @@ printf 'k\ns\n' | DOTFILES_TAP_ASK=1 "$CHECK" >/dev/null 2>&1
 out=$("$LIST" 2>&1)
 assert_contains "$out" "Tap:     me/tap" "names the tap"
 assert_contains "$out" "Recipes: $SRC" "names the repo folder"
+assert_contains "$out" "This machine: not asked yet" "says whether this machine installs kept packages"
 assert_matches "$out" 'cask  *qbittorrent  *1\.0' "lists the kept cask with its version"
 assert_contains "$out" "formula gemini-cli" "lists what is still waiting for an answer"
 echo ""
 
 # ── Bash 3.2 ──────────────────────────────────
 section "Bash 3.2"
-for f in "$CHECK" "$UPDATE" "$LIST" "$ROOT/scripts/personal-tap.sh"; do
+for f in "$CHECK" "$UPDATE" "$LIST" "$INSTALL" "$ROOT/scripts/personal-tap.sh"; do
     assert_succeeds "$(basename "$f") parses under /bin/bash" /bin/bash -n "$f"
 done
 reset
@@ -346,5 +457,8 @@ assert_contains "$out" "Removed gemini-cli" "remove works under /bin/bash"
 echo '[{"cask": "qbittorrent", "version": {"current": "5.2.3", "latest": "5.3.0"}}]' > "$FIX/livecheck.json"
 out=$(/bin/bash "$UPDATE" 2>&1)
 assert_contains "$out" "5.2.3 → 5.3.0" "update works under /bin/bash"
+seed_kept
+out=$(printf 'y\n' | DOTFILES_TAP_ASK=1 /bin/bash "$INSTALL" 2>&1)
+assert_contains "$out" "Installed qbittorrent" "install works under /bin/bash"
 echo ""
 

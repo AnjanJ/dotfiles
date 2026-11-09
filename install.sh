@@ -614,6 +614,18 @@ if [[ -n "$XCODE_ENTRY" && "$APPSTORE_READY" == true ]]; then
     fi
 fi
 
+# ── Packages kept in homebrew-tap/ (asked once per machine) ──
+# The repo is public, so installing the apps its owner kept after Homebrew
+# dropped them is this machine's choice: "personal_tap_install" in the
+# answers file (or DOTFILES_TAP_INSTALL=yes|no) gives it now, --interactive
+# asks, and otherwise the first `dotfiles update` in a terminal asks.
+_CURRENT_STEP="Step 2c: packages kept in homebrew-tap/"
+_tap_install_args=()
+[[ "$INTERACTIVE" == true ]] || _tap_install_args+=(--yes)
+DOTFILES_TAP_INSTALL="${DOTFILES_TAP_INSTALL:-${PERSONAL_TAP_INSTALL:-}}" \
+    bash "$DOTFILES_DIR/bin/dotfiles-tap-install" ${_tap_install_args[@]+"${_tap_install_args[@]}"} \
+    || print_warning "Could not install the packages kept in homebrew-tap/; dotfiles update retries"
+
 # ============================================
 # 3. CREATE NECESSARY DIRECTORIES
 # ============================================

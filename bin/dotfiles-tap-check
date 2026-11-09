@@ -106,25 +106,36 @@ dropped_formulae() {
 # download failing after that would leave nothing installed.
 keep() {
     local kind="$1" name="$2" from="$3" path="$4" status="$5" reason="$6"
-    local sub file recipe flag dropped_line
+    local sub file recipe flag dropped_line created=false
     if [[ "$kind" == cask ]]; then sub=Casks; flag=--cask; else sub=Formula; flag=--formula; fi
     [[ -n "$path" ]] || path="$sub/$name.rb"
-    if ! recipe=$(ptap_fetch_recipe "$from" "$path") || [[ -z "$recipe" ]]; then
-        print_error "Could not fetch $from's recipe for $name ($path)"
-        return 1
-    fi
     file="$(ptap_src)/$sub/$name.rb"
-    mkdir -p "$(dirname "$file")"
-    printf '%s\n' "$recipe" | ptap_clean_recipe "$kind" > "$file"
+    # Another machine may have kept it already, and its recipe may carry a
+    # newer version than Homebrew's last one: use that recipe as it is.
+    if [[ -f "$file" ]]; then
+        echo "    Already kept in homebrew-tap/ by another machine; switching this one over"
+    else
+        if ! recipe=$(ptap_fetch_recipe "$from" "$path") || [[ -z "$recipe" ]]; then
+            print_error "Could not fetch $from's recipe for $name ($path)"
+            return 1
+        fi
+        mkdir -p "$(dirname "$file")"
+        printf '%s\n' "$recipe" | ptap_clean_recipe "$kind" > "$file"
+        created=true
+    fi
+    # Only a recipe this run wrote is taken back out on failure.
+    _undo() {
+        [[ "$created" == true ]] && rm -f "$file"
+        ptap_ensure >/dev/null 2>&1 || true
+    }
     if ! ptap_ensure; then
-        rm -f "$file"
+        _undo
         print_error "Could not set up your tap $TAP"
         return 1
     fi
 
     if ! brew fetch "$flag" "$TAP/$name"; then
-        rm -f "$file"
-        ptap_ensure >/dev/null 2>&1 || true
+        _undo
         print_error "Could not download $name from its recipe; nothing changed"
         return 1
     fi

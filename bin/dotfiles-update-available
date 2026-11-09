@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# dotfiles:summary=What is waiting to be applied: repo commits, Homebrew upgrades, dropped packages, migrations, restarts
+# dotfiles:summary=What is waiting to be applied: repo commits, Homebrew upgrades, dropped and kept packages, migrations, restarts
 # dotfiles:args=[--cached] [--short] [--quiet]
 #
 # The one check behind the login notice in .zshrc, the Updates section of
@@ -106,6 +106,12 @@ else
     dropped=$(grep -c . "$STATE_DIR/tap-pending" 2>/dev/null || true)
     if [[ "${dropped:-0}" -gt 0 ]]; then
         lines+=("dropped: $(plural "$dropped" package) Homebrew dropped, keep or remove (run: dotfiles update)")
+    fi
+    # Packages kept in homebrew-tap/ that this machine has not said yes or
+    # no to; written by dotfiles tap install.
+    kept=$(grep -c . "$STATE_DIR/tap-install-pending" 2>/dev/null || true)
+    if [[ "${kept:-0}" -gt 0 ]]; then
+        lines+=("kept: $(plural "$kept" package) in homebrew-tap/ not installed here, install or not (run: dotfiles update)")
     fi
 
     # Restart markers left by an interrupted update or a migration.

@@ -114,6 +114,33 @@ ptap_packages() {
     return 0
 }
 
+# True when the package is installed at all, from any tap.
+ptap_installed() {
+    local kind="$1" name="$2"
+    if [[ "$kind" == cask ]]; then
+        [[ -n "$(brew list --cask --versions "$name" 2>/dev/null)" ]]
+    else
+        [[ -n "$(brew list --formula --versions "$name" 2>/dev/null)" ]]
+    fi
+}
+
+# True when the installed copy came from the personal tap, per its install
+# receipt; a short name alone would match the official recipe too.
+ptap_installed_from_tap() {
+    local kind="$1" name="$2" receipt tap f
+    tap=$(ptap_name)
+    if [[ "$kind" == cask ]]; then
+        receipt="$(brew --caskroom 2>/dev/null)/$name/.metadata/INSTALL_RECEIPT.json"
+    else
+        receipt=""
+        for f in "$(brew --cellar 2>/dev/null)/$name"/*/INSTALL_RECEIPT.json; do
+            [[ -f "$f" ]] && receipt="$f"
+        done
+    fi
+    [[ -f "$receipt" ]] || return 1
+    [[ "$(jq -r '.source.tap // ""' "$receipt" 2>/dev/null)" == "$tap" ]]
+}
+
 # Brewfile lines for what the tap holds, so the drift report and
 # `dotfiles cleanup` treat kept packages as wanted.
 ptap_brewfile_lines() {

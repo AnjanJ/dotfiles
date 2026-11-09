@@ -7,5 +7,6 @@
   "ssh": "1password",
   "groups": ["core", "editors", "window-mgmt", "terminal-tools"],
   "macos_defaults": true,
-  "runtimes": true
+  "runtimes": true,
+  "personal_tap_install": false
 }

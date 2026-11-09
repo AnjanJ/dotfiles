@@ -2,7 +2,8 @@
 # dotfiles:summary=Move the packages kept in your personal tap to their newest upstream versions
 #
 # Run by `dotfiles update` before `brew upgrade` (unless `dotfiles toggle
-# tap-auto-update off`). For each package in your tap it asks the recipe's
+# tap-auto-update off`). For each package installed here from your tap
+# (per its install receipt) it asks the recipe's
 # own livecheck for the newest upstream version; when that is newer it
 # rewrites the version and checksum with `brew bump-*-pr --write-only` in
 # Homebrew's working copy of the tap, copies the recipe back into the
@@ -35,7 +36,13 @@ fi
 
 TAP=$(ptap_name)
 DIR=$(ptap_dir)
-packages=$(ptap_packages)
+# Only what this machine installed from the tap: the folder travels to
+# every clone of a public repo, and a recipe nobody here uses is not this
+# machine's to bump.
+packages=""
+while read -r kind name; do
+    ptap_installed_from_tap "$kind" "$name" && packages+="$kind $name"$'\n'
+done < <(ptap_packages)
 [[ -n "$packages" ]] || exit 0
 
 # Homebrew's output (gem installs, rubocop) is noise unless a step fails.
@@ -49,6 +56,7 @@ fi
 updated=0
 gatekeeper_note=false
 while read -r kind name; do
+    [[ -n "$name" ]] || continue
     full="$TAP/$name"
     if ! json=$(brew livecheck --json --newer-only --quiet "--$kind" "$full" 2>"$LOG"); then
         print_warning "Could not check $name for a new version: $(tail -1 "$LOG")"

@@ -14,7 +14,7 @@ git clone https://github.com/AnjanJ/dotfiles.git ~/dotfiles && bash ~/dotfiles/i
 
 ```bash
 dotfiles update       # Upgrade system & sync repo (--yes never asks)
-dotfiles update available   # What is waiting: repo commits, brew upgrades, dropped packages, migrations, restarts
+dotfiles update available   # What is waiting: repo commits, brew upgrades, dropped and kept packages, migrations, restarts
 dotfiles sync         # Quick refresh: pull, relink, migrate, reapply theme
 dotfiles health       # Verify all tools are installed
 dotfiles doctor       # Auto-fix common issues
@@ -29,7 +29,7 @@ dotfiles reminder 15 "Tea"   # macOS notification in 15 minutes; `show` lists pe
 dotfiles restart <aerospace|sketchybar|borders>   # Restart a component now (--later defers it to the next update)
 dotfiles add-theme x  # Scaffold a new theme directory
 dotfiles cleanup      # Find/remove unlisted Homebrew packages (--force)
-dotfiles tap list     # Packages kept in your own tap after Homebrew dropped them (tap check / tap update run inside dotfiles update)
+dotfiles tap list     # Packages kept in your own tap after Homebrew dropped them (tap check / tap install / tap update run inside dotfiles update)
 dotfiles backup       # Snapshot dotfiles state (--list, --restore)
 dotfiles profile      # Measure shell startup time (--detailed)
 dotfiles export       # Export setup snapshot (--json)

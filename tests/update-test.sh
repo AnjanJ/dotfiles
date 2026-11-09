@@ -209,6 +209,7 @@ setup_pipeline_sandbox() {
     cat > "$STUB/brew" <<EOF
 #!/bin/bash
 echo "brew \$*" >> "$CALLS"
+[[ "\$1" == "--caskroom" ]] && echo "$TEST_TMP/caskroom"
 if [[ "\$1" == "bundle" && "\$2" == "dump" ]]; then
     for a in "\$@"; do
         [[ "\$a" == --file=* ]] || continue
@@ -419,11 +420,16 @@ test_37e_personal_tap() {
     setup_pipeline_sandbox
     local out order tap="$TEST_TMP/tap"
     rm -rf "$tap"
-    mkdir -p "$MOCK/homebrew-tap/Casks"
+    mkdir -p "$MOCK/homebrew-tap/Casks" "$TEST_TMP/caskroom/kept/.metadata"
     echo 'cask "kept" do; end' > "$MOCK/homebrew-tap/Casks/kept.rb"
+    # Installed here from the tap, so tap update checks it.
+    echo '{"source": {"tap": "me/tap"}}' > "$TEST_TMP/caskroom/kept/.metadata/INSTALL_RECEIPT.json"
     out=$(DOTFILES_TAP=me/tap DOTFILES_TAP_DIR="$tap" DUMP_EXTRA=$'tap "me/tap"\ncask "me/tap/kept"' run_update --yes)
     order=$(/usr/bin/grep -nE '^brew (update|list --cask|livecheck .*|upgrade)$' "$CALLS" | cut -d: -f2 | sed 's/ --json.*//' | tr '\n' '|')
     assert_eq "$order" "brew update|brew list --cask|brew livecheck|brew upgrade|" "check, then tap update, between brew update and brew upgrade"
+    assert_file_contains "$CALLS" "^brew list --cask --versions kept$" "tap install looks for kept packages missing here"
+    assert_contains "$out" "keeps 1 package(s) in homebrew-tap/ not installed here: kept" "--yes lists the missing one and installs nothing"
+    assert_file_not_contains "$CALLS" "^brew install" "nothing installed without an answer"
     assert_contains "$out" "No changes since last snapshot" "a package kept in the tap is not reported as drift"
     assert_not_contains "$out" "+ cask" "nor named as drift"
     assert_file_exists "$tap/Casks/kept.rb" "Homebrew's working copy is built from the repo folder"

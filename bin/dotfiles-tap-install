@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+# dotfiles:summary=Install the packages kept in homebrew-tap/ on this machine (asks once per machine)
+# dotfiles:args=[--yes]
+#
+# Run by install.sh after the Brewfile and by `dotfiles update` after
+# `dotfiles tap check`. The repo's homebrew-tap/ folder travels to every
+# machine that clones it, and this repo is public, so installing what it
+# holds is a per-machine choice, asked once:
+#
+#   y  install every kept package missing here, now and whenever another
+#      machine keeps a new one; `dotfiles tap update` then keeps them current
+#   n  never install them here, and never ask again
+#
+# The answer lives in ~/.local/state/dotfiles/tap-install. DOTFILES_TAP_INSTALL
+# (yes/no), or "personal_tap_install" in the install answers file, gives it
+# ahead of time. With --yes, or without a terminal and no answer, nothing is
+# installed and the login notice says what is waiting. A package installed
+# here from another tap is left to `dotfiles tap check`.
+
+set -euo pipefail
+
+DOTFILES_DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+source "$DOTFILES_DIR/scripts/_helpers.sh"
+source "$DOTFILES_DIR/scripts/personal-tap.sh"
+
+STATE_DIR="${DOTFILES_STATE_DIR:-$HOME/.local/state/dotfiles}"
+DECISION_FILE="$STATE_DIR/tap-install"
+PENDING="$STATE_DIR/tap-install-pending"
+
+ASK=true
+for arg in "$@"; do
+    case "$arg" in
+        --yes|-y) ASK=false ;;
+        *) echo "Unknown option: $arg" >&2; exit 2 ;;
+    esac
+done
+[[ -n "${DOTFILES_UPDATE_UNATTENDED:-}" ]] && ASK=false
+[[ -t 0 || -n "${DOTFILES_TAP_ASK:-}" ]] || ASK=false
+
+command -v brew >/dev/null 2>&1 || exit 0
+mkdir -p "$STATE_DIR"
+TAP=$(ptap_name)
+packages=$(ptap_packages)
+if [[ -z "$packages" ]]; then
+    rm -f "$PENDING"
+    exit 0
+fi
+
+# Homebrew's copy follows the folder on every run, so a version another
+# machine bumped reaches `brew upgrade` here even with tap-auto-update off.
+# A machine that never installed from the tap gets no copy at all.
+if [[ -d "$(ptap_dir)/.git" ]]; then
+    ptap_ensure >/dev/null 2>&1 || print_warning "Could not refresh Homebrew's copy of your tap $TAP"
+fi
+
+missing=""
+while read -r kind name; do
+    ptap_installed "$kind" "$name" || missing+="$kind $name"$'\n'
+done <<<"$packages"
+if [[ -z "$missing" ]]; then
+    rm -f "$PENDING"
+    exit 0
+fi
+names=$(awk '{print $2}' <<<"$missing" | paste -sd, - | sed 's/,/, /g')
+count=$(grep -c . <<<"$missing")
+
+decision="${DOTFILES_TAP_INSTALL:-}"
+[[ -n "$decision" ]] || decision=$(cat "$DECISION_FILE" 2>/dev/null || true)
+case "$decision" in
+    yes|y|true|1) decision=yes ;;
+    no|n|false|0) decision=no ;;
+    *) decision="" ;;
+esac
+# An answer given ahead of time (install answers file) holds for later runs.
+if [[ -n "${DOTFILES_TAP_INSTALL:-}" && -n "$decision" ]]; then
+    echo "$decision" > "$DECISION_FILE"
+fi
+
+if [[ -z "$decision" ]]; then
+    if [[ "$ASK" != true ]]; then
+        printf '%s' "$missing" > "$PENDING"
+        print_warning "This repo keeps $count package(s) in homebrew-tap/ not installed here: $names"
+        echo "  Run dotfiles update in a terminal to choose whether this machine installs them"
+        exit 0
+    fi
+    echo ""
+    print_warning "This repo keeps $count package(s) in homebrew-tap/ that are not installed here: $names"
+    while [[ -z "$decision" ]]; do
+        read -r -p "  Install kept packages on this machine, now and whenever one is added? [y/n] " reply || reply=""
+        case "$reply" in
+            y|Y|yes) decision=yes ;;
+            n|N|no) decision=no ;;
+            "") printf '%s' "$missing" > "$PENDING"; echo "  No answer; asking again next run"; exit 0 ;;
+            *) echo "  Type y or n" ;;
+        esac
+    done
+    echo "$decision" > "$DECISION_FILE"
+fi
+
+rm -f "$PENDING"
+if [[ "$decision" == no ]]; then
+    exit 0
+fi
+
+if ! ptap_ensure; then
+    print_error "Could not set up Homebrew's copy of your tap $TAP"
+    exit 0
+fi
+while read -r kind name; do
+    [[ -n "$name" ]] || continue
+    print_step "Installing $name from $TAP (kept in homebrew-tap/)"
+    if brew install "--$kind" "$TAP/$name"; then
+        print_success "Installed $name"
+    else
+        print_warning "Could not install $name; dotfiles update tries again next run"
+    fi
+done <<<"$missing"
+exit 0

@@ -21,14 +21,17 @@
 #     "ssh": "1password",           -> --ssh
 #     "groups": ["core", "editors"],-> --groups (a comma string works too)
 #     "macos_defaults": false,      -> --no-macos-defaults
-#     "runtimes": false             -> --no-runtimes
+#     "runtimes": false,            -> --no-runtimes
+#     "personal_tap_install": true  -> install the packages kept in
+#                                      homebrew-tap/ (false: never); unset,
+#                                      the first `dotfiles update` asks
 #   }
 #
 # Reads JSON with plutil (macOS 12+), python3 when plutil cannot. Runs
 # under /bin/bash 3.2 because install.sh does.
 # ============================================
 
-INSTALL_ANSWERS_KEYS="name email work_email work_dir theme ssh groups macos_defaults runtimes"
+INSTALL_ANSWERS_KEYS="name email work_email work_dir theme ssh groups macos_defaults runtimes personal_tap_install"
 
 # _answers_get <file> <key> — prints a scalar value (booleans as
 # true/false); nothing and exit 1 when the key is absent. Arrays go
@@ -98,7 +101,8 @@ _answers_valid() {
 # install_answers_load <file>
 # Fills GIT_NAME, GIT_EMAIL, GIT_WORK_EMAIL, WORK_DIR, SELECTED_THEME,
 # SSH_MODE, SELECTED_GROUPS when they are still empty, and turns
-# APPLY_MACOS_DEFAULTS / INSTALL_RUNTIMES off when the file says false.
+# APPLY_MACOS_DEFAULTS / INSTALL_RUNTIMES off when the file says false, and
+# sets PERSONAL_TAP_INSTALL to yes or no when the file says true or false.
 # Prints what it applied; returns 1 on a missing or invalid file.
 install_answers_load() {
     local file="$1" v applied="" k known
@@ -141,6 +145,14 @@ install_answers_load() {
     if v=$(_answers_get "$file" runtimes) && [[ "$v" == "false" || "$v" == "0" ]]; then
         INSTALL_RUNTIMES=false
         applied="${applied:+$applied, }runtimes=false"
+    fi
+    # shellcheck disable=SC2034  # read by install.sh's homebrew-tap step
+    if [[ -z "${PERSONAL_TAP_INSTALL:-}" ]] && v=$(_answers_get "$file" personal_tap_install); then
+        case "$v" in
+            true|1) PERSONAL_TAP_INSTALL=yes ;;
+            false|0) PERSONAL_TAP_INSTALL=no ;;
+        esac
+        [[ -n "${PERSONAL_TAP_INSTALL:-}" ]] && applied="${applied:+$applied, }personal_tap_install=$PERSONAL_TAP_INSTALL"
     fi
 
     for k in $(_answers_keys "$file"); do

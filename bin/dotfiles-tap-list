@@ -25,6 +25,11 @@ if ptap_exists; then
     echo "Tap:     $TAP"
     echo "Recipes: $(ptap_src)"
     echo "Homebrew's copy: $(ptap_dir)"
+    case "$(cat "$STATE_DIR/tap-install" 2>/dev/null || true)" in
+        yes) echo "This machine: installs kept packages" ;;
+        no) echo "This machine: does not install kept packages (rm $STATE_DIR/tap-install to be asked again)" ;;
+        *) echo "This machine: not asked yet (dotfiles update asks when a kept package is missing here)" ;;
+    esac
     packages=$(ptap_packages)
     if [[ -z "$packages" ]]; then
         echo "No packages kept yet"

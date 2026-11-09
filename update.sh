@@ -230,6 +230,11 @@ _tap_args=()
 [[ "$UNATTENDED" == true ]] && _tap_args+=(--yes)
 bash "$DOTFILES_DIR/bin/dotfiles-tap-check" ${_tap_args[@]+"${_tap_args[@]}"} \
     || print_warning "Could not check for packages Homebrew dropped; continuing"
+# Packages kept in homebrew-tap/ (on any machine) that this one lacks: asks
+# once per machine whether to install them, then installs new ones as they
+# arrive. Also refreshes Homebrew's copy of the tap from the folder.
+bash "$DOTFILES_DIR/bin/dotfiles-tap-install" ${_tap_args[@]+"${_tap_args[@]}"} \
+    || print_warning "Could not install the packages kept in homebrew-tap/; continuing"
 if bash "$DOTFILES_DIR/bin/dotfiles-toggle" --enabled tap-auto-update; then
     bash "$DOTFILES_DIR/bin/dotfiles-tap-update" \
         || print_warning "Could not update your tap's packages; continuing"
