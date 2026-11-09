@@ -1,200 +1,118 @@
 ---
 name: Dotfiles Repo Complete Architecture Overview
-description: Comprehensive guide to all tools managed, installation flow, directory structure, automation, CI/CD, and what makes this repo unique
+description: Guide to what the repo manages, how install and update run, the directory layout, the theme pipeline, the CLI, tests and CI
 type: project
 ---
 
-# AJ's Dotfiles Repository — Complete Architecture
+# AJ's Dotfiles Repository — Architecture
 
-**Date Analyzed**: 2026-03-23  
-**Repo**: https://github.com/AnjanJ/dotfiles  
-**Philosophy**: DHH's Omakub ("Everything in one place, everything just works") adapted for macOS
+**Last refreshed**: 2026-11-09 at commit `bbd946c` (244 commits). Counts below were read from the repo that day; re-check before quoting them.
+**Repo**: https://github.com/AnjanJ/dotfiles
+**Philosophy**: DHH's Omakub ("everything in one place, everything just works"), adapted for macOS
+**Contributor rules**: `AGENTS.md` (loaded by `CLAUDE.md`). End-user guide for agents: `agents/skills/dotfiles/`.
 
 ## What This Repo Is
 
-Not just a dotfiles repository — a **complete macOS development environment in code form** optimized for Rails/Elixir developers. One-command installation, multi-theme support (Tokyo Night, Aura, Catppuccin), work identity separation, comprehensive testing (300+ assertions).
+A complete macOS development environment as code, opinionated for Ruby/Rails and Elixir/Phoenix work with polyglot support. One-command install (`install.sh`, also via curl), one-command upgrade (`dotfiles update`), five themes rendered into every themed app, a `dotfiles` CLI with 44 routes, and 37 test suites plus a real end-to-end install in CI.
 
-## Tools Managed (Summary)
+## Tools Managed
 
-### Core Environment
-- **Shell**: zsh with 5 modular config files (~1,090 lines total)
-- **Prompt**: Starship (16x faster than Spaceship)
-- **Terminals**: Ghostty (GPU-accelerated, primary), Warp, WezTerm, zsh
-- **Window Manager**: Aerospace (i3-style tiling) + JankyBorders + sketchybar
-
-### Multiplexing & Editors
-- **Multiplexers**: tmux (346 lines, 8 plugins) + Zellij (with rails/phoenix/work layouts)
-- **Editors**: Neovim (AstroNvim), Zed (LSP, tasks, snippets), VS Code (installed only)
-- **Git**: lazygit, gitui, git-delta, GitHub CLI
-
-### Version & Environment
-- **Version Manager**: mise (Ruby, Node, Elixir, Python, Go, Rust all "latest")
-- **Environment**: direnv for .envrc files
-- **Databases**: PostgreSQL 14, MySQL, Redis (auto-start), SQLite
+- **Shell**: zsh, five files (`.zshrc` loader 427 lines, `.zshrc-dhh-additions` 660, `.zshrc-elixir-additions` 345, `.zshrc-terminal-enhancements` 345, `.zshrc-work-completions` 181; 1,958 total). No tmux any more.
+- **Prompt**: Starship (rendered from a theme template).
+- **Terminals**: Ghostty (primary), WezTerm, Warp.
+- **Multiplexer**: Zellij (rails, phoenix, work layouts).
+- **Window management**: AeroSpace (tiling, `aerospace.toml` 525 lines), JankyBorders, SketchyBar (with a Claude usage item).
+- **Editors**: Neovim (AstroNvim), Zed and VS Code (both generated from a tracked `settings.base.json`).
+- **Git**: lazygit, git-delta, GitHub CLI.
+- **Runtimes**: mise (`.config/mise/config.toml`): elixir, erlang, go, node, python, ruby, rust, yarn at `latest`; java `temurin-17` for Android/Flutter.
+- **Databases** (Brewfile `databases` group): postgresql@16 with pgvector, mysql, redis (services restart on change), plus pgcli, mycli, litecli, lazysql, Beekeeper Studio, Postico, Redis Insight.
+- **AI**: Claude Code (and `.config/claude/` settings, statusline, handoff hook), Codex, ChatGPT, llm + Ollama (one local model built by `dotfiles agent model`).
 
 ### Homebrew
-- **~325 packages** across: 75 brew formulas, 30 cask apps, 77 fonts, VS Code extensions, App Store apps
-- **Auto-managed**: Brewfile snapshots on every update, one backup for rollback
-- **Taps**: 10 custom taps (Aerospace, Cloudflare, sketchybar, etc.)
 
-### Custom Scripts (20 commands)
-- **Dotfiles CLI**: update, sync, health, theme, add-theme, cleanup, doctor, backup, profile, export, install, uninstall, edit, dir
-- **Work Management**: work-setup, work-nuke, work-switch, work-status
-- **Development**: repos-clone, erb-lint-formatter
+- **Brewfile**: 18 `# @group` sections (load-bearing: the installer's group picker reads them). 5 taps, 70 formulae, 52 casks (8 of them fonts), 23 Mac App Store apps, 34 VS Code extensions. The file has no final newline; keep it that way.
+- **Tap trust**: Homebrew 7 refuses packages from untrusted third-party taps. `trust_brewfile_taps` (`scripts/package-utils.sh`) trusts them at install (step 2a) and on every update.
+- **Personal tap**: `homebrew-tap/{Casks,Formula}/` holds packages Homebrew deprecated or disabled that the user chose to keep (qbittorrent today). Homebrew reads a mirrored working copy under `Library/Taps/<name>`; see `scripts/personal-tap.sh`.
+- **Catalog**: `docs/PACKAGE_CATALOG.md` is generated by `scripts/catalog/build-catalog.py` from the Brewfile and `scripts/catalog/meta/*.tsv` (CRLF files: edit with grep/sed, not Python text mode). `--fetch` fills missing descriptions, `--check` fails when the catalog lags.
 
-## Installation Flow (12 Steps)
+## The dotfiles CLI
 
-1. **Bootstrap** — Clones repo if running via curl-pipe, re-execs locally
-2. **Theme Selection** — Auto-discovers themes, prompts user (default: tokyo-night)
-3. **Homebrew** — Installs if missing, configures PATH for Apple Silicon
-4. **Brewfile** — `brew bundle install` (~325 packages)
-5. **mise Setup** — Links config, trusts it, installs language runtimes
-6. **Symlinks** — Creates idempotent symlinks for all configs (backs up only real files)
-7. **Theme Apply** — Updates 17 apps automatically, prints manual instructions for 5 more
-8. **tmux Plugins** — Installs TPM, pre-configured plugins
-9. **Git & SSH** — Personal identity, optional work email, SSH key setup (1Password/existing/generate/skip)
-10. **macOS Defaults** — Keyboard, appearance, Finder, Dock, trackpad, hot corners (24 settings)
-11. **Health Check** — Verifies installation
-12. **Done** — Prints next steps
+`bin/dotfiles` (230 lines) routes `dotfiles a b c` to `bin/dotfiles-a-b-c`, else `-a-b`, else `-a`. Every command declares `# dotfiles:summary=` (and `# dotfiles:args=`); `dotfiles commands --plain` is the live list, `--check` runs in CI. 44 routes today:
 
-**Key Features**:
-- **Truly idempotent** — run 10 times, same result
-- **Non-interactive default** — sensible defaults, no prompts
-- **Customizable via flags** — `--name`, `--email`, `--theme`, `--work-email`, `--ssh`, `--force`, `--no-macos-defaults`
-- **Env vars accepted** — DOTFILES_GIT_NAME, DOTFILES_GIT_EMAIL, DOTFILES_WORK_EMAIL, etc.
+add theme, agent model, agent usage, backup, cleanup, debug, default agent, doctor, export, font, health, hook, hook install, install, keys, menu, migrate, profile, reminder, restart, sync, tap check, tap install, tap list, tap update, theme, theme bg, theme install, theme preview, theme remove, theme update, toggle, tui install, tui remove, uninstall, update, update available, webapp install, webapp remove, repos clone, work nuke, work setup, work status, work switch.
 
-## Update Mechanism
+Also in `bin/`: `work-*` and `repos-clone` (own names), `erb-lint-formatter`, `rubocop-auto`, and the libraries `_work-helpers`, `_launcher-helpers`. `bin/` is linked file-by-file into `~/bin`.
 
-**Purpose**: Keep system and dotfiles repo in sync  
-**Trigger**: `dotfiles update` or `bash update.sh`
+**Toggles** (`dotfiles toggle`, flag files under `~/.local/state/dotfiles/toggles/`): startup-apps, borders, auto-commit, appearance, background, update-notice, agent-usage, tap-auto-update.
+**Hooks**: user scripts in `~/.config/dotfiles/hooks/<event>.d/` for theme-set, font-set, post-sync, post-update, post-install; samples in `hooks/`.
+**Migrations**: `migrations/<unix-ts>-<slug>.sh`, idempotent per-machine repairs run by sync and update (2 today).
 
-**Flow** (refreshed 2026-11-09):
+## Installation Flow (`install.sh`, 1,030 lines)
+
+Runs under stock macOS `/bin/bash` 3.2 (curl bootstrap clones the repo and re-execs). Non-interactive by default; `--interactive` prompts.
+
+1. Homebrew (1b: Rosetta 2)
+2. Brewfile packages for the selected groups; 2a trust the Brewfile's taps; 2b Xcode (optional); 2c packages kept in `homebrew-tap/` (asked once per machine)
+3. Config directories
+4. Symlinks from `scripts/symlink-map.sh` (the single list: install, update, sync, doctor, health, backup and uninstall all read it; 79 links)
+5. Apply the selected theme
+6. mise runtimes (`--no-runtimes` skips the Erlang/Rust source builds)
+7. Neovim; 7b wire llm to Ollama
+8. Shell setup; 8b git identity; 8c SSH (1password, existing, generate or skip)
+9. macOS defaults (`--no-macos-defaults` skips)
+10. Health check
+
+**Flags**: `--answers --email --force --groups --help --interactive --name --no-macos-defaults --no-runtimes --ssh --theme --work-dir --work-email`. `DOTFILES_*` environment variables mirror them, and a JSON answers file (`--answers`, `DOTFILES_ANSWERS` or `~/.dotfiles-answers.json`; keys in `scripts/install-answers.sh`) mirrors both. Precedence: flags, environment, file, defaults.
+
+## Update Mechanism (`update.sh`, 500 lines)
+
+**Trigger**: `dotfiles update` (`--yes` never prompts, `--interactive`, `--no-snapshot`). A lock refuses concurrent runs; the transcript goes to `~/.local/state/dotfiles/update.log`; `caffeinate` holds off sleep.
+
 1. Git pull (with auto-stash of local changes); a pulled aerospace/sketchybar/borders change marks a restart
-2. Local APFS snapshot (`tmutil localsnapshot`, skip with `--no-snapshot`), `brew update`, then the personal tap steps: `dotfiles tap check` (keep or remove each package Homebrew deprecated or disabled), `dotfiles tap install` (asks once per machine whether to install what `homebrew-tap/` holds), `dotfiles tap update` (bumps kept packages installed here; `tap-auto-update` toggle), then `brew upgrade` + `brew cleanup`
-3. **Brewfile snapshot** — diff of installed packages against the Brewfile (the tap's packages count as listed)
+2. Local APFS snapshot (`tmutil localsnapshot`, skip with `--no-snapshot`), `brew update`, trust the Brewfile's taps, then the personal tap steps: `dotfiles tap check` (keep or remove each package Homebrew deprecated or disabled), `dotfiles tap install` (asks once per machine whether to install what `homebrew-tap/` holds), `dotfiles tap update` (bumps kept packages installed here; `tap-auto-update` toggle), then `brew upgrade` + `brew cleanup`
+3. **Brewfile snapshot** — diff of installed packages against the Brewfile (the tap's packages count as listed); the Brewfile itself is never overwritten
 4. Refresh all symlinks and run pending migrations
 5. Upgrade mise tools
 6. Restart only what was marked (`dotfiles restart --pending`), then the `post-update` hook
-7. Auto-commit & push `snapshot: system state` with Brewfile, mise config and `homebrew-tap/` only (main branch, `auto-commit` toggle)
+7. Auto-commit & push `snapshot: system state` with Brewfile, mise config and `homebrew-tap/` only, plus a rebuilt package catalog when the Brewfile changed (main branch, `auto-commit` toggle)
 
-## Directory Structure (46 directories)
+`dotfiles update available` (behind the once-a-day login notice) reports commits behind origin, outdated packages, dropped and kept packages awaiting an answer, pending migrations and restart markers.
 
-**Root**: install.sh, update.sh, Brewfile, Brewfile.backup, README (706 lines), QUICK_REFERENCE.md, TOOL_GUIDE.md, WHAT_GETS_INSTALLED.md
+## Directory Structure
 
-**Shell Configs**:
-- `.zshrc` (199 lines) — loader
-- `.zshrc-dhh-additions` (340 lines) — Rails workflows
-- `.zshrc-elixir-additions` (340 lines) — Elixir/Phoenix
-- `.zshrc-terminal-enhancements` (212 lines) — fzf, zoxide, bat, eza, etc.
-- `.zshrc-work-completions` (181 lines) — work completions
-- `.tmux.conf` (346 lines)
+- **Root**: `install.sh`, `update.sh`, `Brewfile` (+ gitignored `Brewfile.backup`), `README.md` (128 lines), `QUICK_REFERENCE.md`, `TOOL_GUIDE.md`, `AGENTS.md`, `CLAUDE.md`
+- **`.config/`**: aerospace, borders, claude, ghostty, lazygit, llm, mise, nvim, sketchybar, vscode, wezterm, zed, zellij
+- **`themes/`**: `_templates/` (15 `.tpl` files), `_shared/` (palette-driven Neovim fallback), and five themes: tokyo-night, aura, catppuccin (dark); catppuccin-latte, flexoki-light (light, flip macOS appearance)
+- **`bin/`**: 49 files (commands above plus libraries)
+- **`scripts/`**: `_helpers.sh`, `apply-theme.sh` (633 lines), `theme-render.sh`, `theme-utils.sh`, `theme-background.sh`, `symlink-map.sh`, `package-utils.sh`, `personal-tap.sh`, `install-answers.sh`, `health-check.sh`, `setup-git.sh`, `setup-ssh.sh`, `catalog/`
+- **`homebrew-tap/`**, **`migrations/`**, **`hooks/`**, **`agents/skills/dotfiles/`** (the agent skill, linked into `~/.claude/skills` and other agents' skill dirs when present)
+- **`docs/`**: AI_TOOLS, DAILY_WORKFLOWS, KEYBINDINGS (generated block from aerospace.toml), MAINTENANCE, OMARCHY_QUATTRO_COMPARISON (dated plan of record), PACKAGE_CATALOG (generated), SSH, STRUCTURE, THEMES, `dotfiles-answers.example.json`, `screenshots/`
 
-**Configs** (`.config/`):
-- `aerospace/` — tiling layouts, keybindings
-- `ghostty/`, `mise/`, `nvim/`, `zed/`, `zellij/`, `starship.toml`, `lazygit/`, `borders/`, `sketchybar/`, `yazi/`
+## Theme System
 
-**Themes** (auto-discovered):
-- `themes/tokyo-night/`, `themes/aura/`, `themes/catppuccin/`
-- Each has: `theme.conf` (registry), then per-app subdirs (ghostty, nvim, tmux, zellij, starship, lazygit, lsd, yazi, sketchybar, gitui, manual-instructions.txt)
+Each theme is `themes/<name>/colors.toml` (palette) plus `theme.conf`. `apply-theme.sh` renders every `themes/_templates/*.tpl` through `theme-render.sh` (`{{ token }}` substitution, bash + awk) into a staging directory and swaps it atomically into `~/.local/state/dotfiles/current/theme/`; apps read the rendered files, and a failed render leaves the previous theme in place. The chosen theme is recorded in `~/.dotfiles-theme`. Colours never go in tracked configs.
 
-**Bin Scripts** (20 commands): dotfiles, dotfiles-*, work-*, repos-clone, erb-lint-formatter, _work-helpers
+- **Rendered automatically**: Ghostty, WezTerm, Zellij, Starship, Neovim, Zed, VS Code, Warp, bat, git-delta, fzf, lazygit, lsd, borders, sketchybar, Claude Code, and Xcode/Sublime Text when installed and the theme ships a file
+- **Manual**: Slack, Chrome, Zen/Firefox, Telegram, Raycast
+- **Also**: `dotfiles theme bg` (desktop picture per theme, palette gradient fallback), `dotfiles font` (one monospace family, default Fira Code, for Ghostty, WezTerm, Zed and VS Code), `dotfiles theme install <git-url>` (user themes, colour data only)
 
-**Scripts**: _helpers.sh, setup-git.sh, setup-ssh.sh, health-check.sh, theme-utils.sh, apply-theme.sh
+## Tests and CI
 
-**Tests** (11 suites, 300+ assertions): test-idempotency, test-work-nuke, test-repos-clone, test-ssh-adversarial, test-update, test-theme, test-doctor, test-setup-git, test-work-status, test-backup, test-sync
-
-**CI/CD**: .github/workflows/test.yml (runs all tests on push/PR)
-
-**Docs**: screenshots/, DAILY_WORKFLOWS.md
-
-## Theme System (Unique Architecture)
-
-**3 themes** × **17 auto-configured apps** + **5 manual apps** = comprehensive visual consistency
-
-**How it works**:
-1. `themes/*/theme.conf` — Registry: variable name → filename mapping
-2. Each theme directory has subdirectories for every app
-3. `apply-theme.sh` reads the registry, copies app-specific configs
-4. **Atomic apply + auto-rollback** — if apply fails halfway, all restored
-5. Theme state persisted in `~/.dotfiles-theme` (not in repo)
-
-**Apps covered**:
-- Auto-configured: nvim, ghostty, tmux, zellij, starship, zed, vs code, bat, git-delta, fzf, lazygit, borders, sketchybar, yazi, gitui, lsd, warp (17)
-- Manual: Slack, Chrome, Firefox, Telegram, Raycast (5)
-
-## What Makes This Unique
-
-1. **Multi-theme system** — Auto-discovered, atomic apply, rollback on failure
-2. **True idempotency** — No setup quirks, run 100 times safely
-3. **Modular shell config** — 5 files, easy to enable/disable features
-4. **Work identity separation** — Personal + work git configs, separate SSH keys
-5. **Brewfile automation** — Auto-snapshots new packages, shows diffs, rollback support
-6. **SSH flexibility** — 1Password agent (Touch ID), existing keys, generate, or skip
-7. **Rich helper commands** — doctor, backup, profile, export, repos-clone
-8. **Comprehensive testing** — 300+ assertions, 11 test suites, CI/CD every push
-9. **Language support** — mise manages Ruby, Node, Elixir, Python, Go, Rust (all latest)
-10. **DHH philosophy** — "Everything in one place, everything just works"
-
-## CI/CD (11 Test Suites)
-
-**Triggered**: Every push to main and pull requests
-
-| Test | Coverage | Duration |
-|------|----------|----------|
-| shellcheck | All shell scripts linting | ~30s |
-| idempotency | Install/update safe 2+ runs (84 assertions) | ~5min |
-| work-nuke | Work config removal | ~2min |
-| repos-clone | SSH alias detection, URL rewriting | ~1min |
-| ssh-adversarial | Edge cases & malicious input | ~1min |
-| theme | Apply, rollback, discover (39 assertions) | ~2min |
-| update | Symlink creation & refresh | ~3min |
-| doctor | Auto-fix symlinks, permissions | ~1min |
-| setup-git | Git identity setup | ~1min |
-| work-status | Diagnostic output | ~1min |
-| backup | Snapshot/restore cycle | ~2min |
-| sync | Symlink refresh, dry-run | ~2min |
-
-**Total**: ~20+ minutes automated verification per commit
-
-## Target User
-
-**Senior developer** who wants:
-- Beautiful, opinionated, keyboard-first environment
-- Rails/Elixir focus with polyglot support
-- Minimal setup friction ("just works")
-- Work identity separation
-- Easy customization without breaking updates
-
-## Key Statistics
-
-| Metric | Value |
-|--------|-------|
-| Shell config lines | ~1,090 (5 files) |
-| Git commits | 130+ |
-| Test assertions | 300+ |
-| Homebrew packages | ~325 |
-| Theme configs | 51 (3 themes × 17 apps) |
-| Custom commands | 20 |
-| Directories | 46 |
-| README lines | 706 |
+- **Suites**: 37 in `tests/<area>-test.sh` on the shared `tests/base-test.sh` contract (TAP output, `assert_*` helpers, temp `HOME`), about 1,540 assertions in a full `tests/run`: agent, agent-model, agent-usage, backup, claude-handoff, cli, debug, docs, doctor, font, hook, idempotency, install-answers, keys, menu, packages, reminder, repos-clone, restart, setup-git, shell, ssh-adversarial, style, sync, tap, theme, theme-bg, theme-install, theme-render, toggle, tui, uninstall, update, update-available, webapp, work-nuke, work-status.
+- **`docs` and `style` suites** keep the docs and code honest: suite counts, the skill's command table, toggles, hook events, the package catalog; strict mode, increments, bash 3.2 builtins on the install path.
+- **End-to-end**: `tests/e2e/install-e2e.sh` runs the real `install.sh` under `/bin/bash` 3.2 with `--groups core` into a fresh `HOME`.
+- **CI** (`.github/workflows/test.yml`): shellcheck (ubuntu, flags `-x -e SC2162,SC1091,SC2088,SC2317`), suite discovery, one macOS job per suite, and the e2e install on macOS.
 
 ## Key Files at a Glance
 
 | File | Purpose |
 |------|---------|
-| install.sh | Main entry point (490 lines) |
-| update.sh | System/repo sync (330 lines) |
-| .zshrc | Shell loader (199 lines) |
-| .tmux.conf | tmux config + 8 plugins (346 lines) |
-| .config/mise/config.toml | Version manager registry (12 lines, all "latest") |
-| scripts/_helpers.sh | Shared functions (68 lines) |
-| scripts/apply-theme.sh | Theme apply logic (24k) |
-| bin/dotfiles | CLI dispatcher (49 lines) |
-| .github/workflows/test.yml | CI/CD pipeline |
-| themes/*/theme.conf | Theme registry (variable → file mapping) |
-
-## Recent Activity
-
-- Active development (commits every few days)
-- Latest: snapshot system state (2026-03-23)
-- Focus areas: bug fixes, feature additions, test coverage
+| `install.sh` | Installer, bash 3.2 (1,030 lines) |
+| `update.sh` | Upgrade and sync (500 lines) |
+| `bin/dotfiles` | CLI router (230 lines) |
+| `scripts/symlink-map.sh` | Every managed symlink, declared once |
+| `scripts/apply-theme.sh` | Theme render, atomic swap, app installs (633 lines) |
+| `scripts/personal-tap.sh` | Personal Homebrew tap for dropped packages |
+| `scripts/catalog/build-catalog.py` | Generates `docs/PACKAGE_CATALOG.md` |
+| `.github/workflows/test.yml` | CI |
+| `AGENTS.md` | Conventions for changing the repo |
