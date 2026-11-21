@@ -167,16 +167,19 @@ ptap_with_brewfile() {
     ptap_brewfile_lines
 }
 
-# Commits the working copy, so Homebrew's tools see a clean tap.
+# Commits the working copy, so Homebrew's tools see a clean tap. The
+# working copy is never pushed, so these commits are never signed: with
+# commit.gpgsign on, each would otherwise ask the signing agent (1Password)
+# to approve it in the middle of an update, and fail when nobody answers.
 ptap_commit() {
     local msg="$1" dir
     dir=$(ptap_dir)
     git -C "$dir" add -A
     git -C "$dir" diff --cached --quiet && return 0
     if [[ -n "$(git -C "$dir" config user.email 2>/dev/null)" ]]; then
-        git -C "$dir" commit -q -m "$msg"
+        git -C "$dir" -c commit.gpgsign=false commit -q -m "$msg"
     else
-        git -C "$dir" -c user.name=dotfiles -c user.email=dotfiles@localhost commit -q -m "$msg"
+        git -C "$dir" -c commit.gpgsign=false -c user.name=dotfiles -c user.email=dotfiles@localhost commit -q -m "$msg"
     fi
 }
 

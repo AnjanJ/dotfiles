@@ -249,6 +249,13 @@ assert_file_exists "$SRC/Casks/qbittorrent.rb" "recipe written into the repo fol
 assert_file_not_contains "$SRC/Casks/qbittorrent.rb" "disable!" "without its disable! line"
 assert_eq "$(cat "$DOTFILES_TAP_DIR/Casks/qbittorrent.rb")" "$(cat "$SRC/Casks/qbittorrent.rb")" "and mirrored into Homebrew's working copy"
 assert_eq "$(git -C "$DOTFILES_TAP_DIR" status --short)" "" "which is committed, so Homebrew sees a clean tap"
+# A signer that always fails stands in for a locked 1Password: the commit
+# must not ask it at all, so it still lands.
+printf '[commit]\n\tgpgsign = true\n[gpg]\n\tformat = ssh\n[gpg \"ssh\"]\n\tprogram = /usr/bin/false\n' > "$TMPDIR/signing.gitconfig"
+echo "# signing probe" >> "$DOTFILES_TAP_DIR/Casks/qbittorrent.rb"
+GIT_CONFIG_GLOBAL="$TMPDIR/signing.gitconfig" ptap_commit "signing probe"
+assert_eq "$(git -C "$DOTFILES_TAP_DIR" log -1 --format=%s)" "signing probe" "a tap commit lands with commit.gpgsign on and the signer failing"
+assert_eq "$(git -C "$DOTFILES_TAP_DIR" cat-file -p HEAD | grep -c 'BEGIN SSH SIGNATURE' || true)" "0" "and is not signed"
 assert_file_contains "$CALLS" "^curl https://raw.githubusercontent.com/Homebrew/homebrew-cask/HEAD/Casks/q/qbittorrent.rb$" "fetched from homebrew-cask by its source path"
 assert_file_contains "$CALLS" "^brew trust --tap me/tap$" "the tap is trusted"
 order=$(/usr/bin/grep -nE '^brew (fetch|uninstall|install) ' "$CALLS" | cut -d: -f2- | tr '\n' '|')
