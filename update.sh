@@ -175,17 +175,29 @@ print_step "Step 1: Pulling latest changes..."
 
 cd "$DOTFILES_DIR"
 
-# Stash uncommitted changes so git pull doesn't conflict, then restore them
+# Only main follows origin. On a feature branch the pull would merge
+# origin/main into work in progress, so skip it and say so.
 DID_STASH=false
-if [[ -n $(git status -s) ]]; then
-    print_warning "Uncommitted changes detected — stashing temporarily for pull"
-    git stash push -m "Auto-stash before update $(date +%Y%m%d_%H%M%S)"
-    DID_STASH=true
-fi
-
 _before_pull=$(git rev-parse HEAD)
-git pull origin main
-print_success "Repository updated"
+_branch=$(git branch --show-current)
+if [[ "$_branch" != "main" ]]; then
+    print_warning "On branch '${_branch:-detached HEAD}', not main: repository not pulled (switch to main to pull)"
+else
+    # Stash uncommitted changes so git pull doesn't conflict, then restore them
+    if [[ -n $(git status -s) ]]; then
+        print_warning "Uncommitted changes detected — stashing temporarily for pull"
+        git stash push -m "Auto-stash before update $(date +%Y%m%d_%H%M%S)"
+        DID_STASH=true
+    fi
+
+    # Fast-forward only: a local main that has diverged from origin is left
+    # for a human, never merged here. The exit trap restores the stash.
+    if ! git pull --ff-only origin main; then
+        print_error "Could not fast-forward main to origin/main (diverged, or origin unreachable); nothing was merged"
+        exit 1
+    fi
+    print_success "Repository updated"
+fi
 
 # A pulled change to a live config needs its app restarted, but not now:
 # step 5 restarts everything marked, once, after symlinks and migrations.

@@ -378,6 +378,32 @@ test_37c_failed_pull_restores_stash() {
     assert_eq "$(git -C "$MOCK" stash list | wc -l | tr -d ' ')" "0" "no stash left behind"
 }
 
+test_37h_pull_is_fast_forward_on_main_only() {
+    echo ""
+    section "Test 37h: the pull fast-forwards main and leaves other branches alone"
+    setup_pipeline_sandbox
+    push_to_origin "docs/pulled.md" "from origin"
+    git -C "$MOCK" switch -q -c feature
+    local out
+    out=$(run_update --no-snapshot)
+    assert_contains "$out" "On branch 'feature', not main: repository not pulled" "a feature branch is not pulled"
+    assert_file_not_exists "$MOCK/docs/pulled.md" "origin's commit stays out of it"
+    git -C "$MOCK" switch -q main
+    out=$(run_update --no-snapshot)
+    assert_file_exists "$MOCK/docs/pulled.md" "main is fast-forwarded"
+
+    setup_pipeline_sandbox
+    push_to_origin "docs/upstream.md" "upstream"
+    echo "local" > "$MOCK/local-only.md"
+    (cd "$MOCK" && git add local-only.md && git -c user.name=t -c user.email=t@t commit -qm "local only")
+    local before
+    before=$(git -C "$MOCK" rev-parse HEAD)
+    set +e; out=$(run_update --no-snapshot); rc=$?; set -e
+    assert_eq "$rc" "1" "a diverged main stops the run"
+    assert_contains "$out" "nothing was merged" "and says why"
+    assert_eq "$(git -C "$MOCK" rev-parse HEAD)" "$before" "no merge commit is made"
+}
+
 test_37d_snapshot_publishes_only_packages() {
     echo ""
     section "Test 37d: the snapshot publishes package files and nothing else"
@@ -516,4 +542,5 @@ test_37d_snapshot_publishes_only_packages
 test_37e_personal_tap
 test_37f_trusts_brewfile_taps
 test_37g_brewfile_change_rebuilds_catalog
+test_37h_pull_is_fast_forward_on_main_only
 test_38_transcript
