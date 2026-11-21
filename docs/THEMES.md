@@ -6,7 +6,7 @@ The theme is applied across **22 apps**: 17 configured automatically, 5 with man
 
 | Auto-configured (17) | Manual — links provided (5) |
 |----------------------|------------------------------|
-| Ghostty, WezTerm, Zellij, Starship, Neovim, Zed, VS Code, Warp, bat, git-delta, fzf, lazygit, lsd, borders, sketchybar, Claude Code, Xcode/Sublime Text (when installed and the theme ships a file for them) | Slack, Chrome, Zen/Firefox, Telegram, Raycast |
+| Ghostty, WezTerm, Zellij, Starship, Neovim, Zed, VS Code, Warp, bat, git-delta, fzf, lazygit, eza, borders, sketchybar, Claude Code, Xcode/Sublime Text (when installed and the theme ships a file for them) | Slack, Chrome, Zen/Firefox, Telegram, Raycast |
 
 Xcode and Sublime Text are the two exceptions to "automatic": they get a file only when the app is installed *and* the theme carries `xcode/*.xccolortheme` or `sublime-text/*.tmTheme`. Of the bundled themes only `aura` does; the others leave both editors untouched.
 
@@ -21,7 +21,7 @@ themes/
 ├── _templates/               # one template per rendered file ({{ accent }}, {{ mix bg fg 10% }} …)
 │   ├── ghostty.tpl  ghostty-font.tpl  wezterm.lua.tpl  wezterm-font.lua.tpl  zellij.kdl.tpl
 │   ├── starship.toml.tpl  lazygit.yml.tpl  nvim.lua.tpl  claude.json.tpl  fzf.zsh.tpl
-│   └── lsd.yaml.tpl  bat.conf.tpl  sketchybar-colors.sh.tpl  borders-colors.sh.tpl  delta.gitconfig.tpl
+│   └── eza.yml.tpl  bat.conf.tpl  sketchybar-colors.sh.tpl  borders-colors.sh.tpl  delta.gitconfig.tpl
 ├── _shared/
 │   ├── nvim/dotfiles-theme.lua   # lazy.nvim spec used when a theme has no nvim/ spec of its own
 │   └── nvim-dotfiles-theme/      # the palette-driven `dotfiles` colorscheme it loads
@@ -51,7 +51,7 @@ Nothing tracked in git changes when you switch themes. Each app gets its colours
 | Reads the rendered file directly | Starship (`$STARSHIP_CONFIG`), lazygit (`$LG_CONFIG_FILE`), WezTerm (`dofile`), Neovim (`dofile` in `astroui.lua` and `plugins/theme.lua`), git-delta (`[include]`), fzf (`~/.zshrc-theme-env`) |
 | Gitignored generated copy inside its config dir | Ghostty (`theme.generated`), Zellij (`themes/dotfiles.kdl`), sketchybar and borders (`colors.sh`) |
 | Generated from a tracked base | Zed and VS Code: `settings.base.json` is tracked, `settings.json` is rendered next to it with the theme name filled in (Zed's `theme.mode` and slot, VS Code's `workbench.colorTheme` placeholder), and anything changed in the editor's own settings UI is copied back into the base on the next `dotfiles theme` |
-| Own settings edited, best-effort | Warp (`defaults write`), bat (`~/.config/bat/config` + custom `.tmTheme`), lsd, Claude Code (`~/.claude/themes/dotfiles.json`), Xcode and Sublime Text (only when installed and the theme ships `xcode/` or `sublime-text/` files) |
+| Own settings edited, best-effort | Warp (`defaults write`), bat (`~/.config/bat/config` + custom `.tmTheme`), eza (`~/.config/eza/theme.yml`), Claude Code (`~/.claude/themes/dotfiles.json`), Xcode and Sublime Text (only when installed and the theme ships `xcode/` or `sublime-text/` files) |
 
 ## Fonts
 
@@ -116,7 +116,7 @@ dotfiles theme preview nord                                            # palette
 
 The repo lands in `~/.config/dotfiles/themes/<name>/` (the name is the repo's, minus an `omarchy-`/`dotfiles-` prefix and a `-theme` suffix) and must carry a `colors.toml`; an Omarchy theme without a `theme.conf` gets a minimal one (editors keep their current theme, bat uses `ansi`). Themes you write by hand can live in the same directory: any `~/.config/dotfiles/themes/<name>/theme.conf` is discovered next to the repo's `themes/*/theme.conf` (`scripts/theme-utils.sh`), and a directory without a `.git` counts as trusted, so its Neovim spec and overrides are used just like a repo theme's. A repo theme with the same name wins.
 
-A cloned theme is a stranger's repo, so `dotfiles theme` stages only its colour data, the way Omarchy does: `colors.toml`, `backgrounds/`, `bat/*.tmTheme`, `zed/*.json`, `warp/*.yaml`, `xcode/`, `sublime-text/`, and the `claude.json`, `lsd.yaml` and `zellij.kdl` overrides. Everything that can run code is dropped at staging and named in a warning: `nvim/*.lua` (Neovim loads it), `theme.conf` as code (it is parsed for the known `key="value"` lines instead of sourced), every other override (a Ghostty `command`, WezTerm Lua, Starship custom modules, lazygit custom commands, the sourced fzf/sketchybar/borders shell, delta's git config), and symlinks at any depth. Filtering at staging rather than at clone time means a file the theme gains later through `git pull` is filtered too. Neovim uses the palette-driven `dotfiles` colorscheme (`themes/_shared/nvim/dotfiles-theme.lua`, a base16 scheme built from the rendered palette), which also serves any theme that has no `nvim/` spec of its own.
+A cloned theme is a stranger's repo, so `dotfiles theme` stages only its colour data, the way Omarchy does: `colors.toml`, `backgrounds/`, `bat/*.tmTheme`, `zed/*.json`, `warp/*.yaml`, `xcode/`, `sublime-text/`, and the `claude.json`, `eza.yml` and `zellij.kdl` overrides. Everything that can run code is dropped at staging and named in a warning: `nvim/*.lua` (Neovim loads it), `theme.conf` as code (it is parsed for the known `key="value"` lines instead of sourced), every other override (a Ghostty `command`, WezTerm Lua, Starship custom modules, lazygit custom commands, the sourced fzf/sketchybar/borders shell, delta's git config), and symlinks at any depth. Filtering at staging rather than at clone time means a file the theme gains later through `git pull` is filtered too. Neovim uses the palette-driven `dotfiles` colorscheme (`themes/_shared/nvim/dotfiles-theme.lua`, a base16 scheme built from the rendered palette), which also serves any theme that has no `nvim/` spec of its own.
 
 ## Adding a theme
 

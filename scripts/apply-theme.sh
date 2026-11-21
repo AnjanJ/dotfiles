@@ -201,7 +201,7 @@ _set_macos_appearance() {
 # staging, so a theme that grows a file later through `git pull` is
 # filtered too. Symlinks are dropped at any depth: they point wherever
 # the author chose. theme.conf survives but is parsed, not sourced.
-THEME_UNTRUSTED_OVERRIDES="claude.json lsd.yaml zellij.kdl"
+THEME_UNTRUSTED_OVERRIDES="claude.json eza.yml zellij.kdl"
 THEME_UNTRUSTED_ASSET_DIRS="backgrounds bat zed warp xcode sublime-text"
 
 # _theme_sanitized_copy <src> <dst> — prints one dropped path per line
@@ -513,9 +513,9 @@ _apply_theme_locked() {
     _install_rendered fzf.zsh "$HOME/.zshrc-theme-env" \
         && _theme_success "fzf → ~/.zshrc-theme-env"
 
-    if command -v lsd &>/dev/null; then
-        _install_rendered lsd.yaml "$HOME/.config/lsd/colors.yaml" \
-            && _theme_success "lsd → ~/.config/lsd/colors.yaml"
+    if command -v eza &>/dev/null; then
+        _install_rendered eza.yml "$HOME/.config/eza/theme.yml" \
+            && _theme_success "eza → ~/.config/eza/theme.yml"
     fi
 
     if command -v bat &>/dev/null; then

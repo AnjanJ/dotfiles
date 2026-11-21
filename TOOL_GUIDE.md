@@ -227,11 +227,6 @@ tree              # eza tree view with icons
 lss               # Original ls
 ```
 
-### lsd (alternative `ls`)
-**What**: Another modern ls replacement with icons. Similar to eza.
-**When**: Installed as an alternative. eza is your default, but lsd is available if you prefer its style.
-**Usage**: `lsd`, `lsd -la`, `lsd --tree`
-
 ### yazi (Terminal File Manager)
 **What**: Blazing-fast terminal file manager written in Rust.
 **When**: When you need to browse, preview, and manage files visually in the terminal — like a TUI version of Finder.
@@ -674,7 +669,7 @@ rails-setup-all           # Run all setup steps
 railsnew myapp            # Creates Rails app with your defaults
 cdroot                    # Jump to Rails root from anywhere in project
 serve production          # Start server with specific environment
-rails_tree                # lsd --tree without tmp, vendors, node_modules
+rails_tree                # eza --tree without tmp, vendors, node_modules
 ```
 
 ---

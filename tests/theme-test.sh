@@ -212,9 +212,9 @@ assert_file_contains "$RENDERED/zellij.kdl" 'bg "#15141b"' "Zellij still rendere
 
 # A custom override for another output
 mkdir -p "$MOCK_DOTFILES/themes/tokyo-night/overrides"
-echo "custom lsd" > "$MOCK_DOTFILES/themes/tokyo-night/overrides/lsd.yaml"
+echo "custom eza" > "$MOCK_DOTFILES/themes/tokyo-night/overrides/eza.yml"
 set +e; apply_theme "tokyo-night" "true" >/dev/null 2>&1; set -e
-assert_eq "$(cat "$RENDERED/lsd.yaml")" "custom lsd" "Ad-hoc override for lsd.yaml honoured"
+assert_eq "$(cat "$RENDERED/eza.yml")" "custom eza" "Ad-hoc override for eza.yml honoured"
 
 teardown_theme_sandbox
 echo ""

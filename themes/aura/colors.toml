@@ -24,7 +24,7 @@ blue = "#a277ff"
 magenta = "#a277ff"
 cyan = "#61ffca"
 # Aura uses #ffca85 for both yellow and orange. A separate orange keeps
-# graded colours (the sketchybar battery bands, fzf match highlights, lsd
+# graded colours (the sketchybar battery bands, fzf match highlights, eza
 # large-file sizes) apart from yellow; the ANSI yellow slots are unchanged.
 orange = "#ffa066"
 purple = "#a277ff"

@@ -171,7 +171,7 @@ Your shell replaces standard commands with modern alternatives:
 | `docker-nuke` | `docker system prune -a --volumes` — removes all unused images, containers and volumes |
 | `venv` | Activate `./venv` (`source venv/bin/activate`) |
 | `pyserve` | Serve the current directory over HTTP (`python3 -m http.server`) |
-| `rails_tree` | `lsd --tree` ignoring `tmp`, `vendors`, `node_modules` |
+| `rails_tree` | `eza --tree` ignoring `tmp`, `vendors`, `node_modules` |
 | `delgems <ruby-version>` | **Destructive**: deletes every gem installed under mise's Ruby `<version>` after a typed `yes` |
 
 ### AeroSpace helpers

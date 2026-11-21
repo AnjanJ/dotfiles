@@ -83,6 +83,9 @@ fi
 # 4. EZA (BETTER LS)
 # ============================================
 if command -v eza > /dev/null; then
+    # Colours: `dotfiles theme` writes ~/.config/eza/theme.yml. Named here
+    # because eza's own default on macOS is not ~/.config.
+    export EZA_CONFIG_DIR="$HOME/.config/eza"
     alias ls='eza --icons --group-directories-first'
     alias ll='eza --icons --long --group-directories-first --git'
     alias la='eza --icons --long --all --group-directories-first --git'

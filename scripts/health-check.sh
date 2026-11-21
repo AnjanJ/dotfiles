@@ -255,6 +255,7 @@ if [[ -f "$HOME/.dotfiles-theme" ]]; then
         check_file "$DOTFILES_DIR/.config/sketchybar/colors.sh" "sketchybar colors.sh"
         check_file "$DOTFILES_DIR/.config/borders/colors.sh" "borders colors.sh"
         check_file "$HOME/.zshrc-theme-env" "fzf colours (~/.zshrc-theme-env)"
+        command -v eza >/dev/null 2>&1 && check_file "$HOME/.config/eza/theme.yml" "eza colours (~/.config/eza/theme.yml)"
         for asset in "$theme_dir"/bat/*.tmTheme; do
             [[ -f "$asset" ]] || continue
             check_file "$HOME/.config/bat/themes/$(basename "$asset")" "bat theme $(basename "$asset")"

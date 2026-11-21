@@ -299,7 +299,7 @@ fi
 # ============================================
 
 # General Rails development
-alias rails_tree='lsd --tree --ignore-glob "tmp" --ignore-glob "vendors" --ignore-glob "node_modules"'
+alias rails_tree="eza --icons --tree --ignore-glob 'tmp|vendors|node_modules'"
 
 # ============================================
 # 5. SYSTEM UTILITIES

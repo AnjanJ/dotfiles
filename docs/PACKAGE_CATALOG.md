@@ -16,7 +16,7 @@ Homebrew ships no description for taps or font casks, so those two columns state
 more useful instead: what the tap actually gives you, and whether a font is really in use.
 Taps flagged **REDUNDANT** supply nothing you use — their formulae moved into homebrew/core.
 
-Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py` · last built 2026-11-09
+Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py` · last built 2026-11-21
 
 ## Contents
 
@@ -24,7 +24,7 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 - [Core CLI](#core-cli) — 22
 - [Editors & Terminals](#editors--terminals) — 6
 - [Window Management](#window-management) — 5
-- [Terminal Tools](#terminal-tools) — 15
+- [Terminal Tools](#terminal-tools) — 14
 - [AI Tooling](#ai-tooling) — 7
 - [Databases](#databases) — 11
 - [Cloud & Deploy](#cloud--deploy) — 4
@@ -111,7 +111,7 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 
 ## Terminal Tools
 
-`@group terminal-tools` · 15 entries
+`@group terminal-tools` · 14 entries
 
 | Package | What it is | Learn more |
 |---|---|---|
@@ -122,7 +122,6 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 | `lazydocker` | Lazier way to manage everything docker | [docs](https://github.com/jesseduffield/lazydocker) |
 | `lazygit` | Simple terminal UI for git commands | [docs](https://github.com/jesseduffield/lazygit/) |
 | `lnav` | Curses-based tool for viewing and analyzing log files | [docs](https://lnav.org/) |
-| `lsd` | Clone of ls with colorful output, file type icons, and more | [docs](https://github.com/lsd-rs/lsd) |
 | `mole` | Deep clean and optimize your Mac | [docs](https://mole.fit) |
 | `pandoc` | Swiss-army knife of markup format conversion | [docs](https://pandoc.org/) |
 | `tailspin` | Log file highlighter | [docs](https://github.com/bensadeh/tailspin) |

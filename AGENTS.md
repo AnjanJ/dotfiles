@@ -29,7 +29,7 @@ Guidance for anyone changing the dotfiles source, human or agent. End-user help 
 
 - `~/.local/state/dotfiles/current/theme/*` — rendered by `dotfiles theme`.
 - `.config/ghostty/theme.generated`, `.config/ghostty/font.generated`, `.config/zellij/themes/dotfiles.kdl`, `.config/sketchybar/colors.sh`, `.config/borders/colors.sh` — gitignored copies of the above.
-- `~/.zshrc-theme-env`, `~/.config/lsd/colors.yaml`, `~/.config/bat/config`, `~/.claude/themes/dotfiles.json` — written into `$HOME` by `dotfiles theme` from the same rendered set; an edit there is lost on the next theme apply.
+- `~/.zshrc-theme-env`, `~/.config/eza/theme.yml`, `~/.config/bat/config`, `~/.claude/themes/dotfiles.json` — written into `$HOME` by `dotfiles theme` from the same rendered set; an edit there is lost on the next theme apply.
 - `.config/claude/settings.json` — generated from the tracked `.config/claude/settings.base.json` by `scripts/claude-settings.sh` (run by every theme render, sync and update). Claude Code's own edits are adopted into the base, except `autoMode`, which records private project names and paths and stays on the machine. Edit the base, or change a setting in Claude Code.
 - `.config/zed/settings.json`, `.config/vscode/settings.json` — generated from the tracked `settings.base.json` next to each with the theme filled in; edit the base (or the editor's own settings UI, which `dotfiles theme` copies back into the base), never the generated file.
 - The block between `<!-- AEROSPACE_KEYS_START -->` and `<!-- AEROSPACE_KEYS_END -->` in `docs/KEYBINDINGS.md` — run `dotfiles keys --update` after changing `aerospace.toml`.
