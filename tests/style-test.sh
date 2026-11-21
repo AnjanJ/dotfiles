@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# doc: Style — the AGENTS.md rules shellcheck cannot express: shebang and strict mode, no `((VAR++))`, bash 3.2 builtins only on the install path, osascript never aimed at an app outside the watchdogged helpers
+# doc: Style — the AGENTS.md rules shellcheck cannot express: shebang and strict mode, no `((VAR++))`, bash 3.2 builtins only on the install path, osascript never aimed at an app outside the watchdogged helpers, .gitignore patterns without trailing comments
 # ============================================
 # STYLE SUITE — the AGENTS.md rules shellcheck cannot express
 # ============================================
@@ -99,3 +99,14 @@ for f in bin/dotfiles-*; do
     [[ "$(sed -n '2p' "$f")" == "# dotfiles:summary="* ]] || no_summary+="$f"$'\n'
 done
 assert_eq "$no_summary" "" "line 2 of every bin/dotfiles-* is the summary header"
+
+section ".gitignore"
+
+# git has no trailing comments: "foo  # why" ignores a file literally
+# named that, and foo itself is committed.
+trailing=$(/usr/bin/grep -nE '^[^#].*[[:space:]]#' .gitignore || true)
+assert_eq "$trailing" "" "no .gitignore pattern carries a trailing comment"
+for f in .zshrc-work .gitconfig-work .gitconfig.local .claude/settings.local.json .config/claude/settings.json .env; do
+    git check-ignore -q "$f" || fail "$f is gitignored"
+done
+pass "machine-local and private files are gitignored"

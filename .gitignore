@@ -61,7 +61,10 @@ Brewfile.backup
 # Private/local configurations
 *.local
 *.private
-.zshrc-work  # Work-specific configuration (keep private)
+# Work identity and work shell config. Comments must sit on their own
+# line: git reads a trailing "# ..." as part of the pattern.
+.zshrc-work
+.gitconfig-work
 
 # Editor-specific
 .vscode/
