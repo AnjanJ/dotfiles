@@ -117,5 +117,22 @@ if [ ! -x "$HOME/bin/dotfiles-toggle" ] || "$HOME/bin/dotfiles-toggle" --enabled
                      background.height=24
 fi
 
+# Updates waiting, "↑ 2", from the result `dotfiles update available` last
+# saved (no fetch, no brew from the bar); hidden when nothing is waiting.
+# Click posts the list. Placed leftmost on the right so it is seen first. Off
+# with `dotfiles toggle update-item off`; a missing toggle script counts as on.
+if [ ! -x "$HOME/bin/dotfiles-toggle" ] || "$HOME/bin/dotfiles-toggle" --enabled update-item; then
+    sketchybar --add item updates right \
+               --set updates \
+                     update_freq=120 \
+                     drawing=off \
+                     icon.drawing=off \
+                     script="$HOME/.config/sketchybar/plugins/updates.sh" \
+                     click_script="$HOME/.config/sketchybar/plugins/updates.sh notify" \
+                     background.color="$ITEM_BG_COLOR" \
+                     background.corner_radius=5 \
+                     background.height=24
+fi
+
 ##### Finalizing Setup #####
 sketchybar --update

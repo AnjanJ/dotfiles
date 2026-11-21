@@ -33,7 +33,7 @@ dotfiles tap list     # Packages kept in homebrew-tap/ after Homebrew dropped th
 dotfiles backup       # Snapshot dotfiles state (--list, --restore)
 dotfiles profile      # Measure shell startup time (--detailed)
 dotfiles export       # Export setup snapshot (--json)
-dotfiles toggle <f>   # Flip startup-apps / borders / auto-commit / appearance / background / update-notice / agent-usage / tap-auto-update
+dotfiles toggle <f>   # Flip startup-apps / borders / auto-commit / appearance / background / update-notice / agent-usage / update-item / tap-auto-update
 dotfiles keys         # AeroSpace keybinding cheatsheet (fzf); --update after editing aerospace.toml, --lint to check it
 dotfiles hook --list  # User hooks in ~/.config/dotfiles/hooks/; --seed copies the samples there
 dotfiles migrate --pending   # One-off per-machine repairs not yet run (sync and update run them)

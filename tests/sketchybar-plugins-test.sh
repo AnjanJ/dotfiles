@@ -3,9 +3,9 @@
 # ============================================
 # SKETCHYBAR PLUGINS TEST SUITE
 # ============================================
-# Runs the memory and battery plugins under /bin/bash 3.2 (the shebang
-# sketchybar uses) against fake memory_pressure, sysctl, pmset and
-# sketchybar, and checks the label, colour and visibility they paint at
+# Runs the memory, battery and updates plugins under /bin/bash 3.2 (the
+# shebang sketchybar uses) against fake memory_pressure, sysctl, pmset,
+# osascript and sketchybar, and checks the label, colour and visibility they paint at
 # each threshold. The agent-usage plugin has its own suite.
 # Usage: tests/run sketchybar-plugins   (or /opt/homebrew/bin/bash tests/sketchybar-plugins-test.sh)
 # ============================================
@@ -113,4 +113,30 @@ for case in 80:0xff000005:green 79:0xff000004:orange 51:0xff000004:orange 50:0xf
     FAKE_BATT=$pct line=$(paint battery.sh)
     assert_contains "$line" "label=${pct}% label.color=$color" "${pct}% is $name"
 done
+echo ""
+
+section "Test 4: Updates item reads the saved check"
+export DOTFILES_STATE_DIR="$HOME/state"
+export FAKE_OSASCRIPT_LOG="$HOME/osascript.log"
+mkdir -p "$DOTFILES_STATE_DIR"
+cat > "$FAKEBIN/osascript" <<'F'
+#!/usr/bin/env bash
+printf '%s|%s\n' "$*" "${DOTFILES_UPDATES_MSG:-}" >> "$FAKE_OSASCRIPT_LOG"
+F
+chmod +x "$FAKEBIN/osascript"
+line=$(paint updates.sh)
+assert_eq "$line" "--set item drawing=off" "no saved check, no item"
+printf '# checked 2026-11-21 17:39:28\n' > "$DOTFILES_STATE_DIR/update-available"
+line=$(paint updates.sh)
+assert_eq "$line" "--set item drawing=off" "nothing waiting hides it"
+printf '%s\n' "# checked 2026-11-21 17:39:28" \
+    "repo: 3 commits behind origin/main (run: dotfiles update)" \
+    "brew: 2 packages outdated (run: dotfiles update)" > "$DOTFILES_STATE_DIR/update-available"
+line=$(paint updates.sh)
+assert_contains "$line" "drawing=on label=↑ 2 label.color=0xff000003" "two kinds waiting shows ↑ 2 in yellow"
+/bin/bash "$PLUGINS/updates.sh" notify
+note=$(tail -1 "$FAKE_OSASCRIPT_LOG")
+assert_contains "$note" 'with title "dotfiles updates"' "click posts a notification"
+assert_contains "$note" "repo: 3 commits behind origin/main (run: dotfiles update) · brew: 2 packages outdated" "listing every waiting item"
+assert_not_contains "$note" "tell app" "no application is targeted"
 echo ""

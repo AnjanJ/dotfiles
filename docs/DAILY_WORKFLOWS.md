@@ -254,6 +254,8 @@ dotfiles update                  # Apply it all (pull → dropped/kept packages 
 # updated from then on) or remove it. A new machine is asked once whether to install the kept ones.
 dotfiles tap list                # What homebrew-tap/ holds and whether this machine installs it
 dotfiles toggle update-notice off   # If the login line annoys you
+# The sketchybar "↑ 2" item shows the same count of things waiting from that cache; click it for the list.
+dotfiles toggle update-item off     # Hide that item (then: dotfiles restart sketchybar)
 
 dotfiles agent usage             # Claude plan usage: the 5-hour session and the 7-day window, with reset times
 # The sketchybar item shows the same ("5h 86% · 7d 25%", 7d for the model in use),

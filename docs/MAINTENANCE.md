@@ -26,7 +26,7 @@ dotfiles migrate      # Run pending one-off migrations (--pending, --dry-run, --
 dotfiles restart <c>  # Restart aerospace|sketchybar|borders now (--later <c>, --pending, --list)
 dotfiles reminder 25  # macOS notification in N minutes, optional message; show | clear
 dotfiles hook <event> # Run ~/.config/dotfiles/hooks/<event>{,.d/*} (theme-set, post-sync, post-update, post-install, font-set)
-dotfiles toggle <f>   # Flip a feature flag: startup-apps, borders, auto-commit, appearance, background, update-notice, agent-usage, tap-auto-update (--list)
+dotfiles toggle <f>   # Flip a feature flag: startup-apps, borders, auto-commit, appearance, background, update-notice, agent-usage, update-item, tap-auto-update (--list)
 dotfiles keys         # AeroSpace keybinding cheatsheet (fzf; --markdown, --tsv, --update, --check, --lint)
 dotfiles commands     # List every command from its metadata (--json, --plain, --all, --check)
 dotfiles default-agent # Which agent the `a` shell function launches (claude|oclaude|gemini|copilot|llm)
@@ -166,7 +166,7 @@ Every push and PR runs 38 test suites, an end-to-end install, shellcheck, `dotfi
 - **Agent** (`agent`) — default-agent state, launch commands, skill files present
 - **Agent model** (`agent-model`) — `dotfiles agent model` against a fake `ollama`: the rebuilt model uses the qwen3.5 renderer, starts from the weight blobs and inherits no generated template or `<think>` stop, the `hf.co` import name is removed (or kept with `--keep-import`), a second run does nothing, `--force` rebuilds, bash 3.2 parsing
 - **Agent usage** (`agent-usage`) — `dotfiles agent usage` against a fake curl and credentials file: sign-in detection, fetch, cache and `--refresh`, `--json`, `--bar` levels, the 7-day figure following the model the status line records, stale and expired-token paths, `--notify` through a fake osascript, bash 3.2, and the sketchybar plugin painting through a fake sketchybar
-- **Sketchybar plugins** (`sketchybar-plugins`) — the memory and battery plugins under `/bin/bash` 3.2 against fake `memory_pressure`, `sysctl`, `pmset` and `sketchybar`: memory colour from the kernel's pressure level, swap shown only under pressure, an unreadable level counted as normal; battery hidden on AC unless charging and without a battery, and each colour band's edges
+- **Sketchybar plugins** (`sketchybar-plugins`) — the memory, battery and updates plugins under `/bin/bash` 3.2 against fake `memory_pressure`, `sysctl`, `pmset`, `osascript` and `sketchybar`: memory colour from the kernel's pressure level, swap shown only under pressure, an unreadable level counted as normal; battery hidden on AC unless charging and without a battery, and each colour band's edges; updates hidden with nothing waiting, `↑ N` from the saved check, and the click notification
 - **Debug** (`debug`) — `dotfiles debug`: every section of the report, link states, the written file and clipboard copy, `--print`, `--no-copy`
 - **Doctor** (`doctor`) — auto-fix symlinks, permissions, dry-run mode
 - **Git setup** (`setup-git`) — identity configuration, work/personal split, smart defaults
