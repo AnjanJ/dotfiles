@@ -86,7 +86,9 @@ sketchybar --add item cpu right \
                  background.corner_radius=5 \
                  background.height=24
 
-# Battery
+# Battery: hidden while on AC with nothing to do, coloured by charge.
+# power_source_change and system_woke repaint it the moment the charger is
+# plugged in or pulled, or the lid opens, instead of on the next 120s poll.
 sketchybar --add item battery right \
            --set battery \
                  update_freq=120 \
@@ -94,7 +96,8 @@ sketchybar --add item battery right \
                  script="$HOME/.config/sketchybar/plugins/battery.sh" \
                  background.color="$ITEM_BG_COLOR" \
                  background.corner_radius=5 \
-                 background.height=24
+                 background.height=24 \
+           --subscribe battery power_source_change system_woke
 
 # Claude plan usage, "5h 86% · 7d 25%" (7d for the model in use), from
 # `dotfiles agent usage`: yellow at 70%, red at 90%, grey when the last fetch

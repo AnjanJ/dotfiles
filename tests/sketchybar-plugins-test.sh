@@ -3,8 +3,8 @@
 # ============================================
 # SKETCHYBAR PLUGINS TEST SUITE
 # ============================================
-# Runs the memory plugin under /bin/bash 3.2 (the shebang
-# sketchybar uses) against fake memory_pressure, sysctl and
+# Runs the memory and battery plugins under /bin/bash 3.2 (the shebang
+# sketchybar uses) against fake memory_pressure, sysctl, pmset and
 # sketchybar, and checks the label, colour and visibility they paint at
 # each threshold. The agent-usage plugin has its own suite.
 # Usage: tests/run sketchybar-plugins   (or /opt/homebrew/bin/bash tests/sketchybar-plugins-test.sh)
@@ -85,4 +85,32 @@ FAKE_SWAP=0.00M FAKE_PRESSURE_LEVEL="" line=$(paint memory.sh)
 assert_contains "$line" "label=40% label.color=0xff000001" "an unreadable level counts as normal"
 FAKE_FREE_PCT="" FAKE_PRESSURE_LEVEL=1 line=$(paint memory.sh)
 assert_eq "$line" "" "no reading, nothing painted"
+echo ""
+
+section "Test 2: Battery shows only when on battery or charging"
+# Nerd Font glyphs built from their UTF-8 bytes: U+F0E7 bolt, U+F240 full.
+BOLT=$(printf '\xef\x83\xa7')
+FULL=$(printf '\xef\x89\x80')
+FAKE_SOURCE="AC Power" FAKE_BATT=100 FAKE_STATE=charged line=$(paint battery.sh)
+assert_eq "$line" "--set item drawing=off" "charged on AC hides the item"
+FAKE_SOURCE="AC Power" FAKE_BATT=80 FAKE_STATE="AC attached; not charging" line=$(paint battery.sh)
+assert_eq "$line" "--set item drawing=off" "held by optimised charging on AC hides it too"
+FAKE_SOURCE="AC Power" FAKE_BATT=87 FAKE_STATE=charging line=$(paint battery.sh)
+assert_contains "$line" "drawing=on icon=$BOLT label=" "charging shows it, with the bolt"
+assert_contains "$line" "label=87% label.color=0xff000005" "charging keeps the charge colour"
+FAKE_SOURCE="AC Power" FAKE_BATT=99 FAKE_STATE="finishing charge" line=$(paint battery.sh)
+assert_contains "$line" "drawing=on" "finishing charge counts as charging"
+FAKE_SOURCE="Battery Power" FAKE_BATT=100 FAKE_STATE=discharging line=$(paint battery.sh)
+assert_contains "$line" "drawing=on icon=$FULL label=100%" "on battery it shows, full icon"
+FAKE_SOURCE="Battery Power" FAKE_BATT="" FAKE_STATE="" line=$(paint battery.sh)
+assert_eq "$line" "--set item drawing=off" "no battery, no item"
+echo ""
+
+section "Test 3: Battery colour bands"
+FAKE_SOURCE="Battery Power" FAKE_STATE=discharging
+for case in 80:0xff000005:green 79:0xff000004:orange 51:0xff000004:orange 50:0xff000003:yellow 40:0xff000003:yellow 39:0xff000002:red 5:0xff000002:red; do
+    pct=${case%%:*}; rest=${case#*:}; color=${rest%%:*}; name=${rest#*:}
+    FAKE_BATT=$pct line=$(paint battery.sh)
+    assert_contains "$line" "label=${pct}% label.color=$color" "${pct}% is $name"
+done
 echo ""
