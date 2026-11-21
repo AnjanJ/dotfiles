@@ -4,13 +4,17 @@
 #
 # Reports memory PRESSURE, not "used". On Apple Silicon the OS deliberately
 # keeps RAM full of cache, so "used GB" sits near the limit permanently and
-# tells you nothing. `memory_pressure` reports the figure the kernel itself
-# acts on, which is what actually predicts a stall.
+# tells you nothing. `memory_pressure` gives the percentage, and the colour
+# comes from the kernel's own pressure level (kern.memorystatus_vm_pressure_level:
+# 1 normal, 2 warning, 4 critical), the signal behind Activity Monitor's
+# pressure graph.
 #
-# Swap is shown only when non-zero: on 36GB unified memory, running Postgres,
-# MySQL, Redis and a local Ollama model together is exactly the situation
-# where swap starts and everything gets slow. Seeing it appear is the cue to
-# unload a model before the machine begins thrashing.
+# Swap is shown only while pressure is above normal. On 36GB unified memory,
+# running Postgres, MySQL, Redis and a local Ollama model together is exactly
+# the situation where swap grows and everything gets slow, so seeing it is the
+# cue to unload a model. But macOS keeps swap allocated long after the
+# pressure that caused it has gone, so swap alone is not a warning: colouring
+# on it left the item red for hours at normal pressure.
 
 # Sketchybar spawns plugins from the bar daemon's own environment, so the
 # `export`s in sketchybarrc do NOT reach them. colors.sh carries the same
@@ -47,16 +51,15 @@ SWAP=$(sysctl -n vm.swapusage | awk '{
 }')
 [ -z "$SWAP" ] && SWAP=0
 
-if [ "$USED_PCT" -ge 85 ] || [ "$SWAP" -gt 2048 ]; then
-    COLOR=$RED
-elif [ "$USED_PCT" -ge 70 ] || [ "$SWAP" -gt 0 ]; then
-    COLOR=$YELLOW
-else
-    COLOR=$WHITE
-fi
+# Anything unreadable counts as normal: a false alarm is worse than none here.
+LEVEL=$(sysctl -n kern.memorystatus_vm_pressure_level 2>/dev/null)
+case "$LEVEL" in
+    4) COLOR=$RED ;;
+    2) COLOR=$YELLOW ;;
+    *) COLOR=$WHITE; LEVEL=1 ;;
+esac
 
-# Only surface swap once it exists -- an always-visible "0M" is noise.
-if [ "$SWAP" -gt 0 ]; then
+if [ "$LEVEL" -gt 1 ] && [ "$SWAP" -gt 0 ]; then
     LABEL="${USED_PCT}% ⇄${SWAP}M"
 else
     LABEL="${USED_PCT}%"
