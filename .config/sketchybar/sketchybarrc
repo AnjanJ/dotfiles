@@ -50,6 +50,19 @@ sketchybar --add event aerospace_workspace_change \
                  background.height=24 \
            --subscribe aerospace.workspaces aerospace_workspace_change
 
+# Focused app, next to the workspaces. front_app_switched is sketchybar's
+# own event, so it repaints on every focus change without polling; the
+# accent colour sets it apart from the workspace numbers.
+sketchybar --add item front_app left \
+           --set front_app \
+                 icon.drawing=off \
+                 label.color="$ACCENT_COLOR" \
+                 script="$HOME/.config/sketchybar/plugins/front-app.sh" \
+                 background.color="$ITEM_BG_COLOR" \
+                 background.corner_radius=5 \
+                 background.height=24 \
+           --subscribe front_app front_app_switched
+
 ##### Adding Right Items #####
 
 # Clock

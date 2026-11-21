@@ -3,9 +3,9 @@
 # ============================================
 # SKETCHYBAR PLUGINS TEST SUITE
 # ============================================
-# Runs the memory, battery and updates plugins under /bin/bash 3.2 (the
-# shebang sketchybar uses) against fake memory_pressure, sysctl, pmset,
-# osascript and sketchybar, and checks the label, colour and visibility they paint at
+# Runs the memory, battery, updates and front-app plugins under /bin/bash
+# 3.2 (the shebang sketchybar uses) against fake memory_pressure, sysctl,
+# pmset, osascript, lsappinfo and sketchybar, and checks the label, colour and visibility they paint at
 # each threshold. The agent-usage plugin has its own suite.
 # Usage: tests/run sketchybar-plugins   (or /opt/homebrew/bin/bash tests/sketchybar-plugins-test.sh)
 # ============================================
@@ -139,4 +139,25 @@ note=$(tail -1 "$FAKE_OSASCRIPT_LOG")
 assert_contains "$note" 'with title "dotfiles updates"' "click posts a notification"
 assert_contains "$note" "repo: 3 commits behind origin/main (run: dotfiles update) · brew: 2 packages outdated" "listing every waiting item"
 assert_not_contains "$note" "tell app" "no application is targeted"
+echo ""
+
+section "Test 5: Focused app"
+export FAKE_FRONT_APP="Ghostty"
+cat > "$FAKEBIN/lsappinfo" <<'F'
+#!/usr/bin/env bash
+case "$1" in
+    front) echo "ASN:0x0-0x1234:" ;;
+    info) [[ -n "$FAKE_FRONT_APP" ]] && printf '"%s" ASN:0x0-0x1234: (in front) \n    bundleID=[ NULL ] \n' "$FAKE_FRONT_APP" ;;
+esac
+exit 0
+F
+chmod +x "$FAKEBIN/lsappinfo"
+line=$(SENDER=front_app_switched INFO="Zed" paint front-app.sh)
+assert_eq "$line" "--set item drawing=on label=Zed" "the focus event's name is painted"
+line=$(SENDER=forced paint front-app.sh)
+assert_eq "$line" "--set item drawing=on label=Ghostty" "the first paint asks lsappinfo"
+line=$(SENDER=front_app_switched INFO="" paint front-app.sh)
+assert_eq "$line" "--set item drawing=on label=Ghostty" "an event without a name falls back to lsappinfo"
+line=$(FAKE_FRONT_APP="" SENDER=forced paint front-app.sh)
+assert_eq "$line" "--set item drawing=off" "no name at all hides the item"
 echo ""
