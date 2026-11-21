@@ -127,17 +127,22 @@ assert_eq "$(echo "$json" | jq -r .session.percent)" "86" "session percent"
 assert_eq "$(echo "$json" | jq -r .session.resets_at)" "$SESSION_RESET" "session reset as epoch seconds"
 assert_eq "$(echo "$json" | jq -r .week.percent)" "25" "week is the fullest weekly limit"
 assert_eq "$(echo "$json" | jq -r .week.scope)" "Fable" "and names its scope"
+assert_eq "$(echo "$json" | jq -r .week_all.percent)" "13" "week_all is the all-models limit"
 assert_eq "$(echo "$json" | jq -r '.weekly | length')" "2" "every weekly limit listed"
 assert_eq "$(echo "$json" | jq -r .stale)" "false" "not stale"
 assert_eq "$(echo "$json" | jq -r .level)" "warning" "86% is warning"
 echo ""
 
 section "Test 5: --bar levels"
-assert_eq "$("$T" --bar)" "$(printf '5h 86%% · 7d 25%%\twarning')" "label<TAB>level"
+assert_eq "$("$T" --bar)" "$(printf '5h 86%% · 7d 13%% · Fable 25%%\twarning')" "label<TAB>level, a fuller per-model limit named"
 write_body 91 13 25
-assert_eq "$("$T" --bar --refresh)" "$(printf '5h 91%% · 7d 25%%\tcritical')" "90% and over is critical"
+assert_eq "$("$T" --bar --refresh)" "$(printf '5h 91%% · 7d 13%% · Fable 25%%\tcritical')" "90% and over is critical"
 write_body 50 10 20
-assert_eq "$("$T" --bar --refresh)" "$(printf '5h 50%% · 7d 20%%\tnormal')" "under 70% is normal"
+assert_eq "$("$T" --bar --refresh)" "$(printf '5h 50%% · 7d 10%% · Fable 20%%\tnormal')" "under 70% is normal"
+write_body 8 74 100
+assert_eq "$("$T" --bar --refresh)" "$(printf '5h 8%% · 7d 74%% · Fable 100%%\tcritical')" "a full per-model limit keeps 7d at the all-models figure and turns the item red"
+write_body 8 40 40
+assert_eq "$("$T" --bar --refresh)" "$(printf '5h 8%% · 7d 40%%\tnormal')" "a per-model limit no fuller than all-models is not named"
 write_body 10 72 20
 assert_eq "$("$T" --bar --refresh)" "$(printf '5h 10%% · 7d 72%%\twarning')" "the weekly figure sets the level too"
 assert_eq "$(/bin/bash "$T" --bar)" "$(printf '5h 10%% · 7d 72%%\twarning')" "same under /bin/bash 3.2"
@@ -198,7 +203,7 @@ ln -sf "$T" "$HOME/bin/dotfiles-agent-usage"
 NAME=agent_usage "$PLUGIN"
 line=$(tail -1 "$FAKE_SKETCHYBAR_LOG")
 assert_contains "$line" "--set agent_usage drawing=on" "item drawn"
-assert_contains "$line" "label=5h 86% · 7d 25%" "label painted"
+assert_contains "$line" "label=5h 86% · 7d 13% · Fable 25%" "label painted"
 assert_contains "$line" "label.color=0xffffca85" "warning uses the yellow fallback"
 write_body 95 13 25
 NAME=agent_usage "$PLUGIN"
