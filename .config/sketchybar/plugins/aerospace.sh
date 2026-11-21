@@ -33,5 +33,8 @@ while IFS= read -r ws; do
     fi
 done <<< "$WORKSPACES"
 
-# Update sketchybar
+# Each entry above starts with a space; the first one's would sit inside
+# the item's padding and show as a gap before the first workspace.
+LABEL="${LABEL# }"
+
 sketchybar --set "$NAME" label="$LABEL"

@@ -3,9 +3,9 @@
 # ============================================
 # SKETCHYBAR PLUGINS TEST SUITE
 # ============================================
-# Runs the memory, battery, updates and front-app plugins under /bin/bash
-# 3.2 (the shebang sketchybar uses) against fake memory_pressure, sysctl,
-# pmset, osascript, lsappinfo and sketchybar, and checks the label, colour and visibility they paint at
+# Runs the memory, battery, updates, front-app and aerospace plugins under
+# /bin/bash 3.2 (the shebang sketchybar uses) against fake memory_pressure,
+# sysctl, pmset, osascript, lsappinfo, aerospace and sketchybar, and checks the label, colour and visibility they paint at
 # each threshold. The agent-usage plugin has its own suite.
 # Usage: tests/run sketchybar-plugins   (or /opt/homebrew/bin/bash tests/sketchybar-plugins-test.sh)
 # ============================================
@@ -160,4 +160,19 @@ line=$(SENDER=front_app_switched INFO="" paint front-app.sh)
 assert_eq "$line" "--set item drawing=on label=Ghostty" "an event without a name falls back to lsappinfo"
 line=$(FAKE_FRONT_APP="" SENDER=forced paint front-app.sh)
 assert_eq "$line" "--set item drawing=off" "no name at all hides the item"
+echo ""
+
+section "Test 6: Workspace list"
+cat > "$FAKEBIN/aerospace" <<'F'
+#!/usr/bin/env bash
+case "$*" in
+    "list-workspaces --focused") echo 2 ;;
+    "list-workspaces --monitor all --empty no") printf '1\n2\n13\n5\n' ;;
+esac
+F
+chmod +x "$FAKEBIN/aerospace"
+line=$(FOCUSED_WORKSPACE="" paint aerospace.sh)
+assert_eq "$line" "--set item label=1 [2] 5 13" "no leading space, focused bracketed, version-sorted"
+line=$(FOCUSED_WORKSPACE=7 paint aerospace.sh)
+assert_eq "$line" "--set item label=1 2 5 [7] 13" "an empty focused workspace is still listed"
 echo ""
