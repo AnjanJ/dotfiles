@@ -90,3 +90,62 @@ assert_file_not_contains "$REAL" "/Users/" "and no local paths"
 assert_eq "$(jq '.idleCompaction' "$REAL")" "false" "idleCompaction stays false"
 assert_eq "$(cd "$ROOT" && git check-ignore -q .config/claude/settings.json && echo ignored)" "ignored" "the generated settings.json is gitignored"
 echo ""
+
+section "Test 7: The migration on a machine with local edits"
+# Reproduces what update.sh does on another machine: stash local edits,
+# pull the commit that untracks settings.json, pop the stash (conflict).
+MIG=$(ls "$ROOT"/migrations/*-claude-settings-generated.sh)
+O="$TEST_TMP/origin"; M="$TEST_TMP/machine"
+git init -q -b main "$O"
+mkdir -p "$O/.config/claude" "$O/scripts"
+cp "$S" "$O/scripts/claude-settings.sh"
+echo '{"model":"opus"}' > "$O/.config/claude/settings.json"
+git -C "$O" add -A && git -C "$O" -c user.name=t -c user.email=t@example.com commit -q -m old
+git clone -q "$O" "$M"
+jq '.autoMode = {"environment":["local"]} | .tui = "fullscreen"' "$M/.config/claude/settings.json" > "$TEST_TMP/l" && cat "$TEST_TMP/l" > "$M/.config/claude/settings.json"
+git -C "$O" mv .config/claude/settings.json .config/claude/settings.base.json
+echo ".config/claude/settings.json" > "$O/.gitignore"
+git -C "$O" add -A && git -C "$O" -c user.name=t -c user.email=t@example.com commit -q -m new
+git -C "$M" -c user.name=t -c user.email=t@example.com stash push -q -m auto
+git -C "$M" pull -q origin main
+git -C "$M" stash pop -q >/dev/null 2>&1 || true
+# Git follows the rename: the stashed edits, autoMode included, land in
+# the tracked base as an uncommitted change.
+assert_eq "$(jq 'has("autoMode")' "$M/.config/claude/settings.base.json")" "true" "the pop puts the local edits in the tracked base"
+out=$(DOTFILES_DIR="$M" DOTFILES_STATE_DIR="$TEST_TMP/mstate" bash "$MIG")
+assert_contains "$out" "out of the tracked" "the migration moves them out"
+assert_eq "$(git -C "$M" ls-files -u | wc -l | tr -d ' ')" "0" "and leaves no conflict"
+assert_eq "$(jq -c '.autoMode.environment' "$M/.config/claude/settings.json")" '["local"]' "autoMode survives"
+assert_eq "$(jq -r '.tui' "$M/.config/claude/settings.base.json")" "fullscreen" "a shared local edit is adopted into the base"
+assert_eq "$(jq 'has("autoMode")' "$M/.config/claude/settings.base.json")" "false" "but autoMode is not"
+assert_eq "$(git -C "$M" diff -- .config/claude/settings.base.json | grep -c autoMode || true)" "0" "nothing private is left as a change to a tracked file"
+assert_eq "$(git -C "$M" status --porcelain -- .config/claude/settings.json)" "" "settings.json is ignored afterwards"
+DOTFILES_DIR="$M" DOTFILES_STATE_DIR="$TEST_TMP/mstate" bash "$MIG" >/dev/null
+assert_eq "$(jq -c '.autoMode.environment' "$M/.config/claude/settings.json")" '["local"]' "a second run changes nothing"
+echo ""
+
+section "Test 8: The migration when the pop conflicts"
+# Without a similar enough file to follow, git reports modify/delete.
+rm -rf "$O" "$M" "$TEST_TMP/mstate"
+git init -q -b main "$O"
+mkdir -p "$O/.config/claude" "$O/scripts"
+cp "$S" "$O/scripts/claude-settings.sh"
+echo '{"model":"opus"}' > "$O/.config/claude/settings.json"
+git -C "$O" add -A && git -C "$O" -c user.name=t -c user.email=t@example.com commit -q -m old
+git clone -q "$O" "$M"
+echo '{"model":"opus","autoMode":{"environment":["local"]}}' > "$M/.config/claude/settings.json"
+git -C "$O" rm -q .config/claude/settings.json
+mkdir -p "$O/.config/claude"
+echo '{"a":1,"b":2,"c":3,"d":4,"e":5,"f":6,"g":7}' > "$O/.config/claude/settings.base.json"
+echo ".config/claude/settings.json" > "$O/.gitignore"
+git -C "$O" add -A && git -C "$O" -c user.name=t -c user.email=t@example.com commit -q -m new
+git -C "$M" -c user.name=t -c user.email=t@example.com stash push -q -m auto
+git -C "$M" pull -q origin main
+git -C "$M" stash pop -q >/dev/null 2>&1 || true
+assert_matches "$(git -C "$M" ls-files -u | wc -l | tr -d ' ')" "^[1-9]" "the pop conflicts"
+out=$(DOTFILES_DIR="$M" DOTFILES_STATE_DIR="$TEST_TMP/mstate" bash "$MIG")
+assert_contains "$out" "kept this machine's" "the migration keeps the local copy"
+assert_eq "$(git -C "$M" ls-files -u | wc -l | tr -d ' ')" "0" "and settles the conflict"
+assert_eq "$(jq -c '.autoMode.environment' "$M/.config/claude/settings.json")" '["local"]' "autoMode survives"
+assert_eq "$(jq 'has("autoMode")' "$M/.config/claude/settings.base.json")" "false" "and stays out of the base"
+echo ""
