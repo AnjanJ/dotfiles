@@ -79,12 +79,17 @@ wezterm.on('format-tab-title', function(tab, tabs, panes, conf, hover, max_width
   return title
 end)
 
--- Right status: active workspace + clock
+-- Right status: active workspace + clock, in the theme's accent and muted
+-- colours (cursor and inactive-tab text in the rendered palette), so a theme
+-- switch recolours them too.
+local status_accent = config.colors.cursor_bg
+local status_muted = (config.colors.tab_bar and config.colors.tab_bar.inactive_tab
+  and config.colors.tab_bar.inactive_tab.fg_color) or config.colors.brights[1]
 wezterm.on('update-right-status', function(window, pane)
   window:set_right_status(wezterm.format {
-    { Foreground = { Color = '#a277ff' } },
+    { Foreground = { Color = status_accent } },
     { Text = ' [' .. window:active_workspace() .. '] ' },
-    { Foreground = { Color = '#6d6d6d' } },
+    { Foreground = { Color = status_muted } },
     { Text = wezterm.strftime('%a %H:%M ') },
   })
 end)
