@@ -110,7 +110,6 @@
   },
   "tui": "fullscreen",
   "autoMemoryEnabled": false,
-  "skipDangerousModePermissionPrompt": true,
   "theme": "custom:dotfiles",
   "idleCompaction": false,
   "switchModelsOnFlag": true,
