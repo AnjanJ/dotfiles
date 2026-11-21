@@ -364,9 +364,21 @@ if [ -f ~/.zshrc-dhh-additions ]; then
 fi
 
 # compinit runs BEFORE plugins that depend on it (fzf-tab, zsh-completions
-# wired via terminal-enhancements). `-C` skips the security check on insecure
-# directories — saves ~5ms; safe because we own everything in fpath.
-autoload -Uz compinit && compinit -C
+# wired via terminal-enhancements). `-C` trusts the cached ~/.zcompdump
+# without looking at fpath, which saves a few ms but never notices a newly
+# installed tool's completions. So once the dump is a day old, run the full
+# check (it rebuilds only if the completion files changed) and mark the dump
+# fresh; every other shell takes the fast path. -u: we own fpath, so skip
+# the insecure-directory prompt.
+autoload -Uz compinit
+_zcompdump="${ZDOTDIR:-$HOME}/.zcompdump"
+_zcompdump_stale=( "$_zcompdump"(N.mh+24) )
+if [[ ! -f "$_zcompdump" || ${#_zcompdump_stale} -gt 0 ]]; then
+  compinit -u -d "$_zcompdump" && touch "$_zcompdump"
+else
+  compinit -C -d "$_zcompdump"
+fi
+unset _zcompdump _zcompdump_stale
 
 # Modern terminal enhancements
 # (fzf, zoxide, bat, eza, fd, ripgrep, autosuggestions, syntax-highlight, AI tools)
