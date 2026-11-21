@@ -19,6 +19,7 @@
 #     "work_dir": "~/work/code",    -> --work-dir
 #     "theme": "tokyo-night",       -> --theme
 #     "ssh": "1password",           -> --ssh
+#     "signing_key": "Git signing", -> --signing-key (a 1Password item name)
 #     "groups": ["core", "editors"],-> --groups (a comma string works too)
 #     "macos_defaults": false,      -> --no-macos-defaults
 #     "runtimes": false,            -> --no-runtimes
@@ -31,7 +32,7 @@
 # under /bin/bash 3.2 because install.sh does.
 # ============================================
 
-INSTALL_ANSWERS_KEYS="name email work_email work_dir theme ssh groups macos_defaults runtimes personal_tap_install"
+INSTALL_ANSWERS_KEYS="name email work_email work_dir theme ssh signing_key groups macos_defaults runtimes personal_tap_install"
 
 # _answers_get <file> <key> — prints a scalar value (booleans as
 # true/false); nothing and exit 1 when the key is absent. Arrays go
@@ -100,7 +101,7 @@ _answers_valid() {
 
 # install_answers_load <file>
 # Fills GIT_NAME, GIT_EMAIL, GIT_WORK_EMAIL, WORK_DIR, SELECTED_THEME,
-# SSH_MODE, SELECTED_GROUPS when they are still empty, and turns
+# SSH_MODE, SIGNING_KEY, SELECTED_GROUPS when they are still empty, and turns
 # APPLY_MACOS_DEFAULTS / INSTALL_RUNTIMES off when the file says false, and
 # sets PERSONAL_TAP_INSTALL to yes or no when the file says true or false.
 # Prints what it applied; returns 1 on a missing or invalid file.
@@ -134,6 +135,7 @@ install_answers_load() {
     _answers_apply_string work_dir WORK_DIR
     _answers_apply_string theme SELECTED_THEME
     _answers_apply_string ssh SSH_MODE
+    _answers_apply_string signing_key SIGNING_KEY
     _answers_apply_string groups SELECTED_GROUPS
 
     # shellcheck disable=SC2034  # both are install.sh's own switches

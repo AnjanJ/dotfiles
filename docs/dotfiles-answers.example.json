@@ -5,6 +5,7 @@
   "work_dir": "~/work/code",
   "theme": "tokyo-night",
   "ssh": "1password",
+  "signing_key": "",
   "groups": ["core", "editors", "window-mgmt", "terminal-tools"],
   "macos_defaults": true,
   "runtimes": true,

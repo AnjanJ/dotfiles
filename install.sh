@@ -22,6 +22,9 @@
 #   --ssh <mode>        SSH: 1password, existing, generate, skip
 #                       Default: auto-detect 1Password SSH agent if running,
 #                       otherwise skip. Force with --ssh 1password.
+#   --signing-key "<name>" Sign commits with the SSH key 1Password holds
+#                       under that item name ("none": never ask). Unset,
+#                       --interactive asks and a plain run leaves it off.
 #   --groups "a,b,c"    Package groups to install (comma-separated)
 #   --no-macos-defaults Skip macOS defaults
 #   --no-runtimes       Skip `mise install` (Erlang and Rust compile from
@@ -35,6 +38,7 @@
 # Environment variables (flags take precedence):
 #   DOTFILES_GIT_NAME, DOTFILES_GIT_EMAIL, DOTFILES_WORK_EMAIL
 #   DOTFILES_WORK_DIR, DOTFILES_THEME, DOTFILES_SSH_MODE, DOTFILES_GROUPS
+#   DOTFILES_SIGNING_KEY
 #   DOTFILES_NO_SUDO=1 (never ask for a password), DOTFILES_NO_RUNTIMES=1
 #   DOTFILES_ANSWERS=<file>
 #   DOTFILES_TAP_INSTALL=yes|no (install the apps kept in homebrew-tap/;
@@ -152,6 +156,7 @@ GIT_WORK_EMAIL="${DOTFILES_WORK_EMAIL:-}"
 WORK_DIR="${DOTFILES_WORK_DIR:-}"
 SELECTED_THEME="${DOTFILES_THEME:-}"
 SSH_MODE="${DOTFILES_SSH_MODE:-}"
+SIGNING_KEY="${DOTFILES_SIGNING_KEY:-}"
 SELECTED_GROUPS="${DOTFILES_GROUPS:-}"
 ANSWERS_FILE="${DOTFILES_ANSWERS:-}"
 
@@ -167,6 +172,7 @@ while [[ $# -gt 0 ]]; do
         --work-dir) WORK_DIR="$2"; shift 2 ;;
         --theme) SELECTED_THEME="$2"; shift 2 ;;
         --ssh) SSH_MODE="$2"; shift 2 ;;
+        --signing-key) SIGNING_KEY="$2"; shift 2 ;;
         --groups) SELECTED_GROUPS="$2"; shift 2 ;;
         --no-macos-defaults) APPLY_MACOS_DEFAULTS=false; shift ;;
         --no-runtimes) INSTALL_RUNTIMES=false; shift ;;
@@ -198,7 +204,7 @@ if [[ -n "$ANSWERS_FILE" ]]; then
 fi
 
 # Export for sub-scripts
-export INTERACTIVE FORCE_INSTALL GIT_NAME GIT_EMAIL GIT_WORK_EMAIL WORK_DIR SSH_MODE SELECTED_GROUPS
+export INTERACTIVE FORCE_INSTALL GIT_NAME GIT_EMAIL GIT_WORK_EMAIL WORK_DIR SSH_MODE SIGNING_KEY SELECTED_GROUPS
 
 # ── Setup ─────────────────────────────────────
 
@@ -821,6 +827,15 @@ setup_git
 _CURRENT_STEP="Step 8c: SSH configuration"
 source "$DOTFILES_DIR/scripts/setup-ssh.sh"
 setup_ssh
+
+# ============================================
+# 8d. COMMIT SIGNING
+# ============================================
+# After identity (8b): allowed_signers needs the Git email. Writes only
+# per-machine files (~/.gitconfig.local, ~/.config/git/).
+_CURRENT_STEP="Step 8d: commit signing"
+source "$DOTFILES_DIR/scripts/setup-git-signing.sh"
+setup_git_signing
 
 # ============================================
 # 9. MACOS DEFAULTS

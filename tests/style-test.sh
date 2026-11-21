@@ -67,7 +67,7 @@ section "bash 3.2 on the install path"
 # install.sh runs under /bin/bash from `bash <(curl ...)` and sources
 # these; update.sh can run there too after a fresh clone.
 install_path=(install.sh update.sh scripts/_helpers.sh scripts/install-answers.sh scripts/theme-utils.sh
-    scripts/package-utils.sh scripts/symlink-map.sh scripts/setup-git.sh scripts/setup-ssh.sh
+    scripts/package-utils.sh scripts/symlink-map.sh scripts/setup-git.sh scripts/setup-ssh.sh scripts/setup-git-signing.sh
     tests/base-test.sh tests/e2e/install-e2e.sh)
 for f in "${install_path[@]}"; do
     [[ -f "$f" ]] || fail "install-path file exists: $f"

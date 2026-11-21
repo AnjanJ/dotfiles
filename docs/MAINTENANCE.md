@@ -116,7 +116,7 @@ dotfiles install --answers ~/.dotfiles-answers.json                 # Every choi
 dotfiles install --no-macos-defaults --no-runtimes                  # Skip the macOS defaults and `mise install`
 ```
 
-`dotfiles install` hands its arguments straight to `install.sh`, so every flag there works (`--work-email`, `--work-dir` and `--ssh <mode>` too; `install.sh --help` lists them).
+`dotfiles install` hands its arguments straight to `install.sh`, so every flag there works (`--work-email`, `--work-dir`, `--ssh <mode>` and `--signing-key <name>` too; `install.sh --help` lists them).
 
 ## Migrations and hooks
 
@@ -136,7 +136,7 @@ dotfiles install --no-macos-defaults --no-runtimes                  # Skip the m
 
 ## Testing
 
-Every push and PR runs 41 test suites, an end-to-end install, shellcheck, `dotfiles commands --check`, `dotfiles keys --check` and `dotfiles keys --lint` via GitHub Actions. The suites are discovered from `tests/*-test.sh`, so a new file is in CI the moment it exists:
+Every push and PR runs 42 test suites, an end-to-end install, shellcheck, `dotfiles commands --check`, `dotfiles keys --check` and `dotfiles keys --lint` via GitHub Actions. The suites are discovered from `tests/*-test.sh`, so a new file is in CI the moment it exists:
 
 - **Shellcheck** — lints all shell scripts
 <!-- SUITES_START -->
@@ -152,6 +152,7 @@ Every push and PR runs 41 test suites, an end-to-end install, shellcheck, `dotfi
 - **Docs** (`docs`) — suite counts in README/STRUCTURE/MAINTENANCE, this list, the THEMES.md app table, the skill's command table, toggles and hook events, all derived from the code, and `docs/PACKAGE_CATALOG.md` matching the Brewfile with every package described (`build-catalog.py --check`)
 - **Doctor** (`doctor`) — auto-fix symlinks, permissions, dry-run mode
 - **Font** (`font`) — `dotfiles font`: current/default, list via a fontconfig stub, set with verification, the state file, the re-render carrying `{{ font_family }}` into Ghostty, WezTerm, Zed and VS Code, the `font-set` hook, reset, `/bin/bash` 3.2
+- **Git signing** (`git-signing`) — `scripts/setup-git-signing.sh`: picks a 1Password SSH key by item name or prompt, writes ~/.gitconfig.local and allowed_signers, leaves unattended runs and machines without the agent alone, runs under bash 3.2
 - **Hooks** (`hook`) — sample hooks per event, `--seed` never overwriting, samples inert, `--list`, `dotfiles hook install`, every fired event known and sampled, `/bin/bash` 3.2
 - **Idempotency** (`idempotency`) — install/setup can run repeatedly with identical results (sandboxed)
 - **Install answers** (`install-answers`) — `scripts/install-answers.sh`: every key, flag/env precedence, arrays and booleans, unknown-key warnings, missing and invalid files, install.sh's `--answers` / `DOTFILES_ANSWERS` / `~/.dotfiles-answers.json` handling

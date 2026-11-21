@@ -63,6 +63,7 @@ dotfiles/
 │   ├── symlink-map.sh          # SINGLE SOURCE OF TRUTH for every managed symlink
 │   ├── setup-git.sh            # Git identity & defaults setup
 │   ├── setup-ssh.sh            # SSH key & config setup
+│   ├── setup-git-signing.sh    # Commit signing with a 1Password SSH key (per machine)
 │   ├── install-answers.sh      # JSON answers file for unattended installs
 │   ├── package-utils.sh        # Brewfile @group parsing and selection
 │   ├── personal-tap.sh         # Your own Homebrew tap for packages Homebrew dropped (dotfiles tap)
@@ -75,7 +76,7 @@ dotfiles/
 ├── tests/
 │   ├── base-test.sh            # Shared contract: temp HOME, TAP pass/fail, assert_* helpers
 │   ├── run                     # Runs tests/*-test.sh, keeps going past a failing file; `tests/run <area> [<area>…]` runs just those
-│   ├── <area>-test.sh          # 41 suites, one per area, discovered by name
+│   ├── <area>-test.sh          # 42 suites, one per area, discovered by name
 │   └── e2e/install-e2e.sh      # Real install.sh into a fresh HOME (CI job, not a suite)
 └── docs/                       # This documentation
 ```

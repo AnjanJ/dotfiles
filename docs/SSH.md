@@ -69,6 +69,36 @@ The Brewfile installs the 1Password app + CLI automatically. SSH-agent wiring au
 
 > **Debugging tip:** if `git push` suddenly fails with an SSH error, the usual cause is that 1Password isn't running (or is locked) — not a problem with the keys themselves.
 
+## Commit signing
+
+Git can sign commits with an SSH key that 1Password holds, so GitHub shows them as Verified. The tracked `.gitconfig` already points `gpg.ssh.program` at 1Password's `op-ssh-sign`, but signing stays off until a machine chooses a key: the key and the switch live in `~/.gitconfig.local`, which the public repo never sees.
+
+Install step 8d (`scripts/setup-git-signing.sh`) sets it up:
+
+```bash
+dotfiles install --signing-key "Git signing"   # the 1Password item name of the key
+bash ~/dotfiles/scripts/setup-git-signing.sh   # just this step; asks which key when run in a terminal
+```
+
+The key can also come from `DOTFILES_SIGNING_KEY` or `"signing_key"` in the answers file; `none` skips the step. With no name, `--interactive` lists the agent's keys and asks, and a plain run leaves signing off, because once it is on every commit fails while 1Password is locked. A machine that already has a signing key keeps it unless a key is named. The step needs the 1Password SSH agent enabled (above).
+
+It writes, on this machine only:
+
+| File | What |
+|------|------|
+| `~/.gitconfig.local` | `user.signingkey`, `commit.gpgsign = true`, `gpg.ssh.allowedSignersFile` (mode 600) |
+| `~/.config/git/allowed_signers` | your Git email and the key, so `git log --show-signature` can check signatures |
+| `~/.config/git/signing_key.pub` | the public key, for registering it on GitHub |
+
+GitHub has to know the key once (not once per machine):
+
+```bash
+gh auth refresh -h github.com -s admin:ssh_signing_key
+gh ssh-key add ~/.config/git/signing_key.pub --type signing --title "Git signing"
+```
+
+1Password asks to approve each signature, the same way it approves `git push`. `dotfiles update` makes one signed commit when its snapshot has Brewfile or mise changes, and the commits it makes in Homebrew's local copy of the personal tap are never signed.
+
 ## Work hosts
 
 A work identity gets its own key and its own host aliases, kept apart from the personal setup above so the two never share a key or an email.

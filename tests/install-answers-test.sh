@@ -23,7 +23,7 @@ LIB="$ROOT/scripts/install-answers.sh"
 source "$LIB"
 
 reset_vars() {
-    GIT_NAME="" GIT_EMAIL="" GIT_WORK_EMAIL="" WORK_DIR="" SELECTED_THEME="" SSH_MODE="" SELECTED_GROUPS=""
+    GIT_NAME="" GIT_EMAIL="" GIT_WORK_EMAIL="" WORK_DIR="" SELECTED_THEME="" SSH_MODE="" SIGNING_KEY="" SELECTED_GROUPS=""
     APPLY_MACOS_DEFAULTS=true INSTALL_RUNTIMES=true PERSONAL_TAP_INSTALL=""
 }
 
@@ -36,6 +36,7 @@ cat > "$FULL" <<'EOF'
   "work_dir": "~/work/src",
   "theme": "catppuccin-latte",
   "ssh": "skip",
+  "signing_key": "Git signing",
   "groups": ["core", "editors"],
   "macos_defaults": false,
   "runtimes": false,
@@ -60,11 +61,12 @@ assert_eq "$GIT_WORK_EMAIL" "work@example.com" "work_email"
 assert_eq "$WORK_DIR" "~/work/src" "work_dir"
 assert_eq "$SELECTED_THEME" "catppuccin-latte" "theme"
 assert_eq "$SSH_MODE" "skip" "ssh"
+assert_eq "$SIGNING_KEY" "Git signing" "signing_key (an item name with a space)"
 assert_eq "$SELECTED_GROUPS" "core,editors" "groups array joined with commas"
 assert_eq "$APPLY_MACOS_DEFAULTS" "false" "macos_defaults false"
 assert_eq "$INSTALL_RUNTIMES" "false" "runtimes false"
 assert_eq "$PERSONAL_TAP_INSTALL" "yes" "personal_tap_install true"
-assert_contains "$out" "Answers from $FULL: name, email, work_email, work_dir, theme, ssh, groups, macos_defaults=false, runtimes=false, personal_tap_install=yes" "reports what it applied"
+assert_contains "$out" "Answers from $FULL: name, email, work_email, work_dir, theme, ssh, signing_key, groups, macos_defaults=false, runtimes=false, personal_tap_install=yes" "reports what it applied"
 reset_vars
 printf '{"personal_tap_install": false}\n' > "$TEST_TMP/tap-no.json"
 install_answers_load "$TEST_TMP/tap-no.json" >/dev/null 2>&1
