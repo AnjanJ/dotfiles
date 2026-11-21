@@ -37,6 +37,11 @@ if command -v starship &>/dev/null; then
 fi
 
 # PATH
+# -U keeps each entry once, wherever it was added first. ~/.zprofile (not in
+# this repo) adds Homebrew, Android and ~/bin for login shells, and the
+# lines below and the Android block later add them again; without -U every
+# nested shell grew PATH further.
+typeset -U path PATH
 export PATH="$HOME/bin:$PATH:$HOME/.local/bin"
 
 # ============================================
