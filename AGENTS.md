@@ -15,6 +15,7 @@ Guidance for anyone changing the dotfiles source, human or agent. End-user help 
 | `themes/` | `_templates/` plus one directory per theme. |
 | `homebrew-tap/` | Personal Homebrew tap: recipes for packages kept after Homebrew dropped them. Written by `dotfiles tap check`/`tap update`, installed per machine by `dotfiles tap install` (asks once), and committed by `update.sh`'s snapshot; Homebrew reads a mirrored working copy under its `Library/Taps` (see `scripts/personal-tap.sh`). Do not hand-edit a version or checksum. |
 | `hooks/` | Sample user hooks, one `<event>.d/<name>.sample` per event; `dotfiles hook --seed` copies them to `~/.config/dotfiles/hooks/` without overwriting. Fire a new event with `bash "$DOTFILES_DIR/bin/dotfiles-hook" <event>` and list it in `bin/dotfiles-hook`'s header. |
+| `scripts/git-hooks/` | This repo's own commit hooks (`core.hooksPath`, set by a migration): `pre-commit` and `commit-msg` stop a commit whose added lines, new file names or message contain a word from `~/.config/dotfiles/private-words`, a list kept outside the repo. |
 | `tests/*-test.sh`, `tests/base-test.sh`, `tests/run` | One suite per area on the shared contract, discovered by the runner and by CI. `tests/e2e/` holds the real install run. |
 | `docs/` | Reference for users. `docs/KEYBINDINGS.md` has a generated block. |
 
@@ -69,3 +70,5 @@ Colours belong in `themes/<name>/colors.toml`; app configs reference the rendere
 ## Commits
 
 Atomic commits, imperative subject with a type prefix (`feat`, `fix`, `docs`, `test`, `chore`), body with what/why/how and an honest test plan. `update.sh` commits `snapshot: system state` on main when Brewfile or mise config change, and commits only those files, so anything else stays uncommitted with a warning; `dotfiles toggle auto-commit off` stops that.
+
+The repo is public: no private project, client or host names, no personal details, in files or commit messages. The hooks in `scripts/git-hooks/` enforce that against the machine's `~/.config/dotfiles/private-words`; when one stops a commit, remove the word rather than reaching for `--no-verify`.

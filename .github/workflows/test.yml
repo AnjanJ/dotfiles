@@ -29,6 +29,7 @@ jobs:
             -e SC2088 \
             -e SC2317 \
             scripts/*.sh \
+            scripts/git-hooks/* \
             update.sh \
             install.sh \
             bin/dotfiles \

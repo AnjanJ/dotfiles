@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Stops a commit whose message contains a private word (see private-words).
+set -euo pipefail
+exec bash "$(dirname "$0")/private-words" message "$1"

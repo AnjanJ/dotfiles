@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+# Stops a commit that would publish a private word: a project, client or
+# host name, a person, anything listed in the machine's private-words file.
+# The repo is public, and GitHub's secret scanning only knows token
+# formats, so names have no other guard.
+#
+#   private-words staged          the staged added lines and file names
+#   private-words message <file>  a commit message (comment lines skipped)
+#
+# Run by scripts/git-hooks/pre-commit and commit-msg, which this repo uses
+# through core.hooksPath (set by a migration). The list is
+# ~/.config/dotfiles/private-words (or $DOTFILES_PRIVATE_WORDS): one word
+# or phrase per line, matched case-insensitively anywhere in a line; blank
+# lines and lines starting with # are ignored. It lives outside the repo,
+# since the list itself is private. No list, no check.
+#
+# Removing a private word is always allowed: only added lines count.
+# A deliberate exception: git commit --no-verify.
+# Bash 3.2 compatible: GUI Git clients run hooks with /bin/bash.
+set -euo pipefail
+
+list="${DOTFILES_PRIVATE_WORDS:-${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/private-words}"
+[[ -f "$list" ]] || exit 0
+words=$(sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' "$list" | grep -vE '^(#|$)' || true)
+[[ -n "$words" ]] || exit 0
+
+case "${1:-}" in
+    staged)
+        # "<path>: <added line>" for each added line, then "<path>" for
+        # each added or renamed file, so a name in a path is caught too.
+        text=$(
+            git diff --cached --no-color --no-ext-diff -U0 \
+                | awk '/^\+\+\+ /{f=substr($0,7); next} /^\+/{print f ": " substr($0,2)}'
+            git diff --cached --name-only --diff-filter=ACR
+        )
+        what="the staged changes contain"
+        ;;
+    message)
+        [[ -f "${2:-}" ]] || { echo "private-words: no message file" >&2; exit 2; }
+        # `git commit -v` appends the diff below a scissors line; git
+        # drops it from the message, so stop there.
+        text=$(awk '/^# -+ >8 -+$/{exit} !/^#/' "$2")
+        what="the commit message contains"
+        ;;
+    *)
+        echo "Usage: private-words staged | message <file>" >&2
+        exit 2
+        ;;
+esac
+
+hits=$(printf '%s\n' "$text" | grep -i -F -- "$words" || true)
+[[ -z "$hits" ]] && exit 0
+
+{
+    echo "private-words: commit stopped. $what a word from $list:"
+    printf '%s\n' "$hits" | cut -c1-200 | sed 's/^/  /'
+    echo "This repo is public. Remove the word, or, if it is meant to be public,"
+    echo "commit with --no-verify."
+} >&2
+exit 1

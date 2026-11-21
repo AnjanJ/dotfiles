@@ -130,13 +130,17 @@ dotfiles install --no-macos-defaults --no-runtimes                  # Skip the m
 
 **The agent skill** in `agents/skills/dotfiles/` is what Claude Code reads instead of `dotfiles --help`; the symlink map links it unconditionally to `~/.claude/skills/dotfiles`. Its `DOTFILES_OPTIONAL_LINKS` also link the same directory into `~/.agents/skills`, `~/.codex/skills` and `~/.gemini/config/skills`, but only when that tool's directory already exists, so a machine without Codex never grows a `~/.codex`.
 
+## Keeping private names out of commits
+
+The repo is public, and GitHub's secret scanning only recognises token formats, not names. `scripts/git-hooks/pre-commit` and `commit-msg` stop a commit whose added lines, new file names or message contain a word from `~/.config/dotfiles/private-words`: one word or phrase per line, matched case-insensitively, `#` for comments. The list lives outside the repo because it is private itself; with no list nothing is checked. A migration sets this checkout's `core.hooksPath` to `scripts/git-hooks` (no other repository is affected), and `dotfiles health` warns when the hooks are off or the list is empty. Removing a listed word is always allowed; `git commit --no-verify` is the deliberate override.
+
 ## Unattended installs
 
 `install.sh` never has to prompt. Flags cover every choice, `DOTFILES_*` environment variables mirror them, and a JSON answers file mirrors both: `install.sh --answers <file>`, `DOTFILES_ANSWERS=<file>`, or simply `~/.dotfiles-answers.json` when it exists. Keys are `name`, `email`, `work_email`, `work_dir`, `theme`, `ssh`, `groups` (an array or a comma string), `macos_defaults`, `runtimes` and `personal_tap_install` (booleans; the last answers whether this machine installs the packages kept in `homebrew-tap/`); `docs/dotfiles-answers.example.json` is a template. Precedence is flags, then environment, then the file, then defaults, so a file can hold the machine's standing choices while a flag overrides one of them for a run. A named file that is missing or invalid stops the install rather than falling back to prompts or defaults, and unknown keys are warned about (typos). The file is read with `plutil` (python3 when plutil cannot), so nothing has to be installed first.
 
 ## Testing
 
-Every push and PR runs 42 test suites, an end-to-end install, shellcheck, `dotfiles commands --check`, `dotfiles keys --check` and `dotfiles keys --lint` via GitHub Actions. The suites are discovered from `tests/*-test.sh`, so a new file is in CI the moment it exists:
+Every push and PR runs 43 test suites, an end-to-end install, shellcheck, `dotfiles commands --check`, `dotfiles keys --check` and `dotfiles keys --lint` via GitHub Actions. The suites are discovered from `tests/*-test.sh`, so a new file is in CI the moment it exists:
 
 - **Shellcheck** — lints all shell scripts
 <!-- SUITES_START -->
@@ -160,6 +164,7 @@ Every push and PR runs 42 test suites, an end-to-end install, shellcheck, `dotfi
 - **Menu** (`menu`) — `dotfiles menu`: rows per route, active theme and toggle state, launcher rows from installed bundles, user rows from `menu.d/*.tsv` (root rows, nested submenus, overrides, malformed lines), the commands route, `--run`, prompt rows, the numbered fallback picker
 - **Migrate** (`migrate`) — `dotfiles migrate` against a fake repo: pending list and exit codes, filename order, each migration once with DOTFILES_DIR exported, a failing one kept pending while the rest run, `--dry-run` running and marking nothing, `--new` and its slug check, bash 3.2; and the repo's own migrations: every one parses, and the private-state-dir and drop-lsd-colors repairs do what they say and are idempotent
 - **Packages** (`packages`) — Brewfile group parsing, filtering, saved selections, tap trust (one `brew trust` call, a tap that cannot be trusted named, Homebrew without `brew trust`, `/bin/bash` 3.2)
+- **Private words** (`private-words`) — `scripts/git-hooks`: a commit whose added lines, file names or message contain a word from ~/.config/dotfiles/private-words is stopped; removals, comments, `-v` diffs and --no-verify pass; the migration that turns the hooks on
 - **Reminder** (`reminder`) — `dotfiles reminder`: the launchd agent plist, scheduling via a launchctl stub, show/clear, the `--fire` path (notification, self-removal, unload), validation
 - **Repo cloner** (`repos-clone`) — SSH alias detection and URL rewriting
 - **Restart** (`restart`) — `dotfiles restart` now/later/pending/list, the AeroSpace process-name case, borders relaunch honouring its toggle

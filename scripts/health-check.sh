@@ -588,6 +588,31 @@ else
 fi
 
 # ============================================
+# 13. COMMIT PRIVACY (this repo is public)
+# ============================================
+print_header "13. Commit Privacy"
+
+# scripts/git-hooks stop a commit containing a word from the private list;
+# a migration points this checkout's core.hooksPath at them.
+if [[ "$(git -C "$DOTFILES_DIR" config --local core.hooksPath 2>/dev/null || true)" == "scripts/git-hooks" ]]; then
+    echo -e "${GREEN}✓${NC} Commit hooks: ${GREEN}scripts/git-hooks${NC}"
+    PASSED=$((PASSED + 1))
+else
+    echo -e "${YELLOW}⚠${NC} Commit hooks: ${YELLOW}not in use (run: dotfiles migrate)${NC}"
+    WARNINGS=$((WARNINGS + 1))
+fi
+private_words="${DOTFILES_PRIVATE_WORDS:-${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/private-words}"
+private_count=0
+[[ -f "$private_words" ]] && private_count=$(grep -cvE '^[[:space:]]*(#|$)' "$private_words" || true)
+if [[ "$private_count" -gt 0 ]]; then
+    echo -e "${GREEN}✓${NC} Private words: ${GREEN}$private_count listed${NC}"
+    PASSED=$((PASSED + 1))
+else
+    echo -e "${YELLOW}⚠${NC} Private words: ${YELLOW}none listed (add names to ${private_words/#$HOME/~})${NC}"
+    WARNINGS=$((WARNINGS + 1))
+fi
+
+# ============================================
 # SUMMARY
 # ============================================
 echo ""

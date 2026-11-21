@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Stops a commit whose staged changes contain a private word (see private-words).
+set -euo pipefail
+exec bash "$(dirname "$0")/private-words" staged
