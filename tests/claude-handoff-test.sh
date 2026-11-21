@@ -66,7 +66,8 @@ assert_eq "$(stop s2)" "" "an unreadable percentage stays silent"
 
 section "wiring"
 
-settings="$ROOT/.config/claude/settings.json"
+# The tracked base: settings.json is generated and absent from a fresh clone.
+settings="$ROOT/.config/claude/settings.base.json"
 assert_eq "$(jq -r '.env.CLAUDE_CODE_AUTO_COMPACT_WINDOW // "unset"' "$settings")" "unset" "auto-compact stays on its default"
 assert_contains "$(jq -r '.hooks.Stop[].hooks[].command' "$settings")" "handoff-check.sh" "settings run the hook on Stop"
 assert_file_contains "$ROOT/scripts/symlink-map.sh" ".config/claude/handoff-check.sh" "the hook is a managed symlink"
