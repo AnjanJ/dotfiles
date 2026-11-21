@@ -158,7 +158,13 @@ echo ""
 section "Test 2b: Zed and VS Code settings rendered from settings.base.json"
 setup_theme_sandbox
 load_theme_functions
-mkdir -p "$TEST_HOME/.config/zed" "$TEST_HOME/Library/Application Support/Code/User"
+mkdir -p "$TEST_HOME/.config/zed" "$TEST_HOME/Library/Application Support/Code/User" "$TEST_HOME/.claude"
+# Claude Code's settings.json is generated the same way; like a fresh
+# clone, the mock has only the base, and install's link step has already
+# skipped the missing file.
+cp "$REAL_DOTFILES_DIR/scripts/claude-settings.sh" "$MOCK_DOTFILES/scripts/"
+mkdir -p "$MOCK_DOTFILES/.config/claude"
+echo '{"model":"opus"}' > "$MOCK_DOTFILES/.config/claude/settings.base.json"
 zed_base_before=$(cat "$MOCK_DOTFILES/.config/zed/settings.base.json")
 vscode_base_before=$(cat "$MOCK_DOTFILES/.config/vscode/settings.base.json")
 
@@ -171,6 +177,8 @@ assert_file_contains "$MOCK_DOTFILES/.config/vscode/settings.json" '"workbench.c
 assert_file_contains "$MOCK_DOTFILES/.config/vscode/settings.json" '// a comment' "VS Code comments survive (JSONC handled as text)"
 assert_symlink "$TEST_HOME/.config/zed/settings.json" "$MOCK_DOTFILES/.config/zed/settings.json" "Zed's path linked to the generated file when nothing was there"
 assert_symlink "$TEST_HOME/Library/Application Support/Code/User/settings.json" "$MOCK_DOTFILES/.config/vscode/settings.json" "VS Code's path linked too"
+assert_eq "$(jq -r .model "$MOCK_DOTFILES/.config/claude/settings.json")" "opus" "Claude Code settings generated from the base"
+assert_symlink "$TEST_HOME/.claude/settings.json" "$MOCK_DOTFILES/.config/claude/settings.json" "Claude Code's path linked to the generated file on the first render"
 
 # The editors write their own settings files: those edits must reach the base
 jq '.tab_size = 4 | .new_key = "from-zed"' "$MOCK_DOTFILES/.config/zed/settings.json" > "$TEST_HOME/zed.tmp"
