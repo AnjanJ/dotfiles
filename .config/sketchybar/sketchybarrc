@@ -104,7 +104,7 @@ if [ ! -x "$HOME/bin/dotfiles-toggle" ] || "$HOME/bin/dotfiles-toggle" --enabled
     sketchybar --add item agent_usage right \
                --set agent_usage \
                      update_freq=120 \
-                     icon=󰚩 \
+                     icon.drawing=off \
                      script="$HOME/.config/sketchybar/plugins/agent-usage.sh" \
                      click_script="$HOME/.config/sketchybar/plugins/agent-usage.sh notify" \
                      background.color="$ITEM_BG_COLOR" \

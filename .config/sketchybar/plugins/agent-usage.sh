@@ -53,4 +53,4 @@ case "$LEVEL" in
     *) COLOR=$WHITE ;;
 esac
 
-sketchybar --set "$NAME" drawing=on label="$LABEL" label.color="$COLOR" icon.color="$COLOR"
+sketchybar --set "$NAME" drawing=on label="$LABEL" label.color="$COLOR"
