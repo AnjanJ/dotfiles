@@ -150,6 +150,8 @@ echo ""
 
 section "Test 7: Built-ins and the real repo"
 assert_eq "$("$D" dir)" "$(cd "$MOCK" && pwd -P)" "dir prints the repo root"
+assert_eq "$(EDITOR="echo --wait" "$D" edit)" "--wait ." "edit splits a multi-word \$EDITOR"
+assert_eq "$(EDITOR="echo --wait" /bin/bash "$D" edit)" "--wait ." "and under /bin/bash 3.2"
 out=$("$REAL_DOTFILES_DIR/bin/dotfiles" commands --check)
 assert_contains "$out" "carry metadata" "real bin/ passes --check"
 out=$(/bin/bash "$REAL_DOTFILES_DIR/bin/dotfiles" commands --plain)

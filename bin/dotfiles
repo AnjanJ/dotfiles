@@ -176,7 +176,12 @@ fi
 case "$1" in
     help|--help|-h) print_usage; exit 0 ;;
     commands) shift; cmd_commands "$@"; exit $? ;;
-    edit) cd "$DOTFILES_DIR" && exec "${EDITOR:-vim}" . ;;
+    edit)
+        cd "$DOTFILES_DIR" || exit 1
+        # $EDITOR often carries flags ("zed --wait"), so split it into words
+        # rather than running the whole string as one program name.
+        read -r -a _editor <<< "${EDITOR:-vim}"
+        exec "${_editor[@]}" . ;;
     dir) echo "$DOTFILES_DIR"; exit 0 ;;
 esac
 

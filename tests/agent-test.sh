@@ -37,6 +37,9 @@ assert_eq "$(cat "$STATE/default-agent")" "gemini" "persisted in state dir"
 assert_eq "$("$A" --command)" "gemini --approval-mode auto_edit" "gemini launch command"
 out=$("$A" --list)
 if echo "$out" | /usr/bin/grep -q "^ \* gemini"; then pass "--list marks the current agent"; else fail "--list does not mark gemini"; fi
+out=$("$A" codex)
+assert_eq "$("$A" --command)" "codex --sandbox workspace-write --ask-for-approval on-request" "codex runs sandboxed to the workspace, asking for more"
+if "$A" --command | /usr/bin/grep -q "dangerously\|never"; then fail "codex command skips approvals"; else pass "no approval bypass for codex"; fi
 "$A" claude >/dev/null
 assert_eq "$("$A")" "claude" "set back to claude"
 echo ""

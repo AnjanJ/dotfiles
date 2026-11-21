@@ -29,7 +29,7 @@ dotfiles hook <event> # Run ~/.config/dotfiles/hooks/<event>{,.d/*} (theme-set, 
 dotfiles toggle <f>   # Flip a feature flag: startup-apps, borders, auto-commit, appearance, background, update-notice, agent-usage, update-item, tap-auto-update (--list)
 dotfiles keys         # AeroSpace keybinding cheatsheet (fzf; --markdown, --tsv, --update, --check, --lint)
 dotfiles commands     # List every command from its metadata (--json, --plain, --all, --check)
-dotfiles default-agent # Which agent the `a` shell function launches (claude|oclaude|gemini|copilot|llm)
+dotfiles default agent # Which agent the `a` shell function launches (claude|oclaude|codex|gemini|copilot|llm)
 dotfiles agent usage  # Claude plan usage, 5-hour and 7-day windows (--json, --bar, --notify, --refresh)
 dotfiles webapp install <name> <url> # Chrome --app launcher with an AeroSpace rule; webapp remove <name>
 dotfiles tui install <name> <cmd>    # Ghostty launcher for a terminal program; tui remove <name>

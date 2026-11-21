@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # dotfiles:summary=Show or set the default AI agent that the `a` shell function launches
-# dotfiles:args=[claude|oclaude|gemini|copilot|llm] [--command]
+# dotfiles:args=[claude|oclaude|codex|gemini|copilot|llm] [--command]
 #
 # Default AI agent — can be run from anywhere
 # Usage: dotfiles default-agent            # show the current default
@@ -21,13 +21,14 @@ agent_command() {
     case "$1" in
         claude)  echo "claude --permission-mode auto" ;;
         oclaude) echo "oclaude" ;;                       # Claude Code via Ollama (.zshrc)
+        codex)   echo "codex --sandbox workspace-write --ask-for-approval on-request" ;;
         gemini)  echo "gemini --approval-mode auto_edit" ;;
         copilot) echo "gh copilot" ;;
         llm)     echo "llm chat" ;;
         *) return 1 ;;
     esac
 }
-KNOWN="claude oclaude gemini copilot llm"
+KNOWN="claude oclaude codex gemini copilot llm"
 
 current() {
     if [[ -f "$STATE_FILE" ]]; then cat "$STATE_FILE"; else echo "$DEFAULT"; fi
@@ -35,7 +36,7 @@ current() {
 
 case "${1:-}" in
     --help|-h)
-        echo "Usage: dotfiles default-agent [claude|oclaude|gemini|copilot|llm] [--command]"
+        echo "Usage: dotfiles default agent [claude|oclaude|codex|gemini|copilot|llm] [--command]"
         echo ""
         echo "  (no args)   show the current default"
         echo "  <name>      set the default"

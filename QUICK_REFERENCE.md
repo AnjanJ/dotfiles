@@ -37,7 +37,7 @@ dotfiles toggle <f>   # Flip startup-apps / borders / auto-commit / appearance /
 dotfiles keys         # AeroSpace keybinding cheatsheet (fzf); --update after editing aerospace.toml, --lint to check it
 dotfiles hook --list  # User hooks in ~/.config/dotfiles/hooks/; --seed copies the samples there
 dotfiles migrate --pending   # One-off per-machine repairs not yet run (sync and update run them)
-dotfiles default agent <name>   # Which agent `a` launches: claude | oclaude | gemini | copilot | llm
+dotfiles default agent <name>   # Which agent `a` launches: claude | oclaude | codex | gemini | copilot | llm
 dotfiles agent usage  # Claude plan usage: the 5-hour session and 7-day windows
 dotfiles webapp install <name> <url>   # Chrome --app launcher + AeroSpace rule (`webapp remove <name>`)
 dotfiles tui install <name> <cmd>      # Ghostty launcher for a terminal command + AeroSpace rule (`tui remove <name>`)
