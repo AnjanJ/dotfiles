@@ -209,6 +209,7 @@ setup_pipeline_sandbox() {
     cat > "$STUB/brew" <<EOF
 #!/bin/bash
 echo "brew \$*" >> "$CALLS"
+[[ -n "\${BREW_FAIL:-}" && " \$* " == *" \$BREW_FAIL "* ]] && exit 1
 [[ "\$1" == "--caskroom" ]] && echo "$TEST_TMP/caskroom"
 if [[ "\$1" == "bundle" && "\$2" == "dump" ]]; then
     for a in "\$@"; do
@@ -404,6 +405,27 @@ test_37h_pull_is_fast_forward_on_main_only() {
     assert_eq "$(git -C "$MOCK" rev-parse HEAD)" "$before" "no merge commit is made"
 }
 
+test_37i_brew_failure_does_not_stop_the_run() {
+    echo ""
+    section "Test 37i: a failing Homebrew step warns and the run carries on"
+    setup_pipeline_sandbox
+    push_to_origin ".config/aerospace/aerospace.toml" "# aerospace v2"
+    local out
+    set +e; out=$(BREW_FAIL=upgrade run_update --no-snapshot); rc=$?; set -e
+    assert_contains "$out" "brew upgrade failed for at least one package; continuing" "the failure is reported"
+    assert_file_contains "$CALLS" "^mise " "mise still ran"
+    assert_file_contains "$CALLS" "aerospace reload-config" "the pulled config's restart still ran"
+    assert_contains "$out" "these steps failed: brew upgrade" "the end names the failed step"
+    assert_eq "$rc" "1" "and the run exits non-zero"
+    assert_dir_not_exists "$STATE/update.lock" "the lock is released"
+
+    setup_pipeline_sandbox
+    set +e; out=$(BREW_FAIL=update run_update --no-snapshot); rc=$?; set -e
+    assert_contains "$out" "brew update failed" "a failing brew update is reported"
+    assert_file_contains "$CALLS" "^brew upgrade" "and upgrade is still tried"
+    assert_eq "$rc" "1" "exit non-zero"
+}
+
 test_37d_snapshot_publishes_only_packages() {
     echo ""
     section "Test 37d: the snapshot publishes package files and nothing else"
@@ -543,4 +565,5 @@ test_37e_personal_tap
 test_37f_trusts_brewfile_taps
 test_37g_brewfile_change_rebuilds_catalog
 test_37h_pull_is_fast_forward_on_main_only
+test_37i_brew_failure_does_not_stop_the_run
 test_38_transcript

@@ -236,8 +236,16 @@ else
     print_warning "Skipping local snapshot (--no-snapshot)"
 fi
 
+# Homebrew steps warn and carry on: one failing cask, or no network, must
+# not stop the symlinks, migrations, mise and restarts that follow. They
+# are collected here and make the run exit non-zero at the very end.
+FAILED_STEPS=()
+
 # Update Homebrew itself
-brew update
+if ! brew update; then
+    print_warning "brew update failed; continuing with the recipes already here"
+    FAILED_STEPS+=("brew update")
+fi
 
 # Homebrew 7 refuses packages from untrusted third-party taps, and one
 # refusal fails `brew bundle` and `dotfiles cleanup` outright. install.sh
@@ -267,10 +275,13 @@ if bash "$DOTFILES_DIR/bin/dotfiles-toggle" --enabled tap-auto-update; then
 fi
 
 # Upgrade already-installed packages
-brew upgrade
-brew cleanup
-
-print_success "Homebrew packages upgraded"
+if brew upgrade; then
+    print_success "Homebrew packages upgraded"
+else
+    print_warning "brew upgrade failed for at least one package; continuing"
+    FAILED_STEPS+=("brew upgrade")
+fi
+brew cleanup || print_warning "brew cleanup failed; continuing"
 
 # Snapshot: dump current system state for comparison
 echo ""
@@ -284,8 +295,15 @@ cp "$DOTFILES_DIR/Brewfile" "$DOTFILES_DIR/Brewfile.backup"
 print_success "Previous Brewfile saved to Brewfile.backup"
 
 # Dump current state to a snapshot file (not the main Brewfile — that has @group markers)
-brew bundle dump --file="$DOTFILES_DIR/Brewfile.snapshot" --force
-print_success "System snapshot taken (Brewfile.snapshot)"
+# A failed dump must not leave last run's snapshot to be compared as new.
+rm -f "$DOTFILES_DIR/Brewfile.snapshot"
+if brew bundle dump --file="$DOTFILES_DIR/Brewfile.snapshot" --force; then
+    print_success "System snapshot taken (Brewfile.snapshot)"
+else
+    rm -f "$DOTFILES_DIR/Brewfile.snapshot"
+    print_warning "brew bundle dump failed; no package snapshot this run"
+    FAILED_STEPS+=("brew bundle dump")
+fi
 echo "  Tip: Run 'dotfiles cleanup' to find packages not in Brewfile"
 
 # Show what changed vs the organized Brewfile (ignoring @group comments)
@@ -503,6 +521,14 @@ fi
 # Refresh the cache behind the login notice so the next shell does not
 # announce the commits and packages this run just applied.
 bash "$DOTFILES_DIR/bin/dotfiles-update-available" --quiet >/dev/null 2>&1 || true
+
+if [[ ${#FAILED_STEPS[@]} -gt 0 ]]; then
+    echo ""
+    _failed=$(printf '%s, ' "${FAILED_STEPS[@]}")
+    print_error "Finished, but these steps failed: ${_failed%, }"
+    echo "  Everything else ran. Their output is in the transcript."
+    exit 1
+fi
 
 echo ""
 echo "  =========================================="
