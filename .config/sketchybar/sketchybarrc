@@ -64,6 +64,9 @@ sketchybar --add item front_app left \
            --subscribe front_app front_app_switched
 
 ##### Adding Right Items #####
+# Clicks: the clock opens Calendar, CPU and memory open Activity Monitor,
+# the Claude usage and updates items post a notification. `open -a` only
+# launches or focuses an app, so no Automation permission is involved.
 
 # Clock
 sketchybar --add item clock right \
@@ -71,6 +74,7 @@ sketchybar --add item clock right \
                  update_freq=10 \
                  icon= \
                  script="$HOME/.config/sketchybar/plugins/clock.sh" \
+                 click_script="open -a Calendar" \
                  background.color="$ITEM_BG_COLOR" \
                  background.corner_radius=5 \
                  background.height=24
@@ -85,6 +89,7 @@ sketchybar --add item memory right \
                  update_freq=15 \
                  icon= \
                  script="$HOME/.config/sketchybar/plugins/memory.sh" \
+                 click_script="open -a 'Activity Monitor'" \
                  background.color="$ITEM_BG_COLOR" \
                  background.corner_radius=5 \
                  background.height=24
@@ -95,6 +100,7 @@ sketchybar --add item cpu right \
                  update_freq=5 \
                  icon= \
                  script="$HOME/.config/sketchybar/plugins/cpu.sh" \
+                 click_script="open -a 'Activity Monitor'" \
                  background.color="$ITEM_BG_COLOR" \
                  background.corner_radius=5 \
                  background.height=24
