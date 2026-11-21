@@ -426,6 +426,43 @@ test_37i_brew_failure_does_not_stop_the_run() {
     assert_eq "$rc" "1" "exit non-zero"
 }
 
+test_37j_stash_lock_and_self_update() {
+    echo ""
+    section "Test 37j: honest stash message, lock before the transcript, a pulled update.sh"
+    setup_pipeline_sandbox
+    push_to_origin ".zshrc" "# zshrc from origin"
+    echo "# local edit" >> "$MOCK/.zshrc"
+    local out
+    set +e; out=$(run_update --no-snapshot); rc=$?; set -e
+    assert_contains "$out" "Restoring your uncommitted changes conflicted" "a conflicting pop says so"
+    assert_not_contains "$out" "Uncommitted changes restored" "and does not claim success"
+    assert_eq "$(git -C "$MOCK" stash list | wc -l | tr -d ' ')" "1" "the stash is kept for the user"
+
+    setup_pipeline_sandbox
+    echo "# previous run" > "$STATE/update.log"
+    mkdir -p "$STATE/update.lock"
+    echo "$$" > "$STATE/update.lock/pid"
+    set +e; out=$(DOTFILES_UPDATE_LOGGED='' run_update); rc=$?; set -e
+    assert_eq "$rc" "1" "a second run stops at the lock"
+    assert_file_contains "$STATE/update.log" "# previous run" "without rotating the live run's transcript"
+    assert_file_not_exists "$STATE/update.log.1" "or making a .1 copy"
+    rm -rf "$STATE/update.lock"
+
+    setup_pipeline_sandbox
+    # A pulled update.sh far longer than the old one: a run still reading
+    # its own file would carry on inside the new text. It does not today,
+    # because git writes the pulled file as a new inode and bash keeps
+    # reading the one it opened; this guards that, should the pull ever
+    # rewrite the file in place.
+    local new_script
+    new_script=$(printf '#!/usr/bin/env bash\n'; for _ in $(seq 1 1500); do echo "# padding line to move every offset"; done; echo 'echo NEW-UPDATE-SH-RAN; exit 0')
+    push_to_origin "update.sh" "$new_script"
+    set +e; out=$(run_update --no-snapshot); rc=$?; set -e
+    assert_eq "$rc" "0" "the run that pulled a new update.sh finishes"
+    assert_contains "$out" "Update Complete!" "as the version that started"
+    assert_not_contains "$out" "NEW-UPDATE-SH-RAN" "without running the pulled text mid-way"
+}
+
 test_37d_snapshot_publishes_only_packages() {
     echo ""
     section "Test 37d: the snapshot publishes package files and nothing else"
@@ -566,4 +603,5 @@ test_37f_trusts_brewfile_taps
 test_37g_brewfile_change_rebuilds_catalog
 test_37h_pull_is_fast_forward_on_main_only
 test_37i_brew_failure_does_not_stop_the_run
+test_37j_stash_lock_and_self_update
 test_38_transcript

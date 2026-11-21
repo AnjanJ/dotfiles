@@ -76,6 +76,31 @@ STATE_DIR="${DOTFILES_STATE_DIR:-$HOME/.local/state/dotfiles}"
 mkdir -p "$STATE_DIR" && chmod 700 "$STATE_DIR"
 UPDATE_LOG="$STATE_DIR/update.log"
 
+# ── Lock ──────────────────────────────────────
+# mkdir is atomic, and stock bash has no flock. A pid inside tells a stale
+# lock (crashed run, closed terminal) from a live one. Taken before the
+# transcript below rotates update.log, so a second run cannot clobber a
+# live run's transcript; the re-exec under script(1) keeps this pid (script
+# runs the new bash as its child), so the child does not take it again.
+LOCK_DIR="$STATE_DIR/update.lock"
+if [[ -n "${DOTFILES_UPDATE_LOCKED:-}" ]]; then
+    :
+elif ! mkdir "$LOCK_DIR" 2>/dev/null; then
+    _lock_pid=$(cat "$LOCK_DIR/pid" 2>/dev/null || true)
+    if [[ -n "$_lock_pid" ]] && kill -0 "$_lock_pid" 2>/dev/null; then
+        print_error "Another update is already running (pid $_lock_pid)"
+        echo "  Its transcript: $UPDATE_LOG"
+        exit 1
+    fi
+    print_warning "Removing stale update lock (pid ${_lock_pid:-unknown} is gone)"
+    rm -rf "$LOCK_DIR"
+    mkdir "$LOCK_DIR"
+fi
+if [[ -z "${DOTFILES_UPDATE_LOCKED:-}" ]]; then
+    echo $$ > "$LOCK_DIR/pid"
+    export DOTFILES_UPDATE_LOCKED=1
+fi
+
 # ── Transcript ────────────────────────────────
 # Re-exec under script(1) so the whole run, brew's progress bars included,
 # lands in update.log while still showing on the terminal. Without a tty
@@ -91,23 +116,6 @@ if [[ -z "${DOTFILES_UPDATE_LOGGED:-}" ]]; then
         exec > >(tee -a "$UPDATE_LOG") 2>&1
     fi
 fi
-
-# ── Lock ──────────────────────────────────────
-# mkdir is atomic, and stock bash has no flock. A pid inside tells a stale
-# lock (crashed run, closed terminal) from a live one.
-LOCK_DIR="$STATE_DIR/update.lock"
-if ! mkdir "$LOCK_DIR" 2>/dev/null; then
-    _lock_pid=$(cat "$LOCK_DIR/pid" 2>/dev/null || true)
-    if [[ -n "$_lock_pid" ]] && kill -0 "$_lock_pid" 2>/dev/null; then
-        print_error "Another update is already running (pid $_lock_pid)"
-        echo "  Its transcript: $UPDATE_LOG"
-        exit 1
-    fi
-    print_warning "Removing stale update lock (pid ${_lock_pid:-unknown} is gone)"
-    rm -rf "$LOCK_DIR"
-    mkdir "$LOCK_DIR"
-fi
-echo $$ > "$LOCK_DIR/pid"
 
 # A failed run should end with where to look, not a bare exit code.
 # Cancelling at the prompt is not a failure and stays quiet.
@@ -211,9 +219,14 @@ done
 
 # Restore stashed changes immediately after pull
 if [[ "$DID_STASH" == true ]]; then
+    # Popped either way, so the exit trap does not try again on a tree
+    # that now holds conflict markers.
     STASH_RESTORED=true
-    git stash pop || print_warning "Stash pop had conflicts — resolve manually"
-    print_success "Uncommitted changes restored"
+    if git stash pop; then
+        print_success "Uncommitted changes restored"
+    else
+        print_warning "Restoring your uncommitted changes conflicted: resolve the files above, then run: git -C $DOTFILES_DIR stash drop"
+    fi
 fi
 
 # ============================================
