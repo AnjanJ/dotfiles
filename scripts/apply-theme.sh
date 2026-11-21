@@ -552,6 +552,9 @@ _apply_theme_locked() {
     fi
     _render_zed_settings "${zed_theme:-}" "$theme_mode" "$font_family"
     _render_vscode_settings "${vscode_theme:-}" "$font_family"
+    # Not themed, but the same tracked-base/generated-live split (see the
+    # script): keeps the keys Claude Code writes about this machine out of git.
+    bash "$DOTFILES_DIR/scripts/claude-settings.sh" || _theme_warning "Claude settings not rendered"
 
     if [[ -n "${warp_theme:-}" ]] && { command -v warp-cli &>/dev/null || [[ -d "/Applications/Warp.app" ]]; }; then
         local warp_themes_dir="$HOME/.warp/themes"

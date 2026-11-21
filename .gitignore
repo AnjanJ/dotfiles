@@ -26,6 +26,9 @@ Brewfile.backup
 
 # Machine-local Claude Code settings (paths, permissions specific to this machine)
 .claude/settings.local.json
+# Generated from .config/claude/settings.base.json by scripts/claude-settings.sh;
+# Claude Code writes machine-local keys (autoMode) into it.
+.config/claude/settings.json
 
 # Logs
 *.log

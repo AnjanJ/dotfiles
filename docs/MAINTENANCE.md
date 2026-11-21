@@ -136,7 +136,7 @@ dotfiles install --no-macos-defaults --no-runtimes                  # Skip the m
 
 ## Testing
 
-Every push and PR runs 38 test suites, an end-to-end install, shellcheck, `dotfiles commands --check`, `dotfiles keys --check` and `dotfiles keys --lint` via GitHub Actions. The suites are discovered from `tests/*-test.sh`, so a new file is in CI the moment it exists:
+Every push and PR runs 39 test suites, an end-to-end install, shellcheck, `dotfiles commands --check`, `dotfiles keys --check` and `dotfiles keys --lint` via GitHub Actions. The suites are discovered from `tests/*-test.sh`, so a new file is in CI the moment it exists:
 
 - **Shellcheck** — lints all shell scripts
 - **Idempotency** (`idempotency`) — install/setup can run repeatedly with identical results (sandboxed)
@@ -165,6 +165,7 @@ Every push and PR runs 38 test suites, an end-to-end install, shellcheck, `dotfi
 - **Keys** (`keys`) — aerospace.toml parsing, `# desc:` overrides, markdown, `--update`/`--check`, `--lint` (duplicate chords across modifier order, undescribed bindings, missing scripts) and the real config lints clean
 - **Agent** (`agent`) — default-agent state, launch commands, skill files present
 - **Agent model** (`agent-model`) — `dotfiles agent model` against a fake `ollama`: the rebuilt model uses the qwen3.5 renderer, starts from the weight blobs and inherits no generated template or `<think>` stop, the `hf.co` import name is removed (or kept with `--keep-import`), a second run does nothing, `--force` rebuilds, bash 3.2 parsing
+- **Claude settings** (`claude-settings`) — `scripts/claude-settings.sh` against a fake repo: the live file generated from the base, Claude Code edits and deletions adopted, a pulled base not undone by a stale live file, both sides changing different keys, `autoMode` kept out of the base, invalid JSON left alone, a no-op run rewriting nothing; and the tracked base free of `autoMode` and `/Users/` paths
 - **Agent usage** (`agent-usage`) — `dotfiles agent usage` against a fake curl and credentials file: sign-in detection, fetch, cache and `--refresh`, `--json`, `--bar` levels, the 7-day figure following the model the status line records, stale and expired-token paths, `--notify` through a fake osascript, bash 3.2, and the sketchybar plugin painting through a fake sketchybar
 - **Sketchybar plugins** (`sketchybar-plugins`) — the memory, battery, updates, front-app and aerospace plugins under `/bin/bash` 3.2 against fake `memory_pressure`, `sysctl`, `pmset`, `osascript`, `lsappinfo`, `aerospace` and `sketchybar`: memory colour from the kernel's pressure level, swap shown only under pressure, an unreadable level counted as normal; battery hidden on AC unless charging and without a battery, and each colour band's edges; updates hidden with nothing waiting, `↑ N` from the saved check, and the click notification; the focused app from the event's name, or from `lsappinfo` on the first paint; the workspace list without a leading space, focused one bracketed and kept when empty
 - **Debug** (`debug`) — `dotfiles debug`: every section of the report, link states, the written file and clipboard copy, `--print`, `--no-copy`

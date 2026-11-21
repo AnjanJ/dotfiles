@@ -35,7 +35,7 @@ dotfiles/
 │   ├── nvim/                   # Neovim config (AstroNvim)
 │   ├── zed/                    # Zed: settings.base.json (tracked) → settings.json (generated), tasks.json, snippets/
 │   ├── vscode/                 # VS Code: settings.base.json → settings.json (generated), keybindings.json (linked into ~/Library/Application Support/Code/User/)
-│   ├── claude/                 # Global Claude Code config (~/.claude/settings.json, statusline) — distinct from the repo's own project-scoped .claude/
+│   ├── claude/                 # Global Claude Code config (settings.base.json → ~/.claude/settings.json, statusline) — distinct from the repo's own project-scoped .claude/
 │   ├── llm/                    # llm default-model preference (secrets/keys stored elsewhere by llm, never here)
 │   ├── zellij/                 # Multiplexer: config, theme, layouts (rails, phoenix, work)
 │   ├── lazygit/                # Git UI: config + theme
@@ -75,7 +75,7 @@ dotfiles/
 ├── tests/
 │   ├── base-test.sh            # Shared contract: temp HOME, TAP pass/fail, assert_* helpers
 │   ├── run                     # Runs tests/*-test.sh, keeps going past a failing file; `tests/run <area> [<area>…]` runs just those
-│   ├── <area>-test.sh          # 38 suites, one per area, discovered by name
+│   ├── <area>-test.sh          # 39 suites, one per area, discovered by name
 │   └── e2e/install-e2e.sh      # Real install.sh into a fresh HOME (CI job, not a suite)
 └── docs/                       # This documentation
 ```
