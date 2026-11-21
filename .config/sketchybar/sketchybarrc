@@ -62,13 +62,15 @@ sketchybar --add item clock right \
                  background.corner_radius=5 \
                  background.height=24
 
-# Memory pressure (+ swap once it appears). Placed left of the clock so the
-# two system-load items sit together. update_freq is 15s: pressure moves on
-# the scale of loading a model or starting a service, not second to second.
+# Memory pressure (+ swap while under pressure). Placed left of the clock so
+# the two system-load items sit together. update_freq is 15s: pressure moves
+# on the scale of loading a model or starting a service, not second to
+# second. The icon is a RAM stick (nf-fa-memory, U+EFC5) rather than a chip,
+# which looked like the CPU item's.
 sketchybar --add item memory right \
            --set memory \
                  update_freq=15 \
-                 icon=󰍛 \
+                 icon= \
                  script="$HOME/.config/sketchybar/plugins/memory.sh" \
                  background.color="$ITEM_BG_COLOR" \
                  background.corner_radius=5 \
