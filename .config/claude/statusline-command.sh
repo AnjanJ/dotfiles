@@ -31,6 +31,14 @@ fi
 # --- Model name (yellow) ---
 model_name=$(echo "$input" | jq -r '.model.display_name // empty')
 
+# The sketchybar usage item shows the weekly limit of the model in use, and
+# only the status line is told which model that is. The latest render of any
+# session wins, which is the session being worked in.
+if [ -n "$model_name" ]; then
+  model_state="${DOTFILES_STATE_DIR:-$HOME/.local/state/dotfiles}"
+  mkdir -p "$model_state" && printf '%s\n' "$model_name" >"$model_state/claude-model"
+fi
+
 # --- Context / token usage (green) ---
 used_pct=$(echo "$input" | jq -r '.context_window.used_percentage // empty')
 context_display=""

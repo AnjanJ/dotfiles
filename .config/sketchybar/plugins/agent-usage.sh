@@ -2,13 +2,13 @@
 
 # Claude usage plugin for SketchyBar.
 #
-# Shows how full the two Claude plan windows are, "5h 86% · 7d 25%" (plus
-# "· Fable 100%" when a per-model weekly limit is fuller), so a heavy
-# refactor can be timed for after a reset instead of hitting the wall halfway
-# through. The numbers come from `dotfiles agent usage --bar`, which
-# owns the credentials lookup, the endpoint call and a 60s cache; this file
-# only paints. The item hides itself when there is no Claude Code login, and
-# a click (argument "notify") posts a notification with the reset times.
+# Shows how full the two Claude plan windows are, "5h 86% · 7d 25%" (7d for
+# the model in use), so a heavy refactor can be timed for after a reset
+# instead of hitting the wall halfway through. The numbers come from
+# `dotfiles agent usage --bar`, which owns the credentials lookup, the
+# endpoint call and a 60s cache; this file only paints. The item hides itself
+# when there is no Claude Code login, and a click (argument "notify") posts a
+# notification with the reset times.
 
 # Sketchybar spawns plugins from the bar daemon's own environment, so the
 # `export`s in sketchybarrc do NOT reach them. colors.sh carries the same

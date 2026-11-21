@@ -256,8 +256,8 @@ dotfiles tap list                # What homebrew-tap/ holds and whether this mac
 dotfiles toggle update-notice off   # If the login line annoys you
 
 dotfiles agent usage             # Claude plan usage: the 5-hour session and the 7-day window, with reset times
-# The sketchybar item shows the same ("5h 86% · 7d 25%", plus "· Fable 100%" when a
-# per-model weekly limit is fuller), yellow at 70%, red at 90%; click it for a notification. dotfiles toggle agent-usage off hides it.
+# The sketchybar item shows the same ("5h 86% · 7d 25%", 7d for the model in use),
+# yellow at 70%, red at 90%; click it for a notification. dotfiles toggle agent-usage off hides it.
 ```
 
 ### While coding

@@ -168,7 +168,7 @@ $ explain-last
 
 ## Claude usage in the menu bar
 
-sketchybar shows `5h 86% · 7d 25%`: how full the 5-hour session window and the 7-day window of the Claude plan are. The 7-day figure is the all-models weekly limit, the one claude.ai shows as "This week". When a per-model weekly limit is fuller, the item names it too, `5h 8% · 7d 74% · Fable 100%`: that model is out until the weekly reset while the others still have room. White below 70%, yellow from 70%, red from 90% (whichever limit is fullest, per-model ones included), grey when the last fetch failed and the cached figure is showing. Click the item for a notification with the reset times, or ask the terminal:
+sketchybar shows `5h 86% · 7d 25%`: how full the 5-hour session window and the 7-day window of the Claude plan are. The 7-day figure is the weekly limit of the model you are using: its own per-model limit when it has one (Fable does), otherwise the all-models limit that claude.ai shows as "This week". The model is whichever one the Claude Code status line last showed, or the `model` in `~/.claude/settings.json` before any session has run. White below 70%, yellow from 70%, red from 90%, grey when the last fetch failed and the cached figure is showing. `dotfiles agent usage` lists every limit. Click the item for a notification with the reset times, or ask the terminal:
 
 ```bash
 dotfiles agent usage             # Session (5h)  86%  resets 10:19 (in 1h 12m) ...

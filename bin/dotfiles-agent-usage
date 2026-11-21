@@ -20,13 +20,15 @@
 # Exit 0 with data, 2 when no Claude Code login is found, 3 when the
 # endpoint could not be reached and nothing is cached.
 #
-# The bar's "7d" figure is the all-models weekly limit, the one claude.ai
-# shows as "This week". When a per-model weekly limit is fuller, the bar
-# names it too ("7d 74% · Fable 100%"): that model is blocked while the
-# others still have room, so one unnamed number would mislead either way.
-# The level follows the fullest limit of all, so a model running out still
-# turns the item red. Levels: critical at 90%, warning at 70%, stale when
-# the last fetch failed and the cache is being shown instead.
+# The bar's "7d" figure is the weekly limit of the model in use: its own
+# per-model limit when it has one (or the all-models limit, if that is
+# fuller, since its usage counts towards both), else the all-models limit,
+# the one claude.ai shows as "This week". The model is the one the Claude
+# Code status line last rendered (statusline-command.sh writes it to
+# ~/.local/state/dotfiles/claude-model), else the "model" in
+# ~/.claude/settings.json. The human summary lists every limit. Levels
+# follow the figures the bar shows: critical at 90%, warning at 70%, stale
+# when the last fetch failed and the cache is being shown instead.
 #
 # The token is never refreshed here: rotating it would invalidate the one
 # Claude Code holds. An expired token shows the last figures as stale until
@@ -34,7 +36,7 @@
 #
 # Overrides, mainly for tests: DOTFILES_AGENT_USAGE_CREDENTIALS (a
 # credentials JSON file), DOTFILES_AGENT_USAGE_URL, DOTFILES_CACHE_DIR,
-# DOTFILES_AGENT_USAGE_NOW (epoch seconds).
+# DOTFILES_AGENT_USAGE_NOW (epoch seconds), DOTFILES_STATE_DIR.
 
 set -euo pipefail
 
@@ -100,6 +102,15 @@ if [[ -n "$CREDS" ]]; then
     PLAN="$(printf '%s' "$CREDS" | jq -r '[.claudeAiOauth.subscriptionType, .claudeAiOauth.rateLimitTier] | map(select(. != null)) | join(", ")' 2>/dev/null || true)"
 fi
 
+# ---- model in use ----------------------------------------------------------
+
+MODEL=""
+MODEL_FILE="${DOTFILES_STATE_DIR:-$HOME/.local/state/dotfiles}/claude-model"
+[[ -r "$MODEL_FILE" ]] && MODEL="$(head -n 1 "$MODEL_FILE")"
+if [[ -z "$MODEL" && -r "$HOME/.claude/settings.json" ]]; then
+    MODEL="$(jq -r '.model // empty' "$HOME/.claude/settings.json" 2>/dev/null || true)"
+fi
+
 # ---- fetch and cache -------------------------------------------------------
 
 TOKEN_EXPIRED=0
@@ -160,7 +171,7 @@ fi
 # resets_at, with per-model scopes) when present, else the older
 # five_hour/seven_day objects. Timestamps become epoch seconds here so the
 # callers never parse ISO strings.
-# shellcheck disable=SC2016  # a jq program: $stale and $plan are jq variables
+# shellcheck disable=SC2016  # a jq program: $stale, $plan and $model are jq variables
 NORMALISE='
 def epoch: if . == null then null else (sub("\\.[0-9]+"; "") | sub("\\+00:00$"; "Z") | fromdateiso8601) end;
 def level: if . >= 90 then "critical" elif . >= 70 then "warning" else "normal" end;
@@ -169,6 +180,12 @@ def pick(g): [ (.response.limits // [])[] | select(.group == g) ];
 | (pick("session") | max_by(.percent)) as $s
 | (pick("weekly") | max_by(.percent)) as $w
 | (pick("weekly") | map(select(.scope == null)) | max_by(.percent)) as $wa
+| (($wa.percent // $r.seven_day.utilization // $w.percent // 0) | round) as $all
+| ($model | ascii_downcase) as $m
+| (pick("weekly")
+   | map(select((.scope.model.display_name // "") as $n
+                | $n != "" and ($m | contains($n | ascii_downcase))))
+   | max_by(.percent)) as $wm
 | (pick("weekly") | map({
       name: (.scope.model.display_name // "all"),
       percent: (.percent | round),
@@ -179,16 +196,19 @@ def pick(g): [ (.response.limits // [])[] | select(.group == g) ];
     week:    { percent: (($w.percent // $r.seven_day.utilization // 0) | round),
                resets_at: (($w.resets_at // $r.seven_day.resets_at) | epoch),
                scope: ($w.scope.model.display_name // "all") },
-    week_all: { percent: (($wa.percent // $r.seven_day.utilization // $w.percent // 0) | round) },
+    week_all: { percent: $all },
+    current:  { model: $model,
+                scope: ($wm.scope.model.display_name // "all"),
+                percent: ([$all, (($wm.percent // 0) | round)] | max) },
     weekly:  (if ($weekly | length) > 0 then $weekly
               else [{ name: "all", percent: (($r.seven_day.utilization // 0) | round), resets_at: ($r.seven_day.resets_at | epoch) }] end),
     fetched_at: .fetched_at,
     stale: $stale,
     plan: $plan }
-| .level = (if $stale then "stale" else ([.session.percent, .week.percent] | max | level) end)
+| .level = (if $stale then "stale" else ([.session.percent, .current.percent] | max | level) end)
 '
 
-DATA="$(jq --argjson stale "$STALE" --arg plan "$PLAN" "$NORMALISE" "$CACHE")"
+DATA="$(jq --argjson stale "$STALE" --arg plan "$PLAN" --arg model "$MODEL" "$NORMALISE" "$CACHE")"
 
 # ---- output ----------------------------------------------------------------
 
@@ -212,11 +232,7 @@ case "$MODE" in
         printf '%s\n' "$DATA"
         ;;
     bar)
-        # shellcheck disable=SC2016  # a jq program, not shell expansions
-        field '"5h \(.session.percent)% · 7d \(.week_all.percent)%"
-            + (if .week.scope != "all" and .week.percent > .week_all.percent
-               then " · \(.week.scope) \(.week.percent)%" else "" end)
-            + "\t\(.level)"'
+        field '"5h \(.session.percent)% · 7d \(.current.percent)%\t\(.level)"'
         ;;
     human|notify)
         s_pct="$(field .session.percent)"; s_at="$(field '.session.resets_at // empty')"

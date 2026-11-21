@@ -165,7 +165,7 @@ Every push and PR runs 37 test suites, an end-to-end install, shellcheck, `dotfi
 - **Keys** (`keys`) — aerospace.toml parsing, `# desc:` overrides, markdown, `--update`/`--check`, `--lint` (duplicate chords across modifier order, undescribed bindings, missing scripts) and the real config lints clean
 - **Agent** (`agent`) — default-agent state, launch commands, skill files present
 - **Agent model** (`agent-model`) — `dotfiles agent model` against a fake `ollama`: the rebuilt model uses the qwen3.5 renderer, starts from the weight blobs and inherits no generated template or `<think>` stop, the `hf.co` import name is removed (or kept with `--keep-import`), a second run does nothing, `--force` rebuilds, bash 3.2 parsing
-- **Agent usage** (`agent-usage`) — `dotfiles agent usage` against a fake curl and credentials file: sign-in detection, fetch, cache and `--refresh`, `--json`, `--bar` levels, stale and expired-token paths, `--notify` through a fake osascript, bash 3.2, and the sketchybar plugin painting through a fake sketchybar
+- **Agent usage** (`agent-usage`) — `dotfiles agent usage` against a fake curl and credentials file: sign-in detection, fetch, cache and `--refresh`, `--json`, `--bar` levels, the 7-day figure following the model the status line records, stale and expired-token paths, `--notify` through a fake osascript, bash 3.2, and the sketchybar plugin painting through a fake sketchybar
 - **Debug** (`debug`) — `dotfiles debug`: every section of the report, link states, the written file and clipboard copy, `--print`, `--no-copy`
 - **Doctor** (`doctor`) — auto-fix symlinks, permissions, dry-run mode
 - **Git setup** (`setup-git`) — identity configuration, work/personal split, smart defaults
