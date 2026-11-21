@@ -71,7 +71,9 @@ if [[ "$(uname)" != "Darwin" ]]; then
 fi
 
 STATE_DIR="${DOTFILES_STATE_DIR:-$HOME/.local/state/dotfiles}"
-mkdir -p "$STATE_DIR"
+# 700: transcripts and logs name paths, packages and hosts (see the
+# private-state-dir migration).
+mkdir -p "$STATE_DIR" && chmod 700 "$STATE_DIR"
 UPDATE_LOG="$STATE_DIR/update.log"
 
 # ── Transcript ────────────────────────────────
