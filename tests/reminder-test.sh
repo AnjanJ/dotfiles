@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Reminder — `dotfiles reminder`: the launchd agent plist, scheduling via a launchctl stub, show/clear, the `--fire` path (notification, self-removal, unload), validation
 
 # ============================================
 # REMINDER TEST SUITE

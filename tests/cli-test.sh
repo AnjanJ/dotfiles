@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: CLI router — route resolution, `--help` never executes, required-arg guard, metadata lint, JSON
 
 # ============================================
 # CLI ROUTER TEST SUITE

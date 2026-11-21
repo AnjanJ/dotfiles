@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Claude settings — `scripts/claude-settings.sh` against a fake repo: the live file generated from the base, Claude Code edits and deletions adopted, a pulled base not undone by a stale live file, both sides changing different keys, `autoMode` kept out of the base, invalid JSON left alone, a no-op run rewriting nothing; the migration on a machine whose local edits were auto-stashed, both when git applies them to the renamed base and when the pop conflicts; and the tracked base free of `autoMode` and `/Users/` paths
 
 # ============================================
 # CLAUDE SETTINGS TEST SUITE

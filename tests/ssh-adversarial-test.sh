@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: SSH config — adversarial inputs and edge cases
 # shellcheck disable=SC2155,SC2295,SC2034
 
 # ============================================

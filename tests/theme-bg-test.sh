@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Theme backgrounds — generated palette gradient, candidate order and cycling, `dotfiles theme bg` verbs, desktoppr/osascript setters, the toggle, set-on-switch-only from apply-theme
 
 # ============================================
 # THEME BACKGROUND TEST SUITE

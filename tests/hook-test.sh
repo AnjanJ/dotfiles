@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Hooks — sample hooks per event, `--seed` never overwriting, samples inert, `--list`, `dotfiles hook install`, every fired event known and sampled, `/bin/bash` 3.2
 # ============================================
 # HOOK SUITE — dotfiles hook, hook install, samples
 # ============================================

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Git setup — identity configuration, work/personal split, smart defaults
 
 # ============================================
 # SETUP-GIT TEST SUITE

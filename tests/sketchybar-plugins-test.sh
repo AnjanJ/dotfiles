@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Sketchybar plugins — the memory, battery, updates, front-app and aerospace plugins under `/bin/bash` 3.2 against fake `memory_pressure`, `sysctl`, `pmset`, `osascript`, `lsappinfo`, `aerospace` and `sketchybar`: memory colour from the kernel's pressure level, swap shown only under pressure, an unreadable level counted as normal; battery hidden on AC unless charging and without a battery, and each colour band's edges; updates hidden with nothing waiting, `↑ N` from the saved check, and the click notification; the focused app from the event's name, or from `lsappinfo` on the first paint; the workspace list without a leading space, focused one bracketed and kept when empty
 
 # ============================================
 # SKETCHYBAR PLUGINS TEST SUITE

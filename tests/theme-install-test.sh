@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Theme install — `dotfiles theme install/remove/update` against a local git "remote": URL and name validation, the user themes dir, staging only colour data from a cloned theme (dropped code and symlinks named, theme.conf parsed not sourced, nvim fallback), hand-written user themes trusted, reinstall, palette-only repos
 
 # ============================================
 # THEME INSTALL TEST SUITE

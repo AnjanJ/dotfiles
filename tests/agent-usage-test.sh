@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Agent usage — `dotfiles agent usage` against a fake curl and credentials file: sign-in detection, fetch, cache and `--refresh`, `--json`, `--bar` levels, the 7-day figure following the model the status line records, stale and expired-token paths, `--notify` through a fake osascript, bash 3.2, and the sketchybar plugin painting through a fake sketchybar
 
 # ============================================
 # AGENT USAGE TEST SUITE

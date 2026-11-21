@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Personal tap — `dotfiles tap check/install/update/list` against stub brew and curl: dropped casks and formulae found (the install receipt beating the short name, dependencies left out), keep/remove/skip, `--yes` only listing, download before uninstall, a failed download or fetch changing nothing, `dotfiles tap install` asking once per machine (yes, no, an answer given ahead of time, later additions installed unattended, a failed install retried), bumps limited to packages installed from the tap, a recipe another machine kept reused, version bumps written back to `homebrew-tap/`, a failed bump rolled back, the folder mirrored into Homebrew's working copy, recipe cleaning, Brewfile line removal, `/bin/bash` 3.2
 
 # ============================================
 # PERSONAL TAP TEST SUITE

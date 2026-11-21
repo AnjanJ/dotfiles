@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Work identity — setup, nuke and switch lifecycle
 # shellcheck disable=SC2155,SC2295,SC2012
 
 # ============================================

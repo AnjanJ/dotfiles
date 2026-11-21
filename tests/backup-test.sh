@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Backup — create, list, restore, prune cycle
 
 # ============================================
 # DOTFILES BACKUP TEST SUITE

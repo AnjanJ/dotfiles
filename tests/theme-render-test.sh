@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Theme renderer — token forms, colour maths, derived keys, error exits
 
 # ============================================
 # THEME RENDERER TEST SUITE

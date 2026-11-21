@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Update flow — symlink creation and refresh, plus the whole pipeline against stubs: lock, transcript, snapshot before upgrade, restart markers, `--yes`, Brewfile taps trusted before `brew upgrade`, a Brewfile change committed with a rebuilt catalog, the personal tap steps between `brew update` and `brew upgrade` (no drift for a kept package, `homebrew-tap/` committed alone, the `tap-auto-update` toggle)
 # shellcheck disable=SC2034
 
 # ============================================

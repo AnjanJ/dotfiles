@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
+# doc: Docs — suite counts in README/STRUCTURE/MAINTENANCE, this list, the THEMES.md app table, the skill's command table, toggles and hook events, all derived from the code, and `docs/PACKAGE_CATALOG.md` matching the Brewfile with every package described (`build-catalog.py --check`)
 # ============================================
 # DOCS SUITE — prose that must agree with the code
 # ============================================
 # The comparison with Omarchy found four docs describing a setup that
 # no longer existed. `dotfiles keys --check` fixed the keybindings;
-# this suite covers the rest: suite counts, the MAINTENANCE suite list,
-# the app list in THEMES.md, and the command table in the agent skill.
+# this suite covers the rest: the facts scripts/docs-sync.py generates
+# (suite counts, the Testing list, toggle lists), the app list in
+# THEMES.md, and the command table in the agent skill.
 # Every check derives the truth from the filesystem or the CLI, never
 # from another doc.
 # ============================================
@@ -14,36 +16,34 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/base-test.sh"
 
 cd "$ROOT"
 
-section "suite counts"
+section "generated facts: suite counts, the Testing list, toggle lists"
 
-suites=()
-for f in tests/*-test.sh; do
-    [[ "$f" == tests/base-test.sh ]] && continue
-    suites+=("$(basename "$f" -test.sh)")
-done
-count=${#suites[@]}
-[[ $count -gt 0 ]] || fail "suites discovered"
+# scripts/docs-sync.py derives these from tests/*-test.sh (each suite's
+# "# doc:" line) and bin/dotfiles-toggle's flag table; --check fails when a
+# doc lags. A new suite or toggle needs its own line plus one run of it.
+out=$(python3 scripts/docs-sync.py --check 2>&1) || fail "docs match their sources" "$out"
+pass "docs match their sources (scripts/docs-sync.py --check)"
 
-assert_file_contains README.md "$count CI suites" "README.md states the suite count ($count)"
-assert_file_contains docs/STRUCTURE.md "# $count suites" "docs/STRUCTURE.md states the suite count ($count)"
-assert_file_contains docs/MAINTENANCE.md "runs $count test suites" "docs/MAINTENANCE.md states the suite count ($count)"
-
-section "MAINTENANCE.md lists every suite"
-
-# Each bullet in the Testing list names its suite as (`area`), so a new
-# tests/<area>-test.sh must be described there and a removed one must
-# be dropped.
-# shellcheck disable=SC2016  # the backticks are literal markdown, not a command substitution
-listed=$(/usr/bin/grep -oE '^- \*\*[^*]+\*\* \(`[a-z0-9-]+`' docs/MAINTENANCE.md | /usr/bin/grep -oE '`[a-z0-9-]+`$' | tr -d '`')
-for area in "${suites[@]}"; do
-    /usr/bin/grep -qx "$area" <<<"$listed" || fail "docs/MAINTENANCE.md describes the $area suite" "add a '- **Name** (\`$area\`) — …' bullet under Testing"
-done
-pass "docs/MAINTENANCE.md describes every suite"
-while IFS= read -r area; do
-    [[ -n "$area" ]] || continue
-    [[ -f "tests/$area-test.sh" ]] || fail "every suite listed in docs/MAINTENANCE.md exists" "no tests/$area-test.sh for the (\`$area\`) bullet"
-done <<<"$listed"
-pass "every suite listed in docs/MAINTENANCE.md exists"
+# The check must actually catch drift: a copy with one more suite and one
+# more toggle reports the files that lag, and a sync fixes them.
+copy="$TEST_TMP/repo"
+mkdir -p "$copy/tests" "$copy/bin" "$copy/docs" "$copy/agents/skills/dotfiles" "$copy/scripts"
+cp tests/*-test.sh "$copy/tests/"
+cp bin/dotfiles-toggle "$copy/bin/"
+cp README.md QUICK_REFERENCE.md "$copy/"
+cp docs/STRUCTURE.md docs/MAINTENANCE.md "$copy/docs/"
+cp agents/skills/dotfiles/commands.md "$copy/agents/skills/dotfiles/"
+printf '#!/usr/bin/env bash\n# doc: Example — a suite added for this test\n' > "$copy/tests/zz-example-test.sh"
+/usr/bin/awk '{ if ($0 ~ /^#   tap-auto-update /) print "#   zz-flag        a flag added for this test"; print }' bin/dotfiles-toggle > "$copy/bin/dotfiles-toggle"
+set +e; out=$(DOCS_SYNC_ROOT="$copy" python3 scripts/docs-sync.py --check 2>&1); rc=$?; set -e
+assert_eq "$rc" "1" "--check fails when a suite and a toggle are added"
+assert_contains "$out" "README.md" "naming the suite count's doc"
+assert_contains "$out" "QUICK_REFERENCE.md" "and a toggle list's doc"
+DOCS_SYNC_ROOT="$copy" python3 scripts/docs-sync.py >/dev/null
+assert_succeeds "a sync brings the copy back in line" env DOCS_SYNC_ROOT="$copy" python3 scripts/docs-sync.py --check
+# shellcheck disable=SC2016  # backticks are literal markdown
+assert_file_contains "$copy/docs/MAINTENANCE.md" '^- \*\*Example\*\* (`zz-example`) — a suite added for this test$' "the new suite gets its bullet"
+assert_file_contains "$copy/bin/dotfiles-toggle" "^KNOWN_FLAGS=(.* zz-flag tap-auto-update)$" "and KNOWN_FLAGS gains the flag"
 
 section "THEMES.md app list"
 
@@ -94,11 +94,6 @@ while IFS=$'\t' read -r route _; do
 done < <(bin/dotfiles commands --plain)
 assert_eq "$missing" "" "agents/skills/dotfiles/commands.md documents every public route"
 
-# Toggles documented in the skill are the ones dotfiles-toggle knows.
-for flag in $(/usr/bin/grep -oE 'dotfiles:summary=.*\((.*)\)' bin/dotfiles-toggle | sed 's/.*(\(.*\))/\1/' | tr ',' ' '); do
-    /usr/bin/grep -q -- "\`$flag\`" agents/skills/dotfiles/commands.md || fail "skill documents every toggle" "$flag is missing from commands.md"
-done
-pass "skill documents every toggle"
 
 section "hook events"
 
@@ -117,12 +112,6 @@ section "front-door docs"
 # skill is what an agent reads. Each toggle, fired hook event, command
 # group and theme template must reach the human docs too, or a feature
 # ships visible only to agents.
-for flag in $(/usr/bin/grep -oE 'dotfiles:summary=.*\((.*)\)' bin/dotfiles-toggle | sed 's/.*(\(.*\))/\1/' | tr ',' ' '); do
-    for doc in QUICK_REFERENCE.md docs/MAINTENANCE.md; do
-        /usr/bin/grep -q -- "$flag" "$doc" || fail "$doc lists every toggle" "$flag is missing"
-    done
-done
-pass "QUICK_REFERENCE.md and MAINTENANCE.md list every toggle"
 for event in $fired; do
     /usr/bin/grep -q "$event" docs/MAINTENANCE.md || fail "docs/MAINTENANCE.md lists every hook event" "$event is missing"
 done

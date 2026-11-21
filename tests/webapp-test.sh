@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Web apps — `dotfiles webapp install/remove`: bundle, plist, icon conversion, AeroSpace rule placement and removal, URL and name validation
 
 # ============================================
 # WEB APP LAUNCHER TEST SUITE

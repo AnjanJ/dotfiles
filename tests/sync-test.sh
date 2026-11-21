@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Sync — symlink refresh, broken link repair, dry-run mode
 
 # ============================================
 # DOTFILES SYNC TEST SUITE

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Theme system — render, overrides, atomic swap, render lock, palette preview, failure leaves previous theme, editor settings generated from `settings.base.json` with in-app edits adopted, scaffolding, light-theme mode outputs and the macOS appearance switch
 
 # ============================================
 # THEME SYSTEM TEST SUITE

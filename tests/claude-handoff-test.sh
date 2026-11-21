@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Claude handoff — the status line records context usage per session, and the Stop hook offers a handoff prompt once at 45%
 # ============================================
 # CLAUDE HANDOFF SUITE — the 45% handoff offer
 # ============================================

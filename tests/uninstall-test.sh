@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Uninstall — removes every mapped symlink, leaves foreign links alone
 
 # ============================================
 # DOTFILES UNINSTALL TEST SUITE

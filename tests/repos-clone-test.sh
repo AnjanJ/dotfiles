@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Repo cloner — SSH alias detection and URL rewriting
 # shellcheck disable=SC2034,SC2001
 
 # ============================================

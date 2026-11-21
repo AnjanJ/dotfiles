@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Agent model — `dotfiles agent model` against a fake `ollama`: the rebuilt model uses the qwen3.5 renderer, starts from the weight blobs and inherits no generated template or `<think>` stop, the `hf.co` import name is removed (or kept with `--keep-import`), a second run does nothing, `--force` rebuilds, bash 3.2 parsing
 
 # ============================================
 # AGENT MODEL TEST SUITE

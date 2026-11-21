@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Font — `dotfiles font`: current/default, list via a fontconfig stub, set with verification, the state file, the re-render carrying `{{ font_family }}` into Ghostty, WezTerm, Zed and VS Code, the `font-set` hook, reset, `/bin/bash` 3.2
 # ============================================
 # FONT SUITE — dotfiles font
 # ============================================

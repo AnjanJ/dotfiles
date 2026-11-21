@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Style — the AGENTS.md rules shellcheck cannot express: shebang and strict mode, no `((VAR++))`, bash 3.2 builtins only on the install path, osascript never aimed at an app outside the watchdogged helpers
 # ============================================
 # STYLE SUITE — the AGENTS.md rules shellcheck cannot express
 # ============================================

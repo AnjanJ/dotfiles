@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Packages — Brewfile group parsing, filtering, saved selections, tap trust (one `brew trust` call, a tap that cannot be trusted named, Homebrew without `brew trust`, `/bin/bash` 3.2)
 
 # ============================================
 # PACKAGE GROUP SELECTION TEST SUITE

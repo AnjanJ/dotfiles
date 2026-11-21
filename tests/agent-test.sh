@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Agent — default-agent state, launch commands, skill files present
 
 # ============================================
 # DEFAULT AGENT + SKILL TEST SUITE

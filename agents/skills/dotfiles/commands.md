@@ -47,15 +47,17 @@
 
 Flag files under `~/.local/state/dotfiles/toggles/<flag>.off`; everything is on by default and survives updates.
 
-- `startup-apps` — the login session restore (`startup-apps.sh`)
-- `borders` — launching JankyBorders from AeroSpace
-- `auto-commit` — `dotfiles update` committing and pushing `snapshot: system state` (Brewfile, mise config and homebrew-tap/ only)
-- `appearance` — `dotfiles theme` switching macOS light/dark to match the theme
-- `background` — `dotfiles theme` setting the desktop picture
-- `update-notice` — the one-line "updates waiting" notice at shell login
-- `agent-usage` — the Claude usage item in sketchybar (`dotfiles restart sketchybar` to apply)
-- `update-item` — the "updates waiting" item in sketchybar (`dotfiles restart sketchybar` to apply)
-- `tap-auto-update` — `dotfiles update` moving the personal tap's packages to new upstream versions (`dotfiles tap update`)
+<!-- TOGGLES_START -->
+- `startup-apps` — .config/aerospace/scripts/startup-apps.sh session restore
+- `borders` — JankyBorders launch from aerospace after-startup-command
+- `auto-commit` — update.sh committing and pushing "snapshot: system state" (Brewfile, mise config and homebrew-tap/ only)
+- `appearance` — `dotfiles theme` switching macOS light/dark to the theme's mode
+- `background` — `dotfiles theme` / `dotfiles theme bg` setting the desktop picture
+- `update-notice` — the one-line "updates waiting" notice .zshrc prints at login
+- `agent-usage` — the Claude usage item in sketchybarrc (restart sketchybar to apply)
+- `update-item` — the "updates waiting" item in sketchybarrc (restart sketchybar to apply)
+- `tap-auto-update` — `dotfiles update` moving your personal tap's packages to new upstream versions
+<!-- TOGGLES_END -->
 
 `dotfiles toggle --list` shows state; scripts check `dotfiles-toggle --enabled <flag>`.
 

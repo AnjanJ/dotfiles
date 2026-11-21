@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Work status — status diagnostics for the work identity
 
 # ============================================
 # WORK STATUS & WORK SWITCH TEST SUITE

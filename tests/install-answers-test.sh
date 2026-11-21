@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Install answers — `scripts/install-answers.sh`: every key, flag/env precedence, arrays and booleans, unknown-key warnings, missing and invalid files, install.sh's `--answers` / `DOTFILES_ANSWERS` / `~/.dotfiles-answers.json` handling
 
 # ============================================
 # INSTALL ANSWERS TEST SUITE

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Shell helpers — the zsh functions in `.zshrc-terminal-enhancements` run under zsh: `gwa`/`gwr` worktrees against a temp repo with a mise stub, `compress`/`decompress` round trip, `fip`/`dip`/`lip` against ssh/pkill/pgrep stubs, usage errors
 # ============================================
 # SHELL SUITE — the zsh helper functions
 # ============================================

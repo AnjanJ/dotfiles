@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Keys — aerospace.toml parsing, `# desc:` overrides, markdown, `--update`/`--check`, `--lint` (duplicate chords across modifier order, undescribed bindings, missing scripts) and the real config lints clean
 
 # ============================================
 # KEYBINDING CHEATSHEET TEST SUITE

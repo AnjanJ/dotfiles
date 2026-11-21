@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Restart — `dotfiles restart` now/later/pending/list, the AeroSpace process-name case, borders relaunch honouring its toggle
 
 # ============================================
 # RESTART MARKER TEST SUITE

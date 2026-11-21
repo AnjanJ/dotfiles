@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Debug — `dotfiles debug`: every section of the report, link states, the written file and clipboard copy, `--print`, `--no-copy`
 # ============================================
 # DEBUG SUITE — dotfiles debug
 # ============================================

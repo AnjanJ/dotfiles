@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Update available — `dotfiles update available`: behind-origin count against a local bare origin, brew outdated via a stub, dropped packages and kept packages awaiting an answer, migrations and restart markers, the cache file, `--cached`, `--short`, `--quiet`, exit codes, a fetch that cannot reach origin
 # ============================================
 # UPDATE AVAILABLE SUITE — dotfiles update available
 # ============================================

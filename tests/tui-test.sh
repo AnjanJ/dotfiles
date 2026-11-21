@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: TUIs — `dotfiles tui install/remove`: Ghostty launch line, default float, Ghostty icon fallback, rule lifecycle
 
 # ============================================
 # TUI LAUNCHER TEST SUITE

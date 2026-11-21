@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Toggles — flag files, `--enabled` exit codes, listing
 
 # ============================================
 # TOGGLE TEST SUITE

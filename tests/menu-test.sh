@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Menu — `dotfiles menu`: rows per route, active theme and toggle state, launcher rows from installed bundles, user rows from `menu.d/*.tsv` (root rows, nested submenus, overrides, malformed lines), the commands route, `--run`, prompt rows, the numbered fallback picker
 
 # ============================================
 # MENU TEST SUITE

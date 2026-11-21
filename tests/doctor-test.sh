@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# doc: Doctor — auto-fix symlinks, permissions, dry-run mode
 
 # ============================================
 # DOTFILES DOCTOR TEST SUITE
