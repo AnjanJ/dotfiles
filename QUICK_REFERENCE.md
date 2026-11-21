@@ -206,7 +206,11 @@ These are configured automatically by `install.sh`:
 | `branch.sort -committerdate` | `git branch` shows most recent first |
 | `commit.verbose` | See the full diff while writing commit messages |
 | `merge.tool nvimdiff` | Use Neovim for 3-way merge conflict resolution |
-| `merge.conflictstyle diff3` | Show base, ours, and theirs in merge conflicts |
+| `merge.conflictstyle zdiff3` | Show base, ours, and theirs in merge conflicts, without repeating lines both sides share |
+| `pull.ff only` | A pull that cannot fast-forward stops instead of making a merge commit |
+| `fetch.prune` | Fetching drops branches deleted on the remote |
+| `rebase.autoStash` | Rebase stashes and restores uncommitted changes itself |
+| `gpg.format ssh` + 1Password | Signs commits with your 1Password SSH key once `~/.gitconfig.local` turns signing on |
 
 **Git shortcuts** (`ga`, `gc`, `gco`, `gb`, `gp`, `gl`, `gd`, `gdc`, `gclean` from `.zshrc-dhh-additions`, plus these from `.zshrc`):
 

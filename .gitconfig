@@ -5,7 +5,13 @@
 	excludesfile = ~/.gitignore_global
 	pager = delta
 [pull]
-	rebase = false
+	# A pull that cannot fast-forward stops instead of making a merge
+	# commit; rebase or merge on purpose.
+	ff = only
+[fetch]
+	prune = true
+[rebase]
+	autoStash = true
 [diff]
 	algorithm = histogram
 [rerere]
@@ -18,7 +24,7 @@
 	verbose = true
 [merge]
 	tool = nvimdiff
-	conflictstyle = diff3
+	conflictstyle = zdiff3
 [user]
 	name = Anjan Jagirdar
 	email = anjan.jagirdar@gmail.com
@@ -39,3 +45,15 @@
 [credential "https://gist.github.com"]
 	helper = 
 	helper = !/opt/homebrew/bin/gh auth git-credential
+[gpg]
+	format = ssh
+[gpg "ssh"]
+	# 1Password signs with the key it holds; nothing signs unless
+	# commit.gpgsign is on, which ~/.gitconfig.local sets per machine.
+	program = /Applications/1Password.app/Contents/MacOS/op-ssh-sign
+
+# Per-machine settings that must not be public or shared: the signing
+# key and commit.gpgsign. Last, so it overrides anything above; git skips
+# it when the file does not exist.
+[include]
+	path = ~/.gitconfig.local

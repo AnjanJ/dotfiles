@@ -269,7 +269,11 @@ help git-rebase   # Shows git rebase examples
 | `branch.sort -committerdate` | `git branch` shows most recently used first |
 | `commit.verbose` | Shows the full diff while you write commit messages |
 | `merge.tool nvimdiff` | Opens Neovim for 3-way merge conflict resolution |
-| `merge.conflictstyle diff3` | Shows base + ours + theirs in conflict markers |
+| `merge.conflictstyle zdiff3` | Shows base + ours + theirs in conflict markers, minus lines both sides share |
+| `pull.ff only` | A pull that cannot fast-forward stops; rebase or merge on purpose |
+| `fetch.prune` | Fetching drops branches deleted on the remote |
+| `rebase.autoStash` | Rebase stashes and restores uncommitted changes itself |
+| `gpg.format ssh` | Commit signing through 1Password, switched on per machine in `~/.gitconfig.local` |
 
 **Your git aliases**:
 ```bash
