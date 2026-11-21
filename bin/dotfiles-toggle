@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # dotfiles:summary=Turn a feature on or off with a flag file (startup-apps, borders, auto-commit, appearance, background, update-notice, agent-usage, update-item, tap-auto-update)
-# dotfiles:args=<flag> [on|off|toggle|status] | --list | --enabled <flag>
+# dotfiles:args=<flag> [on|off|toggle|status] [--custom] | --list | --enabled <flag>
 #
 # Toggle features without editing a config file — can be run from anywhere
-# Usage: dotfiles toggle <flag> [on|off|toggle|status]
+# Usage: dotfiles toggle <flag> [on|off|toggle|status] [--custom]
 #        dotfiles toggle --list
 #        dotfiles toggle --enabled <flag>      # exit 0 if on (for scripts)
 #
@@ -21,7 +21,11 @@
 #   update-item    the "updates waiting" item in sketchybarrc (restart sketchybar to apply)
 #   tap-auto-update  `dotfiles update` moving your personal tap's packages to new upstream versions
 #
-# Any other name works too; consumers just have to ask.
+# A flag of your own works too (consumers just have to ask), but switching
+# one off takes --custom: without it, a name that is not in the table is
+# refused with the nearest known flag, so a typo such as `autocommit off`
+# cannot quietly write a flag nothing reads. Reading any name (status,
+# --enabled, --list) and switching any flag on need no --custom.
 
 set -euo pipefail
 
@@ -29,15 +33,37 @@ TOGGLES_DIR="${DOTFILES_STATE_DIR:-$HOME/.local/state/dotfiles}/toggles"
 KNOWN_FLAGS=(startup-apps borders auto-commit appearance background update-notice agent-usage update-item tap-auto-update)
 
 usage() {
-    echo "Usage: dotfiles toggle <flag> [on|off|toggle|status]"
+    echo "Usage: dotfiles toggle <flag> [on|off|toggle|status] [--custom]"
     echo "       dotfiles toggle --list"
     echo "       dotfiles toggle --enabled <flag>   (exit 0 if on, 1 if off)"
     echo ""
     echo "Known flags: ${KNOWN_FLAGS[*]}"
+    echo "A flag of your own: add --custom when switching it off."
 }
 
 flag_file() { printf '%s/%s.off' "$TOGGLES_DIR" "$1"; }
 is_enabled() { [[ ! -f "$(flag_file "$1")" ]]; }
+
+is_known() {
+    local k
+    for k in "${KNOWN_FLAGS[@]}"; do
+        [[ "$k" == "$1" ]] && return 0
+    done
+    return 1
+}
+
+# The known flag a mistyped name most likely meant: the same letters
+# without hyphens (autocommit), or one name starting with the other
+# (border, startup). Prints nothing when none is close.
+nearest_flag() {
+    local k want="${1//-/}"
+    for k in "${KNOWN_FLAGS[@]}"; do
+        if [[ "${k//-/}" == "$want" ]] || { [[ ${#1} -ge 4 ]] && [[ "$k" == "$1"* || "$1" == "$k"* ]]; }; then
+            printf '%s' "$k"
+            return 0
+        fi
+    done
+}
 
 validate_flag() {
     if [[ ! "$1" =~ ^[a-z0-9][a-z0-9-]*$ ]]; then
@@ -76,9 +102,33 @@ case "${1:-}" in
         ;;
 esac
 
-FLAG="$1"
-ACTION="${2:-toggle}"
+CUSTOM=false
+ARGS=()
+for arg in "$@"; do
+    if [[ "$arg" == "--custom" ]]; then CUSTOM=true; else ARGS+=("$arg"); fi
+done
+FLAG="${ARGS[0]:-}"
+ACTION="${ARGS[1]:-toggle}"
+[[ -n "$FLAG" ]] || { usage >&2; exit 1; }
 validate_flag "$FLAG"
+
+# Refuse to switch an unknown name off without --custom (see the header).
+if [[ "$CUSTOM" == false ]] && ! is_known "$FLAG"; then
+    turns_off=false
+    case "$ACTION" in
+        off) turns_off=true ;;
+        toggle) is_enabled "$FLAG" && turns_off=true ;;
+    esac
+    if [[ "$turns_off" == true ]]; then
+        guess=$(nearest_flag "$FLAG")
+        hint=""
+        [[ -n "$guess" ]] && hint=". Did you mean '$guess'?"
+        echo "Error: '$FLAG' is not a known flag$hint" >&2
+        echo "Known flags: ${KNOWN_FLAGS[*]}" >&2
+        echo "For a flag of your own: dotfiles toggle $FLAG ${ARGS[1]:-off} --custom" >&2
+        exit 1
+    fi
+fi
 
 case "$ACTION" in
     on)

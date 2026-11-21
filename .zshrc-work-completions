@@ -30,7 +30,7 @@ _dotfiles() {
             _describe 'event' events
             ;;
         toggle)
-            # Every flag dotfiles-toggle knows plus any ad-hoc one that is off.
+            # Every flag dotfiles-toggle knows plus any of your own that is off.
             local -a flags=($(dotfiles-toggle --list 2>/dev/null | awk '{print $1}'))
             _describe 'flag' flags
             ;;

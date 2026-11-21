@@ -98,7 +98,7 @@ def render():
         lambda m: m.group(1) + ", ".join(flags) + m.group(2), "MAINTENANCE toggles"))
     skill = "agents/skills/dotfiles/commands.md"
     edit(skill, lambda x: sub_once(
-        x, r"^(\| `dotfiles toggle <flag> \[on\\\|off\]` \| flip ).*?( \(or any name\) \|)",
+        x, r"^(\| `dotfiles toggle <flag> \[on\\\|off\]` \| flip ).*?( \(or a name of your own, off with `--custom`\) \|)",
         lambda m: m.group(1) + ", ".join(f"`{f}`" for f in flags) + m.group(2), "skill toggle row"))
     edit(skill, lambda x: between(x, "<!-- TOGGLES_START -->", "<!-- TOGGLES_END -->",
                                   "".join(f"- `{f}` — {d}\n" for f, d in t)))
