@@ -28,6 +28,11 @@ THEME="${DOTFILES_THEME:-tokyo-night}"
 LOG="$TEST_TMP/install.log"
 E2E_ROOT="$TEST_TMP/dotfiles"
 cp -R "$ROOT" "$E2E_ROOT"
+# Drop gitignored files (the generated settings and theme files a used
+# checkout has) so the copy looks like a fresh clone, as on CI. Without
+# this a link to a file that only a render creates passes locally and
+# fails on a new machine.
+git -C "$E2E_ROOT" clean -fdXq 2>/dev/null || true
 # Local edits in the checkout come along with the copy; remember them so
 # the "install rewrote a tracked file" check below only sees new drift.
 DIRTY_BEFORE=$(git -C "$E2E_ROOT" status --porcelain 2>/dev/null || true)
