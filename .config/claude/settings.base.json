@@ -9,12 +9,14 @@
     "allow": [],
     "deny": [
       "Read(**/.env*)",
-      "Read(**/.pem)",
-      "Read(**/.key)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)",
       "Read(**/secrets/**)",
       "Read(**/credentials/**)",
       "Read(**/.aws/**)",
       "Read(**/.ssh/**)",
+      "Read(~/.config/gh/**)",
+      "Bash(security find-generic-password:*)",
       "SendFeedback",
       "ScheduleWakeup",
       "ListAgents"
