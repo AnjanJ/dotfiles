@@ -136,7 +136,7 @@ dotfiles install --no-macos-defaults --no-runtimes                  # Skip the m
 
 ## Testing
 
-Every push and PR runs 39 test suites, an end-to-end install, shellcheck, `dotfiles commands --check`, `dotfiles keys --check` and `dotfiles keys --lint` via GitHub Actions. The suites are discovered from `tests/*-test.sh`, so a new file is in CI the moment it exists:
+Every push and PR runs 41 test suites, an end-to-end install, shellcheck, `dotfiles commands --check`, `dotfiles keys --check` and `dotfiles keys --lint` via GitHub Actions. The suites are discovered from `tests/*-test.sh`, so a new file is in CI the moment it exists:
 
 - **Shellcheck** — lints all shell scripts
 <!-- SUITES_START -->
@@ -146,6 +146,7 @@ Every push and PR runs 39 test suites, an end-to-end install, shellcheck, `dotfi
 - **Backup** (`backup`) — create, list, restore, prune cycle
 - **Claude handoff** (`claude-handoff`) — the status line records context usage per session, and the Stop hook offers a handoff prompt once at 45%
 - **Claude settings** (`claude-settings`) — `scripts/claude-settings.sh` against a fake repo: the live file generated from the base, Claude Code edits and deletions adopted, a pulled base not undone by a stale live file, both sides changing different keys, `autoMode` kept out of the base, invalid JSON left alone, a no-op run rewriting nothing; the migration on a machine whose local edits were auto-stashed, both when git applies them to the renamed base and when the pop conflicts; and the tracked base free of `autoMode` and `/Users/` paths
+- **Cleanup** (`cleanup`) — `dotfiles cleanup` against a fake brew: the dry run never passes `--force`, `--force` does and then runs `brew cleanup`, packages kept in the personal tap reach the Brewfile brew is handed so they are never removed, a clean system says so, a missing Brewfile stops it, and bash 3.2
 - **CLI router** (`cli`) — route resolution, `--help` never executes, required-arg guard, metadata lint, JSON
 - **Debug** (`debug`) — `dotfiles debug`: every section of the report, link states, the written file and clipboard copy, `--print`, `--no-copy`
 - **Docs** (`docs`) — suite counts in README/STRUCTURE/MAINTENANCE, this list, the THEMES.md app table, the skill's command table, toggles and hook events, all derived from the code, and `docs/PACKAGE_CATALOG.md` matching the Brewfile with every package described (`build-catalog.py --check`)
@@ -156,6 +157,7 @@ Every push and PR runs 39 test suites, an end-to-end install, shellcheck, `dotfi
 - **Install answers** (`install-answers`) — `scripts/install-answers.sh`: every key, flag/env precedence, arrays and booleans, unknown-key warnings, missing and invalid files, install.sh's `--answers` / `DOTFILES_ANSWERS` / `~/.dotfiles-answers.json` handling
 - **Keys** (`keys`) — aerospace.toml parsing, `# desc:` overrides, markdown, `--update`/`--check`, `--lint` (duplicate chords across modifier order, undescribed bindings, missing scripts) and the real config lints clean
 - **Menu** (`menu`) — `dotfiles menu`: rows per route, active theme and toggle state, launcher rows from installed bundles, user rows from `menu.d/*.tsv` (root rows, nested submenus, overrides, malformed lines), the commands route, `--run`, prompt rows, the numbered fallback picker
+- **Migrate** (`migrate`) — `dotfiles migrate` against a fake repo: pending list and exit codes, filename order, each migration once with DOTFILES_DIR exported, a failing one kept pending while the rest run, `--dry-run` running and marking nothing, `--new` and its slug check, bash 3.2; and the repo's own migrations: every one parses, and the private-state-dir and drop-lsd-colors repairs do what they say and are idempotent
 - **Packages** (`packages`) — Brewfile group parsing, filtering, saved selections, tap trust (one `brew trust` call, a tap that cannot be trusted named, Homebrew without `brew trust`, `/bin/bash` 3.2)
 - **Reminder** (`reminder`) — `dotfiles reminder`: the launchd agent plist, scheduling via a launchctl stub, show/clear, the `--fire` path (notification, self-removal, unload), validation
 - **Repo cloner** (`repos-clone`) — SSH alias detection and URL rewriting
