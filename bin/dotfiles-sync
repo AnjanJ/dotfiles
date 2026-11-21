@@ -75,8 +75,8 @@ _check_link() {
     if [[ "$DRY_RUN" == true ]]; then
         echo "  Would link: $name → $source"
     else
-        mkdir -p "$(dirname "$target")"
-        ln -sf "$source" "$target"
+        dotfiles_link "$source" "$target"
+        [[ "$DOTFILES_LINK_RESULT" == replaced ]] && print_warning "$name: replaced an existing file or directory (backed up)"
         print_success "$name refreshed"
     fi
     CHANGES=$((CHANGES + 1))

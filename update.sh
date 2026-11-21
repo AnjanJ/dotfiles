@@ -402,11 +402,11 @@ create_symlink() {
     local target="$2"
     local name="$3"
 
-    if [ -L "$target" ] && [ "$(readlink "$target")" = "$source" ]; then
+    dotfiles_link "$source" "$target"
+    if [ "$DOTFILES_LINK_RESULT" = current ]; then
         print_success "$name already up to date"
     else
-        mkdir -p "$(dirname "$target")"
-        ln -sf "$source" "$target"
+        [ "$DOTFILES_LINK_RESULT" = replaced ] && print_warning "$name: replaced an existing file or directory (backed up)"
         print_success "$name refreshed"
         # A relinked live config is a changed live config to its app
         case "$source" in

@@ -96,6 +96,32 @@ DOTFILES_OPTIONAL_LINKS=(
 # optional links, whose agent directory exists). Pure iteration —
 # no mkdir/ln side effects here, so checkers can use it without mutating
 # anything; fixer callbacks create parent directories themselves.
+# dotfiles_link <source> <target>
+# Points <target> at <source> the one safe way, for install, update and
+# sync alike. A real file or directory at the target is backed up
+# (backup_if_needed, from scripts/_helpers.sh, which callers source) and
+# removed first: `ln -sf` over a directory would nest the link inside it,
+# and over a file would discard it. -n keeps a symlink to a directory from
+# being followed for the same reason. Sets DOTFILES_LINK_RESULT to
+# "current" (already right), "linked", or "replaced" (a real file or
+# directory was backed up and replaced).
+# shellcheck disable=SC2034  # DOTFILES_LINK_RESULT is read by the caller
+dotfiles_link() {
+    local source="$1" target="$2"
+    if [[ -L "$target" && "$(readlink "$target")" == "$source" ]]; then
+        DOTFILES_LINK_RESULT=current
+        return 0
+    fi
+    DOTFILES_LINK_RESULT=linked
+    if [[ -e "$target" && ! -L "$target" ]]; then
+        backup_if_needed "$target"
+        rm -rf "$target"
+        DOTFILES_LINK_RESULT=replaced
+    fi
+    mkdir -p "$(dirname "$target")"
+    ln -sfn "$source" "$target"
+}
+
 dotfiles_for_each_link() {
     local _cb="$1" _entry _name _src _dst _dir _file
     for _entry in "${DOTFILES_LINKS[@]}"; do

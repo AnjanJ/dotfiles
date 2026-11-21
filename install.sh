@@ -663,7 +663,9 @@ _CURRENT_STEP="Step 4: creating symlinks"
 echo ""
 print_step "Step 4: Creating symlinks..."
 
-# Helper function to create symlink with idempotent backup
+# Links go through dotfiles_link (scripts/symlink-map.sh, sourced below),
+# which backs up and replaces a real file or directory instead of linking
+# into it. --force only skips the "already linked" shortcut.
 create_symlink() {
     local source="$1"
     local target="$2"
@@ -673,21 +675,10 @@ create_symlink() {
         print_success "$name already linked"
         return 0
     fi
-
-    backup_if_needed "$target"
-
-    # A real (non-symlink) directory at the target must be REMOVED, not
-    # linked over: `ln -sf dir existing_dir` silently nests the link inside
-    # it. backup_if_needed has already copied it to $BACKUP_DIR, so this is
-    # recoverable. This also repairs machines broken by the old step-3
-    # mkdir behaviour.
-    if [ -d "$target" ] && [ ! -L "$target" ]; then
-        rm -rf "$target"
-        print_warning "$name: replaced existing directory (backed up)"
+    dotfiles_link "$source" "$target"
+    if [ "$DOTFILES_LINK_RESULT" = replaced ]; then
+        print_warning "$name: replaced an existing file or directory (backed up)"
     fi
-
-    mkdir -p "$(dirname "$target")"
-    ln -sf "$source" "$target"
     print_success "$name linked"
 }
 

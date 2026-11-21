@@ -4,8 +4,8 @@
 # ============================================
 # UPDATE.SH TEST SUITE
 # ============================================
-# Tests for update.sh: symlink creation, idempotency, broken link
-# handling, OS guard, and the whole pipeline against stubs (lock,
+# Tests for update.sh: dotfiles_link (create, repoint, back up and replace
+# real files and directories), OS guard, and the whole pipeline against stubs (lock,
 # transcript, snapshot, restart markers, --yes).
 #
 # Uses a temporary HOME directory — no real configs touched.
@@ -30,123 +30,82 @@ teardown_sandbox() {
     rm -rf "$TEST_HOME"
 }
 
-# ── Extracted: create_symlink from update.sh ──
-create_symlink() {
-    local source="$1"
-    local target="$2"
-    local name="$3"
-
-    if [ -L "$target" ] && [ "$(readlink "$target")" = "$source" ]; then
-        echo "up-to-date"
-    else
-        ln -sf "$source" "$target"
-        echo "refreshed"
-    fi
+# ── dotfiles_link: the one link function install, update and sync use ──
+# Each test sources the real scripts/_helpers.sh and scripts/symlink-map.sh
+# into a subshell with the sandbox HOME, so nothing here is a copy.
+link() {   # link <source> <target>; prints DOTFILES_LINK_RESULT
+    # shellcheck disable=SC2016  # the program runs in the child bash
+    env -u _HELPERS_LOADED HOME="$TEST_HOME" BACKUP_DIR="$TEST_HOME/.dotfiles_backup" DOTFILES_DIR="$DOTFILES_DIR" \
+        bash -c 'source "$DOTFILES_DIR/scripts/_helpers.sh" >/dev/null
+                 source "$DOTFILES_DIR/scripts/symlink-map.sh"
+                 dotfiles_link "$1" "$2" >/dev/null 2>&1
+                 echo "$DOTFILES_LINK_RESULT"' _ "$1" "$2"
 }
 
 # ── Tests ─────────────────────────────────────
 
-test_27_create_symlink_new() {
+test_27_link_new_current_and_wrong() {
     echo ""
-    section "Test 27: create_symlink creates link when none exists"
+    section "Test 27: dotfiles_link creates, leaves alone, and repoints"
     setup_sandbox
-
-    local source_file="$TEST_HOME/dotfiles/myconfig"
-    local target_link="$TEST_HOME/.myconfig"
-    mkdir -p "$TEST_HOME/dotfiles"
-    echo "config content" > "$source_file"
-
-    local result
-    result=$(create_symlink "$source_file" "$target_link" "myconfig")
-    assert_eq "$result" "refreshed" "Reports refreshed for new link"
-
-    if [[ -L "$target_link" ]]; then
-        pass "Symlink created"
-        local actual_target
-        actual_target=$(readlink "$target_link")
-        assert_eq "$actual_target" "$source_file" "Symlink points to correct source"
-    else
-        fail "Symlink not created"
-    fi
-
+    local src="$TEST_HOME/dotfiles/myconfig" old="$TEST_HOME/dotfiles/old" t="$TEST_HOME/.myconfig"
+    mkdir -p "$TEST_HOME/dotfiles" && echo new > "$src" && echo old > "$old"
+    assert_eq "$(link "$src" "$t")" "linked" "a missing link is created"
+    assert_eq "$(readlink "$t")" "$src" "pointing at the source"
+    assert_eq "$(link "$src" "$t")" "current" "a correct link is left alone"
+    ln -sfn "$old" "$t"
+    assert_eq "$(link "$src" "$t")" "linked" "a link to the wrong source is repointed"
+    assert_eq "$(readlink "$t")" "$src" "to the right one"
+    ln -sfn "$TEST_HOME/nonexistent" "$t"
+    assert_eq "$(link "$src" "$t")" "linked" "a broken link is repaired"
+    assert_dir_not_exists "$TEST_HOME/.dotfiles_backup" "links are never backed up"
     teardown_sandbox
 }
 
-test_28_create_symlink_already_correct() {
+test_28_link_over_real_file() {
     echo ""
-    section "Test 28: create_symlink is no-op when link already correct"
+    section "Test 28: a real file is backed up at its own path, then replaced"
     setup_sandbox
-
-    local source_file="$TEST_HOME/dotfiles/myconfig"
-    local target_link="$TEST_HOME/.myconfig"
-    mkdir -p "$TEST_HOME/dotfiles"
-    echo "config content" > "$source_file"
-
-    # Create correct symlink first
-    ln -sf "$source_file" "$target_link"
-
-    local result
-    result=$(create_symlink "$source_file" "$target_link" "myconfig")
-    assert_eq "$result" "up-to-date" "Reports up-to-date for existing correct link"
-
+    local src="$TEST_HOME/dotfiles/settings.json"
+    mkdir -p "$TEST_HOME/dotfiles" "$TEST_HOME/.config/zed" "$TEST_HOME/.claude" && echo '{}' > "$src"
+    echo "zed's own" > "$TEST_HOME/.config/zed/settings.json"
+    echo "claude's own" > "$TEST_HOME/.claude/settings.json"
+    assert_eq "$(link "$src" "$TEST_HOME/.config/zed/settings.json")" "replaced" "a real file is replaced"
+    assert_eq "$(link "$src" "$TEST_HOME/.claude/settings.json")" "replaced" "so is a second one with the same name"
+    assert_eq "$(cat "$TEST_HOME/.dotfiles_backup/.config/zed/settings.json")" "zed's own" "each backup keeps its path"
+    assert_eq "$(cat "$TEST_HOME/.dotfiles_backup/.claude/settings.json")" "claude's own" "so same-named files do not collide"
+    rm "$TEST_HOME/.claude/settings.json" && echo "newer data" > "$TEST_HOME/.claude/settings.json"
+    link "$src" "$TEST_HOME/.claude/settings.json" >/dev/null
+    assert_eq "$(cat "$TEST_HOME/.dotfiles_backup/.claude/settings.json")" "claude's own" "an existing backup is kept"
+    assert_eq "$(cat "$TEST_HOME"/.dotfiles_backup/.claude/settings.json.* )" "newer data" "and the new copy gets a timestamped sibling"
     teardown_sandbox
 }
 
-test_29_create_symlink_broken() {
+test_29_link_over_directory() {
     echo ""
-    section "Test 29: create_symlink overwrites broken symlink"
+    section "Test 29: a directory is replaced, never linked into"
     setup_sandbox
-
-    local source_file="$TEST_HOME/dotfiles/myconfig"
-    local target_link="$TEST_HOME/.myconfig"
-    mkdir -p "$TEST_HOME/dotfiles"
-    echo "config content" > "$source_file"
-
-    # Create broken symlink (points to non-existent file)
-    ln -sf "$TEST_HOME/nonexistent" "$target_link"
-
-    # Verify it's broken
-    if [[ ! -e "$target_link" ]]; then
-        pass "Pre-condition: symlink is broken"
-    else
-        fail "Pre-condition: symlink should be broken"
-    fi
-
-    local result
-    result=$(create_symlink "$source_file" "$target_link" "myconfig")
-    assert_eq "$result" "refreshed" "Reports refreshed for broken link"
-
-    local actual_target
-    actual_target=$(readlink "$target_link")
-    assert_eq "$actual_target" "$source_file" "Fixed to correct source"
-
+    local src="$TEST_HOME/dotfiles/nvim" other="$TEST_HOME/elsewhere/nvim" t="$TEST_HOME/.config/nvim"
+    mkdir -p "$src" "$other" "$t" && echo mine > "$t/init.lua"
+    assert_eq "$(link "$src" "$t")" "replaced" "a real directory is replaced"
+    assert_eq "$(readlink "$t")" "$src" "by the link"
+    assert_file_not_exists "$src/nvim" "nothing nested inside the source"
+    assert_eq "$(cat "$TEST_HOME/.dotfiles_backup/.config/nvim/init.lua")" "mine" "its contents are backed up"
+    ln -sfn "$other" "$t"
+    assert_eq "$(link "$src" "$t")" "linked" "a link to another directory is repointed"
+    assert_eq "$(readlink "$t")" "$src" "not followed"
+    assert_file_not_exists "$other/nvim" "and nothing is nested in the old directory"
     teardown_sandbox
 }
 
-test_30_create_symlink_wrong_target() {
+test_30_every_caller_uses_dotfiles_link() {
     echo ""
-    section "Test 30: create_symlink overwrites link pointing to wrong target"
-    setup_sandbox
-
-    local source_file="$TEST_HOME/dotfiles/myconfig"
-    local wrong_source="$TEST_HOME/dotfiles/old-myconfig"
-    local target_link="$TEST_HOME/.myconfig"
-    mkdir -p "$TEST_HOME/dotfiles"
-    echo "new content" > "$source_file"
-    echo "old content" > "$wrong_source"
-
-    # Create symlink to wrong target
-    ln -sf "$wrong_source" "$target_link"
-
-    local result
-    result=$(create_symlink "$source_file" "$target_link" "myconfig")
-    assert_eq "$result" "refreshed" "Reports refreshed for wrong-target link"
-
-    local actual_target
-    actual_target=$(readlink "$target_link")
-    assert_eq "$actual_target" "$source_file" "Updated to correct source"
-
-    teardown_sandbox
+    section "Test 30: install, update and sync link through dotfiles_link"
+    local f
+    for f in install.sh update.sh bin/dotfiles-sync; do
+        assert_file_contains "$DOTFILES_DIR/$f" "dotfiles_link \"\$source\" \"\$target\"" "$f calls dotfiles_link"
+        assert_file_not_contains "$DOTFILES_DIR/$f" "ln -sf \"\$source\" \"\$target\"" "$f has no bare ln -sf of its own"
+    done
 }
 
 test_31_macos_only_guard() {
@@ -584,10 +543,10 @@ echo "╔═══════════════════════�
 echo "║   Update.sh Test Suite                                     ║"
 echo "╚═══════════════════════════════════════════════════════════╝"
 
-test_27_create_symlink_new
-test_28_create_symlink_already_correct
-test_29_create_symlink_broken
-test_30_create_symlink_wrong_target
+test_27_link_new_current_and_wrong
+test_28_link_over_real_file
+test_29_link_over_directory
+test_30_every_caller_uses_dotfiles_link
 test_31_macos_only_guard
 test_32_help_and_flags
 test_33_quiet_run

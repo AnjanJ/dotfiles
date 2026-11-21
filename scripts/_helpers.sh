@@ -42,9 +42,13 @@ print_fail() {
 
 BACKUP_DIR="${BACKUP_DIR:-$HOME/.dotfiles_backup}"
 
-# ── Idempotent Backup ─────────────────────────
-# Only backs up real files/dirs that are about to be replaced.
-# Skips symlinks (those are ours) and already-backed-up files.
+# ── Backup ────────────────────────────────────
+# Copies a real file or directory that is about to be replaced into
+# $BACKUP_DIR at its path relative to $HOME (~/.config/zed/settings.json →
+# $BACKUP_DIR/.config/zed/settings.json), so targets that share a name
+# never share a backup. Symlinks are ours and are skipped. A backup that
+# already exists is kept and the new copy gets a timestamp suffix: a real
+# file showing up again at a managed path is new data, never a duplicate.
 
 backup_if_needed() {
     local target="$1"
@@ -55,13 +59,11 @@ backup_if_needed() {
     # Symlinks are ours — no backup needed
     [[ -L "$target" ]] && return 0
 
-    mkdir -p "$BACKUP_DIR"
-    local name
-    name=$(basename "$target")
-
-    # Don't overwrite an existing backup
-    if [[ ! -e "$BACKUP_DIR/$name" ]]; then
-        cp -r "$target" "$BACKUP_DIR/$name"
-        print_warning "Backed up $target → $BACKUP_DIR/$name"
-    fi
+    local rel="${target#"$HOME"/}"
+    [[ "$rel" == "$target" ]] && rel="${target#/}"
+    local dest="$BACKUP_DIR/$rel"
+    [[ -e "$dest" || -L "$dest" ]] && dest="$dest.$(date +%Y%m%d-%H%M%S)"
+    mkdir -p "$(dirname "$dest")"
+    cp -R "$target" "$dest"
+    print_warning "Backed up $target → $dest"
 }
