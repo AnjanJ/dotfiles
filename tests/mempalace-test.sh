@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# doc: MemPalace — `dotfiles mempalace setup`: installs the uv tool when missing, registers the MCP server with Claude Code once, writes and loads the shared-hub LaunchAgent and leaves a healthy hub alone, --no-hub and --remove-hub, a hub that is slow to start, `dotfiles restart mempalace-hub`, bash 3.2
+# doc: MemPalace — `dotfiles health` warns about a missing install, registration or hub and fails on a palace inside a git work tree; `dotfiles mempalace setup`: installs the uv tool when missing, registers the MCP server with Claude Code once, writes and loads the shared-hub LaunchAgent and leaves a healthy hub alone, --no-hub and --remove-hub, a hub that is slow to start, `dotfiles restart mempalace-hub`, bash 3.2
 
 # Every external command is a stub that records its arguments; HOME, the
 # LaunchAgents folder and ~/.claude.json are temporary. Nothing real is
@@ -146,6 +146,37 @@ touch "$TEST_TMP/loaded"
 out=$(bash "$RESTART" mempalace-hub 2>&1)
 assert_eq "$(called "launchctl kickstart -k gui/$(id -u)/com.dotfiles.mempalace-hub")" "1" "a loaded hub is restarted with kickstart -k"
 assert_contains "$out" "mempalace-hub: restarted" "and reported"
+
+section "dotfiles health"
+# The real health check in this HOME; only its MemPalace section is read.
+# It exits non-zero here (nothing else is installed), which does not matter.
+health() { { bash "$ROOT/scripts/health-check.sh" 2>&1 || true; } | sed $'s/\x1b\\[[0-9;]*m//g' | sed -n '/14. MemPalace/,/Health Check Summary/p'; }
+rm -rf "$HOME/.local/bin" "$HOME/.claude" "$HOME/.mempalace" "$DOTFILES_CLAUDE_JSON"
+rm -f "$PLIST"
+assert_eq "$(health)" "" "a machine that does not use MemPalace gets no MemPalace section"
+mkdir -p "$HOME/.claude" && echo "Notes live in MemPalace." > "$HOME/.claude/CLAUDE.md"
+out=$(health)
+assert_contains "$out" "mempalace-mcp: not installed, though CLAUDE.md uses MemPalace" "CLAUDE.md using MemPalace without it installed warns"
+assert_contains "$out" "no mempalace server registered" "a missing registration warns"
+assert_contains "$out" "only one Claude Code session at a time can write" "no hub warns, saying what it costs"
+mkdir -p "$HOME/.local/bin" "$HOME/.mempalace" "$DOTFILES_LAUNCH_AGENTS_DIR"
+printf '#!/bin/bash\n' > "$HOME/.local/bin/mempalace-mcp" && chmod +x "$HOME/.local/bin/mempalace-mcp"
+printf '{"mcpServers":{"mempalace":{"command":"mempalace-mcp"}}}\n' > "$DOTFILES_CLAUDE_JSON"
+touch "$PLIST" "$TEST_TMP/hub-up"
+chmod 700 "$HOME/.mempalace"
+out=$(health)
+assert_contains "$out" "✓ mempalace-mcp: $HOME/.local/bin/mempalace-mcp" "an installed mempalace-mcp passes"
+assert_contains "$out" "✓ Claude Code: mempalace server registered" "so does the registration"
+assert_contains "$out" "✓ Shared hub: running on 127.0.0.1:8765" "and a hub that answers"
+assert_contains "$out" "✓ Palace data: private (700) and outside every git repo" "and private palace data"
+rm -f "$TEST_TMP/hub-up"
+assert_contains "$(health)" "Shared hub: not answering" "a hub that does not answer warns"
+chmod 755 "$HOME/.mempalace"
+assert_contains "$(health)" "readable by other accounts" "a palace other accounts can read warns"
+git init -q "$HOME"
+out=$(health)
+assert_contains "$out" "✗ Palace data: ~/.mempalace is inside a git work tree" "a palace inside a git work tree fails the health check"
+rm -rf "$HOME/.git"
 
 section "bash 3.2"
 rc=0; /bin/bash "$SETUP" --no-hub >/dev/null 2>&1 || rc=$?

@@ -621,6 +621,62 @@ else
 fi
 
 # ============================================
+# 14. MEMPALACE (only where it is used)
+# ============================================
+# Shown when the global CLAUDE.md tells Claude to use MemPalace or it is
+# installed; machines without it see nothing. Everything is a warning
+# except the one privacy rule: the palace must never sit inside a git
+# work tree, where a commit could take it to GitHub.
+mp_claude_md="$HOME/.claude/CLAUDE.md"
+mp_bin=$(PATH="$HOME/.local/bin:$PATH" command -v mempalace-mcp 2>/dev/null || true)
+if [[ -n "$mp_bin" ]] || { [[ -f "$mp_claude_md" ]] && grep -qi mempalace "$mp_claude_md"; }; then
+    print_header "14. MemPalace"
+    if [[ -n "$mp_bin" ]]; then
+        echo -e "${GREEN}✓${NC} mempalace-mcp: ${GREEN}$mp_bin${NC}"
+        PASSED=$((PASSED + 1))
+    else
+        echo -e "${YELLOW}⚠${NC} mempalace-mcp: ${YELLOW}not installed, though CLAUDE.md uses MemPalace (run: dotfiles mempalace setup)${NC}"
+        WARNINGS=$((WARNINGS + 1))
+    fi
+
+    mp_claude_json="${DOTFILES_CLAUDE_JSON:-$HOME/.claude.json}"
+    if [[ -f "$mp_claude_json" ]] && command -v jq >/dev/null 2>&1 \
+        && jq -e '.mcpServers.mempalace' "$mp_claude_json" >/dev/null 2>&1; then
+        echo -e "${GREEN}✓${NC} Claude Code: ${GREEN}mempalace server registered${NC}"
+        PASSED=$((PASSED + 1))
+    else
+        echo -e "${YELLOW}⚠${NC} Claude Code: ${YELLOW}no mempalace server registered (run: dotfiles mempalace setup)${NC}"
+        WARNINGS=$((WARNINGS + 1))
+    fi
+
+    mp_plist="${DOTFILES_LAUNCH_AGENTS_DIR:-$HOME/Library/LaunchAgents}/com.dotfiles.mempalace-hub.plist"
+    if [[ ! -f "$mp_plist" ]]; then
+        echo -e "${YELLOW}⚠${NC} Shared hub: ${YELLOW}not set up, so only one Claude Code session at a time can write (run: dotfiles mempalace setup)${NC}"
+        WARNINGS=$((WARNINGS + 1))
+    elif curl -fsS --max-time 2 "${DOTFILES_MEMPALACE_HEALTH_URL:-http://127.0.0.1:8765/healthz}" >/dev/null 2>&1; then
+        echo -e "${GREEN}✓${NC} Shared hub: ${GREEN}running on 127.0.0.1:8765${NC}"
+        PASSED=$((PASSED + 1))
+    else
+        echo -e "${YELLOW}⚠${NC} Shared hub: ${YELLOW}not answering (log: ~/.local/state/dotfiles/mempalace-hub.log; dotfiles restart mempalace-hub)${NC}"
+        WARNINGS=$((WARNINGS + 1))
+    fi
+
+    mp_dir="$HOME/.mempalace"
+    if [[ -d "$mp_dir" ]]; then
+        if git -C "$mp_dir" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+            echo -e "${RED}✗${NC} Palace data: ${RED}~/.mempalace is inside a git work tree ($(git -C "$mp_dir" rev-parse --show-toplevel)); move it out before anything is committed${NC}"
+            FAILED=$((FAILED + 1))
+        elif [[ "$(stat -f %Lp "$mp_dir")" != "700" ]]; then
+            echo -e "${YELLOW}⚠${NC} Palace data: ${YELLOW}~/.mempalace is readable by other accounts (chmod 700 ~/.mempalace)${NC}"
+            WARNINGS=$((WARNINGS + 1))
+        else
+            echo -e "${GREEN}✓${NC} Palace data: ${GREEN}private (700) and outside every git repo${NC}"
+            PASSED=$((PASSED + 1))
+        fi
+    fi
+fi
+
+# ============================================
 # SUMMARY
 # ============================================
 echo ""
