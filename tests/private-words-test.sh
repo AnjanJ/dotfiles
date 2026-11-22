@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# doc: Private words — `scripts/git-hooks`: a commit whose added lines, file names or message contain a word from ~/.config/dotfiles/private-words or a shared list in private-words.d/ is stopped; removals, comments, `-v` diffs and --no-verify pass; the migration that turns the hooks on
+# doc: Private words — `scripts/git-hooks`: a commit whose added lines, file names or message contain a word from ~/.config/dotfiles/private-words or a shared list in private-words.d/ is stopped; `range` mode for pull requests, with a quiet report that never prints the matched text; removals, comments, `-v` diffs and --no-verify pass; the migration that turns the hooks on
 
 # Commits go to a throwaway repo wired to the real hooks, under a
 # temporary HOME; no real repo, config or word list is touched.
@@ -40,7 +40,7 @@ section "stopped"
 echo "built for the SECRET PROJECT team" >> notes.txt && git add notes.txt
 out=$(try "docs: more notes")
 assert_contains "$out" "rc=1" "an added line with a private word stops the commit"
-assert_contains "$out" "notes.txt: built for the SECRET PROJECT team" "and names the file and line"
+assert_contains "$out" "notes.txt:2: built for the SECRET PROJECT team" "and names the file, line number and line"
 assert_contains "$out" "commit with --no-verify" "and says how to override"
 assert_contains "$out" "$LIST" "and which list matched"
 git reset -q --hard
@@ -103,6 +103,32 @@ out=$(DOTFILES_PRIVATE_WORDS_DIR="$TEST_TMP/other-dir" try "docs: nightly again"
 assert_contains "$out" "rc=1" "DOTFILES_PRIVATE_WORDS_DIR points the shared folder elsewhere"
 git reset -q && rm -f team.txt
 rm -rf "$HOME/.config/dotfiles/private-words.d"
+
+section "range (CI on pull requests)"
+git switch -q -c feature
+echo "plain change" > feature.txt && git add feature.txt && git commit -q -m "feat: plain"
+rc=0; out=$(bash "$HOOKS/private-words" range main feature 2>&1) || rc=$?
+assert_eq "$rc" "0" "a clean branch passes"
+printf 'one\ntwo\nshipped to Secret Project\n' > feature.txt && git add feature.txt && git commit -q --no-verify -m "feat: ship it"
+echo "x" > "acme_internal-notes.md" && git add . && git commit -q --no-verify -m "docs: notes for acme_internal"
+rc=0; out=$(bash "$HOOKS/private-words" range main feature 2>&1) || rc=$?
+assert_eq "$rc" "1" "a branch adding a private word fails"
+assert_contains "$out" "feature.txt:3: shipped to Secret Project" "added lines are reported with their line number"
+assert_contains "$out" "acme_internal-notes.md (name)" "new file names are checked"
+assert_matches "$out" "commit [0-9a-f][0-9a-f]*: docs: notes for acme_internal" "and so are the branch's commit messages"
+rc=0; out=$(DOTFILES_PRIVATE_WORDS_QUIET=1 bash "$HOOKS/private-words" range main feature 2>&1) || rc=$?
+assert_eq "$rc" "1" "quiet mode still fails"
+assert_contains "$out" "feature.txt:3" "and says where"
+assert_not_contains "$out" "Secret Project" "but never prints the matched line"
+assert_not_contains "$out" "docs: notes for" "or the commit message"
+assert_contains "$out" "push again" "and gives advice that fits CI"
+assert_not_contains "$out" "--no-verify" "not the local override"
+git switch -q main
+git rm -q feature.txt 2>/dev/null || true
+rc=0; bash "$HOOKS/private-words" range feature main >/dev/null 2>&1 || rc=$?
+assert_eq "$rc" "0" "lines a branch removes do not count"
+rc=0; bash "$HOOKS/private-words" range main >/dev/null 2>&1 || rc=$?
+assert_eq "$rc" "2" "range needs a base and a head"
 
 section "bash 3.2"
 echo "acme_internal" > b.txt && git add b.txt

@@ -57,6 +57,35 @@ jobs:
       - name: Keybindings have no duplicate chords, undescribed bindings or missing scripts
         run: bin/dotfiles keys --lint
 
+  # Pull requests only: scans what the PR adds (lines, file names, commit
+  # messages) against the PRIVATE_WORDS secret, a shared list in the
+  # private-words format, so a commit made with --no-verify or on a
+  # machine with no list is still caught before merge. Reports only file,
+  # line and commit, never the matched text. Skipped when the secret is
+  # unset, and on PRs from forks, which GitHub gives no secrets.
+  private-words:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Scan the pull request for private words
+        env:
+          PRIVATE_WORDS: ${{ secrets.PRIVATE_WORDS }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          if [ -z "$PRIVATE_WORDS" ]; then
+            echo "No PRIVATE_WORDS secret here (unset, or a PR from a fork); skipped."
+            exit 0
+          fi
+          list="$RUNNER_TEMP/private-words"
+          printf '%s\n' "$PRIVATE_WORDS" > "$list"
+          DOTFILES_PRIVATE_WORDS="$list" DOTFILES_PRIVATE_WORDS_DIR="$RUNNER_TEMP/none" \
+            DOTFILES_PRIVATE_WORDS_QUIET=1 \
+            bash scripts/git-hooks/private-words range "origin/$BASE_REF" HEAD
+
   # The suite list is discovered from tests/*-test.sh so a new suite is
   # covered the moment it exists; nothing here to keep in step.
   discover:
