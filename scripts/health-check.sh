@@ -601,11 +601,19 @@ else
     echo -e "${YELLOW}⚠${NC} Commit hooks: ${YELLOW}not in use (run: dotfiles migrate)${NC}"
     WARNINGS=$((WARNINGS + 1))
 fi
-private_words="${DOTFILES_PRIVATE_WORDS:-${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/private-words}"
+# Your own list plus any shared ones in private-words.d/ (a team list).
+private_config="${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles"
+private_words="${DOTFILES_PRIVATE_WORDS:-$private_config/private-words}"
 private_count=0
-[[ -f "$private_words" ]] && private_count=$(grep -cvE '^[[:space:]]*(#|$)' "$private_words" || true)
+private_lists=0
+for f in "$private_words" "${DOTFILES_PRIVATE_WORDS_DIR:-$private_config/private-words.d}"/*; do
+    case "$(basename "$f")" in .*|*~|*.swp|*.bak) continue ;; esac
+    [[ -f "$f" ]] || continue
+    private_lists=$((private_lists + 1))
+    private_count=$((private_count + $(grep -cvE '^[[:space:]]*(#|$)' "$f" || true)))
+done
 if [[ "$private_count" -gt 0 ]]; then
-    echo -e "${GREEN}✓${NC} Private words: ${GREEN}$private_count listed${NC}"
+    echo -e "${GREEN}✓${NC} Private words: ${GREEN}$private_count listed in $private_lists file(s)${NC}"
     PASSED=$((PASSED + 1))
 else
     echo -e "${YELLOW}⚠${NC} Private words: ${YELLOW}none listed (add names to ${private_words/#$HOME/~})${NC}"

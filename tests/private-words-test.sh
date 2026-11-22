@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# doc: Private words — `scripts/git-hooks`: a commit whose added lines, file names or message contain a word from ~/.config/dotfiles/private-words is stopped; removals, comments, `-v` diffs and --no-verify pass; the migration that turns the hooks on
+# doc: Private words — `scripts/git-hooks`: a commit whose added lines, file names or message contain a word from ~/.config/dotfiles/private-words or a shared list in private-words.d/ is stopped; removals, comments, `-v` diffs and --no-verify pass; the migration that turns the hooks on
 
 # Commits go to a throwaway repo wired to the real hooks, under a
 # temporary HOME; no real repo, config or word list is touched.
@@ -75,6 +75,34 @@ printf '# only comments\n\n' > "$TEST_TMP/empty-list"
 echo "secret project again" >> other.txt && git add other.txt
 out=$(DOTFILES_PRIVATE_WORDS="$TEST_TMP/empty-list" try "docs: other again")
 assert_contains "$out" "rc=0" "nor with a list of only comments"
+
+section "shared lists in private-words.d"
+TEAM="$TEST_TMP/team-repo"
+mkdir -p "$TEAM" "$HOME/.config/dotfiles/private-words.d"
+printf '# the team list, kept in a private repo\nclient-zeta\n' > "$TEAM/words"
+ln -s "$TEAM/words" "$HOME/.config/dotfiles/private-words.d/team"
+echo "for client-zeta" > team.txt && git add team.txt
+out=$(try "docs: team note")
+assert_contains "$out" "rc=1" "a word from a list linked into private-words.d stops the commit"
+assert_contains "$out" "$HOME/.config/dotfiles/private-words.d/team" "and that list is named"
+git reset -q
+echo "acme_internal again" > team.txt && git add team.txt
+assert_contains "$(try "docs: mine")" "rc=1" "your own list still applies alongside it"
+git reset -q
+out=$(DOTFILES_PRIVATE_WORDS="$TEST_TMP/absent" try "feat: client-zeta export")
+assert_contains "$out" "rc=1" "a shared list works without a personal one"
+git reset -q
+printf 'nightly-thing\n' > "$HOME/.config/dotfiles/private-words.d/team~"
+printf 'nightly-thing\n' > "$HOME/.config/dotfiles/private-words.d/.hidden"
+printf 'nightly-thing\n' > "$HOME/.config/dotfiles/private-words.d/old.bak"
+echo "the nightly-thing job" > team.txt && git add team.txt
+assert_contains "$(try "docs: nightly")" "rc=0" "editor backups and hidden files in the folder are not lists"
+mkdir -p "$TEST_TMP/other-dir" && printf 'nightly-thing\n' > "$TEST_TMP/other-dir/words"
+echo "the nightly-thing job, again" > team.txt && git add team.txt
+out=$(DOTFILES_PRIVATE_WORDS_DIR="$TEST_TMP/other-dir" try "docs: nightly again")
+assert_contains "$out" "rc=1" "DOTFILES_PRIVATE_WORDS_DIR points the shared folder elsewhere"
+git reset -q && rm -f team.txt
+rm -rf "$HOME/.config/dotfiles/private-words.d"
 
 section "bash 3.2"
 echo "acme_internal" > b.txt && git add b.txt

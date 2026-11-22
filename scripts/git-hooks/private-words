@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Stops a commit that would publish a private word: a project, client or
-# host name, a person, anything listed in the machine's private-words file.
+# host name, a person, anything in the committer's private-words lists.
 # The repo is public, and GitHub's secret scanning only knows token
 # formats, so names have no other guard.
 #
@@ -8,20 +8,33 @@
 #   private-words message <file>  a commit message (comment lines skipped)
 #
 # Run by scripts/git-hooks/pre-commit and commit-msg, which this repo uses
-# through core.hooksPath (set by a migration). The list is
-# ~/.config/dotfiles/private-words (or $DOTFILES_PRIVATE_WORDS): one word
-# or phrase per line, matched case-insensitively anywhere in a line; blank
-# lines and lines starting with # are ignored. It lives outside the repo,
-# since the list itself is private. No list, no check.
+# through core.hooksPath (set by a migration). The lists, all optional and
+# all read together:
+#   ~/.config/dotfiles/private-words      your own ($DOTFILES_PRIVATE_WORDS)
+#   ~/.config/dotfiles/private-words.d/*  shared ones, e.g. a team list
+#                                         linked in from a private repo
+#                                         ($DOTFILES_PRIVATE_WORDS_DIR)
+# One word or phrase per line, matched case-insensitively anywhere in a
+# line; blank lines and lines starting with # are ignored. The lists live
+# outside the repo, since they are private themselves, and every person
+# or machine keeps their own. No list, no check.
 #
 # Removing a private word is always allowed: only added lines count.
 # A deliberate exception: git commit --no-verify.
 # Bash 3.2 compatible: GUI Git clients run hooks with /bin/bash.
 set -euo pipefail
 
-list="${DOTFILES_PRIVATE_WORDS:-${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles/private-words}"
-[[ -f "$list" ]] || exit 0
-words=$(sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' "$list" | grep -vE '^(#|$)' || true)
+config="${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles"
+lists=()
+f="${DOTFILES_PRIVATE_WORDS:-$config/private-words}"
+[[ -f "$f" ]] && lists+=("$f")
+for f in "${DOTFILES_PRIVATE_WORDS_DIR:-$config/private-words.d}"/*; do
+    # Regular files and links to them; editor backups and dotfiles skipped.
+    case "$(basename "$f")" in .*|*~|*.swp|*.bak) continue ;; esac
+    [[ -f "$f" ]] && lists+=("$f")
+done
+[[ ${#lists[@]} -gt 0 ]] || exit 0
+words=$(sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' "${lists[@]}" | grep -vE '^(#|$)' || true)
 [[ -n "$words" ]] || exit 0
 
 case "${1:-}" in
@@ -52,7 +65,8 @@ hits=$(printf '%s\n' "$text" | grep -i -F -- "$words" || true)
 [[ -z "$hits" ]] && exit 0
 
 {
-    echo "private-words: commit stopped. $what a word from $list:"
+    echo "private-words: commit stopped. $what a word from your private-words lists:"
+    printf '  (%s)\n' "${lists[@]}"
     printf '%s\n' "$hits" | cut -c1-200 | sed 's/^/  /'
     echo "This repo is public. Remove the word, or, if it is meant to be public,"
     echo "commit with --no-verify."
