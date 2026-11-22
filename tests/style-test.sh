@@ -110,3 +110,14 @@ for f in .zshrc-work .gitconfig-work .gitconfig.local .claude/settings.local.jso
     git check-ignore -q "$f" || fail "$f is gitignored"
 done
 pass "machine-local and private files are gitignored"
+# The global ignore (linked to ~/.gitignore_global) applies to every repo
+# on the machine, so MemPalace's personal data cannot be added anywhere.
+gi_repo="$TEST_TMP/gi-repo"
+git init -q "$gi_repo"
+for f in .mempalace/palace/chroma.sqlite3 .mempalace-rebuild/x notes/chroma.sqlite3 notes/chroma.sqlite3-wal; do
+    git -C "$gi_repo" -c core.excludesfile="$ROOT/.gitignore_global" check-ignore -q "$f" \
+        || fail "the global gitignore keeps MemPalace data out of every repo ($f)"
+done
+git -C "$gi_repo" -c core.excludesfile="$ROOT/.gitignore_global" check-ignore -q README.md \
+    && fail "the global gitignore leaves ordinary files alone"
+pass "the global gitignore keeps MemPalace data out of every repo"

@@ -23,3 +23,11 @@
 CODING_GUIDELINES.md
 
 **/.claude/settings.local.json
+
+# MemPalace: notes, conversation copies and indexes are personal and must
+# never reach any repository, public or private. The palace lives in
+# ~/.mempalace; these also catch a copy or a rebuild that lands in a repo.
+.mempalace/
+.mempalace-*/
+chroma.sqlite3
+chroma.sqlite3-*
