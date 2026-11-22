@@ -26,7 +26,8 @@ dotfiles theme bg next   # Desktop background for the theme: next | set <image> 
 dotfiles font set <family>   # Monospace font for every terminal and editor: current | list | set | reset
 dotfiles menu         # fzf menu over every verb (Ctrl+Shift+Space opens it in Ghostty)
 dotfiles reminder 15 "Tea"   # macOS notification in 15 minutes; `show` lists pending, `clear` cancels all
-dotfiles restart <aerospace|sketchybar|borders>   # Restart a component now (--later defers it to the next update)
+dotfiles restart <aerospace|sketchybar|borders|mempalace-hub>   # Restart a component now (--later defers it to the next update)
+dotfiles mempalace setup   # Opt-in: install MemPalace, connect it to Claude Code, run one shared hub so every session can write
 dotfiles add-theme x  # Scaffold a new theme directory
 dotfiles cleanup      # Find/remove unlisted Homebrew packages (--force)
 dotfiles tap list     # Packages kept in homebrew-tap/ after Homebrew dropped them, and whether this machine installs them (tap check / tap install / tap update run inside dotfiles update)

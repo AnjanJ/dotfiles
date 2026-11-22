@@ -26,6 +26,8 @@
 #                       under that item name ("none": never ask). Unset,
 #                       --interactive asks and a plain run leaves it off.
 #   --groups "a,b,c"    Package groups to install (comma-separated)
+#   --mempalace         Install MemPalace, register it with Claude Code and
+#                       run its shared hub (personal; off unless asked)
 #   --no-macos-defaults Skip macOS defaults
 #   --no-runtimes       Skip `mise install` (Erlang and Rust compile from
 #                       source; run `mise install` later)
@@ -38,7 +40,7 @@
 # Environment variables (flags take precedence):
 #   DOTFILES_GIT_NAME, DOTFILES_GIT_EMAIL, DOTFILES_WORK_EMAIL
 #   DOTFILES_WORK_DIR, DOTFILES_THEME, DOTFILES_SSH_MODE, DOTFILES_GROUPS
-#   DOTFILES_SIGNING_KEY
+#   DOTFILES_SIGNING_KEY, DOTFILES_MEMPALACE=yes
 #   DOTFILES_NO_SUDO=1 (never ask for a password), DOTFILES_NO_RUNTIMES=1
 #   DOTFILES_ANSWERS=<file>
 #   DOTFILES_TAP_INSTALL=yes|no (install the apps kept in homebrew-tap/;
@@ -148,6 +150,8 @@ FORCE_INSTALL=false
 APPLY_MACOS_DEFAULTS=true
 INSTALL_RUNTIMES=true
 [[ -n "${DOTFILES_NO_RUNTIMES:-}" ]] && INSTALL_RUNTIMES=false
+INSTALL_MEMPALACE=false
+[[ "${DOTFILES_MEMPALACE:-}" == "yes" ]] && INSTALL_MEMPALACE=true
 
 # Env var defaults (flags override these)
 GIT_NAME="${DOTFILES_GIT_NAME:-}"
@@ -176,6 +180,7 @@ while [[ $# -gt 0 ]]; do
         --groups) SELECTED_GROUPS="$2"; shift 2 ;;
         --no-macos-defaults) APPLY_MACOS_DEFAULTS=false; shift ;;
         --no-runtimes) INSTALL_RUNTIMES=false; shift ;;
+        --mempalace) INSTALL_MEMPALACE=true; shift ;;
         --answers) ANSWERS_FILE="$2"; shift 2 ;;
         --help)
             # Print the usage block from the header
@@ -836,6 +841,20 @@ setup_ssh
 _CURRENT_STEP="Step 8d: commit signing"
 source "$DOTFILES_DIR/scripts/setup-git-signing.sh"
 setup_git_signing
+
+# ============================================
+# 8e. MEMPALACE (opt-in)
+# ============================================
+# Personal, so only with --mempalace, DOTFILES_MEMPALACE=yes or
+# "mempalace": true in the answers file. A failure warns; the rest of the
+# install does not depend on it.
+if [[ "$INSTALL_MEMPALACE" == true ]]; then
+    _CURRENT_STEP="Step 8e: MemPalace"
+    echo ""
+    print_step "Step 8e: MemPalace..."
+    bash "$DOTFILES_DIR/bin/dotfiles-mempalace-setup" \
+        || print_warning "MemPalace setup did not finish; run: dotfiles mempalace setup"
+fi
 
 # ============================================
 # 9. MACOS DEFAULTS

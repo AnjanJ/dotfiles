@@ -23,6 +23,7 @@
 #     "groups": ["core", "editors"],-> --groups (a comma string works too)
 #     "macos_defaults": false,      -> --no-macos-defaults
 #     "runtimes": false,            -> --no-runtimes
+#     "mempalace": true,            -> --mempalace (personal; default off)
 #     "personal_tap_install": true  -> install the packages kept in
 #                                      homebrew-tap/ (false: never); unset,
 #                                      the first `dotfiles update` asks
@@ -32,7 +33,7 @@
 # under /bin/bash 3.2 because install.sh does.
 # ============================================
 
-INSTALL_ANSWERS_KEYS="name email work_email work_dir theme ssh signing_key groups macos_defaults runtimes personal_tap_install"
+INSTALL_ANSWERS_KEYS="name email work_email work_dir theme ssh signing_key groups macos_defaults runtimes mempalace personal_tap_install"
 
 # _answers_get <file> <key> — prints a scalar value (booleans as
 # true/false); nothing and exit 1 when the key is absent. Arrays go
@@ -147,6 +148,11 @@ install_answers_load() {
     if v=$(_answers_get "$file" runtimes) && [[ "$v" == "false" || "$v" == "0" ]]; then
         INSTALL_RUNTIMES=false
         applied="${applied:+$applied, }runtimes=false"
+    fi
+    # shellcheck disable=SC2034  # install.sh's own switch
+    if v=$(_answers_get "$file" mempalace) && [[ "$v" == "true" || "$v" == "1" ]]; then
+        INSTALL_MEMPALACE=true
+        applied="${applied:+$applied, }mempalace=true"
     fi
     # shellcheck disable=SC2034  # read by install.sh's homebrew-tap step
     if [[ -z "${PERSONAL_TAP_INSTALL:-}" ]] && v=$(_answers_get "$file" personal_tap_install); then

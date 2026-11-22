@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # dotfiles:summary=Restart a component now, or mark it for the end of the next update
-# dotfiles:args=<aerospace|sketchybar|borders> | --later <component> | --pending | --list
+# dotfiles:args=<aerospace|sketchybar|borders|mempalace-hub> | --later <component> | --pending | --list
 #
 # Restart markers are how a change that lands mid-update (a pulled
 # aerospace.toml, a refreshed symlink, a migration) asks for a restart
@@ -19,10 +19,10 @@
 set -euo pipefail
 
 STATE_DIR="${DOTFILES_STATE_DIR:-$HOME/.local/state/dotfiles}"
-COMPONENTS="aerospace sketchybar borders"
+COMPONENTS="aerospace sketchybar borders mempalace-hub"
 
 _usage() {
-    echo "Usage: dotfiles restart <aerospace|sketchybar|borders>"
+    echo "Usage: dotfiles restart <aerospace|sketchybar|borders|mempalace-hub>"
     echo "       dotfiles restart --later <component>"
     echo "       dotfiles restart --pending | --list"
 }
@@ -68,6 +68,16 @@ _restart_now() {
                 fi
             else
                 echo "  borders: not running, nothing to restart"
+            fi
+            ;;
+        mempalace-hub)
+            # The LaunchAgent `dotfiles mempalace setup` installs; kickstart -k
+            # stops it and starts it again under launchd.
+            local label="com.dotfiles.mempalace-hub"
+            if launchctl print "gui/$(id -u)/$label" >/dev/null 2>&1; then
+                launchctl kickstart -k "gui/$(id -u)/$label" && echo "  mempalace-hub: restarted"
+            else
+                echo "  mempalace-hub: not installed (dotfiles mempalace setup), nothing to restart"
             fi
             ;;
     esac

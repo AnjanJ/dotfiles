@@ -24,7 +24,7 @@ source "$LIB"
 
 reset_vars() {
     GIT_NAME="" GIT_EMAIL="" GIT_WORK_EMAIL="" WORK_DIR="" SELECTED_THEME="" SSH_MODE="" SIGNING_KEY="" SELECTED_GROUPS=""
-    APPLY_MACOS_DEFAULTS=true INSTALL_RUNTIMES=true PERSONAL_TAP_INSTALL=""
+    APPLY_MACOS_DEFAULTS=true INSTALL_RUNTIMES=true INSTALL_MEMPALACE=false PERSONAL_TAP_INSTALL=""
 }
 
 FULL="$TEST_TMP/full.json"
@@ -40,6 +40,7 @@ cat > "$FULL" <<'EOF'
   "groups": ["core", "editors"],
   "macos_defaults": false,
   "runtimes": false,
+  "mempalace": true,
   "personal_tap_install": true
 }
 EOF
@@ -65,8 +66,14 @@ assert_eq "$SIGNING_KEY" "Git signing" "signing_key (an item name with a space)"
 assert_eq "$SELECTED_GROUPS" "core,editors" "groups array joined with commas"
 assert_eq "$APPLY_MACOS_DEFAULTS" "false" "macos_defaults false"
 assert_eq "$INSTALL_RUNTIMES" "false" "runtimes false"
+assert_eq "$INSTALL_MEMPALACE" "true" "mempalace true"
+printf '{"mempalace": false}\n' > "$TEST_TMP/mp-no.json"
+INSTALL_MEMPALACE=false
+install_answers_load "$TEST_TMP/mp-no.json" >/dev/null 2>&1
+assert_eq "$INSTALL_MEMPALACE" "false" "mempalace false leaves it off"
+reset_vars; install_answers_load "$FULL" >/dev/null 2>&1
 assert_eq "$PERSONAL_TAP_INSTALL" "yes" "personal_tap_install true"
-assert_contains "$out" "Answers from $FULL: name, email, work_email, work_dir, theme, ssh, signing_key, groups, macos_defaults=false, runtimes=false, personal_tap_install=yes" "reports what it applied"
+assert_contains "$out" "Answers from $FULL: name, email, work_email, work_dir, theme, ssh, signing_key, groups, macos_defaults=false, runtimes=false, mempalace=true, personal_tap_install=yes" "reports what it applied"
 reset_vars
 printf '{"personal_tap_install": false}\n' > "$TEST_TMP/tap-no.json"
 install_answers_load "$TEST_TMP/tap-no.json" >/dev/null 2>&1

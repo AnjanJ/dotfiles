@@ -446,6 +446,31 @@ mise upgrade --yes 2>/dev/null || mise install
 
 print_success "mise tools updated"
 
+# ── 4b. uv tools (MemPalace) ──────────────────
+# Only when MemPalace is installed (`dotfiles mempalace setup` is opt-in).
+# `uv tool upgrade` keeps whatever version pin it was installed with. A
+# real upgrade marks the shared hub for Step 5, since a running hub keeps
+# the old code until it restarts. The hub's log is trimmed here too.
+if command -v uv >/dev/null 2>&1 && uv tool list 2>/dev/null | grep -q '^mempalace '; then
+    mp_before=$(uv tool list 2>/dev/null | awk '$1 == "mempalace" { print $2 }')
+    if uv tool upgrade mempalace >/dev/null 2>&1; then
+        mp_after=$(uv tool list 2>/dev/null | awk '$1 == "mempalace" { print $2 }')
+        if [[ "$mp_before" != "$mp_after" ]]; then
+            print_success "MemPalace $mp_before → $mp_after"
+            bash "$DOTFILES_DIR/bin/dotfiles-restart" --later mempalace-hub >/dev/null
+        else
+            print_success "MemPalace $mp_after is current"
+        fi
+    else
+        print_warning "MemPalace upgrade failed; it keeps running $mp_before (try: uv tool upgrade mempalace)"
+    fi
+    mp_log="$STATE_DIR/mempalace-hub.log"
+    if [[ -f "$mp_log" ]]; then
+        # In place, not mv: launchd holds the file open for the hub.
+        tail -n 5000 "$mp_log" > "$mp_log.tmp" && cat "$mp_log.tmp" > "$mp_log" && rm -f "$mp_log.tmp"
+    fi
+fi
+
 # ============================================
 # 5. RESTART WHAT CHANGED
 # ============================================
