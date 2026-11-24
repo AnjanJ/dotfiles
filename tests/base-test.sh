@@ -127,9 +127,13 @@ $text"
 }
 
 # Basic regular expression (grep) on text.
+# The text goes in as a here-string, not through `printf | grep -q`: grep -q
+# exits at the first match, and with pipefail a printf still writing a long
+# text then dies of a broken pipe, which turned a match into "no match" here
+# and a present pattern into a pass in assert_not_matches.
 assert_matches() {
     local text="$1" pattern="$2" label="$3"
-    if printf '%s\n' "$text" | /usr/bin/grep -q -- "$pattern"; then
+    if /usr/bin/grep -q -- "$pattern" <<< "$text"; then
         pass "$label"
     else
         fail "$label" "/$pattern/ did not match:
@@ -139,7 +143,7 @@ $text"
 
 assert_not_matches() {
     local text="$1" pattern="$2" label="$3"
-    if printf '%s\n' "$text" | /usr/bin/grep -q -- "$pattern"; then
+    if /usr/bin/grep -q -- "$pattern" <<< "$text"; then
         fail "$label" "/$pattern/ unexpectedly matched:
 $text"
     else
