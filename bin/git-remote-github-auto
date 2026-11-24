@@ -1,0 +1,108 @@
+#!/usr/bin/env bash
+# Git remote helper: reach GitHub over HTTPS while gh is logged in, over SSH
+# otherwise.
+#
+# Why: pushing over SSH asks 1Password to approve the key, and the approval
+# ends whenever 1Password locks. Over HTTPS, gh's token (from the macOS
+# keychain, through the credential helper in the tracked .gitconfig) needs no
+# approval. A plain `url.https://github.com/.insteadOf` rewrite has no way
+# back, though: once gh is logged out every fetch and push fails. This helper
+# decides on every connection instead, so a push always has a route.
+#
+# Setup, per machine, in ~/.gitconfig.local:
+#   git config -f ~/.gitconfig.local url.github-auto://github.com/.insteadOf git@github.com:
+#   git config -f ~/.gitconfig.local protocol.github-auto.allow always
+# The second line lets submodules use it too (git blocks unknown protocols
+# there by default). Remotes keep their git@github.com: addresses.
+#
+# Git runs this as `git-remote-github-auto <remote> github-auto://github.com/<owner>/<repo>`,
+# found on PATH (~/bin, linked from the repo's bin/). Apps that do not load
+# the login shell's PATH cannot find it; VS Code and Zed do load it.
+#
+#   gh has a token   exec git-remote-https on https://github.com/<owner>/<repo>
+#   otherwise        answer the "connect" capability and become a pipe to
+#                    `ssh git@github.com git-upload-pack '<owner>/<repo>'`,
+#                    the same command git runs for an SSH remote, honouring
+#                    GIT_SSH_COMMAND and core.sshCommand like git does
+#
+# The gh check is local (`gh auth token`), so a token revoked on GitHub but
+# still held by gh is not detected: that push fails like any bad credential.
+#
+# Overrides: GITHUB_AUTO_ROUTE=https|ssh forces a route; GITHUB_AUTO_DEBUG=1
+# prints the route taken to stderr; GITHUB_AUTO_GH names the gh binary.
+# Bash 3.2 compatible.
+
+set -euo pipefail
+
+me="git-remote-github-auto"
+die() { echo "$me: $*" >&2; exit 1; }
+
+[[ $# -ge 2 ]] || die "expected <remote> <url> from git (see the header for setup)"
+remote="$1"
+url="$2"
+
+prefix="github-auto://github.com/"
+[[ "$url" == "$prefix"* ]] || die "unsupported URL '$url' (expected ${prefix}<owner>/<repo>)"
+path="${url#"$prefix"}"
+# Owner and repo names on GitHub use only these characters; checking keeps
+# the path safe to quote into the SSH command below.
+[[ "$path" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]] || die "unsupported repository path '$path'"
+
+route="${GITHUB_AUTO_ROUTE:-}"
+case "$route" in
+    ""|https|ssh) ;;
+    *) die "GITHUB_AUTO_ROUTE must be https or ssh, not '$route'" ;;
+esac
+
+if [[ -z "$route" ]]; then
+    gh_bin="${GITHUB_AUTO_GH:-}"
+    if [[ -z "$gh_bin" ]]; then
+        # Absolute paths first: GUI apps may run git with a minimal PATH.
+        for candidate in /opt/homebrew/bin/gh /usr/local/bin/gh; do
+            if [[ -x "$candidate" ]]; then gh_bin="$candidate"; break; fi
+        done
+        [[ -n "$gh_bin" ]] || gh_bin="$(command -v gh 2>/dev/null || true)"
+    fi
+    route=ssh
+    # </dev/null: stdin carries git's conversation with this helper and must
+    # reach git-remote-https untouched.
+    if [[ -n "$gh_bin" ]] && "$gh_bin" auth token --hostname github.com </dev/null >/dev/null 2>&1; then
+        route=https
+    fi
+fi
+
+[[ -z "${GITHUB_AUTO_DEBUG:-}" ]] || echo "$me: $route for $path" >&2
+
+if [[ "$route" == https ]]; then
+    exec git remote-https "$remote" "https://github.com/$path"
+fi
+
+ssh_cmd="${GIT_SSH_COMMAND:-}"
+[[ -n "$ssh_cmd" ]] || ssh_cmd="$(git config --get core.sshCommand 2>/dev/null || true)"
+[[ -n "$ssh_cmd" ]] || ssh_cmd=ssh
+
+# The remote-helper "connect" protocol: advertise it, accept one service,
+# then hand stdin and stdout to ssh.
+while IFS= read -r line; do
+    case "$line" in
+        capabilities)
+            printf 'connect\n\n'
+            ;;
+        "connect "*)
+            service="${line#connect }"
+            case "$service" in
+                git-upload-pack|git-receive-pack|git-upload-archive) ;;
+                *) die "unsupported service '$service'" ;;
+            esac
+            printf '\n'
+            # Run through sh like git does, so a GIT_SSH_COMMAND with options works.
+            exec sh -c "$ssh_cmd \"\$@\"" "$me" git@github.com "$service '$path'"
+            ;;
+        "")
+            exit 0
+            ;;
+        *)
+            die "unsupported command '$line'"
+            ;;
+    esac
+done

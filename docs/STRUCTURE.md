@@ -56,6 +56,7 @@ dotfiles/
 │   ├── repos-clone             # Clone from GitHub/GitLab/Bitbucket/Codeberg
 │   ├── erb-lint-formatter      # ERB lint wrapper for Zed
 │   ├── rubocop-auto            # RuboCop wrapper: bundle exec inside apps, global gem otherwise
+│   ├── git-remote-github-auto  # Git remote helper: GitHub over HTTPS while gh is logged in, SSH otherwise (docs/SSH.md)
 │   ├── _work-helpers           # Shared utilities for work scripts
 │   └── _launcher-helpers       # Shared code for webapp/tui launchers: bundles, icons, AeroSpace rules
 ├── scripts/
@@ -77,7 +78,7 @@ dotfiles/
 ├── tests/
 │   ├── base-test.sh            # Shared contract: temp HOME, TAP pass/fail, assert_* helpers
 │   ├── run                     # Runs tests/*-test.sh, keeps going past a failing file; `tests/run <area> [<area>…]` runs just those
-│   ├── <area>-test.sh          # 44 suites, one per area, discovered by name
+│   ├── <area>-test.sh          # 45 suites, one per area, discovered by name
 │   └── e2e/install-e2e.sh      # Real install.sh into a fresh HOME (CI job, not a suite)
 └── docs/                       # This documentation
 ```

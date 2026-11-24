@@ -99,6 +99,25 @@ gh ssh-key add ~/.config/git/signing_key.pub --type signing --title "Git signing
 
 1Password asks to approve each signature, the same way it approves `git push`. `dotfiles update` makes one signed commit when its snapshot has Brewfile or mise changes, and the commits it makes in Homebrew's local copy of the personal tap are never signed.
 
+## GitHub without the 1Password prompt
+
+Every fetch and push over SSH asks 1Password to approve the key, and the approval ends whenever 1Password locks. Over HTTPS, the gh credential helper in the tracked `.gitconfig` supplies gh's token from the macOS keychain with no prompt. `bin/git-remote-github-auto` picks between the two on every connection: HTTPS while `gh auth token` has a token, SSH through 1Password otherwise, so a logged-out gh never leaves you unable to push. Remotes keep their `git@github.com:` addresses.
+
+Turn it on per machine (the lines go in `~/.gitconfig.local`, outside the repo):
+
+```bash
+git config -f ~/.gitconfig.local url.github-auto://github.com/.insteadOf git@github.com:
+git config -f ~/.gitconfig.local protocol.github-auto.allow always   # lets submodules use it too
+```
+
+Turn it off with `git config -f ~/.gitconfig.local --remove-section url.github-auto://github.com/`.
+
+- `GITHUB_AUTO_DEBUG=1 git fetch` prints which route a command took; `GITHUB_AUTO_ROUTE=ssh` or `=https` forces one.
+- The SSH route runs the same `ssh git@github.com git-upload-pack '<owner>/<repo>'` git runs itself, honouring `GIT_SSH_COMMAND` and `core.sshCommand`.
+- The gh check is local, so a token revoked on GitHub but still held by gh makes the push fail rather than fall back; `gh auth login` fixes it.
+- Git finds the helper on `PATH` (`~/bin`). Terminals, VS Code and Zed have it; an app that skips the login shell's `PATH`, such as Xcode's Source Control, cannot reach these repos while the rewrite is on.
+- Commits are still signed, so committing still asks 1Password once per unlock.
+
 ## Work hosts
 
 A work identity gets its own key and its own host aliases, kept apart from the personal setup above so the two never share a key or an email.
