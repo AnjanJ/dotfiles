@@ -116,6 +116,7 @@ Turn it off with `git config -f ~/.gitconfig.local --remove-section url.github-a
 - The SSH route runs the same `ssh git@github.com git-upload-pack '<owner>/<repo>'` git runs itself, honouring `GIT_SSH_COMMAND` and `core.sshCommand`.
 - The gh check is local, so a token revoked on GitHub but still held by gh makes the push fail rather than fall back; `gh auth login` fixes it.
 - Git finds the helper on `PATH` (`~/bin`). Terminals, VS Code and Zed have it; an app that skips the login shell's `PATH`, such as Xcode's Source Control, cannot reach these repos while the rewrite is on.
+- Background jobs (launchd agents, cron) start with a minimal `PATH`, so a job that runs git against GitHub needs `$HOME/bin` added to its own `PATH`; without it git stops with `'remote-github-auto' is not a git command`. Check with `launchctl list` and the job's script after turning the rewrite on.
 - Commits are still signed, so committing still asks 1Password once per unlock.
 
 ## Work hosts
