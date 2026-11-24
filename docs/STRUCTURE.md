@@ -57,6 +57,7 @@ dotfiles/
 │   ├── erb-lint-formatter      # ERB lint wrapper for Zed
 │   ├── rubocop-auto            # RuboCop wrapper: bundle exec inside apps, global gem otherwise
 │   ├── git-remote-github-auto  # Git remote helper: GitHub over HTTPS while gh is logged in, SSH otherwise (docs/SSH.md)
+│   ├── git-remote-git+https    # Link to git-remote-github-auto: the name git runs for git+https:// URLs
 │   ├── _work-helpers           # Shared utilities for work scripts
 │   └── _launcher-helpers       # Shared code for webapp/tui launchers: bundles, icons, AeroSpace rules
 ├── scripts/

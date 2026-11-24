@@ -106,17 +106,19 @@ Every fetch and push over SSH asks 1Password to approve the key, and the approva
 Turn it on per machine (the lines go in `~/.gitconfig.local`, outside the repo):
 
 ```bash
-git config -f ~/.gitconfig.local url.github-auto://github.com/.insteadOf git@github.com:
-git config -f ~/.gitconfig.local protocol.github-auto.allow always   # lets submodules use it too
+git config -f ~/.gitconfig.local url.git+https://github.com/.insteadOf git@github.com:
+git config -f ~/.gitconfig.local protocol.git+https.allow always   # lets submodules use it too
 ```
 
-Turn it off with `git config -f ~/.gitconfig.local --remove-section url.github-auto://github.com/`.
+Turn it off with `git config -f ~/.gitconfig.local --remove-section url.git+https://github.com/`.
+
+Why `git+https`: git has no built-in transport by that name, so it runs the helper `git-remote-git+https` (a link to `bin/git-remote-github-auto`), and the gh CLI, which reads remotes through `git remote -v`, still recognises `git+https://github.com/<owner>/<repo>` as a GitHub repository. The first version rewrote to `github-auto://github.com/`, which routed the same way but left `gh pr`, `gh run` and every other command that infers the repository failing with "none of the git remotes configured for this repository point to a known GitHub host". The helper still accepts that form; a machine set up with it should switch to the lines above.
 
 - `GITHUB_AUTO_DEBUG=1 git fetch` prints which route a command took; `GITHUB_AUTO_ROUTE=ssh` or `=https` forces one.
 - The SSH route runs the same `ssh git@github.com git-upload-pack '<owner>/<repo>'` git runs itself, honouring `GIT_SSH_COMMAND` and `core.sshCommand`.
 - The gh check is local, so a token revoked on GitHub but still held by gh makes the push fail rather than fall back; `gh auth login` fixes it.
 - Git finds the helper on `PATH` (`~/bin`). Terminals, VS Code and Zed have it; an app that skips the login shell's `PATH`, such as Xcode's Source Control, cannot reach these repos while the rewrite is on.
-- Background jobs (launchd agents, cron) start with a minimal `PATH`, so a job that runs git against GitHub needs `$HOME/bin` added to its own `PATH`; without it git stops with `'remote-github-auto' is not a git command`. Check with `launchctl list` and the job's script after turning the rewrite on.
+- Background jobs (launchd agents, cron) start with a minimal `PATH`, so a job that runs git against GitHub needs `$HOME/bin` added to its own `PATH`; without it git stops with `'remote-git+https' is not a git command`. Check with `launchctl list` and the job's script after turning the rewrite on.
 - Commits are still signed, so committing still asks 1Password once per unlock.
 
 ## Work hosts

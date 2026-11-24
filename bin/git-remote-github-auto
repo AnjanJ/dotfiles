@@ -10,14 +10,21 @@
 # decides on every connection instead, so a push always has a route.
 #
 # Setup, per machine, in ~/.gitconfig.local:
-#   git config -f ~/.gitconfig.local url.github-auto://github.com/.insteadOf git@github.com:
-#   git config -f ~/.gitconfig.local protocol.github-auto.allow always
+#   git config -f ~/.gitconfig.local url.git+https://github.com/.insteadOf git@github.com:
+#   git config -f ~/.gitconfig.local protocol.git+https.allow always
 # The second line lets submodules use it too (git blocks unknown protocols
 # there by default). Remotes keep their git@github.com: addresses.
 #
-# Git runs this as `git-remote-github-auto <remote> github-auto://github.com/<owner>/<repo>`,
-# found on PATH (~/bin, linked from the repo's bin/). Apps that do not load
-# the login shell's PATH cannot find it; VS Code and Zed do load it.
+# Why git+https: git has no built-in git+https transport, so it runs the
+# helper named git-remote-git+https (bin/git-remote-git+https, a link to this
+# file), while the gh CLI, which reads remotes through `git remote -v`,
+# accepts git+https://github.com/ as a GitHub URL. An earlier
+# github-auto://github.com/ rewrite also routed here but left gh unable to
+# find the repository in any repo; that form is still accepted.
+#
+# Git runs this as `git-remote-git+https <remote> git+https://github.com/<owner>/<repo>`,
+# found on PATH (~/bin, linked from the repo's bin/). Apps and launchd jobs
+# that do not load the login shell's PATH cannot find it; VS Code and Zed do.
 #
 #   gh has a token   exec git-remote-https on https://github.com/<owner>/<repo>
 #   otherwise        answer the "connect" capability and become a pipe to
@@ -41,9 +48,11 @@ die() { echo "$me: $*" >&2; exit 1; }
 remote="$1"
 url="$2"
 
-prefix="github-auto://github.com/"
-[[ "$url" == "$prefix"* ]] || die "unsupported URL '$url' (expected ${prefix}<owner>/<repo>)"
-path="${url#"$prefix"}"
+case "$url" in
+    git+https://github.com/*) path="${url#git+https://github.com/}" ;;
+    github-auto://github.com/*) path="${url#github-auto://github.com/}" ;;
+    *) die "unsupported URL '$url' (expected git+https://github.com/<owner>/<repo>)" ;;
+esac
 # Owner and repo names on GitHub use only these characters; checking keeps
 # the path safe to quote into the SSH command below.
 [[ "$path" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]] || die "unsupported repository path '$path'"

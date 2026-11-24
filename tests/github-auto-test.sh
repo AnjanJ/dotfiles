@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# doc: GitHub remote helper — `bin/git-remote-github-auto`: HTTPS while gh has a token, SSH through the connect protocol otherwise, forced routes, GIT_SSH_COMMAND, rejected URLs and services, an offline clone and push through real git, bash 3.2
+# doc: GitHub remote helper — `bin/git-remote-github-auto` (reached as `git-remote-git+https`): HTTPS while gh has a token, SSH through the connect protocol otherwise, forced routes, GIT_SSH_COMMAND, rejected URLs and services, an offline clone and push through real git, gh still finding the repository, bash 3.2
 
 # Stub gh, git and ssh record what the helper runs; the end-to-end part uses
 # real git with a stub ssh that serves a local bare repository, so nothing
@@ -10,7 +10,9 @@ set -euo pipefail
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/base-test.sh"
 
 HELPER="$ROOT/bin/git-remote-github-auto"
-URL="github-auto://github.com/octo/repo.git"
+URL="git+https://github.com/octo/repo.git"
+# The first rewrite target; still accepted so a machine set up with it keeps working.
+OLD_URL="github-auto://github.com/octo/repo.git"
 STUB="$TEST_TMP/stub"
 LOG="$TEST_TMP/log"
 REAL_GIT="$(command -v git)"
@@ -67,6 +69,13 @@ assert_eq "$(cat "$LOG/https-args")" "remote-https origin https://github.com/oct
 assert_file_contains "$LOG/https-stdin" "capabilities" "gh logged in: git's conversation reaches git-remote-https untouched"
 assert_file_not_exists "$LOG/ssh-args" "gh logged in: ssh is never run"
 
+reset_logs
+GITHUB_AUTO_GH="$STUB/gh-in" run_helper '' origin "$OLD_URL"
+assert_eq "$(cat "$LOG/https-args")" "remote-https origin https://github.com/octo/repo.git" "the older github-auto:// form maps to the same HTTPS URL"
+
+assert_is_symlink "$ROOT/bin/git-remote-git+https" "bin/git-remote-git+https is a link, so git finds the helper under that name"
+assert_eq "$(readlink "$ROOT/bin/git-remote-git+https")" "git-remote-github-auto" "the link points at the helper"
+
 # ── SSH when gh has no token ─────────────────
 reset_logs
 GITHUB_AUTO_GH="$STUB/gh-out" run_helper 'capabilities\nconnect git-upload-pack\n' origin "$URL"
@@ -116,12 +125,12 @@ assert_file_exists "$LOG/altssh-args" "core.sshCommand replaces ssh when GIT_SSH
 run_helper '' origin
 assert_eq "$rc" 1 "a missing URL argument is refused"
 
-run_helper '' origin "github-auto://example.com/octo/repo.git"
+run_helper '' origin "git+https://example.com/octo/repo.git"
 assert_eq "$rc" 1 "a host other than github.com is refused"
 assert_contains "$out" "unsupported URL" "the refusal names the URL problem"
 
 for bad in "octo/re'po" "octo/repo/extra" "octo" "oc to/repo" "octo/repo;rm"; do
-    run_helper '' origin "github-auto://github.com/$bad"
+    run_helper '' origin "git+https://github.com/$bad"
     assert_eq "$rc" 1 "repository path '$bad' is refused before anything runs"
 done
 
@@ -157,11 +166,11 @@ exec "$REAL_GIT" "\${service#git-}" "$SERVER/\$repo"
 EOF
 chmod +x "$STUB/fakessh"
 
-e2e() { # real git, helper on PATH, gh logged out, stub ssh
+e2e() { # real git, helper on PATH under its git+https name, gh logged out, stub ssh
     GITHUB_AUTO_GH="$STUB/gh-out" GIT_SSH_COMMAND="$STUB/fakessh" \
         PATH="$ROOT/bin:$PATH" "$REAL_GIT" \
-        -c url.github-auto://github.com/.insteadOf=git@github.com: \
-        -c protocol.github-auto.allow=always "$@"
+        -c url.git+https://github.com/.insteadOf=git@github.com: \
+        -c protocol.git+https.allow=always "$@"
 }
 clone="$TEST_TMP/clone"
 assert_succeeds "real git clones git@github.com:octo/repo.git through the helper" e2e clone -q git@github.com:octo/repo.git "$clone"
@@ -170,6 +179,29 @@ assert_eq "$("$REAL_GIT" -C "$clone" remote get-url origin)" "git@github.com:oct
 "$REAL_GIT" -C "$clone" -c user.name=t -c user.email=t@example.com -c commit.gpgsign=false commit -q --allow-empty -m pushed
 assert_succeeds "real git pushes through the helper" e2e -C "$clone" push -q origin main
 assert_eq "$("$REAL_GIT" -C "$SERVER/octo/repo.git" log -1 --format=%s main)" "pushed" "the pushed commit reached the server"
+
+# ── gh still finds the repository ────────────
+# gh reads remotes through `git remote -v`, which shows the rewritten URL. It
+# accepts git+https://github.com/ but not github-auto://, which broke every
+# `gh pr`, `gh run` and `gh issue` that infers the repository. Offline: a
+# dummy token and a dead proxy stop gh at its first API call, after it has
+# (or has not) found the repository.
+if command -v gh >/dev/null 2>&1; then
+    gh_detect() { # <rewrite target>; gh's first line of output in the clone
+        "$REAL_GIT" -C "$clone" config url."$1".insteadOf git@github.com:
+        (cd "$clone" && GH_TOKEN=dummy GH_CONFIG_DIR="$TEST_TMP/gh-config" GH_PROMPT_DISABLED=1 \
+            GH_NO_UPDATE_NOTIFIER=1 HTTPS_PROXY=http://127.0.0.1:9 HTTP_PROXY=http://127.0.0.1:9 \
+            gh browse --no-browser 2>&1 | head -1) || true
+        "$REAL_GIT" -C "$clone" config --remove-section url."$1"
+    }
+    mkdir -p "$TEST_TMP/gh-config"
+    found=$(gh_detect git+https://github.com/)
+    assert_not_contains "$found" "none of the git remotes" "gh finds a GitHub remote through the git+https rewrite"
+    assert_contains "$found" "octo/repo" "and resolves it to octo/repo"
+    assert_contains "$(gh_detect github-auto://github.com/)" "none of the git remotes" "gh cannot find it through github-auto://, which is why that form is not the default"
+else
+    pass "gh not installed: repository detection not checked"
+fi
 
 # ── Stock macOS bash ─────────────────────────
 if [[ -x /bin/bash ]]; then
