@@ -7,13 +7,14 @@ Read this before changing keybindings, workspaces, window rules, the status bar 
 - `~/.config/aerospace/aerospace.toml` — everything: layout defaults, `[mode.main.binding]`, `[mode.service.binding]`, `[[on-window-detected]]` rules. The block between `# DOTFILES_LAUNCHERS_START` and `# DOTFILES_LAUNCHERS_END` is written by `dotfiles webapp install` / `dotfiles tui install`; do not edit inside it by hand, and keep it above the app-wide rules because AeroSpace applies only the first matching rule
 - `~/.config/aerospace/scripts/startup-apps.sh` — launches the daily app set at login (`Ctrl+Shift+R` re-runs it; `dotfiles toggle startup-apps off` disables it)
 - `~/.config/aerospace/scripts/cycle-app-windows.sh`, `cycle-extra-workspaces.sh` — helpers bound to keys
+- `~/.config/aerospace/scripts/follow-auth-prompts.sh` — run by `exec-on-workspace-change`; moves an open Touch ID / password prompt (coreautha) to the workspace you switch to, so it is never parked out of sight
 - `~/.config/sketchybar/sketchybarrc`, `plugins/*.sh` — status bar; colours come from the generated `colors.sh`
 - `~/.config/borders/bordersrc` — JankyBorders; colours from the generated `colors.sh`; `dotfiles toggle borders off` stops it launching
 
 ## Conventions
 
 - Modifier scheme: `ctrl-shift-*` focus/launch/workspace, `ctrl-alt-*` move window / move to workspace, `alt-shift-*` monitors and Zen window cycling, `ctrl-shift-cmd-*` move window to monitor, `ctrl-shift-semicolon` enters service mode (`esc` reload, `r` reset layout, `f` float toggle, `k` cheatsheet).
-- Workspaces 1-7 have homes: 1 Warp, 2 Zen, 3 Chrome, 4 Zed/VS Code, 5 Proton Mail, 6 Obsidian (+ Slack, Ente Auth floating), 7 Claude/ChatGPT (floating). 8-9 free, 10-12 overflow via `ctrl-shift-0` / `ctrl-alt-0`. 1Password floats on the current workspace so its Touch ID prompt is where you are looking.
+- Workspaces 1-7 have homes: 1 Warp, 2 Zen, 3 Chrome, 4 Zed/VS Code, 5 Proton Mail, 6 Obsidian (+ Slack, Ente Auth floating), 7 Claude/ChatGPT (floating). 8-9 free, 10-12 overflow via `ctrl-shift-0` / `ctrl-alt-0`. 1Password floats on the current workspace so its Touch ID prompt is where you are looking; the system Touch ID / password prompt follows every workspace switch.
 - Apps land on their workspace through `[[on-window-detected]]` rules, so launcher bindings only launch. To add an app: find its id with `aerospace list-windows --all --format '%{app-bundle-id}|%{app-name}'`, add a rule, then a launcher binding.
 
 ## Editing a binding

@@ -93,6 +93,8 @@
 │ NO HOME WORKSPACE                   │
 │ → 1Password floats where opened, so │
 │   its Touch ID prompt follows you   │
+│ → System Touch ID / password        │
+│   prompts move with every switch    │
 │ → Ghostty opens on the current      │
 │   workspace                         │
 │ Launch: Ctrl+Shift+P (1Password)    │

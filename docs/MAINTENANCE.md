@@ -150,10 +150,11 @@ The hub is what lets several Claude Code sessions use MemPalace at once. Without
 
 ## Testing
 
-Every push and PR runs 45 test suites, an end-to-end install, shellcheck, `dotfiles commands --check`, `dotfiles keys --check` and `dotfiles keys --lint` via GitHub Actions. The suites are discovered from `tests/*-test.sh`, so a new file is in CI the moment it exists:
+Every push and PR runs 46 test suites, an end-to-end install, shellcheck, `dotfiles commands --check`, `dotfiles keys --check` and `dotfiles keys --lint` via GitHub Actions. The suites are discovered from `tests/*-test.sh`, so a new file is in CI the moment it exists:
 
 - **Shellcheck** — lints all shell scripts
 <!-- SUITES_START -->
+- **AeroSpace** (`aerospace`) — follow-auth-prompts.sh under `/bin/bash` 3.2 against a fake `aerospace`: an open Touch ID / password prompt moves to the workspace switched to and is floated, other windows and a prompt already there are left alone, the workspace comes from the argument or `$AEROSPACE_FOCUSED_WORKSPACE`, and a missing workspace, a stopped AeroSpace or a failed move never errors; aerospace.toml runs it on every workspace change
 - **Agent model** (`agent-model`) — `dotfiles agent model` against a fake `ollama`: the rebuilt model uses the qwen3.5 renderer, starts from the weight blobs and inherits no generated template or `<think>` stop, the `hf.co` import name is removed (or kept with `--keep-import`), a second run does nothing, `--force` rebuilds, bash 3.2 parsing
 - **Agent** (`agent`) — default-agent state, launch commands, skill files present
 - **Agent usage** (`agent-usage`) — `dotfiles agent usage` against a fake curl and credentials file: sign-in detection, fetch, cache and `--refresh`, `--json`, `--bar` levels, the 7-day figure following the model the status line records, stale and expired-token paths, `--notify` through a fake osascript, bash 3.2, and the sketchybar plugin painting through a fake sketchybar

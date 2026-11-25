@@ -54,12 +54,15 @@ default-root-container-orientation = 'auto'
 # Fallback value (if you omit the key): on-focused-monitor-changed = []
 on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
 
-# Notify SketchyBar when the workspace changes so the bar's workspace
-# indicator stays in sync. sketchybarrc subscribes to this exact event
-# name; without this line the bar renders once and never updates.
+# On every workspace switch:
+# - notify SketchyBar so the bar's workspace indicator stays in sync.
+#   sketchybarrc subscribes to this exact event name; without it the bar
+#   renders once and never updates.
+# - bring any open Touch ID / password prompt along to the new workspace,
+#   so it is never left waiting out of sight (see the script's header).
 exec-on-workspace-change = [
     '/bin/bash', '-c',
-    'sketchybar --trigger aerospace_workspace_change FOCUSED_WORKSPACE=$AEROSPACE_FOCUSED_WORKSPACE',
+    'sketchybar --trigger aerospace_workspace_change FOCUSED_WORKSPACE=$AEROSPACE_FOCUSED_WORKSPACE; ~/.config/aerospace/scripts/follow-auth-prompts.sh',
 ]
 
 # Mouse follows window focus (NEW: 2025-11-23)
@@ -359,9 +362,14 @@ run = 'move-node-to-workspace 5'
 # auth prompt to 6 as well -- it appeared on a workspace you were not looking
 # at and read as a window that flashed and vanished.
 #
-# The prompt's position cannot be set on its own: it is not a managed window
-# and AeroSpace never sees it (`aerospace list-windows --all` does not list
-# it). Controlling the app is the only lever, so the app follows you instead.
+# That sheet's position cannot be set on its own: it is not a managed window
+# and `aerospace list-windows --all` did not list it. Controlling the app is
+# the only lever, so the app follows you instead.
+#
+# The system Touch ID / password prompt (coreautha) is different: AeroSpace
+# does list it, as a floating window on the workspace that was focused when
+# it appeared. scripts/follow-auth-prompts.sh, run from
+# exec-on-workspace-change above, carries it to each workspace you switch to.
 #
 # Title scoping stays: it keeps the Quick Access popup out of scope.
 [[on-window-detected]]
