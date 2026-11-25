@@ -160,7 +160,6 @@ mas "TestFlight", id: 899247664
 cask "firefox"
 cask "google-chrome"
 cask "zen"
-mas "DuckDuckGo", id: 663592361
 
 # @group utilities — Misc desktop utilities
 cask "balenaetcher"

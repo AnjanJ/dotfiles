@@ -16,7 +16,7 @@ Homebrew ships no description for taps or font casks, so those two columns state
 more useful instead: what the tap actually gives you, and whether a font is really in use.
 Taps flagged **REDUNDANT** supply nothing you use — their formulae moved into homebrew/core.
 
-Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py` · last built 2026-11-21
+Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py` · last built 2026-11-25
 
 ## Contents
 
@@ -33,7 +33,7 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 - [Productivity](#productivity) — 17
 - [Work](#work) — 2
 - [Languages](#languages) — 9
-- [Browsers](#browsers) — 4
+- [Browsers](#browsers) — 3
 - [Utilities](#utilities) — 20
 - [Extras](#extras) — 3
 - [Fonts](#fonts) — 8
@@ -250,14 +250,13 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 
 ## Browsers
 
-`@group browsers` · 4 entries
+`@group browsers` · 3 entries
 
 | Package | What it is | Learn more |
 |---|---|---|
 | `firefox` | Web browser | [docs](https://www.mozilla.org/firefox/) |
 | `google-chrome` | Web browser | [docs](https://www.google.com/chrome/) |
 | `zen` | Gecko based web browser | [docs](https://zen-browser.app/) |
-| `DuckDuckGo` | DuckDuckGo, optional Duck.ai — by Duck Duck Go, Inc. | [docs](https://apps.apple.com/in/app/duckduckgo-optional-duck-ai/id663592361?uo=4) |
 
 ## Utilities
 

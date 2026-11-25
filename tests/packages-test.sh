@@ -472,12 +472,13 @@ test_real_brewfile_groups() {
     assert_matches "$work_entries" "slack" "Work group contains slack"
     assert_matches "$work_entries" "zoom" "Work group contains zoom"
 
-    # Verify browsers group (mixes casks and mas entries)
+    # Verify browsers group (mas entries in a group are covered by the
+    # fixture's Okta Verify check above)
     local browser_entries
     browser_entries=$(_get_group_entries "$real_brewfile" "browsers")
 
     assert_matches "$browser_entries" "firefox" "Browsers group contains firefox"
-    assert_matches "$browser_entries" "DuckDuckGo" "Browsers group contains DuckDuckGo (mas)"
+    assert_matches "$browser_entries" "zen" "Browsers group contains zen"
 
     # Verify core group has essential tools
     local core_entries
