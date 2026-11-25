@@ -33,7 +33,7 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 - [Productivity](#productivity) — 17
 - [Work](#work) — 2
 - [Languages](#languages) — 9
-- [Browsers](#browsers) — 5
+- [Browsers](#browsers) — 6
 - [Utilities](#utilities) — 20
 - [Extras](#extras) — 3
 - [Fonts](#fonts) — 8
@@ -250,10 +250,11 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 
 ## Browsers
 
-`@group browsers` · 5 entries
+`@group browsers` · 6 entries
 
 | Package | What it is | Learn more |
 |---|---|---|
+| `aside` | Web browser with built-in AI assistant | [docs](https://aside.com/) |
 | `duckduckgo` | Web browser focusing on privacy | [docs](https://duckduckgo.com/) |
 | `firefox` | Web browser | [docs](https://www.mozilla.org/firefox/) |
 | `google-chrome` | Web browser | [docs](https://www.google.com/chrome/) |

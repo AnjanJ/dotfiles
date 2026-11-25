@@ -1007,6 +1007,10 @@ ghce "git rebase --interactive HEAD~5"
 **What**: Chromium-based browser from helium.computer.
 **Install**: Homebrew cask `helium-browser`. The cask named `helium` is an unrelated, discontinued app.
 
+### Aside
+**What**: Browser with a built-in AI assistant, from aside.com.
+**Install**: Homebrew cask `aside`.
+
 ---
 
 ## 21. Niche CLI Utilities
