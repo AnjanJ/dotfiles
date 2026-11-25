@@ -1,7 +1,7 @@
 # My Personal Aerospace Setup
 ## Work/Personal Split Organization
 
-**Last Updated**: 2026-09-03 (chords and workspace numbers follow the generated table in [KEYBINDINGS.md](KEYBINDINGS.md); `dotfiles keys` prints the live list)
+**Last Updated**: 2026-11-25 (chords and workspace numbers follow the generated table in [KEYBINDINGS.md](KEYBINDINGS.md); `dotfiles keys` prints the live list)
 
 ---
 
@@ -663,361 +663,100 @@ Ctrl+Shift+; → R → Esc
 
 ## 🖥️ Multi-Monitor Workflow (BenQ Monitor + AirPlay TV)
 
-### Overview: Your Multi-Monitor Setup
+### How It Works
 
 **Hardware**:
-- 💻 **Laptop Screen** (Main display - built-in)
-- 🖥️ **BenQ Monitor** (External via USB-C/HDMI)
-- 📺 **TV** (AirPlay when connected)
+- 💻 **Laptop screen** (built-in, the main display)
+- 🖥️ **BenQ monitor** (external, not always connected)
+- 📺 **TV** (AirPlay, when connected)
 
-**How It Works** (i3-style Independent Workspaces):
+**Rules** (set in `[workspace-to-monitor-force-assignment]` in `aerospace.toml`):
+- Each screen shows one workspace at a time, and every workspace belongs to one screen.
+- `Ctrl+Shift+1-9` shows that workspace **on its own screen** and focuses it there. It never pulls the workspace onto the screen you are looking at; that is where AeroSpace differs from i3.
+- Workspaces **1-4** (Warp, Zen, Chrome, Zed / VS Code) belong to the **BenQ** while it is connected.
+- Workspaces **5-12** belong to the **main display**, the laptop screen.
+- Any other screen (the TV, a different monitor) has no workspace of its own and shows an empty one until you send something there.
+
 ```
-Each monitor shows ONE workspace at a time
-You control which workspace shows on which monitor
-
-Example:
-Laptop Screen          BenQ Monitor
-─────────────          ────────────
-Workspace 4            Workspace 2
-(Zed / VS Code)        (Zen)
-
-You can change either monitor independently:
-Ctrl+Shift+1  → Changes laptop to workspace 1
-Ctrl+Shift+7  → Changes BenQ to workspace 7
-```
-
-**Key Concepts**:
-- **Independent Control**: Each monitor can show any workspace (1-9)
-- **Focus-Based Switching**: `Ctrl+Shift+1-9` changes workspace on the **focused monitor**
-- **Default Behavior**: When you connect BenQ, it shows an empty workspace by default
-- **Manual Control**: YOU decide what workspace shows on each monitor
-
----
-
-### Understanding Independent Workspace Control
-
-**Example: Setting Up Custom Layout**
-
-```bash
-# Start: Both monitors showing workspace 1
-Laptop: Workspace 1       BenQ: Workspace 1
-
-# You want: Workspace 2 on laptop, Workspace 3 on BenQ
-
-Step 1: Setup laptop
-Ctrl+Shift+2              # Laptop now shows workspace 2
-
-Laptop: Workspace 2       BenQ: Workspace 1 (unchanged!)
-
-Step 2: Setup BenQ
-Alt+Shift+L               # Focus BenQ monitor
-Ctrl+Shift+3              # BenQ now shows workspace 3
-
-Laptop: Workspace 2       BenQ: Workspace 3 ✓
-
-# Result: Each monitor shows different workspace!
-```
-
-**Key Point**: Workspace switching (`Ctrl+Shift+1-9`) only affects the **currently focused monitor**, not both monitors. This gives you complete flexibility!
-
----
-
-### Scenario 1: Working with External Monitor (BenQ)
-
-#### Setup
-When you connect your BenQ monitor:
-1. It becomes your "secondary" monitor
-2. It starts showing an empty workspace (or the last workspace it showed)
-3. You manually choose which workspaces to display on each monitor
-
-#### Workflow Example: Coding Session with Dual Monitor
-
-**Goal**: Code on laptop (workspace 4), have notes on BenQ (workspace 6)
-
-```bash
-# Setup laptop screen
-Ctrl+Shift+4         # Switch laptop to workspace 4 (Zed / VS Code)
-
-# Setup BenQ monitor
-Alt+Shift+L          # Focus BenQ monitor
-Ctrl+Shift+6         # Switch BenQ to workspace 6 (Obsidian)
-
-# Now you have:
-# Laptop: Workspace 4 (editor)
-# BenQ:   Workspace 6 (Obsidian)
-
-# Work between them
-Ctrl+Shift+Tab       # Quick toggle between workspace 4 ↔ 6
-
-# Or focus monitors directly
-Alt+Shift+H          # Focus laptop (shows workspace 4)
-Alt+Shift+L          # Focus BenQ (shows workspace 6)
-```
-
-#### Moving Windows Between Monitors
-
-**Move individual window**:
-```bash
-# Have the editor open on laptop, want it on BenQ
-Ctrl+Shift+Cmd+M     # Move focused window to next monitor
-
-# Or be specific
-Ctrl+Shift+Cmd+L     # Move window to right monitor (BenQ)
-Ctrl+Shift+Cmd+H     # Move window back to left monitor (laptop)
-```
-
-**Move entire workspace**:
-```bash
-# Working in workspace 4 on laptop, want whole workspace on BenQ
-Ctrl+Alt+Tab         # Move entire workspace 4 to BenQ
-Ctrl+Alt+Tab         # Move back to laptop
+BenQ connected                               BenQ unplugged
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━   ━━━━━━━━━━━━━━━━━━━━━━
+BenQ:   1 Warp  2 Zen  3 Chrome  4 Zed       Laptop: 1-12
+Laptop: 5 Mail  6 Obsidian  7 AI  8-12
 ```
 
 ---
 
-### Scenario 2: AirPlay to TV (Third Monitor)
+### Plugging and Unplugging the BenQ
 
-#### Setup
-When you AirPlay to TV:
-1. TV becomes a third monitor
-2. You can cycle: Laptop → BenQ → TV → Laptop
-
-#### Workflow Example: Presentation or Video
-
-```bash
-# Open browser with presentation
-Ctrl+Shift+2         # Zen (personal browser)
-
-# Move to TV for presentation
-Ctrl+Alt+Tab         # Cycles through monitors
-# First press: BenQ
-# Second press: TV ✓
-
-# Control from laptop while presenting
-Alt+Shift+H          # Focus back to laptop
-# Presentation stays on TV, you work on laptop
-
-# When done, move workspace back
-Ctrl+Alt+Tab         # Cycle back to BenQ or laptop
-```
+- **Unplug**: 1-4 move to the laptop with their windows. Nothing to rearrange, and `Ctrl+Shift+1-4` keep working.
+- **Plug in**: 1-4 move back to the BenQ.
+- The fallback is the `'main'` at the end of each assignment (`1 = ['benq', 'main']`): AeroSpace uses the first pattern that matches a connected screen. `tests/aerospace-test.sh` fails if an assignment loses it.
+- The BenQ is matched by name, not as "the second screen". AeroSpace's `secondary` pattern only exists while exactly two screens are connected, so with it an AirPlay TV would either take 1-4 or send them back to the laptop.
 
 ---
 
-### Scenario 3: Laptop Only (No External Display)
+### Daily Use
 
-#### What Happens?
-When you disconnect external monitor:
-- The workspaces it was showing move to the laptop screen
-- All your windows preserved
-- No manual rearrangement needed
-
-#### Workflow
 ```bash
-# At coffee shop (laptop only)
-Ctrl+Shift+2         # Zen (now on laptop)
-Ctrl+Shift+4         # Editor (still on laptop)
-Ctrl+Shift+Tab       # Quick toggle between workspaces
+# Terminal on the BenQ, mail on the laptop: both visible at once
+Ctrl+Shift+1         # BenQ shows Warp, focus moves there
+Ctrl+Shift+5         # Laptop shows Proton Mail, focus moves there
+Ctrl+Shift+Tab       # Back to the previous workspace, on its own screen
 
-# Back home, connect BenQ
-# It comes up showing an empty workspace; pick what goes there ✓
+# Look at the other screen without changing anything
+Alt+Shift+H / L      # Focus the screen to the left / right
+Alt+Shift+M          # Focus the next screen
 ```
+
+The mouse follows: focusing another screen moves the pointer to its centre (`on-focused-monitor-changed`).
 
 ---
 
-### Complete Multi-Monitor Shortcuts Reference
+### Moving Things Between Screens
 
+**One window** (from any workspace):
+```bash
+Ctrl+Shift+Cmd+M     # Move the focused window to the next screen
+Ctrl+Shift+Cmd+H / L # Move it to the screen on the left / right
 ```
-MOVE ENTIRE WORKSPACE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Ctrl+Alt+Tab         →  Move workspace to next monitor
-                         (cycles: laptop → BenQ → TV → laptop)
+The window joins the workspace that screen is showing.
 
-MOVE INDIVIDUAL WINDOW
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Ctrl+Shift+Cmd+M     →  Move window to next monitor (cycles)
-Ctrl+Shift+Cmd+H     →  Move window to left monitor
-Ctrl+Shift+Cmd+L     →  Move window to right monitor
-
-FOCUS MONITOR (without moving windows)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Alt+Shift+M          →  Focus next monitor
-Alt+Shift+H          →  Focus left monitor (laptop)
-Alt+Shift+L          →  Focus right monitor (BenQ)
-
-WORKSPACE SHORTCUTS (no forced monitor assignment)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Ctrl+Shift+1-9       →  Show that workspace on the focused monitor
-Ctrl+Shift+0         →  Overflow workspaces 10-12 on the focused monitor
+**A whole workspace** (5-12 only):
+```bash
+Ctrl+Alt+Tab         # Move the focused workspace to the next screen
 ```
+`Ctrl+Alt+Tab` does nothing on 1-4, because AeroSpace never moves an assigned workspace. To show something from 1-4 elsewhere, move the window instead, or put it on a free workspace first (below).
 
 ---
 
-### Common Multi-Monitor Workflows
-
-#### Workflow 1: Code + Documentation
+### Presenting on the TV (AirPlay)
 
 ```bash
-# Laptop: Zed / VS Code
-Ctrl+Shift+4
+# Put the presentation on scratch workspace 8, then send 8 to the TV
+Ctrl+Shift+3         # Chrome (on the BenQ, or the laptop when unplugged)
+Ctrl+Alt+8           # Move the Chrome window to workspace 8
+Ctrl+Shift+8         # Go to 8 (laptop)
+Ctrl+Alt+Tab         # Move workspace 8 to the next screen; repeat until it is on the TV
 
-# BenQ: Documentation/Browser
-Ctrl+Shift+3
-
-# Quick reference while coding
-Alt+Shift+M          # Glance at docs on BenQ
-Alt+Shift+H          # Back to coding on laptop
-```
-
-#### Workflow 2: Code + Terminal + Logs
-
-```bash
-# Laptop: editor + a Ghostty window (side by side in workspace 4)
-Ctrl+Shift+4
-
-# BenQ: Full-screen Warp with logs
-Ctrl+Shift+1
-
-# Watch logs on BenQ while coding on laptop
-# No need to switch - both visible!
-```
-
-#### Workflow 3: Writing + Research
-
-```bash
-# Laptop: Obsidian for writing
-Ctrl+Shift+6         # Opens on whichever monitor is focused
-
-# If that was BenQ, move it to laptop for focused writing
-Ctrl+Shift+Cmd+H     # Move Obsidian to laptop
-
-# BenQ: Zen for research
-Ctrl+Shift+2
-
-# Write on laptop, research on BenQ simultaneously
-```
-
-#### Workflow 4: Presentation Mode (TV)
-
-```bash
-# Prepare on laptop
-Ctrl+Shift+3         # Open presentation in Chrome
-
-# Move to TV
-Ctrl+Alt+Tab         # Move workspace to BenQ
-Ctrl+Alt+Tab         # Move workspace to TV
-
-# Control from laptop
-Alt+Shift+H          # Focus laptop
-Ctrl+Shift+6         # Open notes in workspace 6
-
-# Presentation on TV, notes on laptop!
-```
-
----
-
-### Pro Tips for Multi-Monitor Setup
-
-**1. Apps Auto-Assign, Monitors Do Not**
-```bash
-# Every app has a home workspace (aerospace.toml [[on-window-detected]]),
-# so Ctrl+Shift+O always lands Obsidian on workspace 6.
-# Which monitor shows workspace 6 is up to you: it opens on the focused one.
-```
-
-**2. Use Ctrl+Alt+Tab for Flexibility**
-```bash
-# Want workspace 4 on BenQ sometimes?
-Ctrl+Shift+4         # Open workspace 4 (laptop)
-Ctrl+Alt+Tab         # Move to BenQ for bigger screen
-
-# Done? Move back
-Ctrl+Alt+Tab         # Back to laptop
-```
-
-**3. Focus vs. Move**
-```bash
-# Alt+Shift = Focus only (look at other monitor)
-# Ctrl+Shift+Cmd = Move windows (rearrange)
-# Ctrl+Alt = Move entire workspaces (big changes)
-```
-
-**4. Monitor-Specific Layouts**
-```bash
-# Laptop: Prefer vertical splits (smaller screen)
-# BenQ: Prefer horizontal splits (wider screen)
-# TV: Full-screen single apps (viewing distance)
-```
-
-**5. Remember: Mouse Follows Focus**
-```bash
-# When you focus a monitor, mouse moves there automatically ✓
-# on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
+# Keep working while it plays
+Ctrl+Shift+6         # Notes on the laptop
 ```
 
 ---
 
 ### Troubleshooting Multi-Monitor
 
-**Problem: Workspace not on expected monitor**
-
+**Which screen has which workspace?**
 ```bash
-# There is no forced assignment; a workspace shows where you last put it
 aerospace list-workspaces --all --format '%{workspace} %{monitor-name}'
-
-# Reload config
-Ctrl+Shift+; → Esc
-
-# Or use aerospace CLI
-aerospace list-monitors
+aerospace list-workspaces --monitor all --visible   # what each screen shows now
 ```
 
-**Problem: Lost track of which monitor has which workspace**
+**The list looks wrong right after a config reload**: a reload that moves workspaces between screens can leave AeroSpace's view of the screens stale (two visible workspaces on one screen, none on the other) until you switch workspace once on each screen, for example `Ctrl+Shift+5` then `Ctrl+Shift+1`.
 
-```bash
-# Quick check
-aerospace list-workspaces --monitor focused
+**Changing which workspaces live where**: edit `[workspace-to-monitor-force-assignment]` in `~/.config/aerospace/aerospace.toml`, keep `'main'` last in every entry, then reload (`Ctrl+Shift+;` then `Esc`).
 
-# Or just cycle through
-Ctrl+Shift+1         # If it appears, it's visible
-Ctrl+Shift+2         # Cycle through to find it
-```
-
-**Problem: Want different workspace assignments**
-
-```bash
-# Edit ~/.config/aerospace/aerospace.toml
-# Add a [workspace-to-monitor-force-assignment] section (none exists today)
-# Reload: Ctrl+Shift+; → Esc
-```
-
----
-
-### Your Optimal Multi-Monitor Setup
-
-**Morning (Work Mode)**:
-```
-Laptop                    BenQ Monitor
-━━━━━━━━━━━━━━━━━━━━     ━━━━━━━━━━━━━━━━━━━━
-4. Zed / VS Code (coding) 3. Chrome (docs, testing)
-1. Warp (commands, logs)  6. Obsidian + Slack (chat)
-                          7. Claude / ChatGPT
-```
-
-**Evening (Personal Mode)**:
-```
-Laptop                    BenQ Monitor
-━━━━━━━━━━━━━━━━━━━━     ━━━━━━━━━━━━━━━━━━━━
-3. (Chrome closed)        2. Zen (browsing)
-4. Zed (side project)     5. Proton Mail
-1. Warp (personal)        6. Obsidian (writing)
-```
-
-**Presentation (with TV)**:
-```
-Laptop                    BenQ                  TV
-━━━━━━━━━━━━━━━━━━━━     ━━━━━━━━━━━━━━━━     ━━━━━━━━━━━━
-6. Notes/Control          (not used)            3. Presentation (Chrome)
-```
+**Parts of hidden windows show on another screen**: AeroSpace hides other workspaces' windows in a bottom corner of their screen, so every screen needs a free bottom-left or bottom-right corner in System Settings → Displays → Arrange. The BenQ placed above the laptop works.
 
 ---
 

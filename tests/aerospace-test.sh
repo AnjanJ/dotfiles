@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# doc: AeroSpace — follow-auth-prompts.sh under `/bin/bash` 3.2 against a fake `aerospace`: an open Touch ID / password prompt moves to the workspace switched to and is floated, other windows and a prompt already there are left alone, the workspace comes from the argument or `$AEROSPACE_FOCUSED_WORKSPACE`, and a missing workspace, a stopped AeroSpace or a failed move never errors; aerospace.toml runs it on every workspace change
+# doc: AeroSpace — follow-auth-prompts.sh under `/bin/bash` 3.2 against a fake `aerospace`: an open Touch ID / password prompt moves to the workspace switched to and is floated, other windows and a prompt already there are left alone, the workspace comes from the argument or `$AEROSPACE_FOCUSED_WORKSPACE`, and a missing workspace, a stopped AeroSpace or a failed move never errors; aerospace.toml runs it on every workspace change, puts workspaces 1-4 on the BenQ and gives every assigned workspace a 'main' fallback for when the BenQ is unplugged
 
 # ============================================
 # AEROSPACE TEST SUITE
@@ -100,3 +100,13 @@ hook=$(sed -n '/^exec-on-workspace-change/,/^]/p' "$CONFIG")
 assert_contains "$hook" "~/.config/aerospace/scripts/follow-auth-prompts.sh" "exec-on-workspace-change runs follow-auth-prompts.sh"
 assert_contains "$hook" "sketchybar --trigger aerospace_workspace_change" "exec-on-workspace-change still notifies sketchybar"
 assert_succeeds "follow-auth-prompts.sh is executable" test -x "$FOLLOW"
+
+# The BenQ is not always connected. A workspace whose patterns all miss has
+# no screen to go to, so every assignment must end with 'main' (the laptop
+# screen when the BenQ is unplugged).
+assign=$(sed -n '/^\[workspace-to-monitor-force-assignment\]/,/^\[/p' "$CONFIG" | /usr/bin/grep -E '^[[:space:]]*[0-9]+[[:space:]]*=' || true)
+assert_contains "$assign" "1 = ['benq', 'main']" "workspace 1 lives on the BenQ, else the main display"
+assert_contains "$assign" "4 = ['benq', 'main']" "workspace 4 lives on the BenQ, else the main display"
+no_fallback=$(printf '%s\n' "$assign" | /usr/bin/grep -vE "'main'\][[:space:]]*$" || true)
+assert_eq "$no_fallback" "" "every assigned workspace falls back to 'main' when its screen is unplugged"
+assert_not_contains "$assign" "5 = " "workspace 5 is unassigned, so ctrl-alt-tab can still move it"

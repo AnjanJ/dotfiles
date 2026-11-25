@@ -96,6 +96,28 @@ automatically-unhide-macos-hidden-apps = false
     outer.top =        0
     outer.right =      0
 
+# Which screen each workspace lives on. Switching to a workspace always shows
+# it on its own screen, never on the one you are looking at.
+#
+# 1-4 (terminal, both browsers, editors) belong to the BenQ while it is
+# connected. Patterns are tried in order and the first that matches wins, so
+# with the BenQ unplugged 'main' takes them: they move to the laptop screen
+# with their windows, and move back when it is plugged in again.
+#
+# Matched by name rather than 'secondary', which only exists while exactly two
+# screens are connected: AirPlaying to a TV next to the BenQ would send 1-4 to
+# the laptop, and a TV on its own would receive them.
+#
+# 5-12 are not listed, so they stay on the main display (the default).
+# move-workspace-to-monitor (ctrl-alt-tab) does nothing to a listed
+# workspace, so leaving them out keeps them movable, to a TV for instance.
+# See: https://nikitabobko.github.io/AeroSpace/guide#assign-workspaces-to-monitors
+[workspace-to-monitor-force-assignment]
+    1 = ['benq', 'main']
+    2 = ['benq', 'main']
+    3 = ['benq', 'main']
+    4 = ['benq', 'main']
+
 # 'main' binding mode declaration
 # See: https://nikitabobko.github.io/AeroSpace/guide#binding-modes
 # 'main' binding mode must be always presented
