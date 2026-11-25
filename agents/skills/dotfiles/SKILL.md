@@ -70,7 +70,7 @@ Machine-only overrides that should not be committed: `~/.zshrc.local`, `~/.zshrc
 - "Change the wallpaper to match" → `dotfiles theme bg next` (or `dotfiles theme bg set <image>`; own images go in `~/.config/dotfiles/backgrounds/<theme>/`)
 - "Go light" → `dotfiles theme catppuccin-latte` or `dotfiles theme flexoki-light` (macOS appearance follows; `dotfiles toggle appearance off` to stop that)
 - "Make the accent colour purple in Catppuccin" → edit `accent` in `themes/catppuccin/colors.toml`, then `dotfiles theme catppuccin`
-- "Add a shortcut to open Finder on Ctrl+Shift+F" → add `ctrl-shift-f = '''exec-and-forget open -a "Finder"'''` under `[mode.main.binding]` in `aerospace.toml` with a `# desc:` line above it, `aerospace reload-config`, then `dotfiles keys --update`
+- "Add a shortcut to open Calendar on Ctrl+Shift+G" → add `ctrl-shift-g = '''exec-and-forget open -a "Calendar"'''` under `[mode.main.binding]` in `aerospace.toml` with a `# desc:` line above it, `aerospace reload-config`, then `dotfiles keys --update` (`dotfiles keys --lint` catches a chord that is already bound)
 - "Stop the apps auto-launching at login" → `dotfiles toggle startup-apps off`
 - "Install ripgrep-all" → add `brew "ripgrep-all"` to the right group in the Brewfile, then `brew bundle --file="$(dotfiles dir)/Brewfile"`
 - "Something is off after pulling the repo" → `dotfiles debug --print` to see the state, `dotfiles sync`, then `dotfiles health`, then `dotfiles doctor` for the auto-fixable part

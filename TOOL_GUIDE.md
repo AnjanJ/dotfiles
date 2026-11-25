@@ -380,6 +380,7 @@ zc                # Close tab
 | `Ctrl+Shift+1-9` | Switch workspace |
 | `Ctrl+Alt+1-9` | Move window to workspace |
 | `Ctrl+Shift+/` / `Ctrl+Shift+,` | Tiles / accordion layout |
+| `Ctrl+Shift+F` | Fullscreen that stays on its workspace (use instead of macOS fullscreen) |
 | `Ctrl+Shift+-/=` | Resize window |
 | `Ctrl+Shift+W` | Warp (workspace 1) |
 | `Ctrl+Shift+X` | Zen (workspace 2) |

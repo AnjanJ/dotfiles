@@ -31,6 +31,7 @@ The tables below are generated from `.config/aerospace/aerospace.toml` by `dotfi
 | `Ctrl+Shift+Space` | Dotfiles menu (theme, toggles, launchers, update…) in a Ghostty window | `exec-and-forget open -na Ghostty --args --title=dotfiles-menu -e /bin/zsh -lic 'DOTFILES_MENU_HOLD=1 dotfiles menu'` |
 | `Ctrl+Shift+/` | Tiles layout | `layout tiles horizontal vertical` |
 | `Ctrl+Shift+,` | Accordion layout | `layout accordion horizontal vertical` |
+| `Ctrl+Shift+F` | Toggle fullscreen (AeroSpace's, not macOS native) | `fullscreen` |
 | `Ctrl+Shift+H` | Focus window left | `focus left` |
 | `Ctrl+Shift+J` | Focus window down | `focus down` |
 | `Ctrl+Shift+K` | Focus window up | `focus up` |

@@ -61,6 +61,7 @@ dotfiles dir          # Print dotfiles directory path
 | `Ctrl+Shift+1-9` | Switch workspace |
 | `Ctrl+Alt+1-9` | Move to workspace |
 | `Ctrl+Shift+/` | Toggle layout |
+| `Ctrl+Shift+F` | Fullscreen (AeroSpace's, not macOS native) |
 | `Ctrl+Shift+-/=` | Resize window |
 | `Ctrl+Shift+Tab` | Toggle last workspaces |
 

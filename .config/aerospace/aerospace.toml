@@ -210,6 +210,14 @@ automatically-unhide-macos-hidden-apps = false
     # desc: Accordion layout
     ctrl-shift-comma = 'layout accordion horizontal vertical'
 
+    # Fullscreen without leaving AeroSpace. macOS's own fullscreen (green
+    # button, ctrl-cmd-f) moves the window into a separate macOS Space that
+    # AeroSpace cannot hide, tile or move; this fills the screen and stays a
+    # normal window on its workspace. Press again to go back.
+    # See: https://nikitabobko.github.io/AeroSpace/commands#fullscreen
+    # desc: Toggle fullscreen (AeroSpace's, not macOS native)
+    ctrl-shift-f = 'fullscreen'
+
     # See: https://nikitabobko.github.io/AeroSpace/commands#focus
     # DHH-inspired vim navigation (ctrl-shift for international keyboards)
     ctrl-shift-h = 'focus left'
