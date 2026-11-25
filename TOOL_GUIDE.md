@@ -1003,6 +1003,10 @@ ghce "git rebase --interactive HEAD~5"
 **What**: Privacy-focused browser with built-in tracker blocking.
 **Install**: Homebrew cask `duckduckgo`, the direct-download build that updates itself. Not the Mac App Store copy, which is a different build with its own limitations.
 
+### Helium
+**What**: Chromium-based browser from helium.computer.
+**Install**: Homebrew cask `helium-browser`. The cask named `helium` is an unrelated, discontinued app.
+
 ---
 
 ## 21. Niche CLI Utilities

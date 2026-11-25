@@ -33,7 +33,7 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 - [Productivity](#productivity) — 17
 - [Work](#work) — 2
 - [Languages](#languages) — 9
-- [Browsers](#browsers) — 4
+- [Browsers](#browsers) — 5
 - [Utilities](#utilities) — 20
 - [Extras](#extras) — 3
 - [Fonts](#fonts) — 8
@@ -250,13 +250,14 @@ Regenerate after editing the Brewfile: `python3 scripts/catalog/build-catalog.py
 
 ## Browsers
 
-`@group browsers` · 4 entries
+`@group browsers` · 5 entries
 
 | Package | What it is | Learn more |
 |---|---|---|
 | `duckduckgo` | Web browser focusing on privacy | [docs](https://duckduckgo.com/) |
 | `firefox` | Web browser | [docs](https://www.mozilla.org/firefox/) |
 | `google-chrome` | Web browser | [docs](https://www.google.com/chrome/) |
+| `helium-browser` | Chromium-based web browser | [docs](https://helium.computer/) |
 | `zen` | Gecko based web browser | [docs](https://zen-browser.app/) |
 
 ## Utilities

@@ -160,6 +160,7 @@ mas "TestFlight", id: 899247664
 cask "duckduckgo"                # direct-download build; not the App Store copy (mas id 663592361)
 cask "firefox"
 cask "google-chrome"
+cask "helium-browser"            # Helium from helium.computer; the "helium" cask is an unrelated app
 cask "zen"
 
 # @group utilities — Misc desktop utilities
