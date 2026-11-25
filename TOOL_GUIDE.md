@@ -999,6 +999,10 @@ ghce "git rebase --interactive HEAD~5"
 **What**: Firefox-based browser with Arc-like UI.
 **When**: If you prefer a more modern, sidebar-based browser experience.
 
+### DuckDuckGo
+**What**: Privacy-focused browser with built-in tracker blocking.
+**Install**: Homebrew cask `duckduckgo`, the direct-download build that updates itself. Not the Mac App Store copy, which is a different build with its own limitations.
+
 ---
 
 ## 21. Niche CLI Utilities
