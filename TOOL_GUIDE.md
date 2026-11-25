@@ -1011,6 +1011,10 @@ ghce "git rebase --interactive HEAD~5"
 **What**: Browser with a built-in AI assistant, from aside.com.
 **Install**: Homebrew cask `aside`.
 
+### Ardia
+**What**: Chromium-based browser with a vertical tab sidebar, from ardia.dev.
+**Install**: Homebrew cask `ardia`. A copy installed from the website can be handed to Homebrew without reinstalling it: `brew install --cask --adopt ardia`.
+
 ---
 
 ## 21. Niche CLI Utilities

@@ -157,6 +157,7 @@ cask "flutter"
 mas "TestFlight", id: 899247664
 
 # @group browsers — Web browsers
+cask "ardia"
 cask "aside"
 cask "duckduckgo"                # direct-download build; not the App Store copy (mas id 663592361)
 cask "firefox"
